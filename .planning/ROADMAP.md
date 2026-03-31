@@ -30,7 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When a player joins, they receive a `ClientGameState` where `myHand` contains only their cards; DevTools inspection of the WebSocket frame shows no other player's hand cards
   4. Up to 4 players can connect to a single room simultaneously; a 5th connection is rejected
   5. Server state survives room hibernation — reloading the room after idle restores the previous game state
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Project scaffolding, shared types, and failing test stubs (Wave 0)
+- [ ] 01-02-PLAN.md — Implement buildDeck, shuffle, defaultGameState, viewFor (Wave 1)
+- [ ] 01-03-PLAN.md — GameRoom lifecycle hooks, persistence, broadcast, and manual verification (Wave 2)
 
 ### Phase 2: Lobby + Room Join
 **Goal**: Players can create and join a room via link or code, and the deployed app navigates correctly
@@ -89,7 +93,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server Foundation | 0/? | Not started | - |
+| 1. Server Foundation | 0/3 | Planning complete | - |
 | 2. Lobby + Room Join | 0/? | Not started | - |
 | 3. Core Board | 0/? | Not started | - |
 | 4. Game Controls | 0/? | Not started | - |
