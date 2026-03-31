@@ -72,31 +72,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROOM-01 | — | Pending |
-| ROOM-02 | — | Pending |
-| ROOM-03 | — | Pending |
-| ROOM-04 | — | Pending |
-| DECK-01 | — | Pending |
-| DECK-02 | — | Pending |
-| DECK-03 | — | Pending |
-| TABLE-01 | — | Pending |
-| TABLE-02 | — | Pending |
-| TABLE-03 | — | Pending |
-| CARD-01 | — | Pending |
-| CARD-02 | — | Pending |
-| CARD-03 | — | Pending |
-| CARD-04 | — | Pending |
-| CARD-05 | — | Pending |
-| CTRL-01 | — | Pending |
-| CTRL-02 | — | Pending |
-| CTRL-03 | — | Pending |
-| CTRL-04 | — | Pending |
+| ROOM-01 | Phase 2 | Pending |
+| ROOM-02 | Phase 2 | Pending |
+| ROOM-03 | Phase 1 | Pending |
+| ROOM-04 | Phase 5 | Pending |
+| DECK-01 | Phase 1 | Pending |
+| DECK-02 | Phase 1 | Pending |
+| DECK-03 | Phase 2 | Pending |
+| TABLE-01 | Phase 3 | Pending |
+| TABLE-02 | Phase 3 | Pending |
+| TABLE-03 | Phase 3 | Pending |
+| CARD-01 | Phase 3 | Pending |
+| CARD-02 | Phase 3 | Pending |
+| CARD-03 | Phase 4 | Pending |
+| CARD-04 | Phase 4 | Pending |
+| CARD-05 | Phase 1 | Pending |
+| CTRL-01 | Phase 4 | Pending |
+| CTRL-02 | Phase 4 | Pending |
+| CTRL-03 | Phase 4 | Pending |
+| CTRL-04 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-31 — traceability filled after roadmap creation*
