@@ -1,0 +1,21 @@
+{
+  "name": "virtual-deck",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nanoid": "^5.1.7",
+    "partysocket": "^1.1.16"
+  },
+  "devDependencies": {
+    "partykit": "^0.0.115",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}
