@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-04-01T19:33:36.796Z"
-last_activity: 2026-04-01 -- Phase 01 execution started
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-04-01T21:29:51.985Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 33
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 01 (server-foundation) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 01
-Last activity: 2026-04-01 -- Phase 01 execution started
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-01
 
 Progress: [███░░░░░░░] 33%
 
@@ -53,6 +53,7 @@ Progress: [███░░░░░░░] 33%
 
 *Updated after each plan completion*
 | Phase 01-server-foundation P01 | 145 | 2 tasks | 10 files |
+| Phase 01-server-foundation P02 | 30 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Roadmap]: ROOM-04 (reconnect-to-hand) deferred to Phase 5 — requires complete game loop to test meaningfully
 - [Phase 01-server-foundation]: Card ID format: rank-suit[0] (e.g. A-s, 10-h) — unambiguous for all 52 cards including 10s
 - [Phase 01-server-foundation]: Party.Server skeleton with typed stubs in party/index.ts; red phase test stubs in tests/ directory
+- [Phase 01-server-foundation]: viewFor masks hands record: returns ClientGameState with myHand + opponentHandCounts, never exposes the hands key
+- [Phase 01-server-foundation]: Fisher-Yates shuffle uses crypto.getRandomValues per swap iteration, not Math.random
 
 ### Pending Todos
 
@@ -79,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T19:33:36.793Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-04-01T21:29:51.983Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
