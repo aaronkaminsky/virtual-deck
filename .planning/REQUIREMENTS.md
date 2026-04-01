@@ -14,8 +14,8 @@
 
 ### Deck
 
-- [ ] **DECK-01**: Room initializes with a standard 52-card deck
-- [ ] **DECK-02**: Deck shuffle uses cryptographically random randomization (Fisher-Yates + crypto.getRandomValues, server-side)
+- [x] **DECK-01**: Room initializes with a standard 52-card deck
+- [x] **DECK-02**: Deck shuffle uses cryptographically random randomization (Fisher-Yates + crypto.getRandomValues, server-side)
 - [ ] **DECK-03**: Card face and back art is swappable via code change — no UI required
 
 ### Table
@@ -30,7 +30,7 @@
 - [ ] **CARD-02**: Player can draw a card from the top of any pile (shared table pile or their own hand pile)
 - [ ] **CARD-03**: Player can flip any card face-up or face-down
 - [ ] **CARD-04**: Player can pass a card directly to another player's private hand
-- [ ] **CARD-05**: Player's hand is private — other players see only card backs, enforced server-side
+- [x] **CARD-05**: Player's hand is private — other players see only card backs, enforced server-side
 
 ### Game Controls
 
@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROOM-02 | Phase 2 | Pending |
 | ROOM-03 | Phase 1 | Pending |
 | ROOM-04 | Phase 5 | Pending |
-| DECK-01 | Phase 1 | Pending |
-| DECK-02 | Phase 1 | Pending |
+| DECK-01 | Phase 1 | Complete |
+| DECK-02 | Phase 1 | Complete |
 | DECK-03 | Phase 2 | Pending |
 | TABLE-01 | Phase 3 | Pending |
 | TABLE-02 | Phase 3 | Pending |
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CARD-02 | Phase 3 | Pending |
 | CARD-03 | Phase 4 | Pending |
 | CARD-04 | Phase 4 | Pending |
-| CARD-05 | Phase 1 | Pending |
+| CARD-05 | Phase 1 | Complete |
 | CTRL-01 | Phase 4 | Pending |
 | CTRL-02 | Phase 4 | Pending |
 | CTRL-03 | Phase 4 | Pending |

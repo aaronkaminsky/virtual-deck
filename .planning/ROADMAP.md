@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Server state survives room hibernation — reloading the room after idle restores the previous game state
 **Plans:** 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffolding, shared types, and failing test stubs (Wave 0)
+- [x] 01-01-PLAN.md — Project scaffolding, shared types, and failing test stubs (Wave 0)
 - [ ] 01-02-PLAN.md — Implement buildDeck, shuffle, defaultGameState, viewFor (Wave 1)
 - [ ] 01-03-PLAN.md — GameRoom lifecycle hooks, persistence, broadcast, and manual verification (Wave 2)
 
