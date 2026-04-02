@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 01-03-PLAN.md
 last_updated: "2026-04-02T00:21:30.705Z"
-last_activity: 2026-04-02
+last_activity: 2026-04-02 - Completed quick task 260401-pn2: Fix DRAW_CARD silent failure: return ERROR when pileId missing or pile not found
 progress:
   total_phases: 5
   completed_phases: 1
@@ -76,6 +76,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260401-pn2 | Fix DRAW_CARD silent failure: return ERROR when pileId missing or pile not found | 2026-04-02 | 454cf45 | [260401-pn2-fix-draw-card-silent-failure-return-erro](./quick/260401-pn2-fix-draw-card-silent-failure-return-erro/) |
 
 ### Blockers/Concerns
 
