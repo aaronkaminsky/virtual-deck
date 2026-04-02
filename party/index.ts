@@ -111,15 +111,37 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "DRAW_CARD": {
-        const pile = this.gameState.piles.find(p => p.id === action.pileId);
-        const playerToken = sender.id;
-        if (pile && pile.cards.length > 0) {
-          const card = pile.cards.pop()!;
-          if (!this.gameState.hands[playerToken]) {
-            this.gameState.hands[playerToken] = [];
-          }
-          this.gameState.hands[playerToken].push(card);
+        if (!action.pileId) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "MISSING_PILE_ID",
+            message: "pileId is required for DRAW_CARD",
+          } satisfies ServerEvent));
+          break;
         }
+        const pile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!pile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (pile.cards.length === 0) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_EMPTY",
+            message: `Pile ${action.pileId} has no cards`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const playerToken = sender.id;
+        const card = pile.cards.pop()!;
+        if (!this.gameState.hands[playerToken]) {
+          this.gameState.hands[playerToken] = [];
+        }
+        this.gameState.hands[playerToken].push(card);
         break;
       }
       case "PING":
