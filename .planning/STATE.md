@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-04-01T21:29:51.985Z"
-last_activity: 2026-04-01
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-04-02T00:21:30.705Z"
+last_activity: 2026-04-02
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 33
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 01 (server-foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
-Last activity: 2026-04-01
+Last activity: 2026-04-02
 
 Progress: [███░░░░░░░] 33%
 
@@ -54,6 +54,7 @@ Progress: [███░░░░░░░] 33%
 *Updated after each plan completion*
 | Phase 01-server-foundation P01 | 145 | 2 tasks | 10 files |
 | Phase 01-server-foundation P02 | 30 | 2 tasks | 2 files |
+| Phase 01-server-foundation P03 | 30 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 01-server-foundation]: Party.Server skeleton with typed stubs in party/index.ts; red phase test stubs in tests/ directory
 - [Phase 01-server-foundation]: viewFor masks hands record: returns ClientGameState with myHand + opponentHandCounts, never exposes the hands key
 - [Phase 01-server-foundation]: Fisher-Yates shuffle uses crypto.getRandomValues per swap iteration, not Math.random
+- [Phase 01-server-foundation]: Per-connection broadcast pattern over room.broadcast — hand masking requires each client gets only its own cards via viewFor(state, conn.id)
+- [Phase 01-server-foundation]: Disconnecting players marked connected:false but hands preserved — reconnect flow (Phase 5) depends on hand data surviving disconnect
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T21:29:51.983Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-04-02T00:21:30.702Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
