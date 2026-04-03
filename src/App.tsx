@@ -1,5 +1,23 @@
 import { useEffect } from 'react';
 import { nanoid } from 'nanoid';
+import { getOrCreatePlayerId } from './hooks/usePlayerId';
+import { usePartySocket } from './hooks/usePartySocket';
+import LobbyPanel from './components/LobbyPanel';
+
+function RoomView({ roomId }: { roomId: string }) {
+  const playerId = getOrCreatePlayerId();
+  const { gameState, connected, error } = usePartySocket(roomId, playerId);
+
+  return (
+    <LobbyPanel
+      roomId={roomId}
+      playerId={playerId}
+      gameState={gameState}
+      connected={connected}
+      error={error}
+    />
+  );
+}
 
 export default function App() {
   const params = new URLSearchParams(window.location.search);
@@ -14,9 +32,5 @@ export default function App() {
 
   if (!roomId) return null;
 
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-foreground">Room: {roomId}</p>
-    </div>
-  );
+  return <RoomView roomId={roomId} />;
 }
