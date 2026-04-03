@@ -3,3 +3,4 @@ dist/
 .partykit/
 .claude/
 .env.local
+.env
