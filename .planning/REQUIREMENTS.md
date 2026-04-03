@@ -8,7 +8,7 @@
 ### Room
 
 - [x] **ROOM-01**: Player can create a room and receive a shareable link/code to send to friends
-- [ ] **ROOM-02**: Player can join a room by entering a room code or opening a shared link
+- [x] **ROOM-02**: Player can join a room by entering a room code or opening a shared link
 - [x] **ROOM-03**: Room supports 2–4 simultaneous players
 - [ ] **ROOM-04**: Player can rejoin a room after disconnect and their private hand is restored
 
@@ -73,7 +73,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ROOM-01 | Phase 2 | Complete |
-| ROOM-02 | Phase 2 | Pending |
+| ROOM-02 | Phase 2 | Complete |
 | ROOM-03 | Phase 1 | Complete |
 | ROOM-04 | Phase 5 | Pending |
 | DECK-01 | Phase 1 | Complete |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-03T01:50:19.420Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-03T01:55:09.257Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 33
 ---
 
@@ -56,6 +56,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 01-server-foundation P02 | 30 | 2 tasks | 2 files |
 | Phase 01-server-foundation P03 | 30 | 2 tasks | 1 files |
 | Phase 02-lobby-room-join P01 | 4 | 2 tasks | 14 files |
+| Phase 02-lobby-room-join P02 | 2 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase 01-server-foundation]: Disconnecting players marked connected:false but hands preserved — reconnect flow (Phase 5) depends on hand data surviving disconnect
 - [Phase 02-lobby-room-join]: shadcn v4 base-nova generates oklch colors; overrode :root with HSL channel values for dark green felt theme (160 38% 16% background)
 - [Phase 02-lobby-room-join]: Added @/* path alias to both tsconfig.json and vite.config.ts so shadcn component imports resolve at compile and bundle time
+- [Phase 02-lobby-room-join]: RoomView inner component pattern isolates usePartySocket hook from App redirect guard
+- [Phase 02-lobby-room-join]: import.meta.env.BASE_URL used in copy handler for correct shareable URL across dev/prod
+- [Phase 02-lobby-room-join]: VITE_PARTYKIT_HOST hardcoded in deploy.yml as virtual-deck.aaronkaminsky.partykit.dev
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T01:50:19.418Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-04-03T01:55:09.254Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

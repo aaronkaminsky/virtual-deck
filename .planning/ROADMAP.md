@@ -46,10 +46,10 @@ Plans:
   3. A stable player token is stored in `localStorage` so the player identity persists across page reloads
   4. Navigating directly to a room URL on the GitHub Pages deploy does not return a 404
   5. Card face and back art can be changed by editing one file in the codebase with no other modifications required
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 02-01-PLAN.md — Scaffold React + Vite + shadcn design system + card art config (Wave 1)
-- [ ] 02-02-PLAN.md — Lobby UI, PartySocket connection, player identity, deploy workflow (Wave 2)
+- [x] 02-02-PLAN.md — Lobby UI, PartySocket connection, player identity, deploy workflow (Wave 2)
 - [ ] 02-03-PLAN.md — Human verification of lobby and room-join flow (Wave 3)
 
 ### Phase 3: Core Board
@@ -97,7 +97,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Server Foundation | 3/3 | Complete   | 2026-04-02 |
-| 2. Lobby + Room Join | 1/3 | In Progress|  |
+| 2. Lobby + Room Join | 2/3 | In Progress|  |
 | 3. Core Board | 0/? | Not started | - |
 | 4. Game Controls | 0/? | Not started | - |
 | 5. Resilience + Polish | 0/? | Not started | - |
