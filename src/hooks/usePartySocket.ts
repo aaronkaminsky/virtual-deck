@@ -1,0 +1,47 @@
+import PartySocket from 'partysocket';
+import { useEffect, useRef, useState } from 'react';
+import type { ClientGameState, ServerEvent } from '../shared/types';
+
+const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
+  ?? (import.meta.env.DEV ? 'localhost:1999' : 'localhost:1999');
+
+export function usePartySocket(roomId: string, playerId: string) {
+  const [gameState, setGameState] = useState<ClientGameState | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const wsRef = useRef<PartySocket | null>(null);
+
+  useEffect(() => {
+    const ws = new PartySocket({
+      host: PARTYKIT_HOST,
+      room: roomId,
+      id: playerId,
+    });
+    wsRef.current = ws;
+
+    ws.addEventListener('open', () => {
+      setConnected(true);
+      setError(null);
+    });
+
+    ws.addEventListener('close', () => {
+      setConnected(false);
+    });
+
+    ws.addEventListener('message', (e: MessageEvent) => {
+      const event: ServerEvent = JSON.parse(e.data as string);
+      if (event.type === 'STATE_UPDATE') {
+        setGameState(event.state);
+      } else if (event.type === 'ERROR') {
+        setError(event.message);
+      }
+    });
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, [roomId, playerId]);
+
+  return { gameState, connected, error };
+}
