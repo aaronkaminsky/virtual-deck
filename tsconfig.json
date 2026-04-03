@@ -13,10 +13,12 @@
     "sourceMap": true,
     "outDir": "dist",
     "rootDir": ".",
+    "jsx": "react-jsx",
     "paths": {
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "party/**/*.ts", "tests/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "party/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
