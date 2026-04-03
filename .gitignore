@@ -2,5 +2,8 @@ node_modules/
 dist/
 .partykit/
 .claude/
-.env.local
 .env
+.env.local
+.env.*.local
+*.pem
+*.key
