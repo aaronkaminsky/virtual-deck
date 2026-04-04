@@ -79,8 +79,11 @@ Plans:
   4. Player can shuffle any pile on the table; the pile order is randomized server-side
   5. Player can reset the table, collecting all cards into the draw pile and reshuffling, without a page reload
   6. Player can undo their last card move; the previous state is restored for all players
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 3 plans
+Plans:
+- [ ] 04-01-PLAN.md — Types, server handlers, and TDD tests for all 6 actions (Wave 1)
+- [ ] 04-02-PLAN.md — Client UI: ControlsBar, component modifications for flip/pass/shuffle (Wave 2)
+- [ ] 04-03-PLAN.md — Human verification of all game controls (Wave 3)
 
 ### Phase 5: Resilience + Polish
 **Goal**: The game survives network interruptions and presents clear connection status to all players
@@ -132,5 +135,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Server Foundation | 3/3 | Complete   | 2026-04-02 |
 | 2. Lobby + Room Join | 2/3 | In Progress|  |
 | 3. Core Board | 2/3 | In Progress|  |
-| 4. Game Controls | 0/? | Not started | - |
+| 4. Game Controls | 0/3 | Not started | - |
 | 5. Resilience + Polish | 0/? | Not started | - |
