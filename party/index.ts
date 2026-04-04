@@ -35,6 +35,7 @@ export function defaultGameState(roomId: string): GameState {
     piles: [
       { id: "draw", name: "Draw", cards: buildDeck() },
       { id: "discard", name: "Discard", cards: [] },
+      { id: "play", name: "Play Area", cards: [] },
     ],
   };
 }
@@ -142,6 +143,74 @@ export default class GameRoom implements Party.Server {
           this.gameState.hands[playerToken] = [];
         }
         this.gameState.hands[playerToken].push(card);
+        break;
+      }
+      case "MOVE_CARD": {
+        const { cardId, fromZone, fromId, toZone, toId } = action;
+
+        if (fromZone === "hand" && fromId !== sender.id) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot move another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        if (toZone === "hand" && toId !== sender.id) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot place cards in another player's hand",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        const source: Card[] | undefined =
+          fromZone === "hand"
+            ? this.gameState.hands[fromId]
+            : this.gameState.piles.find(p => p.id === fromId)?.cards;
+
+        if (source === undefined) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: fromZone === "hand" ? "HAND_NOT_FOUND" : "PILE_NOT_FOUND",
+            message: fromZone === "hand"
+              ? `No hand found for player: ${fromId}`
+              : `No pile found with id: ${fromId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        const idx = source.findIndex(c => c.id === cardId);
+        if (idx === -1) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: `Card ${cardId} not found in source`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        const card = source.splice(idx, 1)[0];
+
+        const dest: Card[] | undefined =
+          toZone === "hand"
+            ? (this.gameState.hands[toId] ?? (this.gameState.hands[toId] = []))
+            : this.gameState.piles.find(p => p.id === toId)?.cards;
+
+        if (dest === undefined) {
+          // Undo the splice — put card back
+          source.splice(idx, 0, card);
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${toId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        dest.push(card);
         break;
       }
       case "PING":

@@ -39,6 +39,7 @@ export interface ClientGameState {
 export type ClientAction =
   | { type: "SHUFFLE_DECK" }
   | { type: "DRAW_CARD"; pileId: string }
+  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string }
   | { type: "PING" };
 
 export type ServerEvent =
