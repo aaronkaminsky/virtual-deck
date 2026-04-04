@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 UI-SPEC approved
-last_updated: "2026-04-04T15:03:25.140Z"
-last_activity: 2026-04-04 -- Phase 04 execution started
+stopped_at: Completed 04-game-controls-02-PLAN.md
+last_updated: "2026-04-04T19:41:50.940Z"
+last_activity: 2026-04-04 -- Phase 04 execution in progress
 progress:
   total_phases: 9
   completed_phases: 2
@@ -58,6 +58,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 02-lobby-room-join P01 | 4 | 2 tasks | 14 files |
 | Phase 02-lobby-room-join P02 | 2 | 3 tasks | 7 files |
 | Phase 03-core-board P01 | 2 | 1 tasks | 4 files |
+| Phase 04-game-controls P02 | 10 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase 02-lobby-room-join]: import.meta.env.BASE_URL used in copy handler for correct shareable URL across dev/prod
 - [Phase 02-lobby-room-join]: VITE_PARTYKIT_HOST hardcoded in deploy.yml as virtual-deck.aaronkaminsky.partykit.dev
 - [Phase 03-core-board]: MOVE_CARD supports hand->pile, pile->hand, pile->pile; both fromZone and toZone=hand require sender.id match for private hand enforcement
+- [Phase 04-game-controls]: isPassCard checked before isSuccess in BoardDragLayer — prevents opponent-hand drops from also triggering MOVE_CARD
 
 ### Pending Todos
 
@@ -101,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T14:39:17.088Z
-Stopped at: Phase 4 UI-SPEC approved
-Resume file: .planning/phases/04-game-controls/04-UI-SPEC.md
+Last session: 2026-04-04T19:41:50.932Z
+Stopped at: Completed 04-game-controls-02-PLAN.md
+Resume file: None

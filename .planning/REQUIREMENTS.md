@@ -28,16 +28,16 @@
 
 - [x] **CARD-01**: Player can drag-and-drop cards between their hand, table zones, and piles
 - [x] **CARD-02**: Player can draw a card from the top of any pile (shared table pile or their own hand pile)
-- [ ] **CARD-03**: Player can flip any card face-up or face-down
-- [ ] **CARD-04**: Player can pass a card directly to another player's private hand
+- [x] **CARD-03**: Player can flip any card face-up or face-down
+- [x] **CARD-04**: Player can pass a card directly to another player's private hand
 - [x] **CARD-05**: Player's hand is private — other players see only card backs, enforced server-side
 
 ### Game Controls
 
-- [ ] **CTRL-01**: Player can deal N cards from a pile to each player's hand
-- [ ] **CTRL-02**: Player can shuffle any pile on the table
-- [ ] **CTRL-03**: Player can reset the table — all cards collected into the draw pile and reshuffled (starts a new round without page reload)
-- [ ] **CTRL-04**: Player can undo their last card move (single-step)
+- [x] **CTRL-01**: Player can deal N cards from a pile to each player's hand
+- [x] **CTRL-02**: Player can shuffle any pile on the table
+- [x] **CTRL-03**: Player can reset the table — all cards collected into the draw pile and reshuffled (starts a new round without page reload)
+- [x] **CTRL-04**: Player can undo their last card move (single-step)
 
 ## v2 Requirements
 
@@ -84,13 +84,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TABLE-03 | Phase 3 | Pending |
 | CARD-01 | Phase 3 | Complete |
 | CARD-02 | Phase 3 | Complete |
-| CARD-03 | Phase 4 | Pending |
-| CARD-04 | Phase 4 | Pending |
+| CARD-03 | Phase 4 | Complete |
+| CARD-04 | Phase 4 | Complete |
 | CARD-05 | Phase 1 | Complete |
-| CTRL-01 | Phase 4 | Pending |
-| CTRL-02 | Phase 4 | Pending |
-| CTRL-03 | Phase 4 | Pending |
-| CTRL-04 | Phase 4 | Pending |
+| CTRL-01 | Phase 4 | Complete |
+| CTRL-02 | Phase 4 | Complete |
+| CTRL-03 | Phase 4 | Complete |
+| CTRL-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 19 total
