@@ -30,11 +30,7 @@ export function ControlsBar({ gameState, sendAction }: ControlsBarProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [dealCount, setDealCount] = useState('1');
 
-  if (gameState.phase === 'lobby') {
-    return null;
-  }
-
-  if (gameState.phase === 'setup') {
+  if (gameState.phase === 'setup' || gameState.phase === 'lobby') {
     const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
     const connectedPlayerCount = gameState.players.filter(p => p.connected).length || 1;
     const maxCards = Math.floor(drawPileCount / connectedPlayerCount);

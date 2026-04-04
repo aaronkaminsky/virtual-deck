@@ -75,6 +75,10 @@ export default class GameRoom implements Party.Server {
     this.gameState =
       (await this.room.storage.get<GameState>("gameState")) ??
       defaultGameState(this.room.id);
+    // Migrate state from Phase 3 (undoSnapshots field did not exist)
+    if (!this.gameState.undoSnapshots) {
+      this.gameState.undoSnapshots = {};
+    }
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
