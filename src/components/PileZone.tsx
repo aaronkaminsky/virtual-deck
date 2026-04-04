@@ -1,6 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
+import { Shuffle } from 'lucide-react';
 import type { Pile, ClientAction } from '@/shared/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { DraggableCard } from './DraggableCard';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +24,15 @@ export function PileZone({ pile, sendAction }: PileZoneProps) {
     sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp });
   }
 
+  function handleShuffle() {
+    sendAction({ type: 'SHUFFLE_PILE', pileId: pile.id });
+  }
+
+  function handleFlipCard() {
+    if (!topCard) return;
+    sendAction({ type: 'FLIP_CARD', pileId: pile.id, cardId: topCard.id });
+  }
+
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-xs text-muted-foreground">{pile.name}</span>
@@ -33,16 +44,26 @@ export function PileZone({ pile, sendAction }: PileZoneProps) {
           isOver ? 'border-primary' : 'border-border'
         )}
       >
-        {topCard && <DraggableCard card={topCard} fromZone="pile" fromId={pile.id} />}
+        {topCard && <DraggableCard card={topCard} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} />}
         <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
       </div>
-      <button
-        onClick={handleToggleFace}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
-        title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-      >
-        {pile.faceUp !== false ? 'Face up' : 'Face down'}
-      </button>
+      <div className="flex gap-1 mt-1">
+        <Button
+          variant="ghost"
+          className="h-7 px-2 text-xs"
+          onClick={handleToggleFace}
+          title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+        >
+          {pile.faceUp !== false ? 'Face up' : 'Face down'}
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-7 px-2 text-xs"
+          onClick={handleShuffle}
+        >
+          <Shuffle className="w-3 h-3 mr-1" /> Shuffle
+        </Button>
+      </div>
     </div>
   );
 }

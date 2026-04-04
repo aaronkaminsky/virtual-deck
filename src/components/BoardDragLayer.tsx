@@ -28,11 +28,20 @@ export function BoardDragLayer({ gameState, playerId, sendAction, setDragging }:
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
     const isHandToHand = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand';
-    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandToHand);
-    dropSuccessRef.current = isSuccess || isHandToHand; // hand-to-hand reorders also suppress snap-back
+    const isPassCard = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'opponent-hand';
+    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandToHand && !isPassCard);
+    dropSuccessRef.current = isSuccess || isHandToHand || isPassCard;
     setDragging(false);
 
-    if (isSuccess) {
+    if (isPassCard) {
+      setActiveCard(null);
+      const { card } = dragDataRef.current!;
+      sendAction({
+        type: 'PASS_CARD',
+        cardId: card.id,
+        targetPlayerId: overData!.toId,
+      });
+    } else if (isSuccess) {
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
       sendAction({
