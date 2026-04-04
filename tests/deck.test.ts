@@ -84,4 +84,9 @@ describe("defaultGameState", () => {
     expect(play!.name).toBe("Play Area");
     expect(play!.cards).toHaveLength(0);
   });
+
+  it("initializes undoSnapshots as empty object", () => {
+    const state = defaultGameState("test-room");
+    expect(state.undoSnapshots).toEqual({});
+  });
 });

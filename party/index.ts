@@ -37,7 +37,14 @@ export function defaultGameState(roomId: string): GameState {
       { id: "discard", name: "Discard", cards: [], faceUp: true },
       { id: "play", name: "Play Area", cards: [], faceUp: true },
     ],
+    undoSnapshots: {},
   };
+}
+
+export function takeSnapshot(state: GameState, playerId: string): void {
+  const snap = JSON.parse(JSON.stringify(state)) as GameState;
+  snap.undoSnapshots = {};
+  state.undoSnapshots[playerId] = snap;
 }
 
 export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
@@ -52,6 +59,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
         .map(([token, cards]) => [token, cards.length])
     ),
     piles: state.piles,
+    canUndo: playerToken ? (state.undoSnapshots[playerToken] != null) : false,
   };
 }
 
@@ -137,6 +145,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
+        takeSnapshot(this.gameState, sender.id);
         const playerToken = sender.id;
         const card = pile.cards.pop()!;
         card.faceUp = true;
@@ -251,6 +260,125 @@ export default class GameRoom implements Party.Server {
         }
         pile.faceUp = action.faceUp;
         pile.cards.forEach(c => { c.faceUp = action.faceUp; });
+        break;
+      }
+      case "FLIP_CARD": {
+        const flipPile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!flipPile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const flipCard = flipPile.cards.find(c => c.id === action.cardId);
+        if (!flipCard) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_FOUND",
+            message: `No card found with id: ${action.cardId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState, sender.id);
+        flipCard.faceUp = !flipCard.faceUp;
+        break;
+      }
+      case "PASS_CARD": {
+        const senderHand = this.gameState.hands[sender.id];
+        if (!senderHand) {
+          break;
+        }
+        const passCardIdx = senderHand.findIndex(c => c.id === action.cardId);
+        if (passCardIdx === -1) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_HAND",
+            message: `Card ${action.cardId} not in hand`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!this.gameState.hands[action.targetPlayerId]) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PLAYER_NOT_FOUND",
+            message: `Player ${action.targetPlayerId} not found`,
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState, sender.id);
+        const [passedCard] = senderHand.splice(passCardIdx, 1);
+        passedCard.faceUp = true;
+        this.gameState.hands[action.targetPlayerId].push(passedCard);
+        break;
+      }
+      case "DEAL_CARDS": {
+        const dealDrawPile = this.gameState.piles.find(p => p.id === "draw");
+        const connectedPlayers = this.gameState.players.filter(p => p.connected);
+        const needed = action.cardsPerPlayer * connectedPlayers.length;
+        if (!dealDrawPile || dealDrawPile.cards.length < needed) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CARDS",
+            message: "Not enough cards in draw pile to deal",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState, sender.id);
+        for (let i = 0; i < action.cardsPerPlayer; i++) {
+          for (const player of connectedPlayers) {
+            const dealt = dealDrawPile.cards.pop()!;
+            dealt.faceUp = true;
+            if (!this.gameState.hands[player.id]) {
+              this.gameState.hands[player.id] = [];
+            }
+            this.gameState.hands[player.id].push(dealt);
+          }
+        }
+        this.gameState.phase = "playing";
+        break;
+      }
+      case "SHUFFLE_PILE": {
+        const shufflePile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!shufflePile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState, sender.id);
+        shufflePile.cards = shuffle(shufflePile.cards);
+        break;
+      }
+      case "RESET_TABLE": {
+        const resetDrawPile = this.gameState.piles.find(p => p.id === "draw");
+        if (!resetDrawPile) {
+          break;
+        }
+        for (const hand of Object.values(this.gameState.hands)) {
+          resetDrawPile.cards.push(...hand.splice(0));
+        }
+        for (const pile of this.gameState.piles) {
+          if (pile.id !== "draw") {
+            resetDrawPile.cards.push(...pile.cards.splice(0));
+          }
+        }
+        resetDrawPile.faceUp = false;
+        resetDrawPile.cards.forEach(c => { c.faceUp = false; });
+        resetDrawPile.cards = shuffle(resetDrawPile.cards);
+        this.gameState.phase = "setup";
+        this.gameState.undoSnapshots = {};
+        break;
+      }
+      case "UNDO_MOVE": {
+        const snap = this.gameState.undoSnapshots[sender.id];
+        if (!snap) {
+          break;
+        }
+        this.gameState = snap;
         break;
       }
       case "PING":

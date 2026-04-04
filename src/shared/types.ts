@@ -17,24 +17,26 @@ export interface Pile {
   id: string;        // "draw" | "discard" | custom
   name: string;
   cards: Card[];     // top of stack = last element
-  faceUp: boolean;
+  faceUp?: boolean;  // whether the pile shows face-up by default
 }
 
 export interface GameState {
   roomId: string;
-  phase: "lobby" | "playing";
+  phase: "lobby" | "setup" | "playing";
   players: Player[];
   hands: Record<string, Card[]>;  // keyed by player token
   piles: Pile[];
+  undoSnapshots: Record<string, GameState | null>;
 }
 
 export interface ClientGameState {
   roomId: string;
-  phase: "lobby" | "playing";
+  phase: "lobby" | "setup" | "playing";
   players: Player[];
   myHand: Card[];
   opponentHandCounts: Record<string, number>;
   piles: Pile[];
+  canUndo: boolean;
 }
 
 export type ClientAction =
@@ -43,6 +45,12 @@ export type ClientAction =
   | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string }
   | { type: "REORDER_HAND"; orderedCardIds: string[] }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
+  | { type: "FLIP_CARD"; pileId: string; cardId: string }
+  | { type: "PASS_CARD"; cardId: string; targetPlayerId: string }
+  | { type: "DEAL_CARDS"; cardsPerPlayer: number }
+  | { type: "SHUFFLE_PILE"; pileId: string }
+  | { type: "RESET_TABLE" }
+  | { type: "UNDO_MOVE" }
   | { type: "PING" };
 
 export type ServerEvent =
