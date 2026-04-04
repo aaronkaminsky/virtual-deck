@@ -9,7 +9,7 @@ interface BoardViewProps {
   sendAction: (action: ClientAction) => void;
 }
 
-export function BoardView({ gameState, playerId, sendAction: _sendAction }: BoardViewProps) {
+export function BoardView({ gameState, playerId, sendAction }: BoardViewProps) {
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
       <div className="h-[88px] flex items-center px-4 gap-6 bg-card">
@@ -20,11 +20,11 @@ export function BoardView({ gameState, playerId, sendAction: _sendAction }: Boar
 
       <div className="flex-1 flex items-center justify-center gap-6 px-4">
         {gameState.piles.map((pile) => (
-          <PileZone key={pile.id} pile={pile} />
+          <PileZone key={pile.id} pile={pile} sendAction={sendAction} />
         ))}
       </div>
 
-      <HandZone cards={gameState.myHand} playerId={playerId} />
+      <HandZone cards={gameState.myHand} playerId={playerId} sendAction={sendAction} />
     </div>
   );
 }

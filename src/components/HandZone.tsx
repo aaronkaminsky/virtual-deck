@@ -1,17 +1,69 @@
-import { useDroppable } from '@dnd-kit/core';
-import type { Card } from '@/shared/types';
-import { DraggableCard } from './DraggableCard';
+import { useDroppable, useDndMonitor } from '@dnd-kit/core';
+import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { Card, ClientAction } from '@/shared/types';
+import { CardFace } from './CardFace';
+import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
+
+interface SortableHandCardProps {
+  card: Card;
+  playerId: string;
+}
+
+function SortableHandCard({ card, playerId }: SortableHandCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+    data: { card, fromZone: 'hand' as const, fromId: playerId },
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0 : 1,
+    touchAction: 'none',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+    </div>
+  );
+}
 
 interface HandZoneProps {
   cards: Card[];
   playerId: string;
+  sendAction: (action: ClientAction) => void;
 }
 
-export function HandZone({ cards, playerId }: HandZoneProps) {
+export function HandZone({ cards, playerId, sendAction }: HandZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
+  });
+
+  useDndMonitor({
+    onDragEnd(event) {
+      const over = event.over;
+      if (!over) return;
+      const activeData = event.active.data.current as { card: Card; fromZone: string; fromId: string } | undefined;
+      const overData = over.data.current as { fromZone?: string; fromId?: string } | undefined;
+
+      const fromHand = activeData?.fromZone === 'hand' && activeData?.fromId === playerId;
+      const toSameHand =
+        (overData?.fromZone === 'hand' && overData?.fromId === playerId) ||
+        over.id === 'hand';
+
+      if (fromHand && toSameHand && activeData) {
+        const activeIdx = cards.findIndex(c => c.id === activeData.card.id);
+        const overIdx = cards.findIndex(c => c.id === String(over.id));
+        if (activeIdx !== -1 && overIdx !== -1 && activeIdx !== overIdx) {
+          const reordered = arrayMove(cards, activeIdx, overIdx);
+          sendAction({ type: 'REORDER_HAND', orderedCardIds: reordered.map(c => c.id) });
+        }
+      }
+    },
   });
 
   return (
@@ -22,9 +74,11 @@ export function HandZone({ cards, playerId }: HandZoneProps) {
         isOver ? 'border-t-2 border-primary' : ''
       )}
     >
-      {cards.map((card) => (
-        <DraggableCard key={card.id} card={card} fromZone="hand" fromId={playerId} />
-      ))}
+      <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+        {cards.map((card) => (
+          <SortableHandCard key={card.id} card={card} playerId={playerId} />
+        ))}
+      </SortableContext>
     </div>
   );
 }
