@@ -1,14 +1,19 @@
+import { useDroppable } from '@dnd-kit/core';
 import type { Card } from '@/shared/types';
-import { CardFace } from './CardFace';
+import { DraggableCard } from './DraggableCard';
 import { cn } from '@/lib/utils';
 
 interface HandZoneProps {
   cards: Card[];
-  isOver?: boolean;
-  setNodeRef?: (el: HTMLElement | null) => void;
+  playerId: string;
 }
 
-export function HandZone({ cards, isOver, setNodeRef }: HandZoneProps) {
+export function HandZone({ cards, playerId }: HandZoneProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'hand',
+    data: { toZone: 'hand' as const, toId: playerId },
+  });
+
   return (
     <div
       ref={setNodeRef}
@@ -18,7 +23,7 @@ export function HandZone({ cards, isOver, setNodeRef }: HandZoneProps) {
       )}
     >
       {cards.map((card) => (
-        <CardFace key={card.id} card={card} />
+        <DraggableCard key={card.id} card={card} fromZone="hand" fromId={playerId} />
       ))}
     </div>
   );

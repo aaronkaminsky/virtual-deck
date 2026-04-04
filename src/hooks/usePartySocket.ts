@@ -1,6 +1,6 @@
 import PartySocket from 'partysocket';
-import { useEffect, useRef, useState } from 'react';
-import type { ClientGameState, ServerEvent } from '../shared/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ClientAction, ClientGameState, ServerEvent } from '../shared/types';
 
 const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
   ?? (import.meta.env.DEV ? 'localhost:1999' : 'localhost:1999');
@@ -10,6 +10,8 @@ export function usePartySocket(roomId: string, playerId: string) {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<PartySocket | null>(null);
+  const isDraggingRef = useRef(false);
+  const bufferRef = useRef<ClientGameState | null>(null);
 
   useEffect(() => {
     const ws = new PartySocket({
@@ -31,7 +33,11 @@ export function usePartySocket(roomId: string, playerId: string) {
     ws.addEventListener('message', (e: MessageEvent) => {
       const event: ServerEvent = JSON.parse(e.data as string);
       if (event.type === 'STATE_UPDATE') {
-        setGameState(event.state);
+        if (isDraggingRef.current) {
+          bufferRef.current = event.state;
+        } else {
+          setGameState(event.state);
+        }
       } else if (event.type === 'ERROR') {
         setError(event.message);
       }
@@ -43,5 +49,17 @@ export function usePartySocket(roomId: string, playerId: string) {
     };
   }, [roomId, playerId]);
 
-  return { gameState, connected, error };
+  const sendAction = useCallback((action: ClientAction) => {
+    wsRef.current?.send(JSON.stringify(action));
+  }, []);
+
+  const setDragging = useCallback((dragging: boolean) => {
+    isDraggingRef.current = dragging;
+    if (!dragging && bufferRef.current) {
+      setGameState(bufferRef.current);
+      bufferRef.current = null;
+    }
+  }, []);
+
+  return { gameState, connected, error, sendAction, setDragging };
 }
