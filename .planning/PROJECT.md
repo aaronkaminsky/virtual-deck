@@ -18,9 +18,9 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Active
 
-- [ ] Shared table with multiple configurable piles/zones (e.g. draw pile, discard pile, play area)
-- [ ] Private hands — each player sees only their own cards; others see card backs
-- [ ] Drag-and-drop card movement between hand, table zones, and piles
+- [x] Shared table with multiple configurable piles/zones (e.g. draw pile, discard pile, play area) — Validated in Phase 03: core-board
+- [x] Private hands — each player sees only their own cards; others see card backs — Validated in Phase 03: core-board
+- [x] Drag-and-drop card movement between hand, table zones, and piles — Validated in Phase 03: core-board
 - [ ] Draw from the top of any pile (shared or personal)
 - [ ] Flip any card face-up or face-down
 - [ ] Shuffle any pile with true randomization (cryptographically random or equivalent)
