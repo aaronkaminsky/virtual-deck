@@ -17,6 +17,7 @@ export interface Pile {
   id: string;        // "draw" | "discard" | custom
   name: string;
   cards: Card[];     // top of stack = last element
+  faceUp: boolean;
 }
 
 export interface GameState {
@@ -40,6 +41,8 @@ export type ClientAction =
   | { type: "SHUFFLE_DECK" }
   | { type: "DRAW_CARD"; pileId: string }
   | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string }
+  | { type: "REORDER_HAND"; orderedCardIds: string[] }
+  | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "PING" };
 
 export type ServerEvent =

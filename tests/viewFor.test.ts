@@ -21,8 +21,8 @@ function makeTestState(): GameState {
       "player-3": [makeCard("9-d")],
     },
     piles: [
-      { id: "draw", name: "Draw", cards: [makeCard("2-c"), makeCard("3-c")] },
-      { id: "discard", name: "Discard", cards: [] },
+      { id: "draw", name: "Draw", cards: [makeCard("2-c"), makeCard("3-c")], faceUp: false },
+      { id: "discard", name: "Discard", cards: [], faceUp: true },
     ],
   };
 }

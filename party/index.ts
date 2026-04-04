@@ -33,9 +33,9 @@ export function defaultGameState(roomId: string): GameState {
     players: [],
     hands: {},
     piles: [
-      { id: "draw", name: "Draw", cards: buildDeck() },
-      { id: "discard", name: "Discard", cards: [] },
-      { id: "play", name: "Play Area", cards: [] },
+      { id: "draw", name: "Draw", cards: buildDeck(), faceUp: false },
+      { id: "discard", name: "Discard", cards: [], faceUp: true },
+      { id: "play", name: "Play Area", cards: [], faceUp: true },
     ],
   };
 }
@@ -211,8 +211,45 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
-        card.faceUp = toZone === "hand" || toId !== "draw";
+        if (toZone === "hand") {
+          card.faceUp = true;
+        } else {
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          card.faceUp = destPile?.faceUp ?? false;
+        }
         dest.push(card);
+        break;
+      }
+      case "REORDER_HAND": {
+        const hand = this.gameState.hands[sender.id];
+        if (!hand) break;
+        const idSet = new Set(hand.map(c => c.id));
+        if (
+          action.orderedCardIds.length !== hand.length ||
+          !action.orderedCardIds.every(id => idSet.has(id))
+        ) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_REORDER",
+            message: "orderedCardIds must contain exactly the player's current hand cards",
+          } satisfies ServerEvent));
+          break;
+        }
+        const cardMap = new Map(hand.map(c => [c.id, c]));
+        this.gameState.hands[sender.id] = action.orderedCardIds.map(id => cardMap.get(id)!);
+        break;
+      }
+      case "SET_PILE_FACE": {
+        const pile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!pile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        pile.faceUp = action.faceUp;
         break;
       }
       case "PING":
