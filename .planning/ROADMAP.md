@@ -62,10 +62,10 @@ Plans:
   3. Player can drag a card from their hand to a table pile and all players see the change in real time
   4. Player can drag a card from a table pile to their own hand and the card appears in their hand immediately
   5. An incoming server state update during an active drag does not cause visual tearing or snap-back
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
-- [ ] 03-01-PLAN.md — MOVE_CARD server action, play pile, and unit tests (Wave 1)
-- [ ] 03-02-PLAN.md — Card components and board layout (Wave 1)
+- [x] 03-01-PLAN.md — MOVE_CARD server action, play pile, and unit tests (Wave 1)
+- [x] 03-02-PLAN.md — Card components and board layout (Wave 1)
 - [ ] 03-03-PLAN.md — Drag-and-drop wiring, socket buffer, App.tsx integration (Wave 2)
 
 ### Phase 4: Game Controls
@@ -101,6 +101,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Server Foundation | 3/3 | Complete   | 2026-04-02 |
 | 2. Lobby + Room Join | 2/3 | In Progress|  |
-| 3. Core Board | 0/3 | Not started | - |
+| 3. Core Board | 2/3 | In Progress|  |
 | 4. Game Controls | 0/? | Not started | - |
 | 5. Resilience + Polish | 0/? | Not started | - |

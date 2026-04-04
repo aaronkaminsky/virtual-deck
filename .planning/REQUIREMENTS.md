@@ -20,14 +20,14 @@
 
 ### Table
 
-- [ ] **TABLE-01**: Shared table supports multiple configurable pile/zone types (draw pile, discard pile, open play area)
-- [ ] **TABLE-02**: Card count is visible to all players for each pile on the table
+- [x] **TABLE-01**: Shared table supports multiple configurable pile/zone types (draw pile, discard pile, open play area)
+- [x] **TABLE-02**: Card count is visible to all players for each pile on the table
 - [ ] **TABLE-03**: Opponent hand card counts are visible to all players (face values are not)
 
 ### Cards
 
-- [ ] **CARD-01**: Player can drag-and-drop cards between their hand, table zones, and piles
-- [ ] **CARD-02**: Player can draw a card from the top of any pile (shared table pile or their own hand pile)
+- [x] **CARD-01**: Player can drag-and-drop cards between their hand, table zones, and piles
+- [x] **CARD-02**: Player can draw a card from the top of any pile (shared table pile or their own hand pile)
 - [ ] **CARD-03**: Player can flip any card face-up or face-down
 - [ ] **CARD-04**: Player can pass a card directly to another player's private hand
 - [x] **CARD-05**: Player's hand is private — other players see only card backs, enforced server-side
@@ -79,11 +79,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DECK-01 | Phase 1 | Complete |
 | DECK-02 | Phase 1 | Complete |
 | DECK-03 | Phase 2 | Complete |
-| TABLE-01 | Phase 3 | Pending |
-| TABLE-02 | Phase 3 | Pending |
+| TABLE-01 | Phase 3 | Complete |
+| TABLE-02 | Phase 3 | Complete |
 | TABLE-03 | Phase 3 | Pending |
-| CARD-01 | Phase 3 | Pending |
-| CARD-02 | Phase 3 | Pending |
+| CARD-01 | Phase 3 | Complete |
+| CARD-02 | Phase 3 | Complete |
 | CARD-03 | Phase 4 | Pending |
 | CARD-04 | Phase 4 | Pending |
 | CARD-05 | Phase 1 | Complete |

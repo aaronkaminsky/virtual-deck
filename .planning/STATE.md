@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 plans ready — 3 plans in 2 waves
-last_updated: "2026-04-03T00:00:00.000Z"
-last_activity: 2026-04-03
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-04-04T00:40:36.464Z"
+last_activity: 2026-04-04
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 8
   percent: 33
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 02 — lobby-room-join
+**Current focus:** Phase 03 — core-board
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
-Status: 02-01 complete, executing 02-02
-Last activity: 2026-04-03
+Phase: 03 (core-board) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-04
 
 Progress: [███░░░░░░░] 33%
 
@@ -57,6 +57,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 01-server-foundation P03 | 30 | 2 tasks | 1 files |
 | Phase 02-lobby-room-join P01 | 4 | 2 tasks | 14 files |
 | Phase 02-lobby-room-join P02 | 2 | 3 tasks | 7 files |
+| Phase 03-core-board P01 | 2 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 02-lobby-room-join]: RoomView inner component pattern isolates usePartySocket hook from App redirect guard
 - [Phase 02-lobby-room-join]: import.meta.env.BASE_URL used in copy handler for correct shareable URL across dev/prod
 - [Phase 02-lobby-room-join]: VITE_PARTYKIT_HOST hardcoded in deploy.yml as virtual-deck.aaronkaminsky.partykit.dev
+- [Phase 03-core-board]: MOVE_CARD supports hand->pile, pile->hand, pile->pile; both fromZone and toZone=hand require sender.id match for private hand enforcement
 
 ### Pending Todos
 
@@ -98,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T13:44:47.163Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-core-board/03-UI-SPEC.md
+Last session: 2026-04-04T00:40:36.461Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
