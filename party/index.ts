@@ -250,6 +250,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
         pile.faceUp = action.faceUp;
+        pile.cards.forEach(c => { c.faceUp = action.faceUp; });
         break;
       }
       case "PING":

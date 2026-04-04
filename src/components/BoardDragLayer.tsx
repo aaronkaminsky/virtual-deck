@@ -27,8 +27,9 @@ export function BoardDragLayer({ gameState, playerId, sendAction, setDragging }:
 
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
-    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone);
-    dropSuccessRef.current = isSuccess;
+    const isHandToHand = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand';
+    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandToHand);
+    dropSuccessRef.current = isSuccess || isHandToHand; // hand-to-hand reorders also suppress snap-back
     setDragging(false);
 
     if (isSuccess) {
@@ -42,6 +43,9 @@ export function BoardDragLayer({ gameState, playerId, sendAction, setDragging }:
         toZone: overData!.toZone as 'hand' | 'pile',
         toId: overData!.toId,
       });
+    } else if (isHandToHand) {
+      // Reorder handled by useDndMonitor in HandZone — just clear the overlay
+      setActiveCard(null);
     }
     // Failed drop: keep activeCard set so overlay has content during snap-back animation.
     // defaultDropAnimation's sideEffects hide the source card while the overlay animates.

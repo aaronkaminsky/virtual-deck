@@ -14,7 +14,7 @@ interface SortableHandCardProps {
 function SortableHandCard({ card, playerId }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
-    data: { card, fromZone: 'hand' as const, fromId: playerId },
+    data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
   });
 
   const style: React.CSSProperties = {
