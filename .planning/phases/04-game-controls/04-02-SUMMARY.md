@@ -138,3 +138,17 @@ None — no external service configuration required.
 ## Known Stubs
 
 None — all controls dispatch real server actions. No placeholder data or TODO stubs.
+
+## Self-Check: PASSED
+
+- FOUND: .planning/phases/04-game-controls/04-02-SUMMARY.md
+- FOUND: src/components/ControlsBar.tsx
+- FOUND: src/components/ui/alert-dialog.tsx, popover.tsx, input.tsx
+- FOUND: src/components/DraggableCard.tsx (onFlip + drag guard)
+- FOUND: src/components/PileZone.tsx (Shuffle button + FLIP_CARD)
+- FOUND: src/components/OpponentHand.tsx (useDroppable)
+- FOUND: src/components/BoardView.tsx (ControlsBar in top strip)
+- FOUND: src/components/BoardDragLayer.tsx (PASS_CARD dispatch)
+- FOUND: commit 0d1375e (Task 1)
+- FOUND: commit f988d5a (Task 2)
+- FOUND: commit bbba2ea (metadata)
