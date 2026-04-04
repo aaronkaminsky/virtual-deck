@@ -92,6 +92,36 @@ Plans:
   3. A player who closes and reopens the tab (same browser, same room link) resumes with their hand intact
 **Plans**: TBD
 
+## Backlog
+
+### Phase 999.1: Drag card to opponent's hand (BACKLOG)
+**Goal:** Allow a player to drag a card directly into an opponent's hand (dealer-style games)
+**Requirements:** TBD — needs droppable opponent hand zones + server auth change to allow cross-player hand moves
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
+**Goal:** When moving a card to the draw pile, let the player choose insertion position
+**Requirements:** TBD — simple server change; UX needs a modal/context menu post-drop
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.3: Play area card grid for poker-style games (BACKLOG)
+**Goal:** Replace the play area pile with a 2D grid so cards can be positioned spatially (e.g. Texas Hold'em board)
+**Requirements:** TBD — cards need 2D coordinates; server stores positions; collision detection changes
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.4: Personal player tableau visible to all (BACKLOG)
+**Goal:** Each player has a personal play area in front of them where they can place cards face-up or face-down, visible to all players
+**Requirements:** TBD — new per-player field zone on server; board renders each player's field
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
