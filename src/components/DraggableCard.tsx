@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { Card } from '@/shared/types';
 import { CardFace } from './CardFace';
+import { CardBack } from './CardBack';
 
 interface DraggableCardProps {
   card: Card;
@@ -23,7 +24,7 @@ export function DraggableCard({ card, fromZone, fromId }: DraggableCardProps) {
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      <CardFace card={card} />
+      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
   );
 }

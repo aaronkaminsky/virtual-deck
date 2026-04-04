@@ -139,6 +139,7 @@ export default class GameRoom implements Party.Server {
         }
         const playerToken = sender.id;
         const card = pile.cards.pop()!;
+        card.faceUp = true;
         if (!this.gameState.hands[playerToken]) {
           this.gameState.hands[playerToken] = [];
         }
@@ -210,6 +211,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
+        card.faceUp = toZone === "hand" || toId !== "draw";
         dest.push(card);
         break;
       }
