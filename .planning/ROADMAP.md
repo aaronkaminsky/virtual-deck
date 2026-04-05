@@ -132,6 +132,20 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
+### Phase 999.6: Investigate test setup treating both players as remote (BACKLOG)
+**Goal:** Investigate observed behavior where the test suite appears to put both players in a "remote" state — may indicate player identity or viewFor masking is applied incorrectly in tests
+**Requirements:** TBD — needs reproduction and root cause analysis before scoping
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.7: README and architecture documentation (BACKLOG)
+**Goal:** Add a README with link to a DESIGN/ARCHITECTURE document; the architecture doc should cover file layout and include plantUML/mermaid diagrams
+**Requirements:** TBD — documentation only, no code changes
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
