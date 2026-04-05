@@ -28,6 +28,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
@@ -215,6 +216,57 @@ describe("MOVE_CARD handler", () => {
     const errors = errorCalls.map(c => JSON.parse(c) as ServerEvent).filter(e => e.type === "ERROR");
     expect(errors).toHaveLength(1);
     expect((errors[0] as { type: "ERROR"; code: string }).code).toBe("UNAUTHORIZED_MOVE");
+  });
+
+  // Regression: MOVE_CARD with fromZone="hand" used to accept any fromId because the
+  // server compared fromId against a localStorage-derived playerId that was never set
+  // as the connection's playerToken. After fixing onConnect to use connection.id as
+  // playerToken, the UNAUTHORIZED_MOVE guard now correctly blocks cross-player moves
+  // and correctly allows moves where fromId matches the sender's connection.id.
+  it("regression: MOVE_CARD fromZone=hand rejected when fromId does not match sender token", async () => {
+    const card = makeCard("7-s");
+    room.gameState = makeStateWithPlayerAndCards("player-2", [card]);
+    room.gameState.players.push({ id: "player-1", connected: true });
+    room.gameState.hands["player-1"] = [];
+
+    const msg = JSON.stringify({
+      type: "MOVE_CARD",
+      cardId: "7-s",
+      fromZone: "hand",
+      fromId: "player-2",  // mismatches sender (player-1)
+      toZone: "pile",
+      toId: "discard",
+    });
+    await room.onMessage(msg, sender);
+
+    const errorCalls: string[] = sender.send.mock.calls.map((c: string[]) => c[0]);
+    const errors = errorCalls.map(c => JSON.parse(c) as ServerEvent).filter(e => e.type === "ERROR");
+    expect(errors).toHaveLength(1);
+    expect((errors[0] as { type: "ERROR"; code: string }).code).toBe("UNAUTHORIZED_MOVE");
+    // State must be unchanged — card stays in player-2's hand
+    expect(room.gameState.hands["player-2"]).toHaveLength(1);
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
+  });
+
+  it("regression: MOVE_CARD fromZone=hand accepted when fromId matches sender token", async () => {
+    const card = makeCard("7-s");
+    room.gameState = makeStateWithPlayerAndCards("player-1", [card]);
+
+    const msg = JSON.stringify({
+      type: "MOVE_CARD",
+      cardId: "7-s",
+      fromZone: "hand",
+      fromId: "player-1",  // matches sender
+      toZone: "pile",
+      toId: "discard",
+    });
+    await room.onMessage(msg, sender);
+
+    const errorCalls: string[] = sender.send.mock.calls.map((c: string[]) => c[0]);
+    const errors = errorCalls.map(c => JSON.parse(c) as ServerEvent).filter(e => e.type === "ERROR");
+    expect(errors).toHaveLength(0);
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(1);
   });
 
   it("hand->pile move updates opponentHandCounts via viewFor", async () => {

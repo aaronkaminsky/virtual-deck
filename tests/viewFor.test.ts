@@ -94,4 +94,21 @@ describe("viewFor", () => {
     const view = viewFor(state, null);
     expect(view.canUndo).toBe(false);
   });
+
+  // Regression: viewFor used to omit myPlayerId from ClientGameState.
+  // The client used localStorage playerId as the drag identity, which never matched
+  // the server's connection.id (playerToken). Hand drags were always rejected with
+  // UNAUTHORIZED_MOVE. Fix: viewFor populates myPlayerId = playerToken so the client
+  // can use the server-assigned token for all drag identity checks.
+  it("regression: myPlayerId equals the playerToken argument", () => {
+    const state = makeTestState();
+    const view = viewFor(state, "player-1");
+    expect(view.myPlayerId).toBe("player-1");
+  });
+
+  it("regression: myPlayerId is empty string for null playerToken", () => {
+    const state = makeTestState();
+    const view = viewFor(state, null);
+    expect(view.myPlayerId).toBe("");
+  });
 });
