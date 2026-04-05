@@ -27,6 +27,11 @@ Players can see the shared table and their own private hand update in real time,
 
 - [ ] Draw from the top of any pile (shared or personal)
 
+### Validated in Phase 05: resilience-polish
+
+- [x] Disconnect and reconnect restores the player's private hand — Validated in Phase 05: resilience-polish (ROOM-04)
+- [x] Connection status visible to all players (presence dots, disconnection banner) — Validated in Phase 05: resilience-polish
+
 ### Out of Scope
 
 - Rule enforcement — no game logic, turn enforcement, or win conditions; players call their own game
@@ -63,7 +68,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 04 complete — full game control loop working: flip card, shuffle pile, deal to all players, pass card to opponent, global undo (20-move stack, any player), and reset table. Real-time multi-tab sync confirmed working. 79 tests passing.
+Phase 05 complete — resilience and connection status UI working: stable player identity via `?player=` query param (survives refresh and private-window reconnect), slot-based room cap (disconnected players hold their slot), ConnectionBanner (1s delay, 10s escalation, auto-dismiss), PlayerPresence dots (green/gray per player, hover tooltips). 89 tests passing.
 
 ---
-*Last updated: 2026-04-05 after Phase 04: game-controls*
+*Last updated: 2026-04-05 after Phase 05: resilience-polish*
