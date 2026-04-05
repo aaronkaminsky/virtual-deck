@@ -15,9 +15,6 @@ Players can see the shared table and their own private hand update in real time,
 - [x] Join a game via shareable room link or code — Validated in Phase 02: lobby-room-join
 - [x] Support 2–4 players per room — Validated in Phase 02: lobby-room-join
 - [x] Card art (face and back) is swappable via code change — Validated in Phase 02: lobby-room-join (DECK-03)
-
-### Active
-
 - [x] Shared table with multiple configurable piles/zones (e.g. draw pile, discard pile, play area) — Validated in Phase 03: core-board
 - [x] Private hands — each player sees only their own cards; others see card backs — Validated in Phase 03: core-board
 - [x] Drag-and-drop card movement between hand, table zones, and piles — Validated in Phase 03: core-board
@@ -25,6 +22,9 @@ Players can see the shared table and their own private hand update in real time,
 - [x] Shuffle any pile with true randomization (cryptographically random or equivalent) — Validated in Phase 04: game-controls
 - [x] Deal cards — distribute N cards from a pile to each player's hand — Validated in Phase 04: game-controls
 - [x] Pass a card directly to another player's private hand — Validated in Phase 04: game-controls
+
+### Active
+
 - [ ] Draw from the top of any pile (shared or personal)
 
 ### Out of Scope
