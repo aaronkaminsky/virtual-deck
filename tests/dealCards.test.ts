@@ -28,6 +28,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
@@ -102,5 +103,15 @@ describe("DEAL_CARDS handler", () => {
     for (const card of room.gameState.hands["player-2"]) {
       expect(card.faceUp).toBe(true);
     }
+  });
+
+  // Regression: DEAL_CARDS used to only deal to the player who sent the action.
+  // Both players must receive cards even when the sender is only one of them.
+  it("regression: non-sender players also receive cards (deal distributes to all, not just sender)", async () => {
+    // sender is player-1; player-2 is the non-sending connected player
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 3 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(3);
+    expect(room.gameState.hands["player-2"]).toHaveLength(3);
   });
 });

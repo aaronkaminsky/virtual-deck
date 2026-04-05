@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, Undo2, RotateCcw } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
@@ -43,7 +43,7 @@ export function ControlsBar({ gameState, sendAction }: ControlsBarProps) {
     return (
       <div className="flex items-center gap-2 flex-shrink-0">
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-          <PopoverTrigger render={<Button variant="default" size="sm" />}>
+          <PopoverTrigger className={buttonVariants({ variant: 'default', size: 'sm' })}>
             Deal <ChevronDown className="w-4 h-4 ml-1" />
           </PopoverTrigger>
           <PopoverContent side="bottom" align="end" className="w-[200px] p-4">

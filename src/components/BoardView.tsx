@@ -28,7 +28,7 @@ export function BoardView({ gameState, playerId, sendAction }: BoardViewProps) {
         ))}
       </div>
 
-      <HandZone cards={gameState.myHand} playerId={playerId} sendAction={sendAction} />
+      <HandZone cards={gameState.myHand} playerId={gameState.myPlayerId} sendAction={sendAction} />
     </div>
   );
 }

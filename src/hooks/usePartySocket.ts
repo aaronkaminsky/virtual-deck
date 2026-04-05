@@ -17,7 +17,7 @@ export function usePartySocket(roomId: string, playerId: string) {
     const ws = new PartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
-      id: playerId,
+      query: { player: playerId },
     });
     wsRef.current = ws;
 

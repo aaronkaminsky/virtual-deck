@@ -28,6 +28,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 

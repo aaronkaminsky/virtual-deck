@@ -1,4 +1,4 @@
-import { useDroppable, useDndMonitor } from '@dnd-kit/core';
+import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientAction } from '@/shared/types';
@@ -38,10 +38,17 @@ interface HandZoneProps {
 }
 
 export function HandZone({ cards, playerId, sendAction }: HandZoneProps) {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
   });
+
+  const { active, over } = useDndContext();
+  const handCardIds = new Set(cards.map(c => c.id));
+  const isOver =
+    active != null &&
+    over != null &&
+    (over.id === 'hand' || handCardIds.has(String(over.id)));
 
   useDndMonitor({
     onDragEnd(event) {
