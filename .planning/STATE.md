@@ -99,6 +99,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260401-pn2 | Fix DRAW_CARD silent failure: return ERROR when pileId missing or pile not found | 2026-04-02 | 454cf45 | [260401-pn2-fix-draw-card-silent-failure-return-erro](./quick/260401-pn2-fix-draw-card-silent-failure-return-erro/) |
 | 260403-pya | Hand reordering (drag to rearrange own hand) and per-pile face-up/down toggle | 2026-04-04 | 5dbfe69 | [260403-pya-hand-reordering-and-per-pile-face-toggle](./quick/260403-pya-hand-reordering-and-per-pile-face-toggle/) |
+| 260405-lgq | Fix player ID persistence: read ?player= URL param first, embed via replaceState | 2026-04-05 | 23c41b9 | [260405-lgq-fix-player-id-persistence-read-player-fr](./quick/260405-lgq-fix-player-id-persistence-read-player-fr/) |
 
 ### Blockers/Concerns
 
