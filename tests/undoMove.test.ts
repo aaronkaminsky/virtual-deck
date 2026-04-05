@@ -28,20 +28,30 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
 describe("takeSnapshot", () => {
-  it("stores a deep clone of GameState with undoSnapshots stripped to {}", () => {
+  it("pushes a deep clone onto the shared undoSnapshots array with nested snapshots stripped", () => {
     const state = defaultGameState("test-room");
-    state.undoSnapshots["player-2"] = defaultGameState("test-room");
+    const existing = defaultGameState("test-room");
+    state.undoSnapshots.push(existing);
 
-    takeSnapshot(state, "player-1");
+    takeSnapshot(state);
 
-    const snap = state.undoSnapshots["player-1"]!;
+    expect(state.undoSnapshots).toHaveLength(2);
+    const snap = state.undoSnapshots[1];
     expect(snap).not.toBe(state);
-    expect(snap.undoSnapshots).toEqual({});
-    expect(snap.undoSnapshots["player-2"]).toBeUndefined();
+    expect(snap.undoSnapshots).toEqual([]);
+  });
+
+  it("caps the stack at 20 entries", () => {
+    const state = defaultGameState("test-room");
+    for (let i = 0; i < 22; i++) {
+      takeSnapshot(state);
+    }
+    expect(state.undoSnapshots).toHaveLength(20);
   });
 });
 
@@ -49,21 +59,23 @@ describe("UNDO_MOVE handler", () => {
   let room: GameRoom;
   let mockRoom: Party.Room;
   let sender: Party.Connection & { send: ReturnType<typeof vi.fn> };
+  let player2: Party.Connection & { send: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
+    player2 = makeMockConnection("player-2");
     room.gameState.players.push({ id: "player-1", connected: true });
     room.gameState.players.push({ id: "player-2", connected: true });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
 
-  it("restores gameState from the sender's snapshot", async () => {
+  it("restores gameState from the top of the shared stack", async () => {
     const card = makeCard("A-s");
     room.gameState.hands["player-1"].push(card);
-    takeSnapshot(room.gameState, "player-1");
+    takeSnapshot(room.gameState);
 
     room.gameState.hands["player-1"].pop();
     expect(room.gameState.hands["player-1"]).toHaveLength(0);
@@ -74,11 +86,11 @@ describe("UNDO_MOVE handler", () => {
     expect(room.gameState.hands["player-1"][0].id).toBe("A-s");
   });
 
-  it("is a no-op when no snapshot exists (no error, state unchanged)", async () => {
+  it("is a no-op when the stack is empty (no error, state unchanged)", async () => {
     const card = makeCard("K-h");
     room.gameState.hands["player-1"].push(card);
 
-    expect(room.gameState.undoSnapshots["player-1"]).toBeUndefined();
+    expect(room.gameState.undoSnapshots).toHaveLength(0);
 
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
@@ -89,10 +101,10 @@ describe("UNDO_MOVE handler", () => {
     expect(room.gameState.hands["player-1"]).toHaveLength(1);
   });
 
-  it("after undo, canUndo is false for that player in ClientGameState", async () => {
+  it("after undo, canUndo is false when stack is empty", async () => {
     const card = makeCard("A-s");
     room.gameState.hands["player-1"].push(card);
-    takeSnapshot(room.gameState, "player-1");
+    takeSnapshot(room.gameState);
 
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
@@ -100,16 +112,94 @@ describe("UNDO_MOVE handler", () => {
     expect(view.canUndo).toBe(false);
   });
 
-  it("does not affect other players' snapshots", async () => {
-    const snapshotForP2 = defaultGameState("test-room");
-    room.gameState.undoSnapshots["player-2"] = snapshotForP2;
+  it("any player can undo another player's move", async () => {
+    // Use only a single card in the draw pile for clarity
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    drawPile.cards.length = 0;
+    drawPile.cards.push(makeCard("A-s"));
 
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    expect(room.gameState.hands["player-1"]).toHaveLength(1);
+
+    // player-2 sends UNDO_MOVE — should revert player-1's draw
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), player2);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+    expect(room.gameState.piles.find(p => p.id === "draw")!.cards).toHaveLength(1);
+  });
+
+  it("stack clears on RESET_TABLE", async () => {
+    room.gameState.undoSnapshots.push(defaultGameState("test-room"));
+    room.gameState.undoSnapshots.push(defaultGameState("test-room"));
+
+    await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
+
+    expect(room.gameState.undoSnapshots).toEqual([]);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
+  });
+
+  it("re-enables canUndo after MOVE_CARD following an undo", async () => {
+    const card1 = makeCard("A-s");
+    const card2 = makeCard("K-h");
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    drawPile.cards.push(card1, card2);
+
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
+
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+
+    const handCard = room.gameState.hands["player-1"][0];
+    await room.onMessage(
+      JSON.stringify({ type: "MOVE_CARD", cardId: handCard.id, fromZone: "hand", fromId: "player-1", toZone: "pile", toId: "discard" }),
+      sender,
+    );
+
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
+  });
+
+  it("MOVE_CARD undo restores card to original zone", async () => {
     const card = makeCard("A-s");
-    room.gameState.hands["player-1"].push(card);
-    takeSnapshot(room.gameState, "player-1");
+    room.gameState.piles.find(p => p.id === "draw")!.cards.push(card);
+
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    const handCard = room.gameState.hands["player-1"][0];
+    await room.onMessage(
+      JSON.stringify({ type: "MOVE_CARD", cardId: handCard.id, fromZone: "hand", fromId: "player-1", toZone: "pile", toId: "discard" }),
+      sender,
+    );
+
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(1);
 
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
-    expect(room.gameState.undoSnapshots["player-2"]).not.toBeNull();
+    expect(room.gameState.hands["player-1"]).toHaveLength(1);
+    expect(room.gameState.hands["player-1"][0].id).toBe(handCard.id);
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
+  });
+
+  it("canUndo reflects shared stack depth (multiple moves)", async () => {
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    drawPile.cards.push(makeCard("A-s"), makeCard("2-s"), makeCard("3-s"));
+
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+
+    expect(room.gameState.undoSnapshots).toHaveLength(2);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
+    expect(viewFor(room.gameState, "player-2").canUndo).toBe(true);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+    expect(room.gameState.undoSnapshots).toHaveLength(1);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+    expect(room.gameState.undoSnapshots).toHaveLength(0);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
   });
 });

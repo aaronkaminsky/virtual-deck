@@ -28,6 +28,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
@@ -98,11 +99,11 @@ describe("RESET_TABLE handler", () => {
   });
 
   it("clears all undoSnapshots", async () => {
-    room.gameState.undoSnapshots["player-1"] = defaultGameState("test-room");
-    room.gameState.undoSnapshots["player-2"] = defaultGameState("test-room");
+    room.gameState.undoSnapshots.push(defaultGameState("test-room"));
+    room.gameState.undoSnapshots.push(defaultGameState("test-room"));
 
     await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
 
-    expect(room.gameState.undoSnapshots).toEqual({});
+    expect(room.gameState.undoSnapshots).toEqual([]);
   });
 });

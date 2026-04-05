@@ -24,7 +24,7 @@ function makeTestState(): GameState {
       { id: "draw", name: "Draw", cards: [makeCard("2-c"), makeCard("3-c")], faceUp: false },
       { id: "discard", name: "Discard", cards: [], faceUp: true },
     ],
-    undoSnapshots: {},
+    undoSnapshots: [],
   };
 }
 
@@ -82,9 +82,9 @@ describe("viewFor", () => {
     expect(view.canUndo).toBe(false);
   });
 
-  it("returns canUndo true when snapshot exists for player", () => {
+  it("returns canUndo true when the shared undo stack is non-empty", () => {
     const state = makeTestState();
-    state.undoSnapshots["player-1"] = makeTestState();
+    state.undoSnapshots.push(makeTestState());
     const view = viewFor(state, "player-1");
     expect(view.canUndo).toBe(true);
   });

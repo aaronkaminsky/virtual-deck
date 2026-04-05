@@ -24,6 +24,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
@@ -65,6 +66,6 @@ describe("SHUFFLE_PILE handler", () => {
   it("creates an undo snapshot for the sender", async () => {
     await room.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), sender);
 
-    expect(room.gameState.undoSnapshots["player-1"]).not.toBeNull();
+    expect(room.gameState.undoSnapshots).toHaveLength(1);
   });
 });

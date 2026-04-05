@@ -37,14 +37,17 @@ export function defaultGameState(roomId: string): GameState {
       { id: "discard", name: "Discard", cards: [], faceUp: true },
       { id: "play", name: "Play Area", cards: [], faceUp: true },
     ],
-    undoSnapshots: {},
+    undoSnapshots: [],
   };
 }
 
-export function takeSnapshot(state: GameState, playerId: string): void {
+export function takeSnapshot(state: GameState): void {
   const snap = JSON.parse(JSON.stringify(state)) as GameState;
-  snap.undoSnapshots = {};
-  state.undoSnapshots[playerId] = snap;
+  snap.undoSnapshots = [];
+  state.undoSnapshots.push(snap);
+  if (state.undoSnapshots.length > 20) {
+    state.undoSnapshots.shift();
+  }
 }
 
 export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
@@ -52,6 +55,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
     roomId: state.roomId,
     phase: state.phase,
     players: state.players,
+    myPlayerId: playerToken ?? "",
     myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
@@ -59,8 +63,15 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
         .map(([token, cards]) => [token, cards.length])
     ),
     piles: state.piles,
-    canUndo: playerToken ? (state.undoSnapshots[playerToken] != null) : false,
+    canUndo: state.undoSnapshots.length > 0,
   };
+}
+
+type ConnectionState = { playerToken: string };
+
+function getPlayerToken(connection: Party.Connection): string {
+  const state = connection.state as ConnectionState | null | undefined;
+  return state?.playerToken ?? connection.id;
 }
 
 export default class GameRoom implements Party.Server {
@@ -75,9 +86,9 @@ export default class GameRoom implements Party.Server {
     this.gameState =
       (await this.room.storage.get<GameState>("gameState")) ??
       defaultGameState(this.room.id);
-    // Migrate state from Phase 3 (undoSnapshots field did not exist)
-    if (!this.gameState.undoSnapshots) {
-      this.gameState.undoSnapshots = {};
+    // Migrate state: Phase 3 had no undoSnapshots; Phase 4-01 had a per-player Record
+    if (!this.gameState.undoSnapshots || !Array.isArray(this.gameState.undoSnapshots)) {
+      this.gameState.undoSnapshots = [];
     }
   }
 
@@ -89,6 +100,7 @@ export default class GameRoom implements Party.Server {
     }
 
     const playerToken = connection.id;
+    connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
       this.gameState.players.push({ id: playerToken, connected: true });
@@ -103,6 +115,7 @@ export default class GameRoom implements Party.Server {
   }
 
   async onMessage(message: string, sender: Party.Connection) {
+    const senderToken = getPlayerToken(sender);
     let action: ClientAction;
     try {
       action = JSON.parse(message) as ClientAction;
@@ -149,20 +162,19 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState, sender.id);
-        const playerToken = sender.id;
+        takeSnapshot(this.gameState);
         const card = pile.cards.pop()!;
         card.faceUp = true;
-        if (!this.gameState.hands[playerToken]) {
-          this.gameState.hands[playerToken] = [];
+        if (!this.gameState.hands[senderToken]) {
+          this.gameState.hands[senderToken] = [];
         }
-        this.gameState.hands[playerToken].push(card);
+        this.gameState.hands[senderToken].push(card);
         break;
       }
       case "MOVE_CARD": {
         const { cardId, fromZone, fromId, toZone, toId } = action;
 
-        if (fromZone === "hand" && fromId !== sender.id) {
+        if (fromZone === "hand" && fromId !== senderToken) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "UNAUTHORIZED_MOVE",
@@ -171,7 +183,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
-        if (toZone === "hand" && toId !== sender.id) {
+        if (toZone === "hand" && toId !== senderToken) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "UNAUTHORIZED_MOVE",
@@ -206,6 +218,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
+        takeSnapshot(this.gameState);
         const card = source.splice(idx, 1)[0];
 
         const dest: Card[] | undefined =
@@ -234,7 +247,7 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "REORDER_HAND": {
-        const hand = this.gameState.hands[sender.id];
+        const hand = this.gameState.hands[senderToken];
         if (!hand) break;
         const idSet = new Set(hand.map(c => c.id));
         if (
@@ -249,7 +262,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
         const cardMap = new Map(hand.map(c => [c.id, c]));
-        this.gameState.hands[sender.id] = action.orderedCardIds.map(id => cardMap.get(id)!);
+        this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
         break;
       }
       case "SET_PILE_FACE": {
@@ -285,12 +298,12 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState, sender.id);
+        takeSnapshot(this.gameState);
         flipCard.faceUp = !flipCard.faceUp;
         break;
       }
       case "PASS_CARD": {
-        const senderHand = this.gameState.hands[sender.id];
+        const senderHand = this.gameState.hands[senderToken];
         if (!senderHand) {
           break;
         }
@@ -311,7 +324,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState, sender.id);
+        takeSnapshot(this.gameState);
         const [passedCard] = senderHand.splice(passCardIdx, 1);
         passedCard.faceUp = true;
         this.gameState.hands[action.targetPlayerId].push(passedCard);
@@ -329,7 +342,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState, sender.id);
+        takeSnapshot(this.gameState);
         for (let i = 0; i < action.cardsPerPlayer; i++) {
           for (const player of connectedPlayers) {
             const dealt = dealDrawPile.cards.pop()!;
@@ -353,7 +366,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState, sender.id);
+        takeSnapshot(this.gameState);
         shufflePile.cards = shuffle(shufflePile.cards);
         break;
       }
@@ -374,15 +387,17 @@ export default class GameRoom implements Party.Server {
         resetDrawPile.cards.forEach(c => { c.faceUp = false; });
         resetDrawPile.cards = shuffle(resetDrawPile.cards);
         this.gameState.phase = "setup";
-        this.gameState.undoSnapshots = {};
+        this.gameState.undoSnapshots = [];
         break;
       }
       case "UNDO_MOVE": {
-        const snap = this.gameState.undoSnapshots[sender.id];
+        const remainingSnapshots = [...this.gameState.undoSnapshots];
+        const snap = remainingSnapshots.pop();
         if (!snap) {
           break;
         }
         this.gameState = snap;
+        this.gameState.undoSnapshots = remainingSnapshots;
         break;
       }
       case "PING":
@@ -394,7 +409,7 @@ export default class GameRoom implements Party.Server {
   }
 
   async onClose(connection: Party.Connection) {
-    const playerToken = connection.id;
+    const playerToken = getPlayerToken(connection);
     const player = this.gameState.players.find(p => p.id === playerToken);
     if (player) {
       player.connected = false;
@@ -411,7 +426,7 @@ export default class GameRoom implements Party.Server {
     for (const conn of this.room.getConnections()) {
       conn.send(JSON.stringify({
         type: "STATE_UPDATE",
-        state: viewFor(this.gameState, conn.id),
+        state: viewFor(this.gameState, getPlayerToken(conn)),
       } satisfies ServerEvent));
     }
   }

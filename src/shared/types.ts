@@ -26,13 +26,14 @@ export interface GameState {
   players: Player[];
   hands: Record<string, Card[]>;  // keyed by player token
   piles: Pile[];
-  undoSnapshots: Record<string, GameState | null>;
+  undoSnapshots: GameState[];
 }
 
 export interface ClientGameState {
   roomId: string;
   phase: "lobby" | "setup" | "playing";
   players: Player[];
+  myPlayerId: string;
   myHand: Card[];
   opponentHandCounts: Record<string, number>;
   piles: Pile[];

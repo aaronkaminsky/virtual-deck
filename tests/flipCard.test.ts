@@ -28,6 +28,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
     close: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
+    state: { playerToken: id },
   } as unknown as Party.Connection & { send: ReturnType<typeof vi.fn> };
 }
 
@@ -88,6 +89,6 @@ describe("FLIP_CARD handler", () => {
 
     await room.onMessage(JSON.stringify({ type: "FLIP_CARD", pileId: "discard", cardId: "A-s" }), sender);
 
-    expect(room.gameState.undoSnapshots["player-1"]).not.toBeNull();
+    expect(room.gameState.undoSnapshots).toHaveLength(1);
   });
 });
