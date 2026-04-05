@@ -93,13 +93,15 @@ export default class GameRoom implements Party.Server {
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
-    const count = [...this.room.getConnections()].length;
-    if (count > 4) {
+    const url = new URL(ctx.request.url);
+    const playerToken = url.searchParams.get("player") ?? connection.id;
+
+    const isExistingPlayer = this.gameState.players.some(p => p.id === playerToken);
+    if (!isExistingPlayer && this.gameState.players.length >= 4) {
       connection.close(4000, "Room is full — maximum 4 players");
       return;
     }
 
-    const playerToken = connection.id;
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
