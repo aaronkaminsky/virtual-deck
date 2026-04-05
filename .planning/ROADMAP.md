@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Lobby + Room Join** - Create/join room flow, player names, room code sharing, static deploy
 - [ ] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw
 - [ ] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo
-- [ ] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators
+- [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
 
 ## Phase Details
 
@@ -93,11 +93,11 @@ Plans:
   1. A player who disconnects and reconnects using the same room link gets their previous hand restored exactly
   2. All players can see which players are currently connected vs. disconnected
   3. A player who closes and reopens the tab (same browser, same room link) resumes with their hand intact
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 05-01-PLAN.md — Fix server player identity and cap logic for reconnect (Wave 1)
 - [x] 05-02-PLAN.md — Connection banner and player presence UI (Wave 2)
-- [ ] 05-03-PLAN.md — Human verification of reconnect and presence (Wave 3)
+- [x] 05-03-PLAN.md — Human verification of reconnect and presence (Wave 3)
 
 ## Backlog
 
@@ -161,4 +161,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Lobby + Room Join | 2/3 | In Progress|  |
 | 3. Core Board | 2/3 | In Progress|  |
 | 4. Game Controls | 0/3 | Not started | - |
-| 5. Resilience + Polish | 2/3 | In Progress|  |
+| 5. Resilience + Polish | 3/3 | Complete   | 2026-04-05 |
