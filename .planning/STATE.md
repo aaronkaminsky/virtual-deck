@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-game-controls-02-PLAN.md
-last_updated: "2026-04-05T15:38:24.442Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-05T20:25:25.841Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 12
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 12
+  total_plans: 16
+  completed_plans: 13
   percent: 33
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 04 — game-controls
+**Current focus:** Phase 05 — resilience-polish
 
 ## Current Position
 
-Phase: 04
-Plan: Not started
-Status: Executing Phase 04
+Phase: 05 (resilience-polish) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-05
 
 Progress: [███░░░░░░░] 33%
@@ -59,6 +59,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 02-lobby-room-join P02 | 2 | 3 tasks | 7 files |
 | Phase 03-core-board P01 | 2 | 1 tasks | 4 files |
 | Phase 04-game-controls P02 | 10 | 2 tasks | 9 files |
+| Phase 05-resilience-polish P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,7 @@ Recent decisions affecting current work:
 - [Phase 02-lobby-room-join]: VITE_PARTYKIT_HOST hardcoded in deploy.yml as virtual-deck.aaronkaminsky.partykit.dev
 - [Phase 03-core-board]: MOVE_CARD supports hand->pile, pile->hand, pile->pile; both fromZone and toZone=hand require sender.id match for private hand enforcement
 - [Phase 04-game-controls]: isPassCard checked before isSuccess in BoardDragLayer — prevents opponent-hand drops from also triggering MOVE_CARD
+- [Phase 05-resilience-polish]: playerToken extracted from ?player= query param in onConnect; slot-based cap counts gameState.players.length not active connections
 
 ### Pending Todos
 
@@ -103,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T19:41:50.932Z
-Stopped at: Completed 04-game-controls-02-PLAN.md
+Last session: 2026-04-05T20:25:25.838Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
