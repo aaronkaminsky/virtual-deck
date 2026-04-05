@@ -9,11 +9,12 @@ import { CardOverlay } from './CardOverlay';
 interface BoardDragLayerProps {
   gameState: ClientGameState;
   playerId: string;
+  connected: boolean;
   sendAction: (action: ClientAction) => void;
   setDragging: (d: boolean) => void;
 }
 
-export function BoardDragLayer({ gameState, playerId, sendAction, setDragging }: BoardDragLayerProps) {
+export function BoardDragLayer({ gameState, playerId, connected, sendAction, setDragging }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
@@ -80,7 +81,7 @@ export function BoardDragLayer({ gameState, playerId, sendAction, setDragging }:
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <BoardView gameState={gameState} playerId={playerId} sendAction={sendAction} />
+      <BoardView gameState={gameState} playerId={playerId} connected={connected} sendAction={sendAction} />
       {createPortal(
         <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
           {activeCard ? <CardOverlay card={activeCard} /> : null}
