@@ -1,5 +1,5 @@
 import type * as Party from "partykit/server";
-import type { Card, ClientAction, ClientGameState, GameState, ServerEvent, Suit, Rank } from "../src/shared/types";
+import type { Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
 
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -62,7 +62,16 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
         .filter(([token]) => token !== playerToken)
         .map(([token, cards]) => [token, cards.length])
     ),
-    piles: state.piles,
+    piles: state.piles.map(pile => ({
+      id: pile.id,
+      name: pile.name,
+      faceUp: pile.faceUp,
+      cards: pile.cards.map((card): Card | MaskedCard =>
+        card.faceUp
+          ? card
+          : { faceUp: false as const }
+      ),
+    })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
   };
 }

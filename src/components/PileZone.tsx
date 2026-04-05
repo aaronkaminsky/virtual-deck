@@ -1,13 +1,14 @@
 import { useDroppable } from '@dnd-kit/core';
 import { Shuffle } from 'lucide-react';
-import type { Pile, ClientAction } from '@/shared/types';
+import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DraggableCard } from './DraggableCard';
+import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 
 interface PileZoneProps {
-  pile: Pile;
+  pile: ClientPile;
   sendAction: (action: ClientAction) => void;
 }
 
@@ -29,7 +30,7 @@ export function PileZone({ pile, sendAction }: PileZoneProps) {
   }
 
   function handleFlipCard() {
-    if (!topCard) return;
+    if (!topCard || !('id' in topCard)) return;
     sendAction({ type: 'FLIP_CARD', pileId: pile.id, cardId: topCard.id });
   }
 
@@ -44,7 +45,7 @@ export function PileZone({ pile, sendAction }: PileZoneProps) {
           isOver ? 'border-primary' : 'border-border'
         )}
       >
-        {topCard && <DraggableCard card={topCard} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} />}
+        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} /> : topCard && <CardBack />}
         <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
       </div>
       <div className="flex gap-1 mt-1">

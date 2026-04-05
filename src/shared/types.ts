@@ -20,6 +20,15 @@ export interface Pile {
   faceUp?: boolean;  // whether the pile shows face-up by default
 }
 
+export type MaskedCard = { faceUp: false };
+
+export interface ClientPile {
+  id: string;
+  name: string;
+  cards: (Card | MaskedCard)[];
+  faceUp?: boolean;
+}
+
 export interface GameState {
   roomId: string;
   phase: "lobby" | "setup" | "playing";
@@ -36,7 +45,7 @@ export interface ClientGameState {
   myPlayerId: string;
   myHand: Card[];
   opponentHandCounts: Record<string, number>;
-  piles: Pile[];
+  piles: ClientPile[];
   canUndo: boolean;
 }
 

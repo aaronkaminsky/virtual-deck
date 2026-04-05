@@ -111,4 +111,33 @@ describe("viewFor", () => {
     const view = viewFor(state, null);
     expect(view.myPlayerId).toBe("");
   });
+
+  it("strips id/suit/rank from face-down pile cards", () => {
+    const state = makeTestState();
+    const view = viewFor(state, "player-1");
+    const drawPile = view.piles.find(p => p.id === "draw")!;
+    for (const card of drawPile.cards) {
+      expect(card.faceUp).toBe(false);
+      expect("id" in card).toBe(false);
+      expect("suit" in card).toBe(false);
+      expect("rank" in card).toBe(false);
+    }
+  });
+
+  it("preserves full data for face-up pile cards", () => {
+    const state = makeTestState();
+    state.piles[1].cards.push({ id: "7-h", suit: "hearts", rank: "7", faceUp: true });
+    const view = viewFor(state, "player-1");
+    const discardPile = view.piles.find(p => p.id === "discard")!;
+    expect(discardPile.cards).toHaveLength(1);
+    expect(discardPile.cards[0]).toEqual({ id: "7-h", suit: "hearts", rank: "7", faceUp: true });
+  });
+
+  it("preserves pile card count after masking", () => {
+    const state = makeTestState();
+    const drawBefore = state.piles.find(p => p.id === "draw")!.cards.length;
+    const view = viewFor(state, "player-1");
+    const drawAfter = view.piles.find(p => p.id === "draw")!.cards.length;
+    expect(drawAfter).toBe(drawBefore);
+  });
 });
