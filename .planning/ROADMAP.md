@@ -125,6 +125,13 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
+### Phase 999.5: Shuffle visual indicator (BACKLOG)
+**Goal:** Show a brief animation or green checkmark on the pile after a shuffle completes, so players get clear visual feedback that the shuffle happened
+**Requirements:** TBD — client-side only; server could emit a SHUFFLED event or client detects order change
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
