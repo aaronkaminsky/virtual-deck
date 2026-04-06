@@ -19,9 +19,13 @@ export function BoardView({ gameState, playerId, connected, sendAction }: BoardV
       <ConnectionBanner connected={connected} />
       <div className="h-[88px] flex items-center justify-between px-4 gap-4 bg-card">
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
-          {Object.entries(gameState.opponentHandCounts).map(([id, count]) => (
-            <OpponentHand key={id} playerId={id} cardCount={count} sendAction={sendAction} />
-          ))}
+          {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
+            const playerIndex = gameState.players.findIndex(p => p.id === id);
+            const playerLabel = playerIndex >= 0 ? `P${playerIndex + 1}` : 'P?';
+            return (
+              <OpponentHand key={id} playerId={id} cardCount={count} playerLabel={playerLabel} sendAction={sendAction} />
+            );
+          })}
         </div>
         <div className="flex items-center gap-3">
           <PlayerPresence players={gameState.players} myPlayerId={gameState.myPlayerId} />

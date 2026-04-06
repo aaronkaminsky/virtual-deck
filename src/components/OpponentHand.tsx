@@ -7,10 +7,11 @@ import type { ClientAction } from '@/shared/types';
 interface OpponentHandProps {
   playerId: string;
   cardCount: number;
+  playerLabel: string;
   sendAction: (action: ClientAction) => void;
 }
 
-export function OpponentHand({ playerId, cardCount, sendAction: _sendAction }: OpponentHandProps) {
+export function OpponentHand({ playerId, cardCount, playerLabel, sendAction: _sendAction }: OpponentHandProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `opponent-hand-${playerId}`,
     data: { toZone: 'opponent-hand' as const, toId: playerId },
@@ -24,7 +25,7 @@ export function OpponentHand({ playerId, cardCount, sendAction: _sendAction }: O
         isOver ? 'border-primary' : 'border-transparent'
       )}
     >
-      <span className="text-xs text-muted-foreground">Player</span>
+      <span className="text-xs text-muted-foreground">{playerLabel}</span>
       <div className="flex items-center">
         {Array.from({ length: cardCount }).map((_, i) => (
           <CardBack
