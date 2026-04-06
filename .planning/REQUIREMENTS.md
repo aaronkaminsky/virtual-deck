@@ -22,7 +22,7 @@
 
 - [x] **TABLE-01**: Shared table supports multiple configurable pile/zone types (draw pile, discard pile, open play area)
 - [x] **TABLE-02**: Card count is visible to all players for each pile on the table
-- [ ] **TABLE-03**: Opponent hand card counts are visible to all players (face values are not)
+- [x] **TABLE-03**: Opponent hand card counts are visible to all players (face values are not)
 
 ### Cards
 
@@ -81,7 +81,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DECK-03 | Phase 2 | Complete |
 | TABLE-01 | Phase 3 | Complete |
 | TABLE-02 | Phase 3 | Complete |
-| TABLE-03 | Phase 3 | Pending |
+| TABLE-03 | Phase 3 | Complete |
 | CARD-01 | Phase 3 | Complete |
 | CARD-02 | Phase 3 | Complete |
 | CARD-03 | Phase 4 | Complete |
