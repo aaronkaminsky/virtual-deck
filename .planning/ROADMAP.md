@@ -13,10 +13,13 @@ Build a multiplayer virtual card table from the server outward. The privacy corr
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Server Foundation** - PartyKit room with deck state, hand masking, and stable player tokens (completed 2026-04-02)
-- [ ] **Phase 2: Lobby + Room Join** - Create/join room flow, player names, room code sharing, static deploy
-- [ ] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw
-- [ ] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo
+- [x] **Phase 2: Lobby + Room Join** - Create/join room flow, player names, room code sharing, static deploy (completed 2026-04-03)
+- [x] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw (completed 2026-04-04)
+- [x] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo (completed 2026-04-05)
 - [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
+- [ ] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers
+- [ ] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance
+- [ ] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps
 
 ## Phase Details
 
@@ -99,6 +102,47 @@ Plans:
 - [x] 05-02-PLAN.md — Connection banner and player presence UI (Wave 2)
 - [x] 05-03-PLAN.md — Human verification of reconnect and presence (Wave 3)
 
+### Phase 6: Functional Tech Debt
+**Goal**: Fix the two latent bugs and remove dead server code identified in the v1.0 audit
+**Depends on**: Phase 5
+**Requirements**: ROOM-01 (UX improvement — copy-link in BoardView)
+**Gap Closure**: Closes tech debt items from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `usePartySocket.ts` correctly falls back to the real production host when `VITE_PARTYKIT_HOST` is absent (DEV check, not env var truthiness)
+  2. A copy-room-link affordance exists and is accessible while a game is in progress (BoardView, not LobbyPanel)
+  3. Dead `DRAW_CARD` and `SHUFFLE_DECK` server handlers are removed; shared types updated to remove those action types
+**Plans:** 0 plans
+Plans:
+- [ ] 06-01-PLAN.md — Fix host fallback, add copy-link to BoardView, remove dead handlers (Wave 1)
+
+### Phase 7: Nyquist Validation
+**Goal**: All phases achieve full Nyquist compliance with passing VALIDATION.md files
+**Depends on**: Phase 6
+**Requirements**: None (validation infrastructure only)
+**Gap Closure**: Closes Nyquist gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Phase 1 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
+  2. Phase 3 VALIDATION.md has `wave_0_complete=true` (currently false despite `nyquist_compliant=true`)
+  3. Phase 4 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
+  4. Phase 5 VALIDATION.md exists with `nyquist_compliant=true`
+**Plans:** 0 plans
+Plans:
+- [ ] 07-01-PLAN.md — Run and fix validation for phases 1, 3, 4, 5 (Wave 1)
+
+### Phase 8: Documentation Housekeeping
+**Goal**: Planning artifacts accurately reflect the completed milestone state
+**Depends on**: Phase 7
+**Requirements**: None (documentation only)
+**Gap Closure**: Closes documentation gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. ROADMAP.md progress table shows phases 2, 3, 4, 5 as Complete with accurate completion dates
+  2. DECK-02 appears in the 02-SUMMARY frontmatter `requirements-completed` list
+  3. TABLE-03 Phase 3 VERIFICATION note is updated to reflect quick-task completion
+  4. Phase 5 SUMMARY files 05-01 and 05-02 include ROOM-04 in `requirements-completed`
+**Plans:** 0 plans
+Plans:
+- [ ] 08-01-PLAN.md — Fix all SUMMARY and VERIFICATION frontmatter gaps (Wave 1)
+
 ## Backlog
 
 ### Phase 999.1: Drag card to opponent's hand (BACKLOG)
@@ -157,8 +201,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server Foundation | 3/3 | Complete   | 2026-04-02 |
-| 2. Lobby + Room Join | 2/3 | In Progress|  |
-| 3. Core Board | 2/3 | In Progress|  |
-| 4. Game Controls | 0/3 | Not started | - |
-| 5. Resilience + Polish | 3/3 | Complete   | 2026-04-05 |
+| 1. Server Foundation | 3/3 | Complete | 2026-04-02 |
+| 2. Lobby + Room Join | 3/3 | Complete | 2026-04-03 |
+| 3. Core Board | 3/3 | Complete | 2026-04-04 |
+| 4. Game Controls | 3/3 | Complete | 2026-04-05 |
+| 5. Resilience + Polish | 3/3 | Complete | 2026-04-05 |
+| 6. Functional Tech Debt | 0/1 | Not started | - |
+| 7. Nyquist Validation | 0/1 | Not started | - |
+| 8. Documentation Housekeeping | 0/1 | Not started | - |
