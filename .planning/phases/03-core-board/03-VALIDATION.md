@@ -3,7 +3,7 @@ phase: 3
 slug: core-board
 status: draft
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-04-02
 ---
 
@@ -38,18 +38,18 @@ created: 2026-04-02
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 03-01-01 | 01 | 1 | TABLE-01 | unit | `npm test && npx tsc --noEmit` | ❌ W0 | ⬜ pending |
-| 03-01-01 | 01 | 1 | TABLE-02 | unit | `npm test && npx tsc --noEmit` | ❌ W0 | ⬜ pending |
-| 03-01-01 | 01 | 1 | CARD-01 | unit | `npm test && npx tsc --noEmit` | ❌ W0 | ⬜ pending |
-| 03-01-01 | 01 | 1 | CARD-02 | unit | `npm test && npx tsc --noEmit` | ❌ W0 | ⬜ pending |
-| 03-02-01 | 02 | 1 | TABLE-01 | typecheck | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 03-02-01 | 02 | 1 | TABLE-02 | typecheck | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 03-02-01 | 02 | 1 | TABLE-03 | typecheck | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 03-02-02 | 02 | 1 | TABLE-01 | typecheck | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 03-02-02 | 02 | 1 | TABLE-03 | typecheck | `npx tsc --noEmit` | ✅ | ⬜ pending |
-| 03-03-01 | 03 | 2 | CARD-01 | typecheck + unit | `npm ls @dnd-kit/core && npx tsc --noEmit && npm test` | ✅ | ⬜ pending |
-| 03-03-01 | 03 | 2 | CARD-02 | typecheck + unit | `npx tsc --noEmit && npm test` | ✅ | ⬜ pending |
-| 03-03-02 | 03 | 2 | TABLE-01 | typecheck | `npx tsc --noEmit && npm test` | ✅ | ⬜ pending |
+| 03-01-01 | 01 | 1 | TABLE-01 | unit | `npm test && npx tsc --noEmit` | ✅ | ✅ green |
+| 03-01-01 | 01 | 1 | TABLE-02 | unit | `npm test && npx tsc --noEmit` | ✅ | ✅ green |
+| 03-01-01 | 01 | 1 | CARD-01 | unit | `npm test && npx tsc --noEmit` | ✅ | ✅ green |
+| 03-01-01 | 01 | 1 | CARD-02 | unit | `npm test && npx tsc --noEmit` | ✅ | ✅ green |
+| 03-02-01 | 02 | 1 | TABLE-01 | typecheck | `npx tsc --noEmit` | ✅ | ✅ green |
+| 03-02-01 | 02 | 1 | TABLE-02 | typecheck | `npx tsc --noEmit` | ✅ | ✅ green |
+| 03-02-01 | 02 | 1 | TABLE-03 | typecheck | `npx tsc --noEmit` | ✅ | ✅ green |
+| 03-02-02 | 02 | 1 | TABLE-01 | typecheck | `npx tsc --noEmit` | ✅ | ✅ green |
+| 03-02-02 | 02 | 1 | TABLE-03 | typecheck | `npx tsc --noEmit` | ✅ | ✅ green |
+| 03-03-01 | 03 | 2 | CARD-01 | typecheck + unit | `npm ls @dnd-kit/core && npx tsc --noEmit && npm test` | ✅ | ✅ green |
+| 03-03-01 | 03 | 2 | CARD-02 | typecheck + unit | `npx tsc --noEmit && npm test` | ✅ | ✅ green |
+| 03-03-02 | 03 | 2 | TABLE-01 | typecheck | `npx tsc --noEmit && npm test` | ✅ | ✅ green |
 | 03-03-03 | 03 | 2 | CARD-01 | manual | Visual test via `npm run dev` | — | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
@@ -58,8 +58,8 @@ created: 2026-04-02
 
 ## Wave 0 Requirements
 
-- [ ] `tests/moveCard.test.ts` — stubs for MOVE_CARD server behavior (TABLE-01, TABLE-02, CARD-01, CARD-02)
-- [ ] Update `tests/deck.test.ts` — add assertion that `defaultGameState` produces 3 piles (draw, discard, play)
+- [x] `tests/moveCard.test.ts` — stubs for MOVE_CARD server behavior (TABLE-01, TABLE-02, CARD-01, CARD-02)
+- [x] Update `tests/deck.test.ts` — add assertion that `defaultGameState` produces 3 piles (draw, discard, play)
 
 *No new test framework needed — Vitest is already configured. Frontend component testing is manual for Phase 3 (no jsdom environment configured).*
 
@@ -86,4 +86,4 @@ created: 2026-04-02
 - [x] Feedback latency < 10s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-09 (Phase 7 audit)

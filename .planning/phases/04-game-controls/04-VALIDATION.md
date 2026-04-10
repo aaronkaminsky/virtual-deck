@@ -2,8 +2,8 @@
 phase: 4
 slug: game-controls
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -38,24 +38,24 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| CARD-03 flip toggle | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ❌ W0 | ⬜ pending |
-| CARD-03 broadcast | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ❌ W0 | ⬜ pending |
-| CARD-03 invalid pileId | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ❌ W0 | ⬜ pending |
-| CARD-04 pass moves card | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ❌ W0 | ⬜ pending |
-| CARD-04 rejects non-sender card | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ❌ W0 | ⬜ pending |
-| CARD-04 privacy | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-01 deal round-robin | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-01 phase transition | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-01 insufficient cards | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-02 shuffle randomizes | TBD | 0 | CTRL-02 | unit | `npm test -- tests/shufflePile.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-02 rejects invalid pileId | TBD | 0 | CTRL-02 | unit | `npm test -- tests/shufflePile.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-03 collect all cards | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-03 reshuffle | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-03 phase reset | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-04 undo restore | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-04 no-op no snapshot | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-04 snapshot strips nesting | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ❌ W0 | ⬜ pending |
-| CTRL-04 canUndo in ClientGameState | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ❌ W0 | ⬜ pending |
+| CARD-03 flip toggle | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ✅ | ✅ green |
+| CARD-03 broadcast | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ✅ | ✅ green |
+| CARD-03 invalid pileId | TBD | 0 | CARD-03 | unit | `npm test -- tests/flipCard.test.ts` | ✅ | ✅ green |
+| CARD-04 pass moves card | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ✅ | ✅ green |
+| CARD-04 rejects non-sender card | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ✅ | ✅ green |
+| CARD-04 privacy | TBD | 0 | CARD-04 | unit | `npm test -- tests/passCard.test.ts` | ✅ | ✅ green |
+| CTRL-01 deal round-robin | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ✅ | ✅ green |
+| CTRL-01 phase transition | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ✅ | ✅ green |
+| CTRL-01 insufficient cards | TBD | 0 | CTRL-01 | unit | `npm test -- tests/dealCards.test.ts` | ✅ | ✅ green |
+| CTRL-02 shuffle randomizes | TBD | 0 | CTRL-02 | unit | `npm test -- tests/shufflePile.test.ts` | ✅ | ✅ green |
+| CTRL-02 rejects invalid pileId | TBD | 0 | CTRL-02 | unit | `npm test -- tests/shufflePile.test.ts` | ✅ | ✅ green |
+| CTRL-03 collect all cards | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ✅ | ✅ green |
+| CTRL-03 reshuffle | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ✅ | ✅ green |
+| CTRL-03 phase reset | TBD | 0 | CTRL-03 | unit | `npm test -- tests/resetTable.test.ts` | ✅ | ✅ green |
+| CTRL-04 undo restore | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ✅ | ✅ green |
+| CTRL-04 no-op no snapshot | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ✅ | ✅ green |
+| CTRL-04 snapshot strips nesting | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ✅ | ✅ green |
+| CTRL-04 canUndo in ClientGameState | TBD | 0 | CTRL-04 | unit | `npm test -- tests/undoMove.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -63,12 +63,12 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `tests/flipCard.test.ts` — stubs for CARD-03
-- [ ] `tests/passCard.test.ts` — stubs for CARD-04
-- [ ] `tests/dealCards.test.ts` — stubs for CTRL-01
-- [ ] `tests/shufflePile.test.ts` — stubs for CTRL-02
-- [ ] `tests/resetTable.test.ts` — stubs for CTRL-03
-- [ ] `tests/undoMove.test.ts` — stubs for CTRL-04 + takeSnapshot helper
+- [x] `tests/flipCard.test.ts` — stubs for CARD-03
+- [x] `tests/passCard.test.ts` — stubs for CARD-04
+- [x] `tests/dealCards.test.ts` — stubs for CTRL-01
+- [x] `tests/shufflePile.test.ts` — stubs for CTRL-02
+- [x] `tests/resetTable.test.ts` — stubs for CTRL-03
+- [x] `tests/undoMove.test.ts` — stubs for CTRL-04 + takeSnapshot helper
 
 **Existing tests to update (not new files):**
 - `tests/viewFor.test.ts` — add test for `canUndo` field
@@ -93,11 +93,11 @@ created: 2026-04-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-09 (Phase 7 audit)
