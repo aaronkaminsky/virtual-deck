@@ -184,6 +184,21 @@ describe("UNDO_MOVE handler", () => {
     expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
   });
 
+  it("undo after PASS_CARD restores both sender and recipient hands", async () => {
+    const card = makeCard("A-s");
+    room.gameState.hands["player-1"].push(card);
+
+    await room.onMessage(JSON.stringify({ type: "PASS_CARD", cardId: "A-s", targetPlayerId: "player-2" }), sender);
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+    expect(room.gameState.hands["player-2"]).toHaveLength(1);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(1);
+    expect(room.gameState.hands["player-1"][0].id).toBe("A-s");
+    expect(room.gameState.hands["player-2"]).toHaveLength(0);
+  });
+
   it("canUndo reflects shared stack depth (multiple moves)", async () => {
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
     drawPile.cards.push(makeCard("A-s"), makeCard("2-s"), makeCard("3-s"));
