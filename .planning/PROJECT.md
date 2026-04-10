@@ -72,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 06 complete — functional tech debt closed: production host fallback bug fixed (usePartySocket now targets cloud host in prod), copy-link button added to BoardView top bar (ROOM-01), dead DRAW_CARD/SHUFFLE_DECK code purged from types, server, and tests. 88 tests passing.
+Phase 07 complete — Nyquist validation artifacts closed: Phases 1, 3, 4 VALIDATION.md files updated with correct compliance flags; Phase 5 VALIDATION.md created from scratch. All 4 phases now `nyquist_compliant: true` and `wave_0_complete: true`. 88/88 tests passing.
 
 ---
-*Last updated: 2026-04-10 after Phase 06: functional-tech-debt*
+*Last updated: 2026-04-10 after Phase 07: nyquist-validation*
