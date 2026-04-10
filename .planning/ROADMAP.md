@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
 - [x] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers (completed 2026-04-10)
 - [x] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance (completed 2026-04-10)
-- [ ] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps
+- [x] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps (completed 2026-04-10)
 
 ## Phase Details
 
@@ -139,9 +139,9 @@ Plans:
   2. DECK-02 appears in the 02-SUMMARY frontmatter `requirements-completed` list
   3. TABLE-03 Phase 3 VERIFICATION note is updated to reflect quick-task completion
   4. Phase 5 SUMMARY files 05-01 and 05-02 include ROOM-04 in `requirements-completed`
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 08-01-PLAN.md — Fix all SUMMARY and VERIFICATION frontmatter gaps (Wave 1)
+- [x] 08-01-PLAN.md — Fix all SUMMARY and VERIFICATION frontmatter gaps (Wave 1)
 
 ## Backlog
 
@@ -208,4 +208,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 5. Resilience + Polish | 3/3 | Complete | 2026-04-05 |
 | 6. Functional Tech Debt | 1/1 | Complete   | 2026-04-10 |
 | 7. Nyquist Validation | 1/1 | Complete   | 2026-04-10 |
-| 8. Documentation Housekeeping | 0/1 | Not started | - |
+| 8. Documentation Housekeeping | 1/1 | Complete   | 2026-04-10 |
