@@ -18,7 +18,7 @@ export function OpponentHand({ playerId, cardCount, playerLabel, sendAction: _se
   });
 
   const { active } = useDndContext();
-  const dragIsFromHand = active?.data.current?.fromZone === 'hand';
+  const dragIsActive = active !== null;
 
   return (
     <div
@@ -27,10 +27,10 @@ export function OpponentHand({ playerId, cardCount, playerLabel, sendAction: _se
         'flex items-center gap-1 rounded-lg p-1',
         isOver
           ? 'border-2 border-primary'
-          : dragIsFromHand
+          : dragIsActive
             ? 'border-2 border-dashed border-primary/60'
             : 'border-2 border-transparent',
-        dragIsFromHand && 'min-h-[44px] min-w-[80px]'
+        dragIsActive && 'min-h-[44px] min-w-[80px]'
       )}
     >
       <span className="text-xs text-muted-foreground">{playerLabel}</span>
@@ -43,7 +43,7 @@ export function OpponentHand({ playerId, cardCount, playerLabel, sendAction: _se
         ))}
       </div>
       {cardCount > 0 && <Badge>{cardCount}</Badge>}
-      {dragIsFromHand && cardCount === 0 && (
+      {dragIsActive && cardCount === 0 && (
         <span className="text-xs text-muted-foreground">Drop to pass</span>
       )}
     </div>
