@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-04-05T23:24:48.082Z"
-last_activity: 2026-04-05
+status: verifying
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-04-10T01:09:18.485Z"
+last_activity: 2026-04-10
 progress:
-  total_phases: 12
-  completed_phases: 5
-  total_plans: 16
-  completed_plans: 16
+  total_phases: 15
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 17
   percent: 33
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 01 — server-foundation
+**Current focus:** Phase 06 — functional-tech-debt
 
 ## Current Position
 
-Phase: 02
-Plan: Not started
-Status: Executing Phase 01
-Last activity: 2026-04-05 - Completed quick task 260405-nl3: Implement TABLE-03: opponent hand card counts visible to all players
+Phase: 06 (functional-tech-debt) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-04-10
 
 Progress: [███░░░░░░░] 33%
 
@@ -62,6 +62,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 05-resilience-polish P01 | 2 | 2 tasks | 2 files |
 | Phase 05-resilience-polish P02 | 8 | 2 tasks | 5 files |
 | Phase 05-resilience-polish P03 | 10 | 1 tasks | 0 files |
+| Phase 06-functional-tech-debt P01 | 5 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,7 @@ Recent decisions affecting current work:
 - [Phase 05-resilience-polish]: PlayerPresence placed next to ControlsBar in top-right flex area; connected prop threads App -> BoardDragLayer -> BoardView
 - [Phase 05-resilience-polish]: Test 3 disconnection banner verified via hardcoded connected=false in localhost — DevTools offline throttling has limitations but behavior confirmed correct
 - [Phase 05-resilience-polish]: Test 4 room cap with reconnect required quick task 260405-lgq (player ID URL persistence) before passing verification
+- [Phase 06-functional-tech-debt]: MOVE_CARD pile->hand already takes snapshot and sets faceUp=true — semantically equivalent to old DRAW_CARD for undo tests
 
 ### Pending Todos
 
@@ -113,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T22:59:03.554Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-04-10T01:09:18.482Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None

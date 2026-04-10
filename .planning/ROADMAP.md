@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw (completed 2026-04-04)
 - [x] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo (completed 2026-04-05)
 - [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
-- [ ] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers
+- [x] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers (completed 2026-04-10)
 - [ ] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance
 - [ ] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps
 
@@ -111,9 +111,9 @@ Plans:
   1. `usePartySocket.ts` correctly falls back to the real production host when `VITE_PARTYKIT_HOST` is absent (DEV check, not env var truthiness)
   2. A copy-room-link affordance exists and is accessible while a game is in progress (BoardView, not LobbyPanel)
   3. Dead `DRAW_CARD` and `SHUFFLE_DECK` server handlers are removed; shared types updated to remove those action types
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 06-01-PLAN.md — Fix host fallback, add copy-link to BoardView, remove dead handlers (Wave 1)
+- [x] 06-01-PLAN.md — Fix host fallback, add copy-link to BoardView, remove dead handlers (Wave 1)
 
 ### Phase 7: Nyquist Validation
 **Goal**: All phases achieve full Nyquist compliance with passing VALIDATION.md files
@@ -206,6 +206,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Core Board | 3/3 | Complete | 2026-04-04 |
 | 4. Game Controls | 3/3 | Complete | 2026-04-05 |
 | 5. Resilience + Polish | 3/3 | Complete | 2026-04-05 |
-| 6. Functional Tech Debt | 0/1 | Not started | - |
+| 6. Functional Tech Debt | 1/1 | Complete   | 2026-04-10 |
 | 7. Nyquist Validation | 0/1 | Not started | - |
 | 8. Documentation Housekeeping | 0/1 | Not started | - |
