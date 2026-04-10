@@ -23,6 +23,10 @@ Players can see the shared table and their own private hand update in real time,
 - [x] Deal cards — distribute N cards from a pile to each player's hand — Validated in Phase 04: game-controls
 - [x] Pass a card directly to another player's private hand — Validated in Phase 04: game-controls
 
+### Validated in Phase 06: functional-tech-debt
+
+- [x] Copy-link affordance accessible during active play (inside BoardView) — Validated in Phase 06: functional-tech-debt (ROOM-01)
+
 ### Active
 
 - [ ] Draw from the top of any pile (shared or personal)
@@ -68,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 05 complete — resilience and connection status UI working: stable player identity via `?player=` query param (survives refresh and private-window reconnect), slot-based room cap (disconnected players hold their slot), ConnectionBanner (1s delay, 10s escalation, auto-dismiss), PlayerPresence dots (green/gray per player, hover tooltips). Phase 01 gap closure (CARD-05) complete: face-down pile card masking — draw pile order no longer exposed over the wire. 92 tests passing.
+Phase 06 complete — functional tech debt closed: production host fallback bug fixed (usePartySocket now targets cloud host in prod), copy-link button added to BoardView top bar (ROOM-01), dead DRAW_CARD/SHUFFLE_DECK code purged from types, server, and tests. 88 tests passing.
 
 ---
-*Last updated: 2026-04-05 after Phase 01 gap closure: pile card masking (CARD-05)*
+*Last updated: 2026-04-10 after Phase 06: functional-tech-debt*
