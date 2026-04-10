@@ -140,48 +140,6 @@ export default class GameRoom implements Party.Server {
     }
 
     switch (action.type) {
-      case "SHUFFLE_DECK": {
-        const drawPile = this.gameState.piles.find(p => p.id === "draw");
-        if (drawPile) {
-          drawPile.cards = shuffle(drawPile.cards);
-        }
-        break;
-      }
-      case "DRAW_CARD": {
-        if (!action.pileId) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "MISSING_PILE_ID",
-            message: "pileId is required for DRAW_CARD",
-          } satisfies ServerEvent));
-          break;
-        }
-        const pile = this.gameState.piles.find(p => p.id === action.pileId);
-        if (!pile) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "PILE_NOT_FOUND",
-            message: `No pile found with id: ${action.pileId}`,
-          } satisfies ServerEvent));
-          break;
-        }
-        if (pile.cards.length === 0) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "PILE_EMPTY",
-            message: `Pile ${action.pileId} has no cards`,
-          } satisfies ServerEvent));
-          break;
-        }
-        takeSnapshot(this.gameState);
-        const card = pile.cards.pop()!;
-        card.faceUp = true;
-        if (!this.gameState.hands[senderToken]) {
-          this.gameState.hands[senderToken] = [];
-        }
-        this.gameState.hands[senderToken].push(card);
-        break;
-      }
       case "MOVE_CARD": {
         const { cardId, fromZone, fromId, toZone, toId } = action;
 

@@ -118,7 +118,7 @@ describe("UNDO_MOVE handler", () => {
     drawPile.cards.length = 0;
     drawPile.cards.push(makeCard("A-s"));
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "A-s", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
     expect(room.gameState.hands["player-1"]).toHaveLength(1);
 
     // player-2 sends UNDO_MOVE — should revert player-1's draw
@@ -144,13 +144,13 @@ describe("UNDO_MOVE handler", () => {
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
     drawPile.cards.push(card1, card2);
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "K-h", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
     expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
 
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
     expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "K-h", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
 
     const handCard = room.gameState.hands["player-1"][0];
     await room.onMessage(
@@ -165,10 +165,10 @@ describe("UNDO_MOVE handler", () => {
     const card = makeCard("A-s");
     room.gameState.piles.find(p => p.id === "draw")!.cards.push(card);
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "A-s", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "A-s", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
     const handCard = room.gameState.hands["player-1"][0];
     await room.onMessage(
       JSON.stringify({ type: "MOVE_CARD", cardId: handCard.id, fromZone: "hand", fromId: "player-1", toZone: "pile", toId: "discard" }),
@@ -188,8 +188,8 @@ describe("UNDO_MOVE handler", () => {
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
     drawPile.cards.push(makeCard("A-s"), makeCard("2-s"), makeCard("3-s"));
 
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
-    await room.onMessage(JSON.stringify({ type: "DRAW_CARD", pileId: "draw" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "3-s", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
+    await room.onMessage(JSON.stringify({ type: "MOVE_CARD", cardId: "2-s", fromZone: "pile", fromId: "draw", toZone: "hand", toId: "player-1" }), sender);
 
     expect(room.gameState.undoSnapshots).toHaveLength(2);
     expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
