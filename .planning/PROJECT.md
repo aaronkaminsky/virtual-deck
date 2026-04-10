@@ -72,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 07 complete — Nyquist validation artifacts closed: Phases 1, 3, 4 VALIDATION.md files updated with correct compliance flags; Phase 5 VALIDATION.md created from scratch. All 4 phases now `nyquist_compliant: true` and `wave_0_complete: true`. 88/88 tests passing.
+Phase 08 complete — Documentation housekeeping: `01-02-SUMMARY.md` now has `requirements-completed: [DECK-02]` in frontmatter; `03-VERIFICATION.md` TABLE-03 updated from `PARTIALLY SATISFIED` → `SATISFIED` reflecting quick task 260403-pya. All v1.0 planning artifacts are accurate and complete. 88/88 tests passing.
 
 ---
-*Last updated: 2026-04-10 after Phase 07: nyquist-validation*
+*Last updated: 2026-04-10 after Phase 08: documentation-housekeeping*
