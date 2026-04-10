@@ -66,11 +66,10 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       id: pile.id,
       name: pile.name,
       faceUp: pile.faceUp,
-      cards: pile.cards.map((card): Card | MaskedCard =>
-        card.faceUp
-          ? card
-          : { faceUp: false as const }
-      ),
+      cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
+        const isTop = i === arr.length - 1;
+        return card.faceUp || isTop ? card : { faceUp: false as const };
+      }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
   };

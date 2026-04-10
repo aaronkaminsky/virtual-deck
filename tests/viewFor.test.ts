@@ -112,16 +112,22 @@ describe("viewFor", () => {
     expect(view.myPlayerId).toBe("");
   });
 
-  it("strips id/suit/rank from face-down pile cards", () => {
+  it("strips id/suit/rank from face-down pile cards except the top card", () => {
     const state = makeTestState();
     const view = viewFor(state, "player-1");
     const drawPile = view.piles.find(p => p.id === "draw")!;
-    for (const card of drawPile.cards) {
+    expect(drawPile.cards.length).toBeGreaterThan(1);
+    // Non-top cards are fully masked
+    for (const card of drawPile.cards.slice(0, -1)) {
       expect(card.faceUp).toBe(false);
       expect("id" in card).toBe(false);
-      expect("suit" in card).toBe(false);
-      expect("rank" in card).toBe(false);
     }
+    // Top card reveals id/suit/rank so it can be dragged/flipped
+    const top = drawPile.cards[drawPile.cards.length - 1];
+    expect(top.faceUp).toBe(false);
+    expect("id" in top).toBe(true);
+    expect("suit" in top).toBe(true);
+    expect("rank" in top).toBe(true);
   });
 
   it("preserves full data for face-up pile cards", () => {
