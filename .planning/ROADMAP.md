@@ -149,9 +149,9 @@ Plans:
 **Goal:** Add visual drag affordance to OpponentHand and verify the existing drag-to-opponent-hand pipe works end-to-end
 **Depends on**: Phase 4 (PASS_CARD server action and BoardDragLayer isPassCard branch)
 **Requirements:** DRAG-01 (visual affordance), DRAG-02 (undo test coverage), DRAG-03 (end-to-end drag-to-pass)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 999.1-01-PLAN.md — OpponentHand visual affordance, undo test, and manual verification (Wave 1)
+- [x] 999.1-01-PLAN.md — OpponentHand visual affordance, undo test, and manual verification (Wave 1)
 
 ### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
 **Goal:** When moving a card to the draw pile, let the player choose insertion position
