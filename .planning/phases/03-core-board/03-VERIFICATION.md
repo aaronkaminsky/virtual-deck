@@ -112,11 +112,11 @@ human_verification:
 |-------------|-------------|-------------|--------|----------|
 | TABLE-01 | 03-01, 03-02, 03-03 | Shared table supports multiple configurable pile/zone types (draw, discard, play area) | SATISFIED | 3 piles in `defaultGameState`; `PileZone` renders each pile from `gameState.piles` |
 | TABLE-02 | 03-01, 03-02, 03-03 | Card count is visible to all players for each pile | SATISFIED | `<Badge>{pile.cards.length}</Badge>` in `PileZone`; all players receive `piles` in `ClientGameState` via broadcast |
-| TABLE-03 | 03-02, 03-03 | Opponent hand card counts are visible to all players (face values are not) | PARTIALLY SATISFIED | Server: `opponentHandCounts` in `viewFor` provides counts without face data (SATISFIED). UI: `OpponentHand` renders `cardCount` card backs (SATISFIED). Marked Pending in REQUIREMENTS.md — needs human verification that opponent strips display correctly in a live multi-player session. |
+| TABLE-03 | 03-02, 03-03 | Opponent hand card counts are visible to all players (face values are not) | SATISFIED | Server: `opponentHandCounts` in `viewFor` provides counts without face data. UI: `OpponentHand` renders `cardCount` card backs. Quick task 260403-pya added `playerLabel` prop to `OpponentHand` and marked TABLE-03 complete in REQUIREMENTS.md. Requirement fully satisfied. |
 | CARD-01 | 03-01, 03-03 | Player can drag-and-drop cards between their hand, table zones, and piles | SATISFIED (logic) / HUMAN (visual) | `DraggableCard` + `PileZone`/`HandZone` useDroppable + `BoardDragLayer` MOVE_CARD dispatch — full code path wired |
 | CARD-02 | 03-01, 03-03 | Player can draw a card from the top of any pile | SATISFIED | `DRAW_CARD` handler existed before Phase 3; `DraggableCard` on pile top card with `fromZone="pile"` enables drag-to-hand |
 
-**Note on REQUIREMENTS.md traceability table:** TABLE-03 is marked "Pending" in REQUIREMENTS.md despite being implemented. The implementation satisfies the requirement. The REQUIREMENTS.md status reflects the pre-Phase-3 baseline and was not updated after plan execution.
+**Note on REQUIREMENTS.md traceability table:** TABLE-03 is marked complete `[x]` in REQUIREMENTS.md. Quick task 260403-pya (run during Phase 3 execution) added the `playerLabel` prop to `OpponentHand` and updated REQUIREMENTS.md to reflect full satisfaction.
 
 **Note on extra types:** `REORDER_HAND` and `SET_PILE_FACE` appear in `src/shared/types.ts` and `party/index.ts`. These were added by a quick task (260403-pya) during Phase 3 execution after the plans were written. They are functional additions beyond the plan scope, not stubs, and do not interfere with plan requirement coverage.
 
