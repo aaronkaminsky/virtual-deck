@@ -125,7 +125,7 @@ Plans:
   2. Phase 3 VALIDATION.md has `wave_0_complete=true` (currently false despite `nyquist_compliant=true`)
   3. Phase 4 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
   4. Phase 5 VALIDATION.md exists with `nyquist_compliant=true`
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] 07-01-PLAN.md — Run and fix validation for phases 1, 3, 4, 5 (Wave 1)
 
@@ -139,7 +139,7 @@ Plans:
   2. DECK-02 appears in the 02-SUMMARY frontmatter `requirements-completed` list
   3. TABLE-03 Phase 3 VERIFICATION note is updated to reflect quick-task completion
   4. Phase 5 SUMMARY files 05-01 and 05-02 include ROOM-04 in `requirements-completed`
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] 08-01-PLAN.md — Fix all SUMMARY and VERIFICATION frontmatter gaps (Wave 1)
 
@@ -148,49 +148,49 @@ Plans:
 ### Phase 999.1: Drag card to opponent's hand (BACKLOG)
 **Goal:** Allow a player to drag a card directly into an opponent's hand (dealer-style games)
 **Requirements:** TBD — needs droppable opponent hand zones + server auth change to allow cross-player hand moves
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
 **Goal:** When moving a card to the draw pile, let the player choose insertion position
 **Requirements:** TBD — simple server change; UX needs a modal/context menu post-drop
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.3: Play area card grid for poker-style games (BACKLOG)
 **Goal:** Replace the play area pile with a 2D grid so cards can be positioned spatially (e.g. Texas Hold'em board)
 **Requirements:** TBD — cards need 2D coordinates; server stores positions; collision detection changes
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.4: Personal player tableau visible to all (BACKLOG)
 **Goal:** Each player has a personal play area in front of them where they can place cards face-up or face-down, visible to all players
 **Requirements:** TBD — new per-player field zone on server; board renders each player's field
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.5: Shuffle visual indicator (BACKLOG)
 **Goal:** Show a brief animation or green checkmark on the pile after a shuffle completes, so players get clear visual feedback that the shuffle happened
 **Requirements:** TBD — client-side only; server could emit a SHUFFLED event or client detects order change
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.6: Investigate test setup treating both players as remote (BACKLOG)
 **Goal:** Investigate observed behavior where the test suite appears to put both players in a "remote" state — may indicate player identity or viewFor masking is applied incorrectly in tests
 **Requirements:** TBD — needs reproduction and root cause analysis before scoping
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ### Phase 999.7: README and architecture documentation (BACKLOG)
 **Goal:** Add a README with link to a DESIGN/ARCHITECTURE document; the architecture doc should cover file layout and include plantUML/mermaid diagrams
 **Requirements:** TBD — documentation only, no code changes
-**Plans:** 0 plans
+**Plans:** 1 plan
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
