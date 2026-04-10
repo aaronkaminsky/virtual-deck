@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo (completed 2026-04-05)
 - [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
 - [x] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers (completed 2026-04-10)
-- [ ] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance
+- [x] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance (completed 2026-04-10)
 - [ ] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps
 
 ## Phase Details
@@ -125,9 +125,9 @@ Plans:
   2. Phase 3 VALIDATION.md has `wave_0_complete=true` (currently false despite `nyquist_compliant=true`)
   3. Phase 4 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
   4. Phase 5 VALIDATION.md exists with `nyquist_compliant=true`
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 07-01-PLAN.md — Run and fix validation for phases 1, 3, 4, 5 (Wave 1)
+- [x] 07-01-PLAN.md — Run and fix validation for phases 1, 3, 4, 5 (Wave 1)
 
 ### Phase 8: Documentation Housekeeping
 **Goal**: Planning artifacts accurately reflect the completed milestone state
@@ -207,5 +207,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 4. Game Controls | 3/3 | Complete | 2026-04-05 |
 | 5. Resilience + Polish | 3/3 | Complete | 2026-04-05 |
 | 6. Functional Tech Debt | 1/1 | Complete   | 2026-04-10 |
-| 7. Nyquist Validation | 0/1 | Not started | - |
+| 7. Nyquist Validation | 1/1 | Complete   | 2026-04-10 |
 | 8. Documentation Housekeeping | 0/1 | Not started | - |
