@@ -31,6 +31,7 @@ export function PileZone({ pile, sendAction }: PileZoneProps) {
 
   function handleFlipCard() {
     if (!topCard || !('id' in topCard)) return;
+    if (!topCard.faceUp && !pile.faceUp) return; // no peeking at face-down cards in a face-down pile
     sendAction({ type: 'FLIP_CARD', pileId: pile.id, cardId: topCard.id });
   }
 
