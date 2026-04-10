@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientAction, ClientGameState, ServerEvent } from '../shared/types';
 
 const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
-  ?? (import.meta.env.DEV ? 'localhost:1999' : 'localhost:1999');
+  ?? (import.meta.env.DEV ? 'localhost:1999' : 'virtual-deck.aaronkaminsky.partykit.dev');
 
 export function usePartySocket(roomId: string, playerId: string) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
