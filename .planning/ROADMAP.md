@@ -146,11 +146,12 @@ Plans:
 ## Backlog
 
 ### Phase 999.1: Drag card to opponent's hand (BACKLOG)
-**Goal:** Allow a player to drag a card directly into an opponent's hand (dealer-style games)
-**Requirements:** TBD — needs droppable opponent hand zones + server auth change to allow cross-player hand moves
+**Goal:** Add visual drag affordance to OpponentHand and verify the existing drag-to-opponent-hand pipe works end-to-end
+**Depends on**: Phase 4 (PASS_CARD server action and BoardDragLayer isPassCard branch)
+**Requirements:** DRAG-01 (visual affordance), DRAG-02 (undo test coverage), DRAG-03 (end-to-end drag-to-pass)
 **Plans:** 1 plan
 Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
+- [ ] 999.1-01-PLAN.md — OpponentHand visual affordance, undo test, and manual verification (Wave 1)
 
 ### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
 **Goal:** When moving a card to the draw pile, let the player choose insertion position
