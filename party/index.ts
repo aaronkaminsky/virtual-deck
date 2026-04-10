@@ -271,16 +271,24 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "PASS_CARD": {
-        const senderHand = this.gameState.hands[senderToken];
-        if (!senderHand) {
+        const sourceArr: Card[] | undefined =
+          action.fromZone === "pile"
+            ? this.gameState.piles.find(p => p.id === action.fromId)?.cards
+            : this.gameState.hands[senderToken];
+        if (!sourceArr) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: action.fromZone === "pile" ? "PILE_NOT_FOUND" : "HAND_NOT_FOUND",
+            message: action.fromZone === "pile" ? `No pile with id: ${action.fromId}` : "Sender hand not found",
+          } satisfies ServerEvent));
           break;
         }
-        const passCardIdx = senderHand.findIndex(c => c.id === action.cardId);
+        const passCardIdx = sourceArr.findIndex(c => c.id === action.cardId);
         if (passCardIdx === -1) {
           sender.send(JSON.stringify({
             type: "ERROR",
-            code: "CARD_NOT_IN_HAND",
-            message: `Card ${action.cardId} not in hand`,
+            code: action.fromZone === "pile" ? "CARD_NOT_IN_PILE" : "CARD_NOT_IN_HAND",
+            message: `Card ${action.cardId} not found in source`,
           } satisfies ServerEvent));
           break;
         }
@@ -293,7 +301,7 @@ export default class GameRoom implements Party.Server {
           break;
         }
         takeSnapshot(this.gameState);
-        const [passedCard] = senderHand.splice(passCardIdx, 1);
+        const [passedCard] = sourceArr.splice(passCardIdx, 1);
         passedCard.faceUp = true;
         this.gameState.hands[action.targetPlayerId].push(passedCard);
         break;

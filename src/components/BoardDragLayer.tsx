@@ -30,18 +30,20 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
     const isHandToHand = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand';
-    const isPassCard = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'opponent-hand';
+    const isPassCard = !!(overData?.toZone === 'opponent-hand');
     const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandToHand && !isPassCard);
     dropSuccessRef.current = isSuccess || isHandToHand || isPassCard;
     setDragging(false);
 
     if (isPassCard) {
       setActiveCard(null);
-      const { card } = dragDataRef.current!;
+      const { card, fromZone, fromId } = dragDataRef.current!;
       sendAction({
         type: 'PASS_CARD',
         cardId: card.id,
         targetPlayerId: overData!.toId,
+        fromZone: fromZone as 'hand' | 'pile',
+        fromId,
       });
     } else if (isSuccess) {
       setActiveCard(null);

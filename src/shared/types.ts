@@ -54,7 +54,7 @@ export type ClientAction =
   | { type: "REORDER_HAND"; orderedCardIds: string[] }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
-  | { type: "PASS_CARD"; cardId: string; targetPlayerId: string }
+  | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
   | { type: "RESET_TABLE" }
