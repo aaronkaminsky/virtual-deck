@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
+import { Button } from '@/components/ui/button';
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { HandZone } from './HandZone';
@@ -9,11 +12,23 @@ import { PlayerPresence } from './PlayerPresence';
 interface BoardViewProps {
   gameState: ClientGameState;
   playerId: string;
+  roomId: string;
   connected: boolean;
   sendAction: (action: ClientAction) => void;
 }
 
-export function BoardView({ gameState, playerId, connected, sendAction }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction }: BoardViewProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const base = import.meta.env.BASE_URL || '/virtual-deck/';
+    const url = `${window.location.origin}${base}?room=${roomId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
@@ -28,6 +43,24 @@ export function BoardView({ gameState, playerId, connected, sendAction }: BoardV
           })}
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopy}
+            aria-label="Copy room link"
+          >
+            {copied ? (
+              <>
+                <Check className="mr-2 size-4" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="mr-2 size-4" />
+                Copy link
+              </>
+            )}
+          </Button>
           <PlayerPresence players={gameState.players} myPlayerId={gameState.myPlayerId} />
           <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} />
         </div>

@@ -14,6 +14,7 @@ function RoomView({ roomId }: { roomId: string }) {
       <BoardDragLayer
         gameState={gameState}
         playerId={playerId}
+        roomId={roomId}
         connected={connected}
         sendAction={sendAction}
         setDragging={setDragging}
