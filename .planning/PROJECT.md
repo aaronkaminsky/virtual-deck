@@ -72,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 08 complete — Documentation housekeeping: `01-02-SUMMARY.md` now has `requirements-completed: [DECK-02]` in frontmatter; `03-VERIFICATION.md` TABLE-03 updated from `PARTIALLY SATISFIED` → `SATISFIED` reflecting quick task 260403-pya. All v1.0 planning artifacts are accurate and complete. 88/88 tests passing.
+Phase 999.1 complete — Drag card to opponent's hand: OpponentHand shows visual drag affordance (dashed border, "Drop to pass" label) during any active drag. PASS_CARD extended to accept pile source in addition to hand. Face-down cards stay hidden during drag overlay, reveal on drop into hand. Top card of face-down pile is now draggable without peeking. 89/89 tests passing.
 
 ---
-*Last updated: 2026-04-10 after Phase 08: documentation-housekeeping*
+*Last updated: 2026-04-11 after Phase 999.1: drag-card-to-opponents-hand*
