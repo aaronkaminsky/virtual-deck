@@ -195,6 +195,20 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
+### Phase 999.9: Skip position dialog when dropping on empty pile (BACKLOG)
+**Goal:** When a player drops a card onto a pile that has no cards, skip the Top/Bottom/Random dialog and insert directly — position is meaningless in an empty pile
+**Requirements:** TBD — client-side guard in BoardDragLayer before setting pendingMove
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.10: Drag origin placeholder (BACKLOG)
+**Goal:** While a card is being dragged, leave a visual placeholder (outline or ghost) at the source position so players can see where the card came from
+**Requirements:** TBD — dnd-kit supports renderDragSourceItem / CSS on dragged item; decide between outline, transparent ghost, or empty slot indicator
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ### Phase 999.8: Shuffle deck before dealing (BACKLOG)
 **Goal:** When a player deals cards, either automatically shuffle the deck first or prompt whether to shuffle — so cards aren't dealt in a predictable order
 **Requirements:** TBD — decide between auto-shuffle and user prompt; may reuse existing shuffle action
