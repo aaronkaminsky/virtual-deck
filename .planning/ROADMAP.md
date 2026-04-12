@@ -35,6 +35,19 @@ Phases not yet defined. Run `/gsd-new-milestone` to kick off requirements and ro
 
 Promote items with `/gsd-review-backlog` when ready to plan.
 
+### v1.1 Candidates
+
+Items targeted for the v1.1 milestone. Run `/gsd-new-milestone` to assign phase numbers and kick off planning.
+
+| Phase | Goal | Plans |
+|-------|------|-------|
+| 999.8 | Shuffle deck before dealing | TBD |
+| 999.11 | Pile drop dialog UX improvements | TBD |
+| 999.12 | Mobile-responsive layout — make the game fully playable on a phone; current layout is not usable on small screens | TBD |
+| 999.13 | Player name prompt on join — ask each player to enter a display name (max length enforced, injection-safe) when they join a room | TBD |
+
+### Future Backlog
+
 | Phase | Goal | Plans |
 |-------|------|-------|
 | 999.3 | Play area card grid for poker-style games | TBD |
@@ -42,10 +55,9 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.5 | Shuffle visual indicator | TBD |
 | 999.6 | Investigate test setup treating both players as remote | TBD |
 | 999.7 | README and architecture documentation | TBD |
-| 999.8 | Shuffle deck before dealing | TBD |
 | 999.9 | Skip position dialog for empty pile | TBD |
 | 999.10 | Drag origin placeholder | TBD |
-| 999.11 | Pile drop dialog UX improvements | TBD |
+| 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 
 ## Progress
 
