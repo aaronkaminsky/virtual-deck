@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-12)
 
 ## Current Position
 
-Phase: —
-Plan: Not started
-Status: v1.0 complete — run `/gsd-new-milestone` to start v1.1
-Last activity: 2026-04-12
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-12 — Milestone v1.1 started
 
 Progress: [__________] v1.1 not started
 

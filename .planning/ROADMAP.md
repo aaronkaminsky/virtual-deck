@@ -58,6 +58,7 @@ Items targeted for the v1.1 milestone. Run `/gsd-new-milestone` to assign phase 
 | 999.9 | Skip position dialog for empty pile | TBD |
 | 999.10 | Drag origin placeholder | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
+| 999.15 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 
 ## Progress
 
