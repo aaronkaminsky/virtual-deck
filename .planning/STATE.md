@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.1
-milestone_name: TBD
+milestone_name: Social Identity + UX Polish
 status: planning
-stopped_at: v1.0 milestone archived
+stopped_at: roadmap created — Phase 9 ready to plan
 last_updated: "2026-04-12T00:00:00.000Z"
 last_activity: 2026-04-12
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.0 shipped — planning v1.1
+**Current focus:** v1.1 — Phase 9: Player Identity & Presence
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 9 — Player Identity & Presence
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-12 — Milestone v1.1 started
+Status: Not started (roadmap defined, planning next)
+Last activity: 2026-04-12 — v1.1 roadmap created
 
-Progress: [__________] v1.1 not started
+Progress: [__________] 0/2 phases complete
 
 ## Performance Metrics
 
@@ -85,5 +85,5 @@ None — v1.0 shipped clean.
 ## Session Continuity
 
 Last session: 2026-04-12
-Stopped at: v1.0 milestone archived
+Stopped at: v1.1 roadmap created — Phase 9 ready to plan
 Resume file: None

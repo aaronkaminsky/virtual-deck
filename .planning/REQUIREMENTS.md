@@ -55,20 +55,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PRES-01 | TBD | Pending |
-| PRES-02 | TBD | Pending |
-| PRES-03 | TBD | Pending |
-| PRES-04 | TBD | Pending |
-| GAME-01 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
+| PRES-01 | Phase 9 | Pending |
+| PRES-02 | Phase 9 | Pending |
+| PRES-03 | Phase 9 | Pending |
+| PRES-04 | Phase 9 | Pending |
+| GAME-01 | Phase 10 | Pending |
+| UX-01 | Phase 10 | Pending |
+| UX-02 | Phase 10 | Pending |
+| UX-03 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8 ⚠️
+- Mapped to phases: 8
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after initial v1.1 definition*
+*Last updated: 2026-04-12 after v1.1 roadmap creation*
