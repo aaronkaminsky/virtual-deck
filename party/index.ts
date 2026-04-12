@@ -211,7 +211,17 @@ export default class GameRoom implements Party.Server {
           const destPile = this.gameState.piles.find(p => p.id === toId);
           card.faceUp = destPile?.faceUp ?? false;
         }
-        dest.push(card);
+        const pos = action.insertPosition ?? 'top';
+        if (pos === 'bottom') {
+          dest.unshift(card);
+        } else if (pos === 'random') {
+          const buf = new Uint32Array(1);
+          crypto.getRandomValues(buf);
+          const idx = dest.length === 0 ? 0 : buf[0] % (dest.length + 1);
+          dest.splice(idx, 0, card);
+        } else {
+          dest.push(card);
+        }
         break;
       }
       case "REORDER_HAND": {
