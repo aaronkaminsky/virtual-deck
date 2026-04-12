@@ -13,10 +13,13 @@ Build a multiplayer virtual card table from the server outward. The privacy corr
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Server Foundation** - PartyKit room with deck state, hand masking, and stable player tokens (completed 2026-04-02)
-- [ ] **Phase 2: Lobby + Room Join** - Create/join room flow, player names, room code sharing, static deploy
-- [ ] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw
-- [ ] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo
-- [ ] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators
+- [x] **Phase 2: Lobby + Room Join** - Create/join room flow, player names, room code sharing, static deploy (completed 2026-04-03)
+- [x] **Phase 3: Core Board** - Board UI, pile zones, private hand, opponent card backs, drag-and-drop, draw (completed 2026-04-04)
+- [x] **Phase 4: Game Controls** - Flip, pass card, deal, shuffle pile, reset table, undo (completed 2026-04-05)
+- [x] **Phase 5: Resilience + Polish** - Reconnect-to-hand, error states, connection status indicators (completed 2026-04-05)
+- [x] **Phase 6: Functional Tech Debt** - Fix host fallback bug, add copy-link to BoardView, remove dead action handlers (completed 2026-04-10)
+- [x] **Phase 7: Nyquist Validation** - Run validation for phases 1, 3, 4, 5 to achieve full Nyquist compliance (completed 2026-04-10)
+- [x] **Phase 8: Documentation Housekeeping** - Fix ROADMAP progress table, SUMMARY frontmatter gaps (completed 2026-04-10)
 
 ## Phase Details
 
@@ -62,8 +65,11 @@ Plans:
   3. Player can drag a card from their hand to a table pile and all players see the change in real time
   4. Player can drag a card from a table pile to their own hand and the card appears in their hand immediately
   5. An incoming server state update during an active drag does not cause visual tearing or snap-back
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 2/3 plans executed
+Plans:
+- [x] 03-01-PLAN.md — MOVE_CARD server action, play pile, and unit tests (Wave 1)
+- [x] 03-02-PLAN.md — Card components and board layout (Wave 1)
+- [ ] 03-03-PLAN.md — Drag-and-drop wiring, socket buffer, App.tsx integration (Wave 2)
 
 ### Phase 4: Game Controls
 **Goal**: Players have the full set of card manipulation actions needed to play a game session
@@ -76,8 +82,11 @@ Plans:
   4. Player can shuffle any pile on the table; the pile order is randomized server-side
   5. Player can reset the table, collecting all cards into the draw pile and reshuffling, without a page reload
   6. Player can undo their last card move; the previous state is restored for all players
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 1/3 plans executed
+Plans:
+- [x] 04-01-PLAN.md — Types, server handlers, and TDD tests for all 6 actions (Wave 1)
+- [ ] 04-02-PLAN.md — Client UI: ControlsBar, component modifications for flip/pass/shuffle (Wave 2)
+- [ ] 04-03-PLAN.md — Human verification of all game controls (Wave 3)
 
 ### Phase 5: Resilience + Polish
 **Goal**: The game survives network interruptions and presents clear connection status to all players
@@ -87,7 +96,132 @@ Plans:
   1. A player who disconnects and reconnects using the same room link gets their previous hand restored exactly
   2. All players can see which players are currently connected vs. disconnected
   3. A player who closes and reopens the tab (same browser, same room link) resumes with their hand intact
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+Plans:
+- [x] 05-01-PLAN.md — Fix server player identity and cap logic for reconnect (Wave 1)
+- [x] 05-02-PLAN.md — Connection banner and player presence UI (Wave 2)
+- [x] 05-03-PLAN.md — Human verification of reconnect and presence (Wave 3)
+
+### Phase 6: Functional Tech Debt
+**Goal**: Fix the two latent bugs and remove dead server code identified in the v1.0 audit
+**Depends on**: Phase 5
+**Requirements**: ROOM-01 (UX improvement — copy-link in BoardView)
+**Gap Closure**: Closes tech debt items from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `usePartySocket.ts` correctly falls back to the real production host when `VITE_PARTYKIT_HOST` is absent (DEV check, not env var truthiness)
+  2. A copy-room-link affordance exists and is accessible while a game is in progress (BoardView, not LobbyPanel)
+  3. Dead `DRAW_CARD` and `SHUFFLE_DECK` server handlers are removed; shared types updated to remove those action types
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 06-01-PLAN.md — Fix host fallback, add copy-link to BoardView, remove dead handlers (Wave 1)
+
+### Phase 7: Nyquist Validation
+**Goal**: All phases achieve full Nyquist compliance with passing VALIDATION.md files
+**Depends on**: Phase 6
+**Requirements**: None (validation infrastructure only)
+**Gap Closure**: Closes Nyquist gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Phase 1 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
+  2. Phase 3 VALIDATION.md has `wave_0_complete=true` (currently false despite `nyquist_compliant=true`)
+  3. Phase 4 VALIDATION.md exists with `nyquist_compliant=true` and `wave_0_complete=true`
+  4. Phase 5 VALIDATION.md exists with `nyquist_compliant=true`
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 07-01-PLAN.md — Run and fix validation for phases 1, 3, 4, 5 (Wave 1)
+
+### Phase 8: Documentation Housekeeping
+**Goal**: Planning artifacts accurately reflect the completed milestone state
+**Depends on**: Phase 7
+**Requirements**: None (documentation only)
+**Gap Closure**: Closes documentation gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. ROADMAP.md progress table shows phases 2, 3, 4, 5 as Complete with accurate completion dates
+  2. DECK-02 appears in the 02-SUMMARY frontmatter `requirements-completed` list
+  3. TABLE-03 Phase 3 VERIFICATION note is updated to reflect quick-task completion
+  4. Phase 5 SUMMARY files 05-01 and 05-02 include ROOM-04 in `requirements-completed`
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 08-01-PLAN.md — Fix all SUMMARY and VERIFICATION frontmatter gaps (Wave 1)
+
+## Backlog
+
+### Phase 999.1: Drag card to opponent's hand (BACKLOG)
+**Goal:** Add visual drag affordance to OpponentHand and verify the existing drag-to-opponent-hand pipe works end-to-end
+**Depends on**: Phase 4 (PASS_CARD server action and BoardDragLayer isPassCard branch)
+**Requirements:** DRAG-01 (visual affordance), DRAG-02 (undo test coverage), DRAG-03 (end-to-end drag-to-pass)
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 999.1-01-PLAN.md — OpponentHand visual affordance, undo test, and manual verification (Wave 1)
+
+### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
+**Goal:** When a player drops a card onto any pile, show a post-drop dialog with Top / Bottom / Random insertion choices
+**Requirements:** INSERT-01, INSERT-02, INSERT-03
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 999.2-01-PLAN.md — Types, server insertion logic, and post-drop dialog in BoardDragLayer (Wave 1)
+
+### Phase 999.3: Play area card grid for poker-style games (BACKLOG)
+**Goal:** Replace the play area pile with a 2D grid so cards can be positioned spatially (e.g. Texas Hold'em board)
+**Requirements:** TBD — cards need 2D coordinates; server stores positions; collision detection changes
+**Plans:** 1 plan
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.4: Personal player tableau visible to all (BACKLOG)
+**Goal:** Each player has a personal play area in front of them where they can place cards face-up or face-down, visible to all players
+**Requirements:** TBD — new per-player field zone on server; board renders each player's field
+**Plans:** 1 plan
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.5: Shuffle visual indicator (BACKLOG)
+**Goal:** Show a brief animation or green checkmark on the pile after a shuffle completes, so players get clear visual feedback that the shuffle happened
+**Requirements:** TBD — client-side only; server could emit a SHUFFLED event or client detects order change
+**Plans:** 1 plan
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.6: Investigate test setup treating both players as remote (BACKLOG)
+**Goal:** Investigate observed behavior where the test suite appears to put both players in a "remote" state — may indicate player identity or viewFor masking is applied incorrectly in tests
+**Requirements:** TBD — needs reproduction and root cause analysis before scoping
+**Plans:** 1 plan
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.7: README and architecture documentation (BACKLOG)
+**Goal:** Add a README with link to a DESIGN/ARCHITECTURE document; the architecture doc should cover file layout and include plantUML/mermaid diagrams
+**Requirements:** TBD — documentation only, no code changes
+**Plans:** 1 plan
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.9: Skip position dialog when dropping on empty pile (BACKLOG)
+**Goal:** When a player drops a card onto a pile that has no cards, skip the Top/Bottom/Random dialog and insert directly — position is meaningless in an empty pile
+**Requirements:** TBD — client-side guard in BoardDragLayer before setting pendingMove
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.10: Drag origin placeholder (BACKLOG)
+**Goal:** While a card is being dragged, leave a visual placeholder (outline or ghost) at the source position so players can see where the card came from
+**Requirements:** TBD — dnd-kit supports renderDragSourceItem / CSS on dragged item; decide between outline, transparent ghost, or empty slot indicator
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.8: Shuffle deck before dealing (BACKLOG)
+**Goal:** When a player deals cards, either automatically shuffle the deck first or prompt whether to shuffle — so cards aren't dealt in a predictable order
+**Requirements:** TBD — decide between auto-shuffle and user prompt; may reuse existing shuffle action
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.11: Pile drop dialog UX improvements (BACKLOG)
+**Goal:** Two UX improvements to the insert-position dialog: (1) Escape or click-outside cancels the drag entirely rather than defaulting to Top; (2) "Top" button has distinct visual treatment (e.g. primary/filled) and is activated by Enter key
+**Requirements:** TBD — cancel path must return the card to its origin; focus management for Enter key default
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
 
 ## Progress
 
@@ -96,8 +230,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server Foundation | 3/3 | Complete   | 2026-04-02 |
-| 2. Lobby + Room Join | 2/3 | In Progress|  |
-| 3. Core Board | 0/? | Not started | - |
-| 4. Game Controls | 0/? | Not started | - |
-| 5. Resilience + Polish | 0/? | Not started | - |
+| 1. Server Foundation | 3/3 | Complete | 2026-04-02 |
+| 2. Lobby + Room Join | 3/3 | Complete | 2026-04-03 |
+| 3. Core Board | 3/3 | Complete | 2026-04-04 |
+| 4. Game Controls | 3/3 | Complete | 2026-04-05 |
+| 5. Resilience + Polish | 3/3 | Complete | 2026-04-05 |
+| 6. Functional Tech Debt | 1/1 | Complete   | 2026-04-10 |
+| 7. Nyquist Validation | 1/1 | Complete   | 2026-04-10 |
+| 8. Documentation Housekeeping | 1/1 | Complete   | 2026-04-10 |

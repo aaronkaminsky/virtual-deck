@@ -21,9 +21,10 @@ function makeTestState(): GameState {
       "player-3": [makeCard("9-d")],
     },
     piles: [
-      { id: "draw", name: "Draw", cards: [makeCard("2-c"), makeCard("3-c")] },
-      { id: "discard", name: "Discard", cards: [] },
+      { id: "draw", name: "Draw", cards: [makeCard("2-c"), makeCard("3-c")], faceUp: false },
+      { id: "discard", name: "Discard", cards: [], faceUp: true },
     ],
+    undoSnapshots: [],
   };
 }
 
@@ -73,5 +74,76 @@ describe("viewFor", () => {
     const state = makeTestState();
     const view = viewFor(state, "unknown-player");
     expect(view.myHand).toHaveLength(0);
+  });
+
+  it("returns canUndo false when no snapshot exists for player", () => {
+    const state = makeTestState();
+    const view = viewFor(state, "player-1");
+    expect(view.canUndo).toBe(false);
+  });
+
+  it("returns canUndo true when the shared undo stack is non-empty", () => {
+    const state = makeTestState();
+    state.undoSnapshots.push(makeTestState());
+    const view = viewFor(state, "player-1");
+    expect(view.canUndo).toBe(true);
+  });
+
+  it("returns canUndo false for null playerToken", () => {
+    const state = makeTestState();
+    const view = viewFor(state, null);
+    expect(view.canUndo).toBe(false);
+  });
+
+  // Regression: viewFor used to omit myPlayerId from ClientGameState.
+  // The client used localStorage playerId as the drag identity, which never matched
+  // the server's connection.id (playerToken). Hand drags were always rejected with
+  // UNAUTHORIZED_MOVE. Fix: viewFor populates myPlayerId = playerToken so the client
+  // can use the server-assigned token for all drag identity checks.
+  it("regression: myPlayerId equals the playerToken argument", () => {
+    const state = makeTestState();
+    const view = viewFor(state, "player-1");
+    expect(view.myPlayerId).toBe("player-1");
+  });
+
+  it("regression: myPlayerId is empty string for null playerToken", () => {
+    const state = makeTestState();
+    const view = viewFor(state, null);
+    expect(view.myPlayerId).toBe("");
+  });
+
+  it("strips id/suit/rank from face-down pile cards except the top card", () => {
+    const state = makeTestState();
+    const view = viewFor(state, "player-1");
+    const drawPile = view.piles.find(p => p.id === "draw")!;
+    expect(drawPile.cards.length).toBeGreaterThan(1);
+    // Non-top cards are fully masked
+    for (const card of drawPile.cards.slice(0, -1)) {
+      expect(card.faceUp).toBe(false);
+      expect("id" in card).toBe(false);
+    }
+    // Top card reveals id/suit/rank so it can be dragged/flipped
+    const top = drawPile.cards[drawPile.cards.length - 1];
+    expect(top.faceUp).toBe(false);
+    expect("id" in top).toBe(true);
+    expect("suit" in top).toBe(true);
+    expect("rank" in top).toBe(true);
+  });
+
+  it("preserves full data for face-up pile cards", () => {
+    const state = makeTestState();
+    state.piles[1].cards.push({ id: "7-h", suit: "hearts", rank: "7", faceUp: true });
+    const view = viewFor(state, "player-1");
+    const discardPile = view.piles.find(p => p.id === "discard")!;
+    expect(discardPile.cards).toHaveLength(1);
+    expect(discardPile.cards[0]).toEqual({ id: "7-h", suit: "hearts", rank: "7", faceUp: true });
+  });
+
+  it("preserves pile card count after masking", () => {
+    const state = makeTestState();
+    const drawBefore = state.piles.find(p => p.id === "draw")!.cards.length;
+    const view = viewFor(state, "player-1");
+    const drawAfter = view.piles.find(p => p.id === "draw")!.cards.length;
+    expect(drawAfter).toBe(drawBefore);
   });
 });

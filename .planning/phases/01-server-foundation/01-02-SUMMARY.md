@@ -25,6 +25,7 @@ metrics:
   completed: "2026-04-01"
   tasks_completed: 2
   files_modified: 2
+requirements-completed: [DECK-02]
 ---
 
 # Phase 01 Plan 02: Core Game Logic Functions Summary
