@@ -50,7 +50,7 @@ export interface ClientGameState {
 }
 
 export type ClientAction =
-  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string }
+  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
   | { type: "REORDER_HAND"; orderedCardIds: string[] }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
