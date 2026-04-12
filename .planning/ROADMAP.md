@@ -195,6 +195,13 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
+### Phase 999.8: Shuffle deck before dealing (BACKLOG)
+**Goal:** When a player deals cards, either automatically shuffle the deck first or prompt whether to shuffle — so cards aren't dealt in a predictable order
+**Requirements:** TBD — decide between auto-shuffle and user prompt; may reuse existing shuffle action
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
