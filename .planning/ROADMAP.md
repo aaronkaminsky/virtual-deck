@@ -216,6 +216,13 @@ Plans:
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
 
+### Phase 999.11: Pile drop dialog UX improvements (BACKLOG)
+**Goal:** Two UX improvements to the insert-position dialog: (1) Escape or click-outside cancels the drag entirely rather than defaulting to Top; (2) "Top" button has distinct visual treatment (e.g. primary/filled) and is activated by Enter key
+**Requirements:** TBD — cancel path must return the card to its origin; focus management for Enter key default
+**Plans:** 0 plans
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
