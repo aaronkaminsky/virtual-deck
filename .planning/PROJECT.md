@@ -72,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-Phase 999.1 complete — Drag card to opponent's hand: OpponentHand shows visual drag affordance (dashed border, "Drop to pass" label) during any active drag. PASS_CARD extended to accept pile source in addition to hand. Face-down cards stay hidden during drag overlay, reveal on drop into hand. Top card of face-down pile is now draggable without peeking. 89/89 tests passing.
+Phase 999.2 complete — Put card back on draw pile (top/bottom/random): Dropping any card onto a pile now shows a 3-button dialog (Top / Bottom / Random). Server performs push/unshift/crypto-splice accordingly. Dismiss defaults to Top — no card can enter limbo. 89/89 tests passing.
 
 ---
-*Last updated: 2026-04-11 after Phase 999.1: drag-card-to-opponents-hand*
+*Last updated: 2026-04-12 after Phase 999.2: put-card-back-on-draw-pile-top-bottom-or-random-position*
