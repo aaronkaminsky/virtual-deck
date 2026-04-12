@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 999.1-01-PLAN.md
-last_updated: "2026-04-11T00:39:51.368Z"
-last_activity: 2026-04-11
+stopped_at: Completed 999.2-01-PLAN.md
+last_updated: "2026-04-12T15:24:19.606Z"
+last_activity: 2026-04-12
 progress:
   total_phases: 15
-  completed_phases: 9
-  total_plans: 20
-  completed_plans: 20
+  completed_phases: 10
+  total_plans: 21
+  completed_plans: 21
   percent: 33
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 999.1 — drag-card-to-opponents-hand
+**Current focus:** Phase 999.2 — put-card-back-on-draw-pile-top-bottom-or-random-position
 
 ## Current Position
 
-Phase: 999.2
-Plan: Not started
+Phase: 999.2 (put-card-back-on-draw-pile-top-bottom-or-random-position) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
-Last activity: 2026-04-11
+Last activity: 2026-04-12
 
 Progress: [███░░░░░░░] 33%
 
@@ -66,6 +66,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 07-nyquist-validation P01 | 5 | 2 tasks | 4 files |
 | Phase 08 P01 | 5 | 2 tasks | 2 files |
 | Phase 999.1-drag-card-to-opponents-hand P01 | 60 | 2 tasks | 5 files |
+| Phase 999.2 P01 | 15 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,8 @@ Recent decisions affecting current work:
 - [Phase 07-nyquist-validation]: Phase 5 VALIDATION.md maps 7 reconnect.test.ts it-cases to task rows 05-01-01 through 05-01-07 (ROOM-04); presence and disconnection banner remain manual-only
 - [Phase 999.1-drag-card-to-opponents-hand]: useDndContext (not prop drilling) detects drag source type inside OpponentHand — reads active.data.current.fromZone
 - [Phase 999.1-drag-card-to-opponents-hand]: dragIsFromHand triggers affordance for any active drag, not just fromZone=hand check — ensures zone is always visible when user is dragging
+- [Phase 999.2]: Used @base-ui/react/dialog Dialog primitives for post-drop position dialog — AlertDialog hardcodes disablePointerDismissal:true which would break click-outside dismiss
+- [Phase 999.2]: insertPosition optional on MOVE_CARD defaults to top server-side — backward compatible with all existing dispatches
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T22:17:16.417Z
-Stopped at: Completed 999.1-01-PLAN.md
+Last session: 2026-04-12T15:24:19.598Z
+Stopped at: Completed 999.2-01-PLAN.md
 Resume file: None

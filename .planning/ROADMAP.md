@@ -154,11 +154,11 @@ Plans:
 - [x] 999.1-01-PLAN.md — OpponentHand visual affordance, undo test, and manual verification (Wave 1)
 
 ### Phase 999.2: Put card back on draw pile — top, bottom, or random (BACKLOG)
-**Goal:** When moving a card to the draw pile, let the player choose insertion position
-**Requirements:** TBD — simple server change; UX needs a modal/context menu post-drop
-**Plans:** 1 plan
+**Goal:** When a player drops a card onto any pile, show a post-drop dialog with Top / Bottom / Random insertion choices
+**Requirements:** INSERT-01, INSERT-02, INSERT-03
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
+- [x] 999.2-01-PLAN.md — Types, server insertion logic, and post-drop dialog in BoardDragLayer (Wave 1)
 
 ### Phase 999.3: Play area card grid for poker-style games (BACKLOG)
 **Goal:** Replace the play area pile with a 2D grid so cards can be positioned spatially (e.g. Texas Hold'em board)
