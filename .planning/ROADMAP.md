@@ -46,10 +46,12 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.9 | Skip position dialog for empty pile | TBD |
 | 999.10 | Drag origin placeholder | TBD |
 | 999.11 | Pile drop dialog UX improvements | TBD |
+| 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
 | 999.16 | Turn indicators — show whose turn it is | TBD |
 | 999.17 | Chips — poker/betting chip support | TBD |
 | 999.18 | Show hand — player can reveal their hand to all players | TBD |
+| 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 
 ## Progress
 

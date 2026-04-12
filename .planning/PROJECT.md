@@ -8,6 +8,17 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
+## Current Milestone: v1.1 Social Identity + UX Polish
+
+**Goal:** Add player identity and presence, improve dialog UX, and fill the shuffle-before-deal gap.
+
+**Target features:**
+- PRES-01: Players set a display name when joining a room
+- PRES-02: All players see who is connected and disconnected
+- 999.8: Shuffle deck before dealing
+- 999.9: Skip position dialog when dropping onto an empty pile
+- 999.11: Pile drop dialog — Escape cancels, Enter confirms Top
+
 ## Current State
 
 **v1.0 shipped 2026-04-12.** Full card table deployed and playable.
@@ -45,15 +56,13 @@ Known remaining items (deferred backlog):
 - ✓ Reset the table (all cards to draw pile, reshuffled) — v1.0 (CTRL-03)
 - ✓ Undo last card move — v1.0 (CTRL-04)
 
-### Active (v1.1 candidates)
+### Active (v1.1)
 
 - [ ] Players set a display name when joining a room (PRES-01)
 - [ ] All players see who is connected and disconnected (PRES-02)
-- [ ] Named pile labels configurable per session (DIFF-01)
-- [ ] Action log showing last N moves (DIFF-02)
-- [ ] Spectator mode — 5th+ person can observe without playing (DIFF-03)
-- [ ] Skip pile position dialog for empty piles (backlog 999.9)
-- [ ] Pile drop dialog UX: Escape cancels, Enter confirms Top (backlog 999.11)
+- [ ] Shuffle deck before dealing (GAME-01)
+- [ ] Skip pile position dialog for empty piles (UX-01)
+- [ ] Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02)
 
 ### Out of Scope
 
@@ -87,5 +96,22 @@ Known remaining items (deferred backlog):
 | @base-ui/react/dialog for pile insert dialog | AlertDialog hardcodes disablePointerDismissal which breaks click-outside dismiss | ✓ Validated v1.0 |
 | insertPosition optional on MOVE_CARD (defaults to top) | Backward compatible with all existing dispatches; pile insert dialog is additive | ✓ Validated v1.0 |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-12 after v1.0 milestone completion*
+*Last updated: 2026-04-12 — v1.1 milestone started*
