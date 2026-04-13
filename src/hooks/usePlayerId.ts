@@ -1,6 +1,15 @@
 import { nanoid } from 'nanoid';
 
 const STORAGE_KEY = 'playerId';
+const NAME_STORAGE_KEY = 'displayName';
+
+export function getDisplayName(): string {
+  return localStorage.getItem(NAME_STORAGE_KEY) ?? '';
+}
+
+export function saveDisplayName(name: string): void {
+  localStorage.setItem(NAME_STORAGE_KEY, name.slice(0, 20));
+}
 
 export function getOrCreatePlayerId(): string {
   const params = new URLSearchParams(window.location.search);
