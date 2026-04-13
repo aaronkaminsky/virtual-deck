@@ -108,7 +108,8 @@ export default class GameRoom implements Party.Server {
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
     const url = new URL(ctx.request.url);
-    const playerToken = url.searchParams.get("player") ?? connection.id;
+    const rawToken = url.searchParams.get("player") ?? connection.id;
+    const playerToken = rawToken.slice(0, 64); // nanoid default is 21 chars; 64 is a generous cap
     const displayName = (url.searchParams.get("name") ?? '').slice(0, 20);
 
     const isExistingPlayer = this.gameState.players.some(p => p.id === playerToken);
