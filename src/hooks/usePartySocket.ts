@@ -12,6 +12,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
+  const displayNameRef = useRef(displayName);
+  displayNameRef.current = displayName;
 
   const enabled = options?.enabled ?? true;
 
@@ -21,7 +23,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     const ws = new PartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
-      query: { player: playerId, name: displayName },
+      query: { player: playerId, name: displayNameRef.current },
     });
     wsRef.current = ws;
 
@@ -51,7 +53,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       ws.close();
       wsRef.current = null;
     };
-  }, [roomId, playerId, displayName, enabled]);
+  }, [roomId, playerId, enabled]);
 
   const sendAction = useCallback((action: ClientAction) => {
     wsRef.current?.send(JSON.stringify(action));
