@@ -43,7 +43,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
           {Array.from({ length: cardCount }).map((_, i) => (
             <CardBack
               key={i}
-              className={i > 0 ? '-ml-4' : undefined}
+              className={cn('w-[42px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
             />
           ))}
         </div>
