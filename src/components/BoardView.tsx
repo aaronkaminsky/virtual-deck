@@ -25,6 +25,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction }
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Clipboard write failed (e.g., permission denied or non-HTTPS context)
     });
   };
 

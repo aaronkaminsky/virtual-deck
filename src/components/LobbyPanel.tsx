@@ -23,6 +23,8 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Clipboard write failed (e.g., permission denied or non-HTTPS context)
     });
   };
 
