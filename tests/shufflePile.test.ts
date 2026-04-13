@@ -37,7 +37,7 @@ describe("SHUFFLE_PILE handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
   });
 

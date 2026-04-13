@@ -41,8 +41,8 @@ describe("PASS_CARD handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true });
-    room.gameState.players.push({ id: "player-2", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
@@ -92,7 +92,7 @@ describe("PASS_CARD handler", () => {
 
   it("viewFor after PASS_CARD shows card in recipient's myHand, not in sender's; third player sees opponentHandCounts change", async () => {
     const player3 = makeMockConnection("player-3");
-    room.gameState.players.push({ id: "player-3", connected: true });
+    room.gameState.players.push({ id: "player-3", connected: true, displayName: "" });
     room.gameState.hands["player-3"] = [];
 
     const card = makeCard("A-s");

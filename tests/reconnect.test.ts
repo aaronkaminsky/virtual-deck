@@ -85,7 +85,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const gameRoom = new GameRoom(room);
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "" }],
       hands: { "stable-player-id": [makeCard("A-s")] },
     };
 
@@ -104,7 +104,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const existingHand = [makeCard("A-s"), makeCard("K-h")];
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "" }],
       hands: { "stable-player-id": existingHand },
     };
 
@@ -122,7 +122,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const gameRoom = new GameRoom(room);
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "" }],
       hands: { "stable-player-id": [makeCard("A-s")] },
     };
 
@@ -143,10 +143,10 @@ describe("onConnect: slot-based 4-player cap", () => {
     gameRoom.gameState = {
       ...makeTestState(),
       players: [
-        { id: "player-1", connected: true },
-        { id: "player-2", connected: true },
-        { id: "player-3", connected: false },
-        { id: "player-4", connected: false },
+        { id: "player-1", connected: true, displayName: "" },
+        { id: "player-2", connected: true, displayName: "" },
+        { id: "player-3", connected: false, displayName: "" },
+        { id: "player-4", connected: false, displayName: "" },
       ],
       hands: {
         "player-1": [],
@@ -171,10 +171,10 @@ describe("onConnect: slot-based 4-player cap", () => {
     gameRoom.gameState = {
       ...makeTestState(),
       players: [
-        { id: "player-1", connected: true },
-        { id: "player-2", connected: true },
-        { id: "player-3", connected: false },
-        { id: "player-4", connected: false },
+        { id: "player-1", connected: true, displayName: "" },
+        { id: "player-2", connected: true, displayName: "" },
+        { id: "player-3", connected: false, displayName: "" },
+        { id: "player-4", connected: false, displayName: "" },
       ],
       hands: {
         "player-1": [],

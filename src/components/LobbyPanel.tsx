@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { Copy, Check, Loader2, Users } from 'lucide-react';
+import { Copy, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import type { ClientGameState } from '@/shared/types';
+import { getDisplayName } from '@/hooks/usePlayerId';
 
 interface LobbyPanelProps {
   roomId: string;
-  playerId: string;
-  gameState: ClientGameState | null;
+  onJoin: (name: string) => void;
   connected: boolean;
   error: string | null;
+  joining: boolean;
 }
 
-export default function LobbyPanel({ roomId, playerId, gameState, connected, error }: LobbyPanelProps) {
+export default function LobbyPanel({ roomId, onJoin, connected, error, joining }: LobbyPanelProps) {
   const [copied, setCopied] = useState(false);
+  const [name, setName] = useState(() => getDisplayName());
 
   const handleCopy = () => {
     const base = import.meta.env.BASE_URL || '/virtual-deck/';
@@ -21,10 +23,10 @@ export default function LobbyPanel({ roomId, playerId, gameState, connected, err
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // Clipboard write failed (e.g., permission denied or non-HTTPS context)
     });
   };
-
-  const players = gameState?.players ?? [];
 
   const errorMessage = error
     ? error.toLowerCase().includes('full')
@@ -63,52 +65,43 @@ export default function LobbyPanel({ roomId, playerId, gameState, connected, err
         <Separator className="my-6" />
 
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="size-4" />
-            <h2 className="text-base font-semibold">Players</h2>
-          </div>
-          <ul className="space-y-2">
-            {[0, 1, 2, 3].map((index) => {
-              const player = players[index];
-              if (player && connected) {
-                const isSelf = player.id === playerId;
-                return (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className={`rounded-full w-2 h-2 ${isSelf ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                    <span className="text-sm">{isSelf ? 'You' : 'Player'}</span>
-                  </li>
-                );
-              }
-              if (player && !connected) {
-                return (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="bg-muted-foreground rounded-full w-2 h-2" />
-                    <span className="text-sm text-muted-foreground">Player</span>
-                  </li>
-                );
-              }
-              return (
-                <li key={index} className="flex items-center gap-2">
-                  <span className="border border-dashed border-muted-foreground rounded-full w-2 h-2" />
-                  <span className="text-sm text-muted-foreground">Waiting...</span>
-                </li>
-              );
-            })}
-          </ul>
+          <p className="text-sm text-muted-foreground mb-1">Your name</p>
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value.slice(0, 20))}
+            placeholder="Your name"
+            maxLength={20}
+            disabled={joining}
+          />
         </div>
 
-        <div className="flex items-center gap-2">
-          {connected ? (
+        <Button
+          className="w-full min-h-[44px]"
+          disabled={name.trim().length === 0 || joining}
+          onClick={() => onJoin(name.trim())}
+        >
+          {joining ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Joining...
+            </>
+          ) : (
+            'Join Game'
+          )}
+        </Button>
+
+        <div className="flex items-center gap-2 mt-6">
+          {joining && connected ? (
             <>
               <span className="bg-primary rounded-full w-2 h-2" />
               <span className="text-sm text-muted-foreground">Connected</span>
             </>
-          ) : (
+          ) : joining ? (
             <>
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Connecting...</span>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 

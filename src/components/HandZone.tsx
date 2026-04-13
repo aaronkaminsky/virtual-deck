@@ -34,10 +34,12 @@ function SortableHandCard({ card, playerId }: SortableHandCardProps) {
 interface HandZoneProps {
   cards: Card[];
   playerId: string;
+  displayName: string;
+  connected: boolean;
   sendAction: (action: ClientAction) => void;
 }
 
-export function HandZone({ cards, playerId, sendAction }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction }: HandZoneProps) {
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
@@ -74,18 +76,24 @@ export function HandZone({ cards, playerId, sendAction }: HandZoneProps) {
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        'h-[128px] flex items-center px-4 gap-2 overflow-x-auto bg-card',
-        isOver ? 'border-t-2 border-primary' : ''
-      )}
-    >
-      <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
-        {cards.map((card) => (
-          <SortableHandCard key={card.id} card={card} playerId={playerId} />
-        ))}
-      </SortableContext>
+    <div>
+      <div className="flex items-center gap-2 px-4 mb-1">
+        <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
+        <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
+      </div>
+      <div
+        ref={setNodeRef}
+        className={cn(
+          'h-[128px] flex items-center px-4 gap-2 overflow-x-auto bg-card',
+          isOver ? 'border-t-2 border-primary' : ''
+        )}
+      >
+        <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+          {cards.map((card) => (
+            <SortableHandCard key={card.id} card={card} playerId={playerId} />
+          ))}
+        </SortableContext>
+      </div>
     </div>
   );
 }

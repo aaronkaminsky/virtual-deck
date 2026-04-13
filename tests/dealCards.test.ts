@@ -41,8 +41,8 @@ describe("DEAL_CARDS handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true });
-    room.gameState.players.push({ id: "player-2", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
@@ -80,7 +80,7 @@ describe("DEAL_CARDS handler", () => {
   });
 
   it("deals only to connected players (skips disconnected)", async () => {
-    room.gameState.players.push({ id: "player-3", connected: false });
+    room.gameState.players.push({ id: "player-3", connected: false, displayName: "" });
     room.gameState.hands["player-3"] = [];
 
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
