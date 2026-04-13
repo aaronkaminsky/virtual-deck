@@ -5,7 +5,7 @@ import type { ClientAction, ClientGameState, ServerEvent } from '../shared/types
 const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
   ?? (import.meta.env.DEV ? 'localhost:1999' : 'virtual-deck.aaronkaminsky.partykit.dev');
 
-export function usePartySocket(roomId: string, playerId: string) {
+export function usePartySocket(roomId: string, playerId: string, displayName: string, options?: { enabled?: boolean }) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,11 +13,15 @@ export function usePartySocket(roomId: string, playerId: string) {
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
 
+  const enabled = options?.enabled ?? true;
+
   useEffect(() => {
+    if (!enabled) return;
+
     const ws = new PartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
-      query: { player: playerId },
+      query: { player: playerId, name: displayName },
     });
     wsRef.current = ws;
 
@@ -47,7 +51,7 @@ export function usePartySocket(roomId: string, playerId: string) {
       ws.close();
       wsRef.current = null;
     };
-  }, [roomId, playerId]);
+  }, [roomId, playerId, displayName, enabled]);
 
   const sendAction = useCallback((action: ClientAction) => {
     wsRef.current?.send(JSON.stringify(action));
