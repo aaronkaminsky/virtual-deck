@@ -47,6 +47,9 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.10 | Drag origin placeholder | TBD |
 | 999.11 | Pile drop dialog UX improvements | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
+| 999.16 | Turn indicators — show whose turn it is | TBD |
+| 999.17 | Chips — poker/betting chip support | TBD |
+| 999.18 | Show hand — player can reveal their hand to all players | TBD |
 
 ## Progress
 
