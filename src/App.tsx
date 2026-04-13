@@ -1,19 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
-import { getOrCreatePlayerId } from './hooks/usePlayerId';
+import { getOrCreatePlayerId, saveDisplayName } from './hooks/usePlayerId';
 import { usePartySocket } from './hooks/usePartySocket';
 import LobbyPanel from './components/LobbyPanel';
 import { BoardDragLayer } from './components/BoardDragLayer';
 
 function RoomView({ roomId }: { roomId: string }) {
-  const playerId = getOrCreatePlayerId();
-  const { gameState, connected, error, sendAction, setDragging } = usePartySocket(roomId, playerId);
+  const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  if (gameState) {
+  const { gameState, connected, error, sendAction, setDragging } = usePartySocket(
+    roomId,
+    joinState?.playerId ?? '',
+    joinState?.displayName ?? '',
+    { enabled: joinState !== null }
+  );
+
+  const handleJoin = (name: string) => {
+    saveDisplayName(name);
+    setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
+  };
+
+  if (joinState && gameState) {
     return (
       <BoardDragLayer
         gameState={gameState}
-        playerId={playerId}
+        playerId={joinState.playerId}
         roomId={roomId}
         connected={connected}
         sendAction={sendAction}
@@ -25,10 +36,10 @@ function RoomView({ roomId }: { roomId: string }) {
   return (
     <LobbyPanel
       roomId={roomId}
-      playerId={playerId}
-      gameState={gameState}
-      connected={connected}
+      onJoin={handleJoin}
+      connected={joinState !== null && connected}
       error={error}
+      joining={joinState !== null}
     />
   );
 }
