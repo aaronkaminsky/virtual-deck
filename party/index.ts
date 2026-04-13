@@ -136,6 +136,10 @@ export default class GameRoom implements Party.Server {
   }
 
   async onMessage(message: string, sender: Party.Connection) {
+    if (typeof message !== 'string') {
+      sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_MESSAGE", message: "Binary messages not supported" } satisfies ServerEvent));
+      return;
+    }
     const senderToken = getPlayerToken(sender);
     let action: ClientAction;
     try {
