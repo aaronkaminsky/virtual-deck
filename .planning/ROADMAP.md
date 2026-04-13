@@ -73,7 +73,9 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.10 | Drag origin placeholder | TBD |
 | 999.12 | Mobile-responsive layout — make the game fully playable on a phone; current layout is not usable on small screens | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
-| 999.15 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
+| 999.15 | Mobile touch gestures — swipe and pinch gestures optimized for mobile card interactions | TBD |
+| 999.16 | SMS/email invitation — "Send invitation" button to share room URL via email or text; admin notification email when a game is started | TBD |
+| 999.17 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 
 ## Progress
 
