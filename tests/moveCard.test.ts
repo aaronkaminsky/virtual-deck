@@ -34,7 +34,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true });
+  state.players.push({ id: playerId, connected: true, displayName: "" });
   state.hands[playerId] = cards;
   return state;
 }
@@ -174,7 +174,7 @@ describe("MOVE_CARD handler", () => {
   it("sends UNAUTHORIZED_MOVE when fromZone=hand and fromId != sender.id", async () => {
     const card = makeCard("A-s");
     room.gameState = makeStateWithPlayerAndCards("player-2", [card]);
-    room.gameState.players.push({ id: "player-1", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
 
     const msg = JSON.stringify({
@@ -199,7 +199,7 @@ describe("MOVE_CARD handler", () => {
     const card = makeCard("A-s");
     room.gameState = makeStateWithPlayerAndCards("player-1", []);
     room.gameState.piles.find(p => p.id === "discard")!.cards.push(card);
-    room.gameState.players.push({ id: "player-2", connected: true });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
     room.gameState.hands["player-2"] = [];
 
     const msg = JSON.stringify({
@@ -226,7 +226,7 @@ describe("MOVE_CARD handler", () => {
   it("regression: MOVE_CARD fromZone=hand rejected when fromId does not match sender token", async () => {
     const card = makeCard("7-s");
     room.gameState = makeStateWithPlayerAndCards("player-2", [card]);
-    room.gameState.players.push({ id: "player-1", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
 
     const msg = JSON.stringify({

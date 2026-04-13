@@ -11,9 +11,9 @@ function makeTestState(): GameState {
     roomId: "test-room",
     phase: "playing",
     players: [
-      { id: "player-1", connected: true },
-      { id: "player-2", connected: true },
-      { id: "player-3", connected: true },
+      { id: "player-1", connected: true, displayName: "" },
+      { id: "player-2", connected: true, displayName: "" },
+      { id: "player-3", connected: true, displayName: "" },
     ],
     hands: {
       "player-1": [makeCard("A-s"), makeCard("K-s")],

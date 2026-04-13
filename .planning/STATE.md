@@ -1,16 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v1.1
+milestone_name: TBD
 status: planning
-stopped_at: Phase 9 context gathered
-last_updated: "2026-04-12T23:26:47.052Z"
-last_activity: 2026-04-12 — v1.1 roadmap created
+stopped_at: v1.0 milestone archived
+last_updated: "2026-04-12T00:00:00.000Z"
+last_activity: 2026-04-12
 progress:
-  total_phases: 2
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.1 — Phase 9: Player Identity & Presence
+**Current focus:** v1.0 shipped — planning v1.1
 
 ## Current Position
 
-Phase: 9 — Player Identity & Presence
-Plan: —
-Status: Not started (roadmap defined, planning next)
-Last activity: 2026-04-12 — v1.1 roadmap created
+Phase: —
+Plan: Not started
+Status: v1.0 complete — run `/gsd-new-milestone` to start v1.1
+Last activity: 2026-04-12
 
-Progress: [__________] 0/2 phases complete
+Progress: [__________] v1.1 not started
 
 ## Performance Metrics
 
@@ -83,6 +84,6 @@ None — v1.0 shipped clean.
 
 ## Session Continuity
 
-Last session: 2026-04-12T23:26:47.042Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-player-identity-presence/09-CONTEXT.md
+Last session: 2026-04-12
+Stopped at: v1.0 milestone archived
+Resume file: None

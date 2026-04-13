@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
-- 📋 **v1.1 Social Identity + UX Polish** — Phases 9–10 (in progress)
+- 📋 **v1.1** — TBD (planned)
 
 ## Phases
 
@@ -29,39 +29,11 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 
 ### 📋 v1.1 (Planned)
 
-- [ ] **Phase 9: Player Identity & Presence** — Display names on join, visible to all players, persisted across reconnects, real-time roster
-- [ ] **Phase 10: Dialog UX + Deal Shuffle** — Empty-pile drop skips dialog, Escape/Enter keyboard handling in dialog, shuffle-before-deal
-
-## Phase Details
-
-### Phase 9: Player Identity & Presence
-**Goal**: Every seat at the table has a name, and all players can see who is present
-**Depends on**: Phase 5 (presence dots infrastructure already in place)
-**Requirements**: PRES-01, PRES-02, PRES-03, PRES-04
-**Success Criteria** (what must be TRUE):
-  1. Player is prompted for a display name (non-empty, max 20 chars) before or during room join
-  2. Each player's display name appears on the board next to their hand/seat, visible to all
-  3. A player who disconnects and reconnects retains their previous display name
-  4. All players see a live roster indicating which players are connected and which are disconnected
-**Plans**: TBD
-**UI hint**: yes
-
-### Phase 10: Dialog UX + Deal Shuffle
-**Goal**: Pile interactions feel instant and keyboard-native, and deals start from a shuffled pile
-**Depends on**: Phase 9
-**Requirements**: UX-01, UX-02, UX-03, GAME-01
-**Success Criteria** (what must be TRUE):
-  1. Dropping a card onto an empty pile places it on top immediately — no dialog appears
-  2. Pressing Escape while the pile drop dialog is open closes the dialog and returns the card to where it was dragged from
-  3. Pressing Enter while the pile drop dialog is open confirms the Top position (the pre-selected default)
-  4. Dealing N cards from a pile distributes from a freshly shuffled order, not the current pile sequence
-**Plans**: TBD
+Phases not yet defined. Run `/gsd-new-milestone` to kick off requirements and roadmap.
 
 ## Backlog
 
 Promote items with `/gsd-review-backlog` when ready to plan.
-
-### Future Backlog
 
 | Phase | Goal | Plans |
 |-------|------|-------|
@@ -70,17 +42,15 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.5 | Shuffle visual indicator | TBD |
 | 999.6 | Investigate test setup treating both players as remote | TBD |
 | 999.7 | README and architecture documentation | TBD |
+| 999.8 | Shuffle deck before dealing | TBD |
+| 999.9 | Skip position dialog for empty pile | TBD |
 | 999.10 | Drag origin placeholder | TBD |
-| 999.12 | Mobile-responsive layout — make the game fully playable on a phone; current layout is not usable on small screens | TBD |
-| 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
-| 999.15 | Mobile touch gestures — swipe and pinch gestures optimized for mobile card interactions | TBD |
-| 999.16 | SMS/email invitation — "Send invitation" button to share room URL via email or text; admin notification email when a game is started | TBD |
-| 999.17 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
+| 999.11 | Pile drop dialog UX improvements | TBD |
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
+| Phase | Milestone | Plans | Status | Completed |
+|-------|-----------|-------|--------|-----------|
 | 1. Server Foundation | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 2. Lobby + Room Join | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 3. Core Board | v1.0 | 3/3 | Complete | 2026-04-04 |
@@ -91,5 +61,3 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 8. Documentation Housekeeping | v1.0 | 1/1 | Complete | 2026-04-10 |
 | 999.1 Drag to opponent's hand | v1.0 | 1/1 | Complete | 2026-04-12 |
 | 999.2 Pile insert position | v1.0 | 1/1 | Complete | 2026-04-12 |
-| 9. Player Identity & Presence | v1.1 | 0/? | Not started | - |
-| 10. Dialog UX + Deal Shuffle | v1.1 | 0/? | Not started | - |

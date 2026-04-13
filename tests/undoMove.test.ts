@@ -66,8 +66,8 @@ describe("UNDO_MOVE handler", () => {
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
     player2 = makeMockConnection("player-2");
-    room.gameState.players.push({ id: "player-1", connected: true });
-    room.gameState.players.push({ id: "player-2", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });

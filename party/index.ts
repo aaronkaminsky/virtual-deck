@@ -98,11 +98,18 @@ export default class GameRoom implements Party.Server {
     if (!this.gameState.undoSnapshots || !Array.isArray(this.gameState.undoSnapshots)) {
       this.gameState.undoSnapshots = [];
     }
+    // Migrate state: Phase 9-01 adds displayName to Player
+    for (const player of this.gameState.players) {
+      if (!('displayName' in player)) {
+        (player as any).displayName = '';
+      }
+    }
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
     const url = new URL(ctx.request.url);
     const playerToken = url.searchParams.get("player") ?? connection.id;
+    const displayName = (url.searchParams.get("name") ?? '').slice(0, 20);
 
     const isExistingPlayer = this.gameState.players.some(p => p.id === playerToken);
     if (!isExistingPlayer && this.gameState.players.length >= 4) {
@@ -113,11 +120,14 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);
-      if (player) player.connected = true;
+      if (player) {
+        player.connected = true;
+        if (displayName) player.displayName = displayName;
+      }
     }
 
     await this.persist();

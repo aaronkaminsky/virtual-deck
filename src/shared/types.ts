@@ -11,6 +11,7 @@ export interface Card {
 export interface Player {
   id: string;        // stable player token (= connection.id via PartySocket id param)
   connected: boolean;
+  displayName: string;
 }
 
 export interface Pile {

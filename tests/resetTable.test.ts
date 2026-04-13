@@ -41,8 +41,8 @@ describe("RESET_TABLE handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true });
-    room.gameState.players.push({ id: "player-2", connected: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
     room.gameState.hands["player-1"] = [makeCard("A-s", true), makeCard("K-h", true)];
     room.gameState.hands["player-2"] = [makeCard("Q-d", true)];
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
