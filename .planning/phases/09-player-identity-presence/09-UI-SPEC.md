@@ -35,7 +35,7 @@ Declared values (multiples of 4 only):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon-to-text gap within presence dot + name label row |
-| sm | 8px | Compact element spacing, gap between lobby form controls |
+| sm | 8px | Compact element spacing, gap between lobby form controls, dot-to-name gap in Hand Zone Name Label |
 | md | 16px | Default element spacing, lobby card interior padding sections |
 | lg | 24px | Section padding within lobby card, separators |
 | xl | 32px | Lobby card padding (p-8 = 32px) |
@@ -117,20 +117,20 @@ Seat label positioned above each hand zone strip. Same treatment for self and op
 
 Layout:
 ```tsx
-<div className="flex items-center gap-1.5 px-1 mb-1">
+<div className="flex items-center gap-2 px-1 mb-1">
   <span className={cn(
     'rounded-full inline-block w-2 h-2',
     player.connected ? 'bg-green-500' : 'bg-gray-500'
   )} />
-  <span className="text-xs text-muted-foreground">
+  <span className="text-sm text-muted-foreground">
     {player.displayName || 'Player'}
   </span>
 </div>
 ```
 
 - Dot size: 8px × 8px (`w-2 h-2`) — matches existing `PlayerPresence.tsx` non-self dot size
-- Gap between dot and name: 6px (`gap-1.5`) — matches existing `PlayerPresence.tsx` row gap
-- Name text: 12px (`text-xs`), `text-muted-foreground` — sits below the label tier to feel like a seat tag
+- Gap between dot and name: 8px (`gap-2`) — sm spacing token; keeps seat label compact
+- Name text: 14px (`text-sm`), `text-muted-foreground` — Label tier; sits lightweight without competing with cards
 - No animation on disconnect/reconnect — state updates via React re-render when `player.connected` changes; no transition needed given the functional nature of the indicator
 
 Sources: CONTEXT.md D-04, D-06; RESEARCH.md Pattern 3; existing `PlayerPresence.tsx` class values.
