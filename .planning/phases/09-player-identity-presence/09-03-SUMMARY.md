@@ -22,7 +22,7 @@ key_decisions:
 metrics:
   duration: ~10min
   completed_date: "2026-04-12"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
   files_modified: 3
 ---
@@ -39,7 +39,9 @@ Name labels with green/grey presence dots wired to each hand zone on the board; 
 
 ## Task 2 (Checkpoint)
 
-Awaiting human verification of the visual UI.
+Human verification: approved. Two layout fixes applied during checkpoint:
+- `5dbfa1d`: Increased header height to 108px and switched to `items-stretch` (first attempt)
+- `f692c54`: Scaled opponent card backs to 59px tall (from 88px) and set header to `h-[104px]`; stacking a full-size card back + name row exceeded the original header height
 
 ## What Was Built
 
