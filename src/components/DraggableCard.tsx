@@ -33,13 +33,16 @@ export function DraggableCard({ card, fromZone, fromId, onFlip }: DraggableCardP
 
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0 : 1,
     touchAction: 'none',
   };
 
   return (
     <div ref={setNodeRef} style={style} onClick={handleClick} {...listeners} {...attributes}>
-      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      {isDragging ? (
+        <div className="w-[80px] h-[112px] rounded-lg border border-dashed border-border" />
+      ) : (
+        card.faceUp ? <CardFace card={card} /> : <CardBack />
+      )}
     </div>
   );
 }
