@@ -44,7 +44,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.7 | README and architecture documentation | TBD |
 | 999.8 | Shuffle deck before dealing | TBD |
 | 999.9 | Skip position dialog for empty pile | TBD |
-| 999.10 | Drag origin placeholder | TBD |
+| 999.10 | Drag origin placeholder | 1 (planned) |
 | 999.11 | Pile drop dialog UX improvements | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
