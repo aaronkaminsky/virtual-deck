@@ -18,7 +18,7 @@ function SortableHandCard({ card, playerId }: SortableHandCardProps) {
   });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
     touchAction: 'none',
   };
