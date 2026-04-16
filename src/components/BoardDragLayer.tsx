@@ -55,7 +55,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
     const isHandReorder = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand' && event.over?.id !== 'hand';
     const isHandMissed = dragDataRef.current?.fromZone === 'hand' && event.over?.id === 'hand';
-    const isPassCard = !!(overData?.toZone === 'opponent-hand');
+    const isPassCard = !!(overData?.toZone === 'opponent-hand' && dragDataRef.current);
     const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandReorder && !isHandMissed && !isPassCard);
     dropSuccessRef.current = isSuccess || isHandReorder || isPassCard;
     setDragging(false);
