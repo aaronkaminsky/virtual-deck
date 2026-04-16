@@ -19,8 +19,13 @@ export function DraggableCard({ card, fromZone, fromId, onFlip }: DraggableCardP
   });
 
   const didDragRef = useRef(false);
+  const prevIsDragging = useRef(false);
   useEffect(() => {
+    if (prevIsDragging.current && !isDragging) {
+      setTimeout(() => { didDragRef.current = false; }, 300);
+    }
     if (isDragging) didDragRef.current = true;
+    prevIsDragging.current = isDragging;
   }, [isDragging]);
 
   function handleClick() {
