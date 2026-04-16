@@ -31,6 +31,7 @@ Players can see the shared table and their own private hand update in real time,
 Known remaining items (deferred backlog):
 - Copy-link affordance added to BoardView (v1.0 tech debt closed)
 - 9 backlog phases queued (drag affordance polish, pile position dialog UX, play area grid, etc.)
+- Phase 999.10 complete (2026-04-16): drag-origin placeholder — dashed outline at card origin slot during drag, snap-back fix for missed hand drops
 
 ## Requirements
 
@@ -114,4 +115,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 — v1.1 milestone started*
+*Last updated: 2026-04-16 — Phase 999.10 complete (drag-origin placeholder)*
