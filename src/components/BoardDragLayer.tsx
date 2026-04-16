@@ -53,10 +53,11 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
 
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
-    const isHandToHand = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand';
+    const isHandReorder = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand' && event.over?.id !== 'hand';
+    const isHandMissed = dragDataRef.current?.fromZone === 'hand' && event.over?.id === 'hand';
     const isPassCard = !!(overData?.toZone === 'opponent-hand');
-    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandToHand && !isPassCard);
-    dropSuccessRef.current = isSuccess || isHandToHand || isPassCard;
+    const isSuccess = !!(event.over && dragDataRef.current && overData?.toZone && !isHandReorder && !isHandMissed && !isPassCard);
+    dropSuccessRef.current = isSuccess || isHandReorder || isPassCard;
     setDragging(false);
 
     if (isPassCard) {
@@ -89,7 +90,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           toId,
         });
       }
-    } else if (isHandToHand) {
+    } else if (isHandReorder) {
       // Reorder handled by useDndMonitor in HandZone — just clear the overlay
       setActiveCard(null);
     }
