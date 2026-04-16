@@ -118,7 +118,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {activeCard ? <CardOverlay card={activeCard} /> : null}

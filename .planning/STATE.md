@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
+status: executing
 stopped_at: v1.0 milestone archived
-last_updated: "2026-04-13T13:16:38.098Z"
-last_activity: 2026-04-13
+last_updated: "2026-04-16T13:06:08.105Z"
+last_activity: 2026-04-16 -- Phase 999.10 execution started
 progress:
-  total_phases: 16
+  total_phases: 20
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 7
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.0 shipped — planning v1.1
+**Current focus:** Phase 999.10 — drag-origin-placeholder
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-13 — Milestone v1.1 started
+Phase: 999.10 (drag-origin-placeholder) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 999.10
+Last activity: 2026-04-16 -- Phase 999.10 execution started
 
 Progress: [__________] v1.1 not started
 
