@@ -29,8 +29,8 @@ const customCollision: CollisionDetection = (args) => {
     return cardCollisions.length > 0 ? cardCollisions : zoneCollisions;
   }
 
-  // Pointer is outside all zones — only pile targets are valid.
-  return closestCenter({ ...args, droppableContainers: pileContainers });
+  // Pointer is outside all zones — pile drops only register when the pointer is inside the pile rect.
+  return pointerWithin({ ...args, droppableContainers: pileContainers });
 };
 
 interface BoardDragLayerProps {
