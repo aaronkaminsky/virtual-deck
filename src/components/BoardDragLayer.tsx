@@ -1,11 +1,45 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { DndContext, DragOverlay, closestCenter, defaultDropAnimation } from '@dnd-kit/core';
-import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation } from '@dnd-kit/core';
+import type { CollisionDetection, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState } from '@/shared/types';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
+
+/**
+ * Custom collision detection for the board:
+ *
+ * - Zone-level droppables ('hand' and 'opponent-hand-*') use pointerWithin so that a
+ *   drop only registers when the pointer is physically inside the droppable element's
+ *   rendered rect. These containers span the full viewport width; closestCenter would
+ *   fire too eagerly and prevent the user from triggering a missed-drop snap-back.
+ *
+ * - All other droppables (pile zones sized 80x112, individual sortable card IDs) use
+ *   closestCenter, which is the correct algorithm for pile targets and for the
+ *   @dnd-kit/sortable card-to-card reorder interaction inside HandZone.
+ */
+const customCollision: CollisionDetection = (args) => {
+  // Separate zone-level droppables from everything else.
+  const zoneIds = new Set(['hand']);
+  const zoneContainers = args.droppableContainers.filter(
+    (c) => zoneIds.has(String(c.id)) || String(c.id).startsWith('opponent-hand-')
+  );
+  const otherContainers = args.droppableContainers.filter(
+    (c) => !zoneIds.has(String(c.id)) && !String(c.id).startsWith('opponent-hand-')
+  );
+
+  // For zone-level droppables, only register a hit when the pointer is inside the rect.
+  const zoneCollisions = pointerWithin({ ...args, droppableContainers: zoneContainers });
+
+  // For all other droppables (piles, sortable card IDs), use closestCenter.
+  const otherCollisions = closestCenter({ ...args, droppableContainers: otherContainers });
+
+  // Prefer a pointer-within zone hit if one exists; fall back to closest-center results.
+  // This means: if the pointer is inside the hand strip, that zone wins over a nearby pile.
+  // If the pointer is not inside any zone, pile/card collisions are returned normally.
+  return zoneCollisions.length > 0 ? zoneCollisions : otherCollisions;
+};
 
 interface BoardDragLayerProps {
   gameState: ClientGameState;
@@ -114,7 +148,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   return (
     <>
       <DndContext
-        collisionDetection={closestCenter}
+        collisionDetection={customCollision}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
