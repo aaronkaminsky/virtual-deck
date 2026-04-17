@@ -7,38 +7,30 @@ import type { Card, ClientAction, ClientGameState } from '@/shared/types';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 
-/**
- * Custom collision detection for the board:
- *
- * - Zone-level droppables ('hand' and 'opponent-hand-*') use pointerWithin so that a
- *   drop only registers when the pointer is physically inside the droppable element's
- *   rendered rect. These containers span the full viewport width; closestCenter would
- *   fire too eagerly and prevent the user from triggering a missed-drop snap-back.
- *
- * - All other droppables (pile zones sized 80x112, individual sortable card IDs) use
- *   closestCenter, which is the correct algorithm for pile targets and for the
- *   @dnd-kit/sortable card-to-card reorder interaction inside HandZone.
- */
 const customCollision: CollisionDetection = (args) => {
-  // Separate zone-level droppables from everything else.
-  const zoneIds = new Set(['hand']);
   const zoneContainers = args.droppableContainers.filter(
-    (c) => zoneIds.has(String(c.id)) || String(c.id).startsWith('opponent-hand-')
+    (c) => String(c.id) === 'hand' || String(c.id).startsWith('opponent-hand-')
   );
-  const otherContainers = args.droppableContainers.filter(
-    (c) => !zoneIds.has(String(c.id)) && !String(c.id).startsWith('opponent-hand-')
+  const pileContainers = args.droppableContainers.filter(
+    (c) => String(c.id).startsWith('pile-')
+  );
+  const cardContainers = args.droppableContainers.filter(
+    (c) => String(c.id) !== 'hand' && !String(c.id).startsWith('opponent-hand-') && !String(c.id).startsWith('pile-')
   );
 
-  // For zone-level droppables, only register a hit when the pointer is inside the rect.
   const zoneCollisions = pointerWithin({ ...args, droppableContainers: zoneContainers });
 
-  // For all other droppables (piles, sortable card IDs), use closestCenter.
-  const otherCollisions = closestCenter({ ...args, droppableContainers: otherContainers });
+  if (zoneCollisions.length > 0) {
+    // Opponent-hand zone always wins — card is being passed to another player.
+    if (String(zoneCollisions[0].id).startsWith('opponent-hand-')) return zoneCollisions;
+    // Inside the hand strip: prefer card-to-card sortable reorder over the zone itself.
+    // closestCenter returns the nearest sibling card; zone wins only when the hand is empty.
+    const cardCollisions = closestCenter({ ...args, droppableContainers: cardContainers });
+    return cardCollisions.length > 0 ? cardCollisions : zoneCollisions;
+  }
 
-  // Prefer a pointer-within zone hit if one exists; fall back to closest-center results.
-  // This means: if the pointer is inside the hand strip, that zone wins over a nearby pile.
-  // If the pointer is not inside any zone, pile/card collisions are returned normally.
-  return zoneCollisions.length > 0 ? zoneCollisions : otherCollisions;
+  // Pointer is outside all zones — only pile targets are valid.
+  return closestCenter({ ...args, droppableContainers: pileContainers });
 };
 
 interface BoardDragLayerProps {
