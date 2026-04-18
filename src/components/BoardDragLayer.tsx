@@ -41,6 +41,7 @@ interface BoardDragLayerProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   setDragging: (d: boolean) => void;
+  shufflingPileIds: Set<string>;
 }
 
 type PendingMove = {
@@ -51,7 +52,7 @@ type PendingMove = {
   toId: string;
 };
 
-export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging }: BoardDragLayerProps) {
+export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
@@ -153,7 +154,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {activeCard ? <CardOverlay card={activeCard} /> : null}

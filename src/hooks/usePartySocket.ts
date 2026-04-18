@@ -9,6 +9,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shufflingPileIds, setShufflingPileIds] = useState<Set<string>>(new Set());
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
@@ -46,6 +47,16 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         }
       } else if (event.type === 'ERROR') {
         setError(event.message);
+      } else if (event.type === 'PILE_SHUFFLED') {
+        const { pileId } = event;
+        setShufflingPileIds(prev => new Set([...prev, pileId]));
+        setTimeout(() => {
+          setShufflingPileIds(prev => {
+            const next = new Set(prev);
+            next.delete(pileId);
+            return next;
+          });
+        }, 650);
       }
     });
 
@@ -67,5 +78,5 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     }
   }, []);
 
-  return { gameState, connected, error, sendAction, setDragging };
+  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds };
 }

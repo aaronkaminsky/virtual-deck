@@ -11,9 +11,10 @@ interface PileZoneProps {
   pile: ClientPile;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
+  shufflingPileIds?: Set<string>;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set() }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -22,6 +23,7 @@ export function PileZone({ pile, sendAction, draggingCardId }: PileZoneProps) {
   const isEmpty = pile.cards.length === 0;
   const topCard = isEmpty ? null : pile.cards[pile.cards.length - 1];
   const isDraggingTopCard = !!draggingCardId && !!topCard && 'id' in topCard && draggingCardId === (topCard as Card).id;
+  const isShuffling = shufflingPileIds.has(pile.id);
 
   function handleToggleFace() {
     sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp });
@@ -48,6 +50,22 @@ export function PileZone({ pile, sendAction, draggingCardId }: PileZoneProps) {
           isOver ? 'border-primary' : 'border-border'
         )}
       >
+        {isShuffling && [0, 1, 2, 3, 4].map(i => (
+          <div
+            key={i}
+            className="absolute inset-0 rounded-lg bg-secondary border border-border pointer-events-none"
+            style={{
+              '--fan-x': `${(i - 2) * 12}px`,
+              '--fan-r': `${(i - 2) * 6}deg`,
+              animationName: 'pile-fan-spread',
+              animationDuration: '550ms',
+              animationDelay: `${i * 30}ms`,
+              animationFillMode: 'forwards',
+              animationTimingFunction: 'ease-out',
+              zIndex: 10 - i,
+            } as React.CSSProperties}
+          />
+        ))}
         {isDraggingTopCard && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
         )}

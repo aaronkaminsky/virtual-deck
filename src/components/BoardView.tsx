@@ -15,9 +15,10 @@ interface BoardViewProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
+  shufflingPileIds: Set<string>;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds }: BoardViewProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -75,7 +76,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
 
       <div className="flex-1 flex items-center justify-center gap-6 px-4">
         {gameState.piles.map((pile) => (
-          <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} />
+          <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
         ))}
       </div>
 
