@@ -148,7 +148,7 @@ describe("DEAL_CARDS handler", () => {
     const conn2 = makeMockConnection("conn-2");
     const connections = [conn1, conn2];
     const roomWithConns = makeMockRoom({
-      getConnections: () => connections[Symbol.iterator](),
+      getConnections: (() => connections[Symbol.iterator]()) as unknown as Party.Room["getConnections"],
     });
     const roomWithConnections = new GameRoom(roomWithConns);
     roomWithConnections.gameState.players.push({ id: "conn-1", connected: true, displayName: "" });
@@ -158,8 +158,8 @@ describe("DEAL_CARDS handler", () => {
 
     await roomWithConnections.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), conn1);
 
-    const conn1Messages = conn1.send.mock.calls.map((c: [string]) => JSON.parse(c[0]) as ServerEvent);
-    const conn2Messages = conn2.send.mock.calls.map((c: [string]) => JSON.parse(c[0]) as ServerEvent);
+    const conn1Messages = conn1.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
+    const conn2Messages = conn2.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
 
     const shuffleEvents1 = conn1Messages.filter(e => e.type === "PILE_SHUFFLED");
     const shuffleEvents2 = conn2Messages.filter(e => e.type === "PILE_SHUFFLED");
