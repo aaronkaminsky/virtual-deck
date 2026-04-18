@@ -423,6 +423,15 @@ export default class GameRoom implements Party.Server {
     await this.room.storage.put("gameState", this.gameState);
   }
 
+  private broadcastShuffleEvent(pileId: string) {
+    for (const conn of this.room.getConnections()) {
+      conn.send(JSON.stringify({
+        type: "PILE_SHUFFLED",
+        pileId,
+      } satisfies ServerEvent));
+    }
+  }
+
   private broadcastState() {
     for (const conn of this.room.getConnections()) {
       conn.send(JSON.stringify({
