@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 999.11 context gathered
-last_updated: "2026-04-17T15:05:49.543Z"
-last_activity: 2026-04-17
+last_updated: "2026-04-18T01:19:59.109Z"
+last_activity: 2026-04-18 -- Phase 999.11 execution started
 progress:
-  total_phases: 20
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 1
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 999.10 — drag-origin-placeholder
+**Current focus:** Phase 999.11 — pile-drop-dialog-ux-improvements
 
 ## Current Position
 
-Phase: 999.10
-Plan: Not started
-Status: Executing Phase 999.10
-Last activity: 2026-04-17
+Phase: 999.11 (pile-drop-dialog-ux-improvements) — EXECUTING
+Plan: 1 of 1
+Status: Executing Phase 999.11
+Last activity: 2026-04-18 -- Phase 999.11 execution started
 
 Progress: [__________] v1.1 not started
 
