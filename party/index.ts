@@ -372,6 +372,7 @@ export default class GameRoom implements Party.Server {
         }
         takeSnapshot(this.gameState);
         shufflePile.cards = shuffle(shufflePile.cards);
+        this.broadcastShuffleEvent(action.pileId);   // D-05, D-07: broadcast to all clients
         break;
       }
       case "RESET_TABLE": {
