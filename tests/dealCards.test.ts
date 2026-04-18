@@ -114,4 +114,59 @@ describe("DEAL_CARDS handler", () => {
     expect(room.gameState.hands["player-1"]).toHaveLength(3);
     expect(room.gameState.hands["player-2"]).toHaveLength(3);
   });
+
+  it("snapshot captured before DEAL_CARDS has the original pre-shuffle pile order", async () => {
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    drawPile.cards = [
+      makeCard("A-s"), makeCard("2-s"), makeCard("3-s"),
+      makeCard("4-s"), makeCard("5-s"), makeCard("6-s"),
+    ];
+    const originalOrder = drawPile.cards.map(c => c.id);
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), sender);
+
+    // The snapshot was taken before shuffle — snapshot pile order == original
+    const snapshotPile = room.gameState.undoSnapshots[0].piles.find(p => p.id === "draw")!;
+    expect(snapshotPile.cards.map(c => c.id)).toEqual(originalOrder);
+  });
+
+  it("undo after DEAL_CARDS restores pre-shuffle pile order and all cards", async () => {
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    const originalCards = drawPile.cards.map(c => c.id);
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), sender);
+
+    // Snapshot should have the full original pile in original order
+    const snap = room.gameState.undoSnapshots[0];
+    expect(snap.piles.find(p => p.id === "draw")!.cards.map(c => c.id)).toEqual(originalCards);
+    expect(snap.hands["player-1"]).toHaveLength(0);
+    expect(snap.hands["player-2"]).toHaveLength(0);
+  });
+
+  it("broadcasts PILE_SHUFFLED event to all connections on DEAL_CARDS", async () => {
+    const conn1 = makeMockConnection("conn-1");
+    const conn2 = makeMockConnection("conn-2");
+    const connections = [conn1, conn2];
+    const roomWithConns = makeMockRoom({
+      getConnections: () => connections[Symbol.iterator](),
+    });
+    const roomWithConnections = new GameRoom(roomWithConns);
+    roomWithConnections.gameState.players.push({ id: "conn-1", connected: true, displayName: "" });
+    roomWithConnections.gameState.players.push({ id: "conn-2", connected: true, displayName: "" });
+    roomWithConnections.gameState.hands["conn-1"] = [];
+    roomWithConnections.gameState.hands["conn-2"] = [];
+
+    await roomWithConnections.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), conn1);
+
+    const conn1Messages = conn1.send.mock.calls.map((c: [string]) => JSON.parse(c[0]) as ServerEvent);
+    const conn2Messages = conn2.send.mock.calls.map((c: [string]) => JSON.parse(c[0]) as ServerEvent);
+
+    const shuffleEvents1 = conn1Messages.filter(e => e.type === "PILE_SHUFFLED");
+    const shuffleEvents2 = conn2Messages.filter(e => e.type === "PILE_SHUFFLED");
+
+    expect(shuffleEvents1).toHaveLength(1);
+    expect((shuffleEvents1[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
+    expect(shuffleEvents2).toHaveLength(1);
+    expect((shuffleEvents2[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
+  });
 });
