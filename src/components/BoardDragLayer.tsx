@@ -59,7 +59,12 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const topButtonRef = useRef<HTMLButtonElement>(null);
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
-    if (!pendingMove) return;
+    if (!pendingMove) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('sendPendingMove called with no pendingMove — this is a bug');
+      }
+      return;
+    }
     sendAction({
       type: 'MOVE_CARD',
       cardId: pendingMove.card.id,
