@@ -343,7 +343,10 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState);
+        takeSnapshot(this.gameState);                          // D-03: snapshot BEFORE shuffle
+        dealDrawPile.cards = shuffle(dealDrawPile.cards);       // D-02: shuffle before popping
+        this.broadcastShuffleEvent("draw");                     // D-05: broadcast to all clients
+        await new Promise(resolve => setTimeout(resolve, 650)); // D-06: animation window (650ms)
         for (let i = 0; i < action.cardsPerPlayer; i++) {
           for (const player of connectedPlayers) {
             const dealt = dealDrawPile.cards.pop()!;
