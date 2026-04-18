@@ -21,8 +21,8 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase.
 ### Dialog UX
 
 - [ ] **UX-01**: Dropping a card onto an empty pile skips the position dialog (card always goes to top)
-- [ ] **UX-02**: Pile drop dialog — Escape key cancels and returns card to origin
-- [ ] **UX-03**: Pile drop dialog — Enter key confirms Top (the default option)
+- [x] **UX-02**: Pile drop dialog — Escape key cancels and returns card to origin — ✓ Phase 999.11
+- [x] **UX-03**: Pile drop dialog — Enter key confirms Top (the default option) — ✓ Phase 999.11
 
 ## Future Requirements
 

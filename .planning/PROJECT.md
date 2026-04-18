@@ -13,11 +13,13 @@ Players can see the shared table and their own private hand update in real time,
 **Goal:** Add player identity and presence, improve dialog UX, and fill the shuffle-before-deal gap.
 
 **Target features:**
-- PRES-01: Players set a display name when joining a room
-- PRES-02: All players see who is connected and disconnected
-- 999.8: Shuffle deck before dealing
-- 999.9: Skip position dialog when dropping onto an empty pile
-- 999.11: Pile drop dialog — Escape cancels, Enter confirms Top
+- PRES-01–04: Players set a display name, visible to all, persists across reconnects, real-time presence roster
+- GAME-01: Shuffle deck before dealing
+- UX-01: Skip position dialog when dropping onto an empty pile
+
+**Already shipped (pre-v1.1):**
+- Phase 999.10: Drag-origin placeholder
+- Phase 999.11: Pile drop dialog UX (Escape/Enter/primary style)
 
 ## Current State
 
@@ -61,10 +63,12 @@ Known remaining items (deferred backlog):
 ### Active (v1.1)
 
 - [ ] Players set a display name when joining a room (PRES-01)
-- [ ] All players see who is connected and disconnected (PRES-02)
+- [ ] Display name visible to all players on table (PRES-02)
+- [ ] Display name persists across reconnects (PRES-03)
+- [ ] Real-time roster of connected/disconnected players (PRES-04)
 - [ ] Shuffle deck before dealing (GAME-01)
 - [ ] Skip pile position dialog for empty piles (UX-01)
-- [x] Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02) — Validated in Phase 999.11
+- ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
 
 ### Out of Scope
 
@@ -116,4 +120,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 — Phase 999.11 complete (pile drop dialog UX improvements)*
+*Last updated: 2026-04-17 — v1.1 milestone started (Social Identity + UX Polish)*

@@ -1,34 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Phase 999.11 context gathered
-last_updated: "2026-04-18T01:37:55.998Z"
-last_activity: 2026-04-18
+milestone: v1.1
+milestone_name: Social Identity + UX Polish
+status: planning
+stopped_at: Defining requirements
+last_updated: "2026-04-17T00:00:00.000Z"
+last_activity: 2026-04-17
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-12)
+See: .planning/PROJECT.md (updated 2026-04-17)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 999.11 — pile-drop-dialog-ux-improvements
+**Current focus:** v1.1 — Social Identity + UX Polish
 
 ## Current Position
 
-Phase: 999.11
-Plan: Not started
-Status: Executing Phase 999.11
-Last activity: 2026-04-18
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-17 — Milestone v1.1 started
 
 Progress: [__________] v1.1 not started
 
@@ -85,6 +85,5 @@ None — v1.0 shipped clean.
 
 ## Session Continuity
 
-Last session: 2026-04-17T15:05:49.526Z
-Stopped at: Phase 999.11 context gathered
-Resume file: .planning/phases/999.11-pile-drop-dialog-ux-improvements/999.11-CONTEXT.md
+Last session: 2026-04-17
+Stopped at: v1.1 milestone initialized — roadmap pending
