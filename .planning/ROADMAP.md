@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
-- 📋 **v1.1** — TBD (planned)
+- 📋 **v1.1 Social Identity + UX Polish** — Phases 9–11 (planned)
 
 ## Phases
 
@@ -27,9 +27,55 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 
 </details>
 
-### 📋 v1.1 (Planned)
+<details>
+<summary>✅ v1.1 pre-work (Phases 999.10–999.11) — SHIPPED 2026-04-17</summary>
 
-Phases not yet defined. Run `/gsd-new-milestone` to kick off requirements and roadmap.
+- [x] Phase 999.10: Drag origin placeholder — dashed outline at card origin slot during drag; custom collision detection (pointerWithin) (completed 2026-04-17)
+- [x] Phase 999.11: Pile drop dialog UX — Escape/click-outside cancels, Enter confirms Top, Top uses primary button style (completed 2026-04-17)
+
+</details>
+
+### 📋 v1.1 Social Identity + UX Polish (Phases 9–11)
+
+- [ ] **Phase 9: Player Identity + Presence** — Display names, presence roster, reconnect persistence
+- [ ] **Phase 10: Shuffle Before Deal** — Auto-shuffle pile before distributing cards
+- [ ] **Phase 11: Empty Pile Drop UX** — Skip position dialog when dropping onto an empty pile
+
+## Phase Details
+
+### Phase 9: Player Identity + Presence
+**Goal**: Players know who is at the table — names are visible on the board, persist across reconnects, and a live roster shows who is connected or away
+**Depends on**: Phases 1–8 (v1.0 complete)
+**Requirements**: PRES-01, PRES-02, PRES-03, PRES-04
+**Success Criteria** (what must be TRUE):
+  1. A player joining a room is prompted for a display name (non-empty, max 20 chars) before reaching the board
+  2. Every player's display name is visible on the shared table to all connected players
+  3. After a player disconnects and reconnects, their display name is the same as before (not reset)
+  4. All players can see a roster listing every player in the room, with a visual indicator distinguishing connected from disconnected players
+  5. When a new player joins mid-session, their name appears in all other players' rosters without a page refresh
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 10: Shuffle Before Deal
+**Goal**: The deal action is always fair — dealing from any pile automatically shuffles it first so players cannot predict card order
+**Depends on**: Phase 9
+**Requirements**: GAME-01
+**Success Criteria** (what must be TRUE):
+  1. Clicking "Deal" from any pile triggers a shuffle of that pile before any cards are distributed
+  2. The shuffled order is reflected in the pile state visible to all players immediately after dealing
+  3. Cards dealt to each player arrive in the new random order, not the order they were in before the deal action
+**Plans**: TBD
+
+### Phase 11: Empty Pile Drop UX
+**Goal**: Dropping a card onto an empty pile is frictionless — no dialog appears because there is no position to choose
+**Depends on**: Phase 10
+**Requirements**: UX-01
+**Success Criteria** (what must be TRUE):
+  1. Dragging and dropping a card onto an empty pile places the card on top immediately, without opening the position dialog
+  2. The position dialog continues to appear normally when dropping onto a non-empty pile
+  3. The card moves to the correct pile and state updates are broadcast to all players in both the empty and non-empty pile cases
+**Plans**: TBD
+**UI hint**: yes
 
 ## Backlog
 
@@ -42,10 +88,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.5 | Shuffle visual indicator | TBD |
 | 999.6 | Investigate test setup treating both players as remote | TBD |
 | 999.7 | README and architecture documentation | TBD |
-| 999.8 | Shuffle deck before dealing | TBD |
-| 999.9 | Skip position dialog for empty pile | TBD |
-| 999.10 | Drag origin placeholder | 1 (planned) |
-| 999.11 | Pile drop dialog UX improvements | **1 plan** |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
 | 999.16 | Turn indicators — show whose turn it is | TBD |
@@ -64,8 +106,8 @@ Plans:
 
 ## Progress
 
-| Phase | Milestone | Plans | Status | Completed |
-|-------|-----------|-------|--------|-----------|
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
 | 1. Server Foundation | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 2. Lobby + Room Join | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 3. Core Board | v1.0 | 3/3 | Complete | 2026-04-04 |
@@ -76,3 +118,8 @@ Plans:
 | 8. Documentation Housekeeping | v1.0 | 1/1 | Complete | 2026-04-10 |
 | 999.1 Drag to opponent's hand | v1.0 | 1/1 | Complete | 2026-04-12 |
 | 999.2 Pile insert position | v1.0 | 1/1 | Complete | 2026-04-12 |
+| 999.10 Drag origin placeholder | v1.1 pre | 1/1 | Complete | 2026-04-17 |
+| 999.11 Pile drop dialog UX | v1.1 pre | 1/1 | Complete | 2026-04-17 |
+| 9. Player Identity + Presence | v1.1 | 0/TBD | Not started | - |
+| 10. Shuffle Before Deal | v1.1 | 0/TBD | Not started | - |
+| 11. Empty Pile Drop UX | v1.1 | 0/TBD | Not started | - |
