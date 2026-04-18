@@ -32,6 +32,7 @@ Known remaining items (deferred backlog):
 - Copy-link affordance added to BoardView (v1.0 tech debt closed)
 - 9 backlog phases queued (drag affordance polish, pile position dialog UX, play area grid, etc.)
 - Phase 999.10 complete (2026-04-17): drag-origin placeholder — dashed outline at card origin slot during drag; custom collision detection (pointerWithin) for hand, opponent-hand, and pile drop zones so drops only register when pointer is physically inside the target rect
+- Phase 999.11 complete (2026-04-17): pile drop dialog UX — Escape/click-outside cancels pending move, Top button auto-focuses on open so Enter confirms top placement, Top uses primary button style
 
 ## Requirements
 
@@ -63,7 +64,7 @@ Known remaining items (deferred backlog):
 - [ ] All players see who is connected and disconnected (PRES-02)
 - [ ] Shuffle deck before dealing (GAME-01)
 - [ ] Skip pile position dialog for empty piles (UX-01)
-- [ ] Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02)
+- [x] Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02) — Validated in Phase 999.11
 
 ### Out of Scope
 
@@ -115,4 +116,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 — Phase 999.10 complete (drag-origin placeholder + custom collision detection)*
+*Last updated: 2026-04-17 — Phase 999.11 complete (pile drop dialog UX improvements)*
