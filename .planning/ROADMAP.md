@@ -57,10 +57,10 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 
 **Goal:** Keyboard UX improvements to the existing pile insert-position dialog — Escape/click-outside cancels (card stays at origin), Enter confirms Top via auto-focus, Top button gets primary visual style.
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 999.11-01-PLAN.md — Rewrite pile dialog dismiss logic, auto-focus Top, primary button style
+- [x] 999.11-01-PLAN.md — Rewrite pile dialog dismiss logic, auto-focus Top, primary button style
 
 ## Progress
 
