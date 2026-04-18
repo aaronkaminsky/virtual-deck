@@ -73,8 +73,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const data = event.active.data.current as { card: Card; fromZone: string; fromId: string };
-    dragDataRef.current = data;
+    const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string } | undefined;
+    if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
+    dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
     setActiveCard(data.card);
     setDragging(true);
   }
