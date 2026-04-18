@@ -64,7 +64,12 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
   1. Clicking "Deal" from any pile triggers a shuffle of that pile before any cards are distributed
   2. The shuffled order is reflected in the pile state visible to all players immediately after dealing
   3. Cards dealt to each player arrive in the new random order, not the order they were in before the deal action
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Add PILE_SHUFFLED event type and DEAL_CARDS server surgery (shuffle + broadcast + 650ms delay)
+- [ ] 10-02-PLAN.md — Wire PILE_SHUFFLED broadcast into SHUFFLE_PILE handler
+- [ ] 10-03-PLAN.md — Client card-fan animation in PileZone driven by PILE_SHUFFLED event
 
 ### Phase 11: Empty Pile Drop UX
 **Goal**: Dropping a card onto an empty pile is frictionless — no dialog appears because there is no position to choose
@@ -121,5 +126,5 @@ Plans:
 | 999.10 Drag origin placeholder | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 999.11 Pile drop dialog UX | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 9. Player Identity + Presence | v1.1 | 0/TBD | Not started | - |
-| 10. Shuffle Before Deal | v1.1 | 0/TBD | Not started | - |
+| 10. Shuffle Before Deal | v1.1 | 0/3 | Not started | - |
 | 11. Empty Pile Drop UX | v1.1 | 0/TBD | Not started | - |
