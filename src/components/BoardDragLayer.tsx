@@ -4,6 +4,7 @@ import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollisio
 import type { CollisionDetection, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState } from '@/shared/types';
+import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 
@@ -55,6 +56,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
+  const topButtonRef = useRef<HTMLButtonElement>(null);
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) return;
@@ -157,33 +159,41 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       {/* Insert-position dialog — appears after any pile drop (D-01, D-04) */}
       <Dialog.Root
         open={pendingMove !== null}
-        onOpenChange={(open) => {
-          if (!open) sendPendingMove('top'); // dismiss = Top (D-03); click-outside and Escape both trigger this
+        onOpenChange={(_open) => {
+          // Any dismissal cancels the move (D-01, D-02, D-03) — card stays at server origin
+          if (!_open) setPendingMove(null);
         }}
       >
         <Dialog.Portal>
           <Dialog.Backdrop className="fixed inset-0 bg-black/20" />
-          <Dialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-popover p-4 shadow-md ring-1 ring-foreground/10 max-w-xs w-full">
+          <Dialog.Popup
+            initialFocus={topButtonRef}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-popover p-4 shadow-md ring-1 ring-foreground/10 max-w-xs w-full"
+          >
             <p className="text-sm font-medium mb-3">Insert card where?</p>
             <div className="flex gap-2">
-              <button
-                className="flex-1 rounded border px-3 py-2 text-sm hover:bg-accent"
+              <Button
+                ref={topButtonRef}
+                variant="default"
+                className="flex-1"
                 onClick={() => sendPendingMove('top')}
               >
                 Top
-              </button>
-              <button
-                className="flex-1 rounded border px-3 py-2 text-sm hover:bg-accent"
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
                 onClick={() => sendPendingMove('bottom')}
               >
                 Bottom
-              </button>
-              <button
-                className="flex-1 rounded border px-3 py-2 text-sm hover:bg-accent"
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
                 onClick={() => sendPendingMove('random')}
               >
                 Random
-              </button>
+              </Button>
             </div>
           </Dialog.Popup>
         </Dialog.Portal>
