@@ -428,7 +428,7 @@ export default class GameRoom implements Party.Server {
   }
 
   private broadcastShuffleEvent(pileId: string) {
-    for (const conn of this.room.getConnections()) {
+    for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "PILE_SHUFFLED",
         pileId,
@@ -437,7 +437,7 @@ export default class GameRoom implements Party.Server {
   }
 
   private broadcastState() {
-    for (const conn of this.room.getConnections()) {
+    for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "STATE_UPDATE",
         state: viewFor(this.gameState, getPlayerToken(conn)),
