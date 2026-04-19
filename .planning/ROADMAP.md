@@ -57,6 +57,8 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.17 | Chips — poker/betting chip support | TBD |
 | 999.18 | Show hand — player can reveal their hand to all players | TBD |
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
+| 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
+| 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
 
 ## Progress
 
