@@ -54,6 +54,54 @@
 
 ---
 
+## Milestone: v1.1 — Social Identity + UX Polish
+
+**Shipped:** 2026-04-19
+**Phases:** 5 (999.10, 999.11 pre-work + 9, 10, 11) | **Plans:** 11 | **Timeline:** 4 days (2026-04-16 → 2026-04-19)
+
+### What Was Built
+
+- Drag origin placeholder — dashed card-shaped outline holds origin slot during drag; `pointerWithin` custom collision detection scopes all drop zones to visual element boundaries
+- Pile drop dialog keyboard UX — Escape/click-outside cancels and snaps card back to origin; Enter confirms Top via auto-focus; Top styled as primary button
+- Player identity system — lobby name input gate, `displayName` on `Player` type, name labels + presence dots on all hand zones, localStorage persistence, reconnect preservation via stable token
+- Shuffle before deal — `PILE_SHUFFLED` event; `DEAL_CARDS` auto-shuffles via Fisher-Yates before distributing; client card-fan animation synced to all players simultaneously
+- Empty pile fast path — `isEmpty` guard in `handleDragEnd` bypasses position dialog; card dispatched directly to top
+
+### What Worked
+
+- **Pre-work phases (999.10/999.11)** — inserting UX polish phases before the named milestone phases meant Phase 9 had a clean, polished drag surface to build on. The order mattered.
+- **Deferred WebSocket connect pattern** — gating the socket `enabled` flag on `joinState !== null` gave a single clean moment to assert `?name=` is present before connecting. No race conditions.
+- **`@base-ui/react/dialog` initialFocus** — auto-focusing the Top button was a one-liner once we knew the API. The v1.0 decision to use `@base-ui` over `AlertDialog` paid off immediately when adding keyboard UX.
+- **Server-side isEmpty check unnecessary** — the client-side isEmpty guard was sufficient because the pile state is authoritative from the server's last broadcast. No extra server round-trip needed.
+
+### What Was Inefficient
+
+- **Phase 999.10 UAT issue (drop zone size)** — the oversized drop zones were only discovered during human UAT, not automated testing. The issue required a follow-up plan (pointerWithin collision). A bounding-box test for drop zone dimensions at plan time would surface this earlier.
+- **Audit false positives at close** — the `audit-open` tool flagged both passed UAT files as gaps. The `[awaiting human testing]` stale text in Phase 11's UAT file caused the false positive. Always clear that field when testing is done.
+- **Card-fan animation prop drilling** — `shufflingPileIds` had to be drilled through `App → BoardDragLayer → BoardView → PileZone`. If the component tree grows, this will become noise. A context or zustand slice would be cleaner.
+
+### Patterns Established
+
+- `enabled` flag pattern for deferred WebSocket connect — `usePartySocket({ enabled: joinState !== null })` is the canonical way to gate connection on pre-join data
+- `joinState` null-check as single render gate — `if (!joinState) return <LobbyView />` eliminates partial renders before connection state is resolved
+- `pointerWithin` for visual-boundary drop zones — use `collisionDetection={pointerWithin}` on `DndContext` when drop zones should match their visible rect, not their DOM container
+- `React.forwardRef` on Button for `initialFocus` — any dialog that needs keyboard auto-focus requires a ref-forwarding wrapper on the target button
+
+### Key Lessons
+
+1. **Name identity must be stable before connection.** Trying to update `?name=` after the WebSocket handshake would require a separate message round-trip. Deferred connect is cleaner and correct.
+2. **Drop zone size is invisible to automated tests.** The oversized hand zone bug survived unit tests and integration tests — it only appears when a human tries to miss a drop. UAT scenarios should explicitly test "miss" cases for drag affordances.
+3. **Pre-work phases are worth naming explicitly.** Phases 999.10/999.11 were labeled "pre-work" but were full phases with UAT. Treating them as first-class phases with their own plans and verification produced better artifacts than if they'd been folded into Phase 9.
+4. **Animation state belongs in the hook, not the component.** Putting `shufflingPileIds` in `usePartySocket` kept `PileZone` purely declarative — it just reads a prop and renders. The animation timing logic stays co-located with the event that triggers it.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~4 estimated
+- Notable: Milestone was tight (4 days, 11 plans) — pre-work phases added scope but were completed cleanly without extending timeline
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -61,12 +109,14 @@
 | Milestone | Phases | Plans | Key Change |
 |-----------|--------|-------|------------|
 | v1.0 | 8 (+2 bonus) | 21 | First milestone — baseline established |
+| v1.1 | 5 (2 pre-work + 3) | 11 | Faster cadence; pre-work phase pattern introduced |
 
 ### Cumulative Quality
 
 | Milestone | Tests | Key Patterns |
 |-----------|-------|-------------|
 | v1.0 | 89 passing | WebSocket buffer, server-first privacy, stable player identity |
+| v1.1 | — | pointerWithin collision, deferred connect, joinState null-gate |
 
 ### Top Lessons (Verified Across Milestones)
 

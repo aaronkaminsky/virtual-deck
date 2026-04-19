@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Social Identity + UX Polish
-status: milestone_complete
-stopped_at: Phase 9 — Player Identity + Presence (complete) — v1.1 milestone complete
-last_updated: "2026-04-19T00:00:00.000Z"
+status: milestone_archived
+stopped_at: v1.1 milestone archived — ready for /gsd-new-milestone
+last_updated: "2026-04-19T16:00:00.000Z"
 last_activity: 2026-04-19
 progress:
   total_phases: 3
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.1 complete — ready for `/gsd-complete-milestone`
+**Current focus:** v1.1 archived — run `/gsd-new-milestone` to plan v1.2
 
 ## Current Position
 
@@ -82,6 +82,15 @@ None.
 ### Blockers/Concerns
 
 None — v1.0 shipped clean.
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-04-19:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 11 / 11-HUMAN-UAT.md | passed (false positive — stale "awaiting human testing" text) |
+| uat_gap | Phase 999.10 / 999.10-UAT.md | passed (false positive — 1 resolved gap, 0 pending) |
 
 ## Session Continuity
 

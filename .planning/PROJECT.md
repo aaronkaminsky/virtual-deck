@@ -2,42 +2,27 @@
 
 ## What This Is
 
-A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 players share a real-time board with private hands and free-form card manipulation — no rule enforcement, just a digital surface that works like sitting around a table with a physical deck.
+A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 players share a real-time board with private hands and free-form card manipulation — no rule enforcement, just a digital surface that works like sitting around a table with a physical deck. Players set a display name when joining, see each other's names on the table, and have a live presence roster showing who is connected or away.
 
 ## Core Value
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.1 Social Identity + UX Polish
-
-**Goal:** Add player identity and presence, improve dialog UX, and fill the shuffle-before-deal gap.
-
-**Target features:**
-- PRES-01–04: Players set a display name, visible to all, persists across reconnects, real-time presence roster
-- GAME-01: Shuffle deck before dealing
-- UX-01: Skip position dialog when dropping onto an empty pile
-
-**Already shipped (pre-v1.1):**
-- Phase 999.10: Drag-origin placeholder
-- Phase 999.11: Pile drop dialog UX (Escape/Enter/primary style)
-
 ## Current State
 
-**v1.0 shipped 2026-04-12.** Full card table deployed and playable.
+**v1.1 shipped 2026-04-19.** Full card table with player identity and UX polish deployed and playable.
 
-- ~1,989 TypeScript LOC across `src/`, `party/`, `shared/`
-- 89 tests passing (vitest)
+- ~2,202 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- All 19 v1 requirements satisfied and verified
+- All 27 requirements across v1.0 + v1.1 satisfied and verified
+- 11 backlog phases queued for future milestones
 
-Known remaining items (deferred backlog):
-- Copy-link affordance added to BoardView (v1.0 tech debt closed)
-- 9 backlog phases queued (drag affordance polish, pile position dialog UX, play area grid, etc.)
-- Phase 999.10 complete (2026-04-17): drag-origin placeholder — dashed outline at card origin slot during drag; custom collision detection (pointerWithin) for hand, opponent-hand, and pile drop zones so drops only register when pointer is physically inside the target rect
-- Phase 999.11 complete (2026-04-17): pile drop dialog UX — Escape/click-outside cancels pending move, Top button auto-focuses on open so Enter confirms top placement, Top uses primary button style
-- Phase 10 complete (2026-04-18): shuffle before deal — PILE_SHUFFLED event, server surgery, client card-fan animation
-- Phase 11 complete (2026-04-19): empty pile drop UX — isEmpty guard in handleDragEnd bypasses dialog for empty piles (UX-01)
-- Phase 9 complete (2026-04-19): player identity + presence — lobby join gate with name input, displayName on Player type, name labels + presence dots on hand zones, localStorage persistence, reconnect preservation
+**v1.1 delivered (2026-04-16 → 2026-04-19):**
+- Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
+- Pile drop dialog keyboard UX — Escape cancels, Enter confirms Top, Top styled as primary
+- Player identity + presence — lobby name gate, display names on all hand zones, presence dots, localStorage persistence
+- Shuffle before deal — every deal auto-shuffles the pile first; card-fan animation synced to all players
+- Empty pile fast path — no dialog when dropping onto an empty pile (card goes directly to top)
 
 ## Requirements
 
@@ -128,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-19 — v1.1 milestone complete (Social Identity + UX Polish)*
+*Last updated: 2026-04-19 — v1.1 milestone archived (Social Identity + UX Polish)*
