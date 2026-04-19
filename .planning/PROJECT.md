@@ -35,6 +35,8 @@ Known remaining items (deferred backlog):
 - 9 backlog phases queued (drag affordance polish, pile position dialog UX, play area grid, etc.)
 - Phase 999.10 complete (2026-04-17): drag-origin placeholder — dashed outline at card origin slot during drag; custom collision detection (pointerWithin) for hand, opponent-hand, and pile drop zones so drops only register when pointer is physically inside the target rect
 - Phase 999.11 complete (2026-04-17): pile drop dialog UX — Escape/click-outside cancels pending move, Top button auto-focuses on open so Enter confirms top placement, Top uses primary button style
+- Phase 10 complete (2026-04-18): shuffle before deal — PILE_SHUFFLED event, server surgery, client card-fan animation
+- Phase 11 complete (2026-04-19): empty pile drop UX — isEmpty guard in handleDragEnd bypasses dialog for empty piles (UX-01)
 
 ## Requirements
 
@@ -66,8 +68,8 @@ Known remaining items (deferred backlog):
 - [ ] Display name visible to all players on table (PRES-02)
 - [ ] Display name persists across reconnects (PRES-03)
 - [ ] Real-time roster of connected/disconnected players (PRES-04)
-- [ ] Shuffle deck before dealing (GAME-01)
-- [ ] Skip pile position dialog for empty piles (UX-01)
+- ✓ Shuffle deck before dealing (GAME-01) — Phase 10
+- ✓ Skip pile position dialog for empty piles (UX-01) — Phase 11
 - ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
 
 ### Out of Scope
