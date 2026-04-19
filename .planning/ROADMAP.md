@@ -59,6 +59,12 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
+| 999.22 | Browser automation for Claude self-testing — explore adding MCP browser use (e.g. Playwright MCP) so Claude can drive UI flows during development | TBD |
+| 999.23 | Sound effects — card play, shuffle, deal sounds; group near art/customization features (see 999.14) | TBD |
+| 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
+| 999.25 | Played card sets (13s support) — play 1–5 cards as a visible set; display in front of player or in a dedicated play area zone | TBD |
+| 999.26 | Overlapping hand display — cards in hand overlap ~50% like a real held hand; better use of screen real estate | TBD |
+| 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
 
 ## Progress
 
