@@ -20,7 +20,7 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase.
 
 ### Dialog UX
 
-- [ ] **UX-01**: Dropping a card onto an empty pile skips the position dialog (card always goes to top)
+- [x] **UX-01**: Dropping a card onto an empty pile skips the position dialog (card always goes to top) — ✓ Phase 11
 - [x] **UX-02**: Pile drop dialog — Escape key cancels and returns card to origin — ✓ Phase 999.11
 - [x] **UX-03**: Pile drop dialog — Enter key confirms Top (the default option) — ✓ Phase 999.11
 
@@ -59,8 +59,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PRES-02 | Phase 9 | Pending |
 | PRES-03 | Phase 9 | Pending |
 | PRES-04 | Phase 9 | Pending |
-| GAME-01 | Phase 10 | Pending |
-| UX-01 | Phase 11 | Pending |
+| GAME-01 | Phase 10 | Complete |
+| UX-01 | Phase 11 | Complete |
 | UX-02 | Phase 999.11 | Complete |
 | UX-03 | Phase 999.11 | Complete |
 
@@ -71,4 +71,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-17 — traceability table populated after v1.1 roadmap creation*
+*Last updated: 2026-04-19 — UX-01 and GAME-01 marked complete after Phase 11 and Phase 10 verification*
