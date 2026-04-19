@@ -1,5 +1,5 @@
 ---
-status: awaiting_human_verify
+status: resolved
 trigger: "Bug 1 — Drop highlight inconsistent with large hand. Bug 2 — Undo undoes multiple moves AND doesn't re-enable."
 created: 2026-04-04T00:00:00Z
 updated: 2026-04-04T00:00:00Z

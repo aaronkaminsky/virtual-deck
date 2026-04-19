@@ -18,3 +18,24 @@
 **Archive:** `.planning/milestones/v1.0-ROADMAP.md` · `.planning/milestones/v1.0-REQUIREMENTS.md`
 
 ---
+
+## v1.1 Social Identity + UX Polish (Shipped: 2026-04-19)
+
+**Phases completed:** 5 phases (999.10, 999.11 pre-work + 9, 10, 11) · 11 plans
+**Timeline:** 2026-04-16 → 2026-04-19 (4 days)
+**LOC:** ~2,202 TypeScript (+213 vs v1.0)
+**Files changed:** 14 files, +362 / -143 lines
+
+**Key accomplishments:**
+
+1. Drag origin placeholder (Phase 999.10) — dashed card-shaped outline holds the origin slot during drag; custom `pointerWithin` collision detection scopes all drop zones to visual element boundaries
+2. Pile drop dialog keyboard UX (Phase 999.11) — Escape/click-outside cancels and snaps card back, Enter confirms Top via auto-focus, Top styled as primary button
+3. Player identity system (Phase 9) — lobby name input gate, `displayName` on Player type, name labels + presence dots on all hand zones, localStorage persistence, reconnect preservation
+4. Shuffle before deal (Phase 10) — `PILE_SHUFFLED` event, auto-shuffle in `DEAL_CARDS` handler, client card-fan animation in PileZone synced to all players
+5. Empty pile fast path (Phase 11) — `isEmpty` guard bypasses position dialog for empty piles; card goes directly to top (UX-01)
+
+Known deferred items at close: 2 (see STATE.md Deferred Items — both are audit false positives, UAT status passed)
+
+**Archive:** `.planning/milestones/v1.1-ROADMAP.md` · `.planning/milestones/v1.1-REQUIREMENTS.md`
+
+---

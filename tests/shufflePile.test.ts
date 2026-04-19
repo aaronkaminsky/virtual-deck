@@ -68,4 +68,29 @@ describe("SHUFFLE_PILE handler", () => {
 
     expect(room.gameState.undoSnapshots).toHaveLength(1);
   });
+
+  it("broadcasts PILE_SHUFFLED event to all connections", async () => {
+    const conn1 = makeMockConnection("conn-1");
+    const conn2 = makeMockConnection("conn-2");
+    const connections = [conn1, conn2];
+    const roomWithConns = makeMockRoom({
+      getConnections: (() => connections[Symbol.iterator]()) as unknown as Party.Room["getConnections"],
+    });
+    const connectedRoom = new GameRoom(roomWithConns);
+    connectedRoom.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    connectedRoom.gameState.hands["player-1"] = [];
+
+    await connectedRoom.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);
+
+    const conn1Messages = conn1.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
+    const conn2Messages = conn2.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
+
+    const shuffleEvents1 = conn1Messages.filter(e => e.type === "PILE_SHUFFLED");
+    const shuffleEvents2 = conn2Messages.filter(e => e.type === "PILE_SHUFFLED");
+
+    expect(shuffleEvents1).toHaveLength(1);
+    expect((shuffleEvents1[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
+    expect(shuffleEvents2).toHaveLength(1);
+    expect((shuffleEvents2[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
+  });
 });

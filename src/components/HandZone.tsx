@@ -9,24 +9,30 @@ import { cn } from '@/lib/utils';
 interface SortableHandCardProps {
   card: Card;
   playerId: string;
+  isDraggingThis: boolean;
 }
 
-function SortableHandCard({ card, playerId }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
   });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1,
     touchAction: 'none',
+    opacity: isDraggingThis ? 0 : 1,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+    <div className="relative w-[63px] h-[88px] flex-shrink-0">
+      {isDraggingThis && (
+        <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
+      )}
+      <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+        {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      </div>
     </div>
   );
 }
@@ -37,9 +43,10 @@ interface HandZoneProps {
   displayName: string;
   connected: boolean;
   sendAction: (action: ClientAction) => void;
+  draggingCardId: string | null;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId }: HandZoneProps) {
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
@@ -90,7 +97,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction }
       >
         <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
           {cards.map((card) => (
-            <SortableHandCard key={card.id} card={card} playerId={playerId} />
+            <SortableHandCard key={card.id} card={card} playerId={playerId} isDraggingThis={draggingCardId === card.id} />
           ))}
         </SortableContext>
       </div>

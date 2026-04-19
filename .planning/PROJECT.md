@@ -2,35 +2,27 @@
 
 ## What This Is
 
-A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 players share a real-time board with private hands and free-form card manipulation — no rule enforcement, just a digital surface that works like sitting around a table with a physical deck.
+A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 players share a real-time board with private hands and free-form card manipulation — no rule enforcement, just a digital surface that works like sitting around a table with a physical deck. Players set a display name when joining, see each other's names on the table, and have a live presence roster showing who is connected or away.
 
 ## Core Value
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.1 Social Identity + UX Polish
-
-**Goal:** Add player identity and presence, improve dialog UX, and fill the shuffle-before-deal gap.
-
-**Target features:**
-- PRES-01: Players set a display name when joining a room
-- PRES-02: All players see who is connected and disconnected
-- 999.8: Shuffle deck before dealing
-- 999.9: Skip position dialog when dropping onto an empty pile
-- 999.11: Pile drop dialog — Escape cancels, Enter confirms Top
-
 ## Current State
 
-**v1.0 shipped 2026-04-12.** Full card table deployed and playable.
+**v1.1 shipped 2026-04-19.** Full card table with player identity and UX polish deployed and playable.
 
-- ~1,989 TypeScript LOC across `src/`, `party/`, `shared/`
-- 89 tests passing (vitest)
+- ~2,202 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- All 19 v1 requirements satisfied and verified
+- All 27 requirements across v1.0 + v1.1 satisfied and verified
+- 11 backlog phases queued for future milestones
 
-Known remaining items (deferred backlog):
-- Copy-link affordance added to BoardView (v1.0 tech debt closed)
-- 9 backlog phases queued (drag affordance polish, pile position dialog UX, play area grid, etc.)
+**v1.1 delivered (2026-04-16 → 2026-04-19):**
+- Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
+- Pile drop dialog keyboard UX — Escape cancels, Enter confirms Top, Top styled as primary
+- Player identity + presence — lobby name gate, display names on all hand zones, presence dots, localStorage persistence
+- Shuffle before deal — every deal auto-shuffles the pile first; card-fan animation synced to all players
+- Empty pile fast path — no dialog when dropping onto an empty pile (card goes directly to top)
 
 ## Requirements
 
@@ -56,13 +48,17 @@ Known remaining items (deferred backlog):
 - ✓ Reset the table (all cards to draw pile, reshuffled) — v1.0 (CTRL-03)
 - ✓ Undo last card move — v1.0 (CTRL-04)
 
-### Active (v1.1)
+### Validated (v1.1)
 
-- [ ] Players set a display name when joining a room (PRES-01)
-- [ ] All players see who is connected and disconnected (PRES-02)
-- [ ] Shuffle deck before dealing (GAME-01)
-- [ ] Skip pile position dialog for empty piles (UX-01)
-- [ ] Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02)
+- ✓ Players set a display name when joining a room (PRES-01) — Phase 9
+- ✓ Display name visible to all players on table (PRES-02) — Phase 9
+- ✓ Display name persists across reconnects (PRES-03) — Phase 9
+- ✓ Real-time roster of connected/disconnected players (PRES-04) — Phase 9
+- ✓ Shuffle deck before dealing (GAME-01) — Phase 10
+- ✓ Skip pile position dialog for empty piles (UX-01) — Phase 11
+- ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
+
+### Active
 
 ### Out of Scope
 
@@ -95,6 +91,9 @@ Known remaining items (deferred backlog):
 | isDraggingRef (useRef not useState) in usePartySocket | Preserves live value in WS closure; useState would capture stale value | ✓ Validated v1.0 |
 | @base-ui/react/dialog for pile insert dialog | AlertDialog hardcodes disablePointerDismissal which breaks click-outside dismiss | ✓ Validated v1.0 |
 | insertPosition optional on MOVE_CARD (defaults to top) | Backward compatible with all existing dispatches; pile insert dialog is additive | ✓ Validated v1.0 |
+| displayName required string (not optional) on Player | Consistent presence; empty string default avoids null checks everywhere | ✓ Validated Phase 9 |
+| Deferred WebSocket connect via enabled flag | Name must be set before connecting so ?name= param is available on handshake | ✓ Validated Phase 9 |
+| joinState null-check gates both socket and board render | Single source of truth for join progression; avoids partial render before connection | ✓ Validated Phase 9 |
 
 ## Evolution
 
@@ -114,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 — v1.1 milestone started*
+*Last updated: 2026-04-19 — v1.1 milestone archived (Social Identity + UX Polish)*
