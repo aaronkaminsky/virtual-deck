@@ -40,7 +40,7 @@ function makeCard(id: string): Card {
  */
 function makeDialogLogic(initialPendingMove: PendingMove | null = null) {
   let pendingMove: PendingMove | null = initialPendingMove;
-  const sendAction = vi.fn<[ClientAction], void>();
+  const sendAction = vi.fn<(action: ClientAction) => void>();
 
   function setPendingMove(value: PendingMove | null) {
     pendingMove = value;
@@ -125,6 +125,24 @@ describe("UX-02: Dialog cancellation does not send MOVE_CARD", () => {
     // This should not throw and should not call sendAction
     logic.sendPendingMove("top");
 
+    expect(logic.sendAction).not.toHaveBeenCalled();
+  });
+
+  it("button click after dialog close is a no-op (race guard)", () => {
+    const card = makeCard("3-d");
+    const pending: PendingMove = {
+      card, fromZone: "hand", fromId: "hand", toZone: "pile", toId: "draw",
+    };
+    const logic = makeDialogLogic(pending);
+
+    // Dialog starts closing (Escape fires onOpenChange(false))
+    logic.onOpenChange(false);
+    expect(logic.pendingMove).toBeNull();
+
+    // Stale button click arrives
+    logic.sendPendingMove("top");
+
+    // Must not dispatch — pendingMove was already cleared
     expect(logic.sendAction).not.toHaveBeenCalled();
   });
 });
@@ -223,7 +241,7 @@ describe("UX-03: Top button (auto-focused) sends MOVE_CARD with insertPosition t
  */
 function makePileDropLogic(pilesInState: Array<{ id: string; cards: unknown[] }>) {
   let pendingMove: PendingMove | null = null;
-  const sendAction = vi.fn<[ClientAction], void>();
+  const sendAction = vi.fn<(action: ClientAction) => void>();
   function setPendingMove(value: PendingMove | null) { pendingMove = value; }
 
   function handlePileDrop(card: Card, fromZone: 'hand' | 'pile', fromId: string, toId: string) {
