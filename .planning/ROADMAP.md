@@ -79,8 +79,10 @@ Plans:
   1. Dragging and dropping a card onto an empty pile places the card on top immediately, without opening the position dialog
   2. The position dialog continues to appear normally when dropping onto a non-empty pile
   3. The card moves to the correct pile and state updates are broadcast to all players in both the empty and non-empty pile cases
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+
+Plans:
+- [ ] 11-01-PLAN.md — Add empty-pile bypass branch in handleDragEnd + UX-01 tests
 
 ## Backlog
 
@@ -127,4 +129,4 @@ Plans:
 | 999.11 Pile drop dialog UX | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 9. Player Identity + Presence | v1.1 | 0/TBD | Not started | - |
 | 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
-| 11. Empty Pile Drop UX | v1.1 | 0/TBD | Not started | - |
+| 11. Empty Pile Drop UX | v1.1 | 0/1 | Not started | - |
