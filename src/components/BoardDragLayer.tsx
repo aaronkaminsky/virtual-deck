@@ -112,8 +112,23 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       const toId = overData!.toId;
 
       if (toZone === 'pile') {
-        // Intercept: show position dialog before sending (D-01, D-04)
-        setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
+        const targetPile = gameState.piles.find(p => p.id === toId);
+        const isEmpty = !targetPile || targetPile.cards.length === 0;
+        if (isEmpty) {
+          // Empty pile: bypass dialog, place at top immediately (D-02, D-03)
+          sendAction({
+            type: 'MOVE_CARD',
+            cardId: card.id,
+            fromZone: fromZone as 'hand' | 'pile',
+            fromId,
+            toZone,
+            toId,
+            insertPosition: 'top',
+          });
+        } else {
+          // Non-empty pile: intercept and show position dialog (D-01)
+          setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
+        }
       } else {
         // Hand drop: send immediately, no position dialog needed
         sendAction({
@@ -163,7 +178,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         )}
       </DndContext>
 
-      {/* Insert-position dialog — appears after any pile drop (D-01, D-04) */}
+      {/* Insert-position dialog — appears after non-empty pile drop (D-01) */}
       <Dialog.Root
         open={pendingMove !== null}
         onOpenChange={(_open) => {

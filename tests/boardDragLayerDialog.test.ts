@@ -212,3 +212,114 @@ describe("UX-03: Top button (auto-focused) sends MOVE_CARD with insertPosition t
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// Helpers for UX-01 tests
+// ---------------------------------------------------------------------------
+
+/**
+ * Mirrors the new empty-pile branch logic extracted from handleDragEnd.
+ * pilesInState represents gameState.piles — the pile lookup used to determine emptiness.
+ */
+function makePileDropLogic(pilesInState: Array<{ id: string; cards: unknown[] }>) {
+  let pendingMove: PendingMove | null = null;
+  const sendAction = vi.fn<[ClientAction], void>();
+  function setPendingMove(value: PendingMove | null) { pendingMove = value; }
+
+  function handlePileDrop(card: Card, fromZone: 'hand' | 'pile', fromId: string, toId: string) {
+    const toZone = 'pile' as const;
+    const targetPile = pilesInState.find(p => p.id === toId);
+    const isEmpty = !targetPile || targetPile.cards.length === 0;
+    if (isEmpty) {
+      sendAction({
+        type: 'MOVE_CARD',
+        cardId: card.id,
+        fromZone,
+        fromId,
+        toZone,
+        toId,
+        insertPosition: 'top',
+      });
+    } else {
+      setPendingMove({ card, fromZone, fromId, toZone, toId });
+    }
+  }
+
+  return { get pendingMove() { return pendingMove; }, sendAction, handlePileDrop };
+}
+
+// ---------------------------------------------------------------------------
+// UX-01: Empty pile drop bypasses dialog
+// ---------------------------------------------------------------------------
+
+describe("UX-01: Empty pile drop bypasses dialog", () => {
+  it("UX-01-A: empty pile — sendAction called with insertPosition 'top', setPendingMove NOT called", () => {
+    const card = makeCard("A-s");
+    const piles = [{ id: "draw", cards: [] }];
+    const logic = makePileDropLogic(piles);
+
+    logic.handlePileDrop(card, "hand", "hand", "draw");
+
+    expect(logic.sendAction).toHaveBeenCalledOnce();
+    expect(logic.sendAction).toHaveBeenCalledWith({
+      type: "MOVE_CARD",
+      cardId: "A-s",
+      fromZone: "hand",
+      fromId: "hand",
+      toZone: "pile",
+      toId: "draw",
+      insertPosition: "top",
+    });
+    expect(logic.pendingMove).toBeNull();
+  });
+
+  it("UX-01-B: non-empty pile — setPendingMove called, sendAction NOT called directly", () => {
+    const card = makeCard("K-h");
+    const piles = [{ id: "draw", cards: [{ id: "2-c" }] }];
+    const logic = makePileDropLogic(piles);
+
+    logic.handlePileDrop(card, "hand", "hand", "draw");
+
+    expect(logic.sendAction).not.toHaveBeenCalled();
+    expect(logic.pendingMove).not.toBeNull();
+    expect(logic.pendingMove?.card).toBe(card);
+    expect(logic.pendingMove?.toId).toBe("draw");
+  });
+
+  it("UX-01-C: pile not found (undefined) — treated as empty, sendAction called with insertPosition 'top'", () => {
+    const card = makeCard("Q-d");
+    const piles: Array<{ id: string; cards: unknown[] }> = []; // no matching pile
+    const logic = makePileDropLogic(piles);
+
+    logic.handlePileDrop(card, "hand", "hand", "nonexistent-pile");
+
+    expect(logic.sendAction).toHaveBeenCalledOnce();
+    expect(logic.sendAction).toHaveBeenCalledWith(
+      expect.objectContaining({ insertPosition: "top", toId: "nonexistent-pile" })
+    );
+    expect(logic.pendingMove).toBeNull();
+  });
+
+  it("UX-01-D: fromZone pile onto empty target pile — bypasses dialog, sends with insertPosition 'top'", () => {
+    const card = makeCard("5-h");
+    const piles = [
+      { id: "draw", cards: [{ id: "J-s" }] },
+      { id: "discard", cards: [] },
+    ];
+    const logic = makePileDropLogic(piles);
+
+    logic.handlePileDrop(card, "pile", "draw", "discard");
+
+    expect(logic.sendAction).toHaveBeenCalledOnce();
+    expect(logic.sendAction).toHaveBeenCalledWith({
+      type: "MOVE_CARD",
+      cardId: "5-h",
+      fromZone: "pile",
+      fromId: "draw",
+      toZone: "pile",
+      toId: "discard",
+      insertPosition: "top",
+    });
+    expect(logic.pendingMove).toBeNull();
+  });
+});
