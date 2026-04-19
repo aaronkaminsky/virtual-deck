@@ -13,6 +13,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
+  const shuffleTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const displayNameRef = useRef(displayName);
   displayNameRef.current = displayName;
 
@@ -49,20 +50,26 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         setError(event.message);
       } else if (event.type === 'PILE_SHUFFLED') {
         const { pileId } = event;
+        const existing = shuffleTimersRef.current.get(pileId);
+        if (existing !== undefined) clearTimeout(existing);
         setShufflingPileIds(prev => new Set([...prev, pileId]));
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           setShufflingPileIds(prev => {
             const next = new Set(prev);
             next.delete(pileId);
             return next;
           });
+          shuffleTimersRef.current.delete(pileId);
         }, 650);
+        shuffleTimersRef.current.set(pileId, timer);
       }
     });
 
     return () => {
       ws.close();
       wsRef.current = null;
+      for (const t of shuffleTimersRef.current.values()) clearTimeout(t);
+      shuffleTimersRef.current.clear();
     };
   }, [roomId, playerId, enabled]);
 
