@@ -346,7 +346,11 @@ export default class GameRoom implements Party.Server {
         takeSnapshot(this.gameState);                          // D-03: snapshot BEFORE shuffle
         dealDrawPile.cards = shuffle(dealDrawPile.cards);       // D-02: shuffle before popping
         this.broadcastShuffleEvent("draw");                     // D-05: broadcast to all clients
-        await new Promise(resolve => setTimeout(resolve, 650)); // D-06: animation window (650ms)
+        // D-06: animation window (650ms). Relies on the assumption that Cloudflare Workers do
+        // not hibernate during an active onMessage handler, so the setTimeout will resolve
+        // before any eviction. If the worker is evicted mid-await the timer is lost and the
+        // deal may hang; treat the animation delay as best-effort under hibernation mode.
+        await new Promise(resolve => setTimeout(resolve, 650));
         for (let i = 0; i < action.cardsPerPlayer; i++) {
           for (const player of connectedPlayers) {
             const dealt = dealDrawPile.cards.pop()!;
