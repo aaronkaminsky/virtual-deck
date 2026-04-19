@@ -37,6 +37,7 @@ Known remaining items (deferred backlog):
 - Phase 999.11 complete (2026-04-17): pile drop dialog UX — Escape/click-outside cancels pending move, Top button auto-focuses on open so Enter confirms top placement, Top uses primary button style
 - Phase 10 complete (2026-04-18): shuffle before deal — PILE_SHUFFLED event, server surgery, client card-fan animation
 - Phase 11 complete (2026-04-19): empty pile drop UX — isEmpty guard in handleDragEnd bypasses dialog for empty piles (UX-01)
+- Phase 9 complete (2026-04-19): player identity + presence — lobby join gate with name input, displayName on Player type, name labels + presence dots on hand zones, localStorage persistence, reconnect preservation
 
 ## Requirements
 
@@ -62,15 +63,17 @@ Known remaining items (deferred backlog):
 - ✓ Reset the table (all cards to draw pile, reshuffled) — v1.0 (CTRL-03)
 - ✓ Undo last card move — v1.0 (CTRL-04)
 
-### Active (v1.1)
+### Validated (v1.1)
 
-- [ ] Players set a display name when joining a room (PRES-01)
-- [ ] Display name visible to all players on table (PRES-02)
-- [ ] Display name persists across reconnects (PRES-03)
-- [ ] Real-time roster of connected/disconnected players (PRES-04)
+- ✓ Players set a display name when joining a room (PRES-01) — Phase 9
+- ✓ Display name visible to all players on table (PRES-02) — Phase 9
+- ✓ Display name persists across reconnects (PRES-03) — Phase 9
+- ✓ Real-time roster of connected/disconnected players (PRES-04) — Phase 9
 - ✓ Shuffle deck before dealing (GAME-01) — Phase 10
 - ✓ Skip pile position dialog for empty piles (UX-01) — Phase 11
 - ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
+
+### Active
 
 ### Out of Scope
 
@@ -103,6 +106,9 @@ Known remaining items (deferred backlog):
 | isDraggingRef (useRef not useState) in usePartySocket | Preserves live value in WS closure; useState would capture stale value | ✓ Validated v1.0 |
 | @base-ui/react/dialog for pile insert dialog | AlertDialog hardcodes disablePointerDismissal which breaks click-outside dismiss | ✓ Validated v1.0 |
 | insertPosition optional on MOVE_CARD (defaults to top) | Backward compatible with all existing dispatches; pile insert dialog is additive | ✓ Validated v1.0 |
+| displayName required string (not optional) on Player | Consistent presence; empty string default avoids null checks everywhere | ✓ Validated Phase 9 |
+| Deferred WebSocket connect via enabled flag | Name must be set before connecting so ?name= param is available on handshake | ✓ Validated Phase 9 |
+| joinState null-check gates both socket and board render | Single source of truth for join progression; avoids partial render before connection | ✓ Validated Phase 9 |
 
 ## Evolution
 
@@ -122,4 +128,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-17 — v1.1 milestone started (Social Identity + UX Polish)*
+*Last updated: 2026-04-19 — v1.1 milestone complete (Social Identity + UX Polish)*

@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
-- 📋 **v1.1 Social Identity + UX Polish** — Phases 9–11 (planned)
+- ✅ **v1.1 Social Identity + UX Polish** — Phases 9–11 (shipped 2026-04-19)
 
 ## Phases
 
@@ -37,7 +37,7 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 
 ### 📋 v1.1 Social Identity + UX Polish (Phases 9–11)
 
-- [ ] **Phase 9: Player Identity + Presence** — Display names, presence roster, reconnect persistence
+- [x] **Phase 9: Player Identity + Presence** — Display names, presence roster, reconnect persistence (completed 2026-04-19)
 - [x] **Phase 10: Shuffle Before Deal** — Auto-shuffle pile before distributing cards (completed 2026-04-18)
 - [x] **Phase 11: Empty Pile Drop UX** — Skip position dialog when dropping onto an empty pile (completed 2026-04-18)
 
@@ -53,8 +53,13 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
   3. After a player disconnects and reconnects, their display name is the same as before (not reset)
   4. All players can see a roster listing every player in the room, with a visual indicator distinguishing connected from disconnected players
   5. When a new player joins mid-session, their name appears in all other players' rosters without a page refresh
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
+
+Plans:
+- [x] 09-01-PLAN.md — displayName data model: Player type, server ?name= param, 20-char truncation, reconnect preservation
+- [x] 09-02-PLAN.md — Lobby join gate: name input, deferred WebSocket connection, localStorage persistence
+- [x] 09-03-PLAN.md — Name labels and presence dots on hand zones; header PlayerPresence removed
 
 ### Phase 10: Shuffle Before Deal
 **Goal**: The deal action is always fair — dealing from any pile automatically shuffles it first so players cannot predict card order
@@ -127,6 +132,6 @@ Plans:
 | 999.2 Pile insert position | v1.0 | 1/1 | Complete | 2026-04-12 |
 | 999.10 Drag origin placeholder | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 999.11 Pile drop dialog UX | v1.1 pre | 1/1 | Complete | 2026-04-17 |
-| 9. Player Identity + Presence | v1.1 | 0/TBD | Not started | - |
+| 9. Player Identity + Presence | v1.1 | 3/3 | Complete | 2026-04-19 |
 | 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
