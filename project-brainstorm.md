@@ -1,9 +1,3 @@
-Add password protection?
-Add logging of IP address, along with usage stats and player name?
-Add sound effects, should go near the "art" features
-
-Consider, can we add browser use to Claude so it can do more self testing?
-
 This file is some brainstorming ideas for the virtual card deck I am building.
 
 What is below is just one approach, alternatives that improve on my goals are welcome.
