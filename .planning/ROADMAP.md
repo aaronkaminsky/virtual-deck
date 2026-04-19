@@ -38,7 +38,7 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 ### 📋 v1.1 Social Identity + UX Polish (Phases 9–11)
 
 - [ ] **Phase 9: Player Identity + Presence** — Display names, presence roster, reconnect persistence
-- [ ] **Phase 10: Shuffle Before Deal** — Auto-shuffle pile before distributing cards
+- [x] **Phase 10: Shuffle Before Deal** — Auto-shuffle pile before distributing cards (completed 2026-04-18)
 - [ ] **Phase 11: Empty Pile Drop UX** — Skip position dialog when dropping onto an empty pile
 
 ## Phase Details
@@ -67,9 +67,9 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Add PILE_SHUFFLED event type and DEAL_CARDS server surgery (shuffle + broadcast + 650ms delay)
-- [ ] 10-02-PLAN.md — Wire PILE_SHUFFLED broadcast into SHUFFLE_PILE handler
-- [ ] 10-03-PLAN.md — Client card-fan animation in PileZone driven by PILE_SHUFFLED event
+- [x] 10-01-PLAN.md — Add PILE_SHUFFLED event type and DEAL_CARDS server surgery (shuffle + broadcast + 650ms delay)
+- [x] 10-02-PLAN.md — Wire PILE_SHUFFLED broadcast into SHUFFLE_PILE handler
+- [x] 10-03-PLAN.md — Client card-fan animation in PileZone driven by PILE_SHUFFLED event
 
 ### Phase 11: Empty Pile Drop UX
 **Goal**: Dropping a card onto an empty pile is frictionless — no dialog appears because there is no position to choose
@@ -126,5 +126,5 @@ Plans:
 | 999.10 Drag origin placeholder | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 999.11 Pile drop dialog UX | v1.1 pre | 1/1 | Complete | 2026-04-17 |
 | 9. Player Identity + Presence | v1.1 | 0/TBD | Not started | - |
-| 10. Shuffle Before Deal | v1.1 | 0/3 | Not started | - |
+| 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
 | 11. Empty Pile Drop UX | v1.1 | 0/TBD | Not started | - |
