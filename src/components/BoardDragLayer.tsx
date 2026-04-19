@@ -58,6 +58,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
+  const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) {
@@ -79,6 +80,11 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   function handleDragStart(event: DragStartEvent) {
+    // Cancel any in-flight snap-back timer from a previous failed drop
+    if (snapBackTimerRef.current !== null) {
+      clearTimeout(snapBackTimerRef.current);
+      snapBackTimerRef.current = null;
+    }
     const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string } | undefined;
     if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
     dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
@@ -148,7 +154,10 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     // defaultDropAnimation's sideEffects hide the source card while the overlay animates.
     // Clear after animation completes.
     else {
-      setTimeout(() => setActiveCard(null), defaultDropAnimation.duration + 50);
+      snapBackTimerRef.current = setTimeout(() => {
+        setActiveCard(null);
+        snapBackTimerRef.current = null;
+      }, defaultDropAnimation.duration + 50);
     }
 
     dragDataRef.current = null;
@@ -158,7 +167,10 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dropSuccessRef.current = false;
     setDragging(false);
     dragDataRef.current = null;
-    setTimeout(() => setActiveCard(null), defaultDropAnimation.duration + 50);
+    snapBackTimerRef.current = setTimeout(() => {
+      setActiveCard(null);
+      snapBackTimerRef.current = null;
+    }, defaultDropAnimation.duration + 50);
   }
 
   return (
