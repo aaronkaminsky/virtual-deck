@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
-- 📋 **v1.1** — TBD (planned)
+- ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
 
 ## Phases
 
@@ -27,9 +27,18 @@ See full phase details in [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.m
 
 </details>
 
-### 📋 v1.1 (Planned)
+<details>
+<summary>✅ v1.1 Social Identity + UX Polish (Phases 999.10, 999.11, 9–11) — SHIPPED 2026-04-19</summary>
 
-Phases not yet defined. Run `/gsd-new-milestone` to kick off requirements and roadmap.
+- [x] Phase 999.10: Drag origin placeholder — dashed outline at card origin slot during drag; pointerWithin collision detection (completed 2026-04-17)
+- [x] Phase 999.11: Pile drop dialog UX — Escape/click-outside cancels, Enter confirms Top, Top uses primary button style (completed 2026-04-17)
+- [x] Phase 9: Player Identity + Presence — Display names, presence roster, reconnect persistence (completed 2026-04-19)
+- [x] Phase 10: Shuffle Before Deal — Auto-shuffle pile before distributing cards; card-fan animation (completed 2026-04-18)
+- [x] Phase 11: Empty Pile Drop UX — Skip position dialog when dropping onto an empty pile (completed 2026-04-18)
+
+See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md).
+
+</details>
 
 ## Backlog
 
@@ -42,10 +51,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.5 | Shuffle visual indicator | TBD |
 | 999.6 | Investigate test setup treating both players as remote | TBD |
 | 999.7 | README and architecture documentation | TBD |
-| 999.8 | Shuffle deck before dealing | TBD |
-| 999.9 | Skip position dialog for empty pile | TBD |
-| 999.10 | Drag origin placeholder | TBD |
-| 999.11 | Pile drop dialog UX improvements | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
 | 999.16 | Turn indicators — show whose turn it is | TBD |
@@ -55,8 +60,8 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 
 ## Progress
 
-| Phase | Milestone | Plans | Status | Completed |
-|-------|-----------|-------|--------|-----------|
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
 | 1. Server Foundation | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 2. Lobby + Room Join | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 3. Core Board | v1.0 | 3/3 | Complete | 2026-04-04 |
@@ -67,3 +72,8 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 8. Documentation Housekeeping | v1.0 | 1/1 | Complete | 2026-04-10 |
 | 999.1 Drag to opponent's hand | v1.0 | 1/1 | Complete | 2026-04-12 |
 | 999.2 Pile insert position | v1.0 | 1/1 | Complete | 2026-04-12 |
+| 999.10 Drag origin placeholder | v1.1 | 3/3 | Complete | 2026-04-17 |
+| 999.11 Pile drop dialog UX | v1.1 | 1/1 | Complete | 2026-04-17 |
+| 9. Player Identity + Presence | v1.1 | 3/3 | Complete | 2026-04-19 |
+| 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
+| 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |

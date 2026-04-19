@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: v1.0 milestone archived
-last_updated: "2026-04-13T13:16:38.098Z"
-last_activity: 2026-04-13
+milestone: v1.1
+milestone_name: Social Identity + UX Polish
+status: milestone_archived
+stopped_at: v1.1 milestone archived — ready for /gsd-new-milestone
+last_updated: "2026-04-19T16:00:00.000Z"
+last_activity: 2026-04-19
 progress:
-  total_phases: 16
+  total_phases: 3
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 7
   percent: 100
 ---
 
@@ -18,25 +18,25 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-12)
+See: .planning/PROJECT.md (updated 2026-04-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.0 shipped — planning v1.1
+**Current focus:** v1.1 archived — run `/gsd-new-milestone` to plan v1.2
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-13 — Milestone v1.1 started
+Phase: 9 — Player Identity + Presence (complete)
+Plan: 3/3 plans complete
+Status: v1.1 milestone complete — all 3 phases done
+Last activity: 2026-04-19 — Phase 9 UAT complete (8/8 passed)
 
-Progress: [__________] v1.1 not started
+Progress: [██████████] 3/3 phases complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
+- Total plans completed: 6
 - Average duration: —
 - Total execution time: —
 
@@ -44,7 +44,8 @@ Progress: [__________] v1.1 not started
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 999.10 | 3 | - | - |
+| 999.11 | 1 | - | - |
 
 **Recent Trend:**
 
@@ -82,8 +83,17 @@ None.
 
 None — v1.0 shipped clean.
 
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-04-19:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 11 / 11-HUMAN-UAT.md | passed (false positive — stale "awaiting human testing" text) |
+| uat_gap | Phase 999.10 / 999.10-UAT.md | passed (false positive — 1 resolved gap, 0 pending) |
+
 ## Session Continuity
 
-Last session: 2026-04-12
-Stopped at: v1.0 milestone archived
+Last session: 2026-04-19
+Stopped at: Phase 9 UAT complete (8/8 passed) — v1.1 milestone complete
 Resume file: None

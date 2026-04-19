@@ -64,4 +64,5 @@ export type ClientAction =
 
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
-  | { type: "ERROR"; code: string; message: string };
+  | { type: "ERROR"; code: string; message: string }
+  | { type: "PILE_SHUFFLED"; pileId: string };

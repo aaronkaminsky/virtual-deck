@@ -8,7 +8,7 @@ import { BoardDragLayer } from './components/BoardDragLayer';
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -29,6 +29,7 @@ function RoomView({ roomId }: { roomId: string }) {
         connected={connected}
         sendAction={sendAction}
         setDragging={setDragging}
+        shufflingPileIds={shufflingPileIds}
       />
     );
   }
