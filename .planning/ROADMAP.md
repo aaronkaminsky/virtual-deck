@@ -45,7 +45,7 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
 
 **Milestone Goal:** Establish developer tooling and add play zones with multi-card set support for 13s-style games.
 
-- [ ] **Phase 12: Test Mock Fix** — Fix unit test helpers to correctly model local vs remote player behavior
+- [x] **Phase 12: Test Mock Fix** — Fix unit test helpers to correctly model local vs remote player behavior (completed 2026-04-20)
 - [ ] **Phase 13: Playwright Infrastructure** — Install Playwright, configure e2e suite with 2-player fixture, commit MCP config
 - [ ] **Phase 14: Gameplay Zone Infrastructure** — Add spread zone type: personal play zone per player and shared communal zone
 - [ ] **Phase 15: Multi-Card Set Play** — Player selects 1–5 cards from hand and plays them as a set into a zone
@@ -64,7 +64,7 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
   4. All existing tests continue to pass — the mock extension is additive only
 **Plans**: 1 plan
 Plans:
-- [ ] 12-01-PLAN.md — Create tests/helpers.ts (shared mock helpers) and tests/broadcastMasking.test.ts (viewFor broadcast masking tests)
+- [x] 12-01-PLAN.md — Create tests/helpers.ts (shared mock helpers) and tests/broadcastMasking.test.ts (viewFor broadcast masking tests)
 
 ### Phase 13: Playwright Infrastructure
 **Goal**: Developer can run a committed Playwright e2e suite covering core 2-player scenarios, and Claude sessions have Playwright MCP available via .mcp.json
