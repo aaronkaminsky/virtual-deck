@@ -62,7 +62,9 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
   2. A unit test asserts that `viewFor` returns masked card data for a remote player (opponent cannot see hand card values)
   3. A unit test asserts that `viewFor` returns full card data for the local player (sender sees their own hand)
   4. All existing tests continue to pass — the mock extension is additive only
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 12-01-PLAN.md — Create tests/helpers.ts (shared mock helpers) and tests/broadcastMasking.test.ts (viewFor broadcast masking tests)
 
 ### Phase 13: Playwright Infrastructure
 **Goal**: Developer can run a committed Playwright e2e suite covering core 2-player scenarios, and Claude sessions have Playwright MCP available via .mcp.json
@@ -153,7 +155,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 9. Player Identity + Presence | v1.1 | 3/3 | Complete | 2026-04-19 |
 | 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
-| 12. Test Mock Fix | v1.2 | 0/TBD | Not started | - |
+| 12. Test Mock Fix | v1.2 | 0/1 | Not started | - |
 | 13. Playwright Infrastructure | v1.2 | 0/TBD | Not started | - |
 | 14. Gameplay Zone Infrastructure | v1.2 | 0/TBD | Not started | - |
 | 15. Multi-Card Set Play | v1.2 | 0/TBD | Not started | - |
