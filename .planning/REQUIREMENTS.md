@@ -45,19 +45,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEV-01 | TBD | Pending |
-| DEV-02 | TBD | Pending |
-| DEV-03 | TBD | Pending |
-| DEV-04 | TBD | Pending |
-| PLAY-01 | TBD | Pending |
-| PLAY-02 | TBD | Pending |
-| PLAY-03 | TBD | Pending |
+| DEV-04 | Phase 12 | Pending |
+| DEV-01 | Phase 13 | Pending |
+| DEV-02 | Phase 13 | Pending |
+| PLAY-01 | Phase 14 | Pending |
+| PLAY-02 | Phase 14 | Pending |
+| PLAY-03 | Phase 15 | Pending |
+| DEV-03 | Phase 16 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-20*
-*Last updated: 2026-04-20 after v1.2 milestone initialization*
+*Last updated: 2026-04-20 — traceability filled after v1.2 roadmap creation*
