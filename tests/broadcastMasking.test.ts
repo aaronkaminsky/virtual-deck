@@ -57,6 +57,6 @@ describe("broadcastState masking via viewFor", () => {
     expect(remoteUpdate).toBeDefined();
     expect(remoteUpdate!.state.myPlayerId).toBe("player-2");
     expect(remoteUpdate!.state.myHand).toHaveLength(0);
-    expect(remoteUpdate!.state.opponentHandCounts["player-1"]).toBeDefined();
+    expect(remoteUpdate!.state.opponentHandCounts["player-1"]).toBe(1);
   });
 });
