@@ -3,7 +3,7 @@ import type * as Party from "partykit/server";
 import type { Card } from "../src/shared/types";
 
 export function makeMockRoom(
-  connections: Array<Party.Connection & { send: ReturnType<typeof vi.fn> }> = [],
+  connections: Party.Connection[] = [],
   overrides: Partial<Party.Room> = {}
 ): Party.Room {
   const storage = {
