@@ -7,3 +7,4 @@ dist/
 .env.*.local
 *.pem
 *.key
+test-results/
