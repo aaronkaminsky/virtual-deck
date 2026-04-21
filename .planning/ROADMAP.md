@@ -75,7 +75,11 @@ Plans:
   2. The e2e suite covers at minimum: 2-player state sync, deal cards, pass card between players, reset table, and hand privacy (opponent cannot see card values)
   3. `.mcp.json` exists in the repo root and registers `@playwright/mcp` as a project-scoped MCP server — Claude Code can start a Playwright-driven browser session from a dev session
   4. All Playwright assertions use retry-based matchers (no `waitForTimeout` or `.textContent()` in committed test files)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 13-01-PLAN.md — Install @playwright/test + @playwright/mcp, add npm scripts, add data-testid attrs to HandZone/OpponentHand/PileZone, create .mcp.json
+- [ ] 13-02-PLAN.md — Create playwright.config.ts (dual webServer) and playwright/fixtures.ts (twoPlayerRoom fixture)
+- [ ] 13-03-PLAN.md — Write playwright/game.spec.ts with all 5 scenario tests
 
 ### Phase 14: Gameplay Zone Infrastructure
 **Goal**: A personal spread zone exists for each connected player and a shared communal spread zone exists on the table — all cards visible simultaneously, not stacked
@@ -156,7 +160,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
 | 12. Test Mock Fix | v1.2 | 0/1 | Not started | - |
-| 13. Playwright Infrastructure | v1.2 | 0/TBD | Not started | - |
+| 13. Playwright Infrastructure | v1.2 | 0/3 | Not started | - |
 | 14. Gameplay Zone Infrastructure | v1.2 | 0/TBD | Not started | - |
 | 15. Multi-Card Set Play | v1.2 | 0/TBD | Not started | - |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
