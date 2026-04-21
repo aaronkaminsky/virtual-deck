@@ -90,6 +90,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
       </div>
       <div
         ref={setNodeRef}
+        data-testid="hand-zone"
         className={cn(
           'h-[128px] flex items-center px-4 gap-2 overflow-x-auto bg-card',
           isOver ? 'border-t-2 border-primary' : ''
