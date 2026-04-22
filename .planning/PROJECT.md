@@ -63,6 +63,9 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Validated (v1.1)
 
+- ✓ Playwright MCP server configured for Claude-driven browser testing (DEV-01) — Phase 13
+- ✓ Playwright e2e test suite committed to repo (DEV-02) — Phase 13
+- ✓ Test setup correctly models local vs remote player behavior (DEV-04) — Phase 12
 - ✓ Players set a display name when joining a room (PRES-01) — Phase 9
 - ✓ Display name visible to all players on table (PRES-02) — Phase 9
 - ✓ Display name persists across reconnects (PRES-03) — Phase 9
@@ -73,10 +76,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Active
 
-- [ ] Playwright MCP server configured for Claude-driven browser testing (DEV-01)
-- [ ] Playwright e2e test suite committed to repo (DEV-02)
 - [ ] Developer README with setup, architecture, and deploy instructions (DEV-03)
-- [ ] Test setup correctly models local vs remote player behavior (DEV-04)
 - [ ] Personal play area zone per player — visible to all, face-up cards (PLAY-01)
 - [ ] Shared communal zone on the table — any player can interact (PLAY-02)
 - [ ] Player can play 1–5 cards from hand as a set into either zone (PLAY-03)
@@ -115,6 +115,9 @@ Players can see the shared table and their own private hand update in real time,
 | displayName required string (not optional) on Player | Consistent presence; empty string default avoids null checks everywhere | ✓ Validated Phase 9 |
 | Deferred WebSocket connect via enabled flag | Name must be set before connecting so ?name= param is available on handshake | ✓ Validated Phase 9 |
 | joinState null-check gates both socket and board render | Single source of truth for join progression; avoids partial render before connection | ✓ Validated Phase 9 |
+| Two BrowserContexts per Playwright test (not two Pages) | usePlayerId.ts stores playerId in localStorage; same context = same token = both pages join as same player | ✓ Validated Phase 13 |
+| mouse.move/down/move/up (steps:15) for dnd-kit e2e drag | Playwright dragAndDrop() uses HTML5 drag API; dnd-kit uses pointer events and ignores HTML5 events | ✓ Validated Phase 13 |
+| Playwright MCP via .mcp.json only | Project-scoped dev tool; must never appear in package.json or CI scripts | ✓ Validated Phase 13 |
 
 ## Evolution
 
@@ -134,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-19 — v1.2 milestone started (Dev Infrastructure & Game Depth)*
+*Last updated: 2026-04-22 — after Phase 13 (Playwright Infrastructure)*

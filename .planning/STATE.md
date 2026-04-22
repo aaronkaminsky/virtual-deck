@@ -7,10 +7,10 @@ last_updated: "2026-04-20T00:00:00.000Z"
 last_activity: 2026-04-20
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 20
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
+  percent: 40
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.2 — Phase 13: Playwright Infrastructure
+**Current focus:** v1.2 — Phase 14: Gameplay Zone Infrastructure
 
 ## Current Position
 
-Phase: 13 of 16 (Playwright Infrastructure)
-Plan: 0 of TBD (ready to plan)
-Status: Phase 13 context gathered — ready to plan
-Last activity: 2026-04-20 — Phase 13 context captured (dev server auto-start, fresh-room fixture, separate test:e2e script)
+Phase: 14 of 16 (Gameplay Zone Infrastructure)
+Plan: 0 of TBD (ready to discuss)
+Status: Phase 13 complete — ready to discuss Phase 14
+Last activity: 2026-04-22 — Phase 13 UAT passed (5/5), phase marked complete
 
-Progress: [██░░░░░░░░] 1/5 phases complete
+Progress: [████░░░░░░] 2/5 phases complete
 
 ## Performance Metrics
 
@@ -51,6 +51,8 @@ Recent decisions affecting v1.2:
 - Reuse `piles[]` for spread zones (add `ownerId`/`region` fields) — avoids parallel `zones[]` collection and keeps MOVE_CARD/viewFor/RESET_TABLE working unchanged
 - Multi-card play via select-then-button (not dnd-kit multi-drag) — dnd-kit multi-drag deferred to v1.3+
 - Playwright MCP via `.mcp.json` only — never added to `package.json` or CI
+- Two separate BrowserContexts per e2e test (not two Pages in one context) — usePlayerId.ts reads localStorage; same context = same player token
+- mouse.move/down/move/up with steps:15 for dnd-kit drag — Playwright dragAndDrop() uses HTML5 API which dnd-kit ignores
 
 ### Pending Todos
 
@@ -58,8 +60,7 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 15 (Playwright): PartyKit dev server health-check URL for `webServer.url` is MEDIUM confidence (`http://localhost:1999/~partykit/ping`). Must be confirmed by running `npm run dev` before writing `playwright.config.ts`.
-- Phase 15 (Playwright): Confirm whether `npm run dev` starts both Vite and PartyKit in one process or requires two separate commands.
+None. (Phase 13 research resolved: use `port: 1999` for PartyKit webServer, `npm run dev:client` for Vite — both confirmed from package.json.)
 
 ## Deferred Items
 
@@ -67,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-20
-Stopped at: Phase 13 context gathered — ready to plan
-Resume file: .planning/phases/13-playwright-infrastructure/13-CONTEXT.md
+Last session: 2026-04-22
+Stopped at: Phase 13 complete — UAT 5/5 passed, ready to discuss Phase 14
+Resume file: None
