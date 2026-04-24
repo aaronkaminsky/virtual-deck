@@ -1,7 +1,8 @@
 ---
 phase: 14
 slug: gameplay-zone-infrastructure
-status: draft
+status: approved
+reviewed_at: 2026-04-24T00:00:00Z
 shadcn_initialized: true
 preset: base-nova
 created: 2026-04-24

@@ -359,7 +359,7 @@ expect("hands" in view).toBe(false);  // hands never in ClientGameState
 | Inline `makeMockRoom` per test file | Shared `tests/helpers.ts` | Phase 12 | Eliminates 11 copies of the same function |
 | `getConnections` returns empty iterator | `getConnections` returns live array iterator | Phase 12 | broadcastState tests can assert send calls |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should existing test files be migrated to import from helpers.ts?**
    - What we know: 11 of 14 files have identical `makeMockRoom`/`makeMockConnection` implementations; the success criteria says "additive only"
