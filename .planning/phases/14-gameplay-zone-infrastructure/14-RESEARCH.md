@@ -780,7 +780,7 @@ Run `npx vitest run` after each change. Key tests that touch modified files:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Spread zone name on reconnect with different displayName**
    - What we know: `displayName` can be updated on reconnect; spread zone name is set once at creation.

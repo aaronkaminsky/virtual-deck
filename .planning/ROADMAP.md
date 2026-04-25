@@ -91,8 +91,11 @@ Plans:
   3. Existing cards (drag, pass, flip, undo, reset) can be moved to and from both zone types without errors
   4. Reconnecting a player does not duplicate their personal play zone — idempotent creation
   5. The `Pile` type carries `ownerId` and `region` fields; `ClientGameState` carries `myPlayZoneId`
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+Plans:
+- [ ] 14-01-PLAN.md — Extend types (Pile.region/ownerId, ClientGameState.myPlayZoneId), seed communal zone in defaultGameState, idempotent personal zone creation in onConnect, onStart migration, viewFor exposure, and unit tests
+- [ ] 14-02-PLAN.md — New SpreadZone component, BoardView 4-section restructure with region-filtered piles, opponent spread zones in header, Playwright e2e for cross-player zone visibility
 
 ### Phase 15: Multi-Card Set Play
 **Goal**: Player can select 1–5 cards from hand and play them as a set into their personal zone or the communal zone in one atomic action
@@ -162,6 +165,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
-| 14. Gameplay Zone Infrastructure | v1.2 | 0/TBD | Not started | - |
+| 14. Gameplay Zone Infrastructure | v1.2 | 0/2 | Not started | - |
 | 15. Multi-Card Set Play | v1.2 | 0/TBD | Not started | - |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
