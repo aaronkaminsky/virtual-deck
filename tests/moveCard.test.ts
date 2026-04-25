@@ -269,6 +269,32 @@ describe("MOVE_CARD handler", () => {
     expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(1);
   });
 
+  it("moves card from draw pile to spread zone (SC-3)", async () => {
+    room.gameState = makeStateWithPlayerAndCards("player-1", []);
+    // Clear the full deck so only our test card is in the draw pile
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    drawPile.cards = [makeCard("A-s")];
+    // defaultGameState (used by makeStateWithPlayerAndCards) already seeds spread-communal
+
+    const msg = JSON.stringify({
+      type: "MOVE_CARD",
+      cardId: "A-s",
+      fromZone: "pile",
+      fromId: "draw",
+      toZone: "pile",
+      toId: "spread-communal",
+      insertPosition: "top",
+    });
+    await room.onMessage(msg, sender);
+
+    const communal = room.gameState.piles.find(p => p.id === "spread-communal")!;
+    expect(communal).toBeDefined();
+    expect(communal.cards).toHaveLength(1);
+    expect(communal.cards[0].id).toBe("A-s");
+    const draw = room.gameState.piles.find(p => p.id === "draw")!;
+    expect(draw.cards).toHaveLength(0);
+  });
+
   it("hand->pile move updates opponentHandCounts via viewFor", async () => {
     const card = makeCard("A-s");
     room.gameState = makeStateWithPlayerAndCards("player-1", [card]);
