@@ -19,6 +19,8 @@ export interface Pile {
   name: string;
   cards: Card[];     // top of stack = last element
   faceUp?: boolean;  // whether the pile shows face-up by default
+  region?: "pile" | "spread";
+  ownerId?: string | null;
 }
 
 export type MaskedCard = { faceUp: false };
@@ -28,6 +30,8 @@ export interface ClientPile {
   name: string;
   cards: (Card | MaskedCard)[];
   faceUp?: boolean;
+  region?: "pile" | "spread";
+  ownerId?: string | null;
 }
 
 export interface GameState {
@@ -48,6 +52,7 @@ export interface ClientGameState {
   opponentHandCounts: Record<string, number>;
   piles: ClientPile[];
   canUndo: boolean;
+  myPlayZoneId: string;
 }
 
 export type ClientAction =
