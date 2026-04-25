@@ -4,6 +4,7 @@ import type { ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
+import { SpreadZone } from './SpreadZone';
 import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -21,6 +22,11 @@ interface BoardViewProps {
 export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds }: BoardViewProps) {
   const [copied, setCopied] = useState(false);
 
+  const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
+  const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
+  const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
+  const communalZone = spreadPiles.find(p => p.id === 'spread-communal');
+
   const handleCopy = () => {
     const base = import.meta.env.BASE_URL || '/virtual-deck/';
     const url = `${window.location.origin}${base}?room=${roomId}`;
@@ -35,19 +41,24 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
-      <div className="h-[104px] flex items-center justify-between px-4 gap-4 bg-card">
-        <div className="flex items-center gap-2 flex-1 overflow-x-auto">
+      <div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
+        <div className="flex items-start gap-4 flex-1 overflow-x-auto">
           {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
             const player = gameState.players.find(p => p.id === id);
+            const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
             return (
-              <OpponentHand
-                key={id}
-                playerId={id}
-                cardCount={count}
-                displayName={player?.displayName ?? ''}
-                connected={player?.connected ?? false}
-                sendAction={sendAction}
-              />
+              <div key={id} className="flex flex-col gap-1">
+                <OpponentHand
+                  playerId={id}
+                  cardCount={count}
+                  displayName={player?.displayName ?? ''}
+                  connected={player?.connected ?? false}
+                  sendAction={sendAction}
+                />
+                {opponentSpread && (
+                  <SpreadZone pile={opponentSpread} sendAction={sendAction} draggingCardId={draggingCardId} />
+                )}
+              </div>
             );
           })}
         </div>
@@ -75,9 +86,18 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
       </div>
 
       <div className="flex-1 flex items-center justify-center gap-6 px-4">
-        {gameState.piles.map((pile) => (
+        {pilePiles.map((pile) => (
           <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
         ))}
+      </div>
+
+      <div className="flex items-start gap-4 px-4 py-2 bg-card">
+        {communalZone && (
+          <SpreadZone pile={communalZone} sendAction={sendAction} draggingCardId={draggingCardId} />
+        )}
+        {mySpreadZone && (
+          <SpreadZone pile={mySpreadZone} sendAction={sendAction} draggingCardId={draggingCardId} />
+        )}
       </div>
 
       {(() => {
