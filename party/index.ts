@@ -33,9 +33,10 @@ export function defaultGameState(roomId: string): GameState {
     players: [],
     hands: {},
     piles: [
-      { id: "draw", name: "Draw", cards: buildDeck(), faceUp: false },
-      { id: "discard", name: "Discard", cards: [], faceUp: true },
-      { id: "play", name: "Play Area", cards: [], faceUp: true },
+      { id: "draw", name: "Draw", cards: buildDeck(), faceUp: false, region: "pile", ownerId: null },
+      { id: "discard", name: "Discard", cards: [], faceUp: true, region: "pile", ownerId: null },
+      { id: "play", name: "Play Area", cards: [], faceUp: true, region: "pile", ownerId: null },
+      { id: "spread-communal", name: "Communal", cards: [], faceUp: true, region: "spread", ownerId: null },
     ],
     undoSnapshots: [],
   };
@@ -66,12 +67,15 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       id: pile.id,
       name: pile.name,
       faceUp: pile.faceUp,
+      region: pile.region,
+      ownerId: pile.ownerId,
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         const isTop = i === arr.length - 1;
         return card.faceUp || isTop ? card : { faceUp: false as const };
       }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
+    myPlayZoneId: playerToken ? `spread-${playerToken}` : "",
   };
 }
 
@@ -104,6 +108,27 @@ export default class GameRoom implements Party.Server {
         (player as any).displayName = '';
       }
     }
+    // Migrate state: Phase 14 adds region and ownerId to Pile
+    for (const pile of this.gameState.piles) {
+      if (!('region' in pile)) {
+        (pile as any).region = "pile";
+      }
+      if (!('ownerId' in pile)) {
+        (pile as any).ownerId = null;
+      }
+    }
+    // Migrate state: Phase 14 adds communal spread zone
+    const hasCommunal = this.gameState.piles.some(p => p.id === "spread-communal");
+    if (!hasCommunal) {
+      this.gameState.piles.push({
+        id: "spread-communal",
+        name: "Communal",
+        cards: [],
+        faceUp: true,
+        region: "spread",
+        ownerId: null,
+      });
+    }
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
@@ -129,6 +154,20 @@ export default class GameRoom implements Party.Server {
         player.connected = true;
         if (displayName) player.displayName = displayName;
       }
+    }
+
+    // Create personal spread zone idempotently (Phase 14)
+    const spreadZoneId = `spread-${playerToken}`;
+    if (!this.gameState.piles.some(p => p.id === spreadZoneId)) {
+      const player = this.gameState.players.find(p => p.id === playerToken);
+      this.gameState.piles.push({
+        id: spreadZoneId,
+        name: player?.displayName || playerToken.slice(0, 8),
+        cards: [],
+        faceUp: true,
+        region: "spread",
+        ownerId: playerToken,
+      });
     }
 
     await this.persist();
