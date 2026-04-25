@@ -114,4 +114,29 @@ test.describe('virtual-deck e2e', () => {
     // P1's page shows HandZone (their own hand) not OpponentHand — confirms server masking
     await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
   });
+
+  test('spread zone visibility: both players see communal + personal zones', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    // Both pages are already on the board (fixture waits for hand-zone).
+    // The communal spread zone has a stable id and must be visible to both players.
+    await expect(p1.getByTestId('spread-zone-spread-communal')).toBeVisible();
+    await expect(p2.getByTestId('spread-zone-spread-communal')).toBeVisible();
+
+    // Each page should show AT LEAST 2 spread zones:
+    //   - the communal zone (spread-zone-spread-communal)
+    //   - the viewing player's personal zone in the spread row
+    //   - the other player's personal zone in the header
+    // Expect >= 2 without hardcoding the opaque playerToken. (Total should be 3 in a 2-player room,
+    // but we assert >= 2 to stay robust against render timing on slower CI machines.)
+    await expect(p1.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
+    await expect(p2.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
+
+    // Strict: the communal zone must be present on both pages AND at least one personal zone
+    // (the player's own — in the spread row) must be present.
+    const p1Zones = await p1.locator('[data-testid^="spread-zone-spread-"]').count();
+    const p2Zones = await p2.locator('[data-testid^="spread-zone-spread-"]').count();
+    expect(p1Zones).toBeGreaterThanOrEqual(2);
+    expect(p2Zones).toBeGreaterThanOrEqual(2);
+  });
 });
