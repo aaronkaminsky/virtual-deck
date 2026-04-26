@@ -47,7 +47,7 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
 
 - [x] **Phase 12: Test Mock Fix** — Fix unit test helpers to correctly model local vs remote player behavior (completed 2026-04-20)
 - [x] **Phase 13: Playwright Infrastructure** — Install Playwright, configure e2e suite with 2-player fixture, commit MCP config (completed 2026-04-22)
-- [ ] **Phase 14: Gameplay Zone Infrastructure** — Add spread zone type: personal play zone per player and shared communal zone
+- [x] **Phase 14: Gameplay Zone Infrastructure** — Add spread zone type: personal play zone per player and shared communal zone (completed 2026-04-26)
 - [ ] **Phase 15: Multi-Card Set Play** — Player selects 1–5 cards from hand and plays them as a set into a zone
 - [ ] **Phase 16: Developer README** — Write README covering local setup, architecture, test runners, and deploy
 
@@ -94,8 +94,8 @@ Plans:
 **Plans**: 2 plans
 **UI hint**: yes
 Plans:
-- [ ] 14-01-PLAN.md — Extend types (Pile.region/ownerId, ClientGameState.myPlayZoneId), seed communal zone in defaultGameState, idempotent personal zone creation in onConnect, onStart migration, viewFor exposure, and unit tests
-- [ ] 14-02-PLAN.md — New SpreadZone component, BoardView 4-section restructure with region-filtered piles, opponent spread zones in header, Playwright e2e for cross-player zone visibility
+- [x] 14-01-PLAN.md — Extend types (Pile.region/ownerId, ClientGameState.myPlayZoneId), seed communal zone in defaultGameState, idempotent personal zone creation in onConnect, onStart migration, viewFor exposure, and unit tests
+- [x] 14-02-PLAN.md — New SpreadZone component, BoardView 4-section restructure with region-filtered piles, opponent spread zones in header, Playwright e2e for cross-player zone visibility
 
 ### Phase 15: Multi-Card Set Play
 **Goal**: Player can select 1–5 cards from hand and play them as a set into their personal zone or the communal zone in one atomic action
@@ -165,6 +165,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
-| 14. Gameplay Zone Infrastructure | v1.2 | 0/2 | Not started | - |
+| 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
 | 15. Multi-Card Set Play | v1.2 | 0/TBD | Not started | - |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
