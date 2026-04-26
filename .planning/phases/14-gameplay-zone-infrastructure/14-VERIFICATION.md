@@ -1,25 +1,38 @@
 ---
 phase: 14-gameplay-zone-infrastructure
 verified: 2026-04-25T07:55:00Z
-status: human_needed
+human_tested: 2026-04-26
+status: gaps_found
 score: 9/9 must-haves verified
 overrides_applied: 0
-re_verification:
-  previous_status: human_needed
-  previous_score: 9/9
-  gaps_closed: []
-  gaps_remaining: []
-  regressions: []
 human_verification:
-  - test: "Open two browser windows to the same room (npm run dev:client + partykit dev). Observe the board after both players join."
-    expected: "Each player sees 3 spread zones: their own personal zone and the communal zone in the spread row between the pile area and hand zone; the other player's personal zone in the header section below the opponent's card count. All zones show the correct label. Empty zones show a dashed border. Header has no fixed height — opponent spread zones are not clipped."
-    why_human: "Playwright test asserts >= 2 zones (robust to render timing) but cannot verify the exact count of 3 or the visual position of zones (header vs spread row) without hardcoding opaque player tokens."
-  - test: "Drag a card from the draw pile to the communal spread zone. Verify both browser windows update."
-    expected: "Card appears in the communal zone on both players' screens simultaneously. Empty zone drop: no dialog, card appears directly. Non-empty zone drop: Top/Bottom/Random dialog appears per v1.2 design."
-    why_human: "No Playwright drag-to-spread-zone test was written. SC-3 unit test covers server behavior; end-to-end drag path (dnd-kit pointer events through BoardDragLayer to MOVE_CARD dispatch) requires human observation."
-  - test: "Click the Face up / Face down button on any spread zone while both players are connected."
-    expected: "All cards in the zone flip direction simultaneously on both players' screens."
-    why_human: "SET_PILE_FACE broadcast behavior for spread zones is not covered by a Playwright test. Server-side pile logic is unit tested but end-to-end sync requires a live session."
+  - test: "Two-player layout"
+    result: "PASSED — both players visible correctly; spread zones render in expected positions"
+  - test: "Card drag into spread zone"
+    result: "PARTIAL — card moves to zone but dialog appears for all drops (user wants no dialog for spread zones)"
+  - test: "Face toggle sync"
+    result: "NOT TESTED"
+gaps:
+  - id: GAP-01
+    severity: bug
+    description: "DEAL_CARDS only delivers cards to the player who was present at game start; a player who joined after game start receives no cards when dealt, even after Reset."
+    affected_files: ["party/index.ts"]
+  - id: GAP-02
+    severity: design
+    description: "Dropping a card onto a spread zone should always insert at top with no dialog. Currently the Top/Bottom/Random dialog appears for non-empty spread zones (same as PileZone behavior). Spread zones should bypass the dialog and always drop at top."
+    affected_files: ["src/components/BoardDragLayer.tsx"]
+  - id: GAP-03
+    severity: design
+    description: "Spread zone cards should be re-orderable by dragging within the zone, similar to how HandZone uses @dnd-kit/sortable. Currently cards in spread zones are not sortable."
+    affected_files: ["src/components/SpreadZone.tsx"]
+  - id: GAP-04
+    severity: design
+    description: "Merge the communal spread zone with the existing play area pile. Change the 'play' pile to region='spread' so it renders as a SpreadZone in the middle section. Remove the standalone spread-communal pile. This eliminates redundancy and keeps the play area at the correct visual level."
+    affected_files: ["party/index.ts", "src/components/BoardView.tsx", "src/components/SpreadZone.tsx", "tests/spreadZoneCreation.test.ts"]
+  - id: GAP-05
+    severity: design
+    description: "Player hand should use the same overlapping cascade style (-ml-5 negative margin) as SpreadZone instead of the current serial line layout. Sortable drag-to-reorder behavior should be preserved."
+    affected_files: ["src/components/HandZone.tsx", "src/components/SortableHandCard.tsx"]
 ---
 
 # Phase 14: Gameplay Zone Infrastructure Verification Report
@@ -168,9 +181,17 @@ No stubs, placeholder implementations, or TODO/FIXME/HACK patterns in Phase 14 f
 
 ### Gaps Summary
 
-No gaps. All 9 groups of must-haves are verified against the actual codebase. The only open items are human verification tasks for visual and interactive behaviors that require a live server.
+4 gaps identified during human testing (2026-04-26):
 
-The single pre-existing TypeScript error in `BoardDragLayer.tsx` (`process.env`) predates Phase 14 and was not introduced by this phase.
+| ID | Severity | Description |
+|----|----------|-------------|
+| GAP-01 | Bug | `DEAL_CARDS` only delivers cards to the player present at game start; late-joining player receives nothing even after Reset |
+| GAP-02 | Design | Drop to spread zone should always insert at top with no dialog; currently shows Top/Bottom/Random dialog same as PileZone |
+| GAP-03 | Design | Spread zone cards should be re-orderable by drag within the zone (like HandZone sortable behavior) |
+| GAP-04 | Design | Merge communal spread zone with the `play` pile — change `play` pile to `region: "spread"`, remove standalone `spread-communal` |
+| GAP-05 | Design | Player hand overlapping cascade style (-ml-5) matching SpreadZone; preserve sortable drag behavior |
+
+All 9 automated must-haves remain verified. These gaps are user-experience and correctness issues found during live session testing.
 
 ---
 
