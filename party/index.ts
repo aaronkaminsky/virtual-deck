@@ -385,6 +385,12 @@ export default class GameRoom implements Party.Server {
         takeSnapshot(this.gameState);                          // D-03: snapshot BEFORE shuffle
         dealDrawPile.cards = shuffle(dealDrawPile.cards);       // D-02: shuffle before popping
         this.broadcastShuffleEvent("draw");                     // D-05: broadcast to all clients
+        // Ensure every connected player has an initialized hand entry (GAP-01: late joiners)
+        for (const player of connectedPlayers) {
+          if (!this.gameState.hands[player.id]) {
+            this.gameState.hands[player.id] = [];
+          }
+        }
         // D-06: animation window (650ms). Relies on the assumption that Cloudflare Workers do
         // not hibernate during an active onMessage handler, so the setTimeout will resolve
         // before any eviction. If the worker is evicted mid-await the timer is lost and the
@@ -394,9 +400,6 @@ export default class GameRoom implements Party.Server {
           for (const player of connectedPlayers) {
             const dealt = dealDrawPile.cards.pop()!;
             dealt.faceUp = true;
-            if (!this.gameState.hands[player.id]) {
-              this.gameState.hands[player.id] = [];
-            }
             this.gameState.hands[player.id].push(dealt);
           }
         }
