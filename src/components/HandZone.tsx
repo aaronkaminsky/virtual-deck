@@ -10,9 +10,10 @@ interface SortableHandCardProps {
   card: Card;
   playerId: string;
   isDraggingThis: boolean;
+  index: number;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -26,7 +27,7 @@ function SortableHandCard({ card, playerId, isDraggingThis }: SortableHandCardPr
   };
 
   return (
-    <div className="relative w-[63px] h-[88px] flex-shrink-0">
+    <div className={cn('relative w-[63px] h-[88px] flex-shrink-0', index > 0 ? '-ml-5' : '')}>
       {isDraggingThis && (
         <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
       )}
@@ -92,13 +93,13 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
-          'h-[128px] flex items-center px-4 gap-2 overflow-x-auto bg-card',
+          'h-[128px] flex items-center px-4 overflow-x-auto bg-card',
           isOver ? 'border-t-2 border-primary' : ''
         )}
       >
         <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
-          {cards.map((card) => (
-            <SortableHandCard key={card.id} card={card} playerId={playerId} isDraggingThis={draggingCardId === card.id} />
+          {cards.map((card, index) => (
+            <SortableHandCard key={card.id} card={card} playerId={playerId} isDraggingThis={draggingCardId === card.id} index={index} />
           ))}
         </SortableContext>
       </div>
