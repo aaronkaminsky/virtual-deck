@@ -35,8 +35,7 @@ export function defaultGameState(roomId: string): GameState {
     piles: [
       { id: "draw", name: "Draw", cards: buildDeck(), faceUp: false, region: "pile", ownerId: null },
       { id: "discard", name: "Discard", cards: [], faceUp: true, region: "pile", ownerId: null },
-      { id: "play", name: "Play Area", cards: [], faceUp: true, region: "pile", ownerId: null },
-      { id: "spread-communal", name: "Communal", cards: [], faceUp: true, region: "spread", ownerId: null },
+      { id: "play", name: "Play Area", cards: [], faceUp: true, region: "spread", ownerId: null },
     ],
     undoSnapshots: [],
   };
@@ -117,12 +116,25 @@ export default class GameRoom implements Party.Server {
         (pile as any).ownerId = null;
       }
     }
-    // Migrate state: Phase 14 adds communal spread zone
-    const hasCommunal = this.gameState.piles.some(p => p.id === "spread-communal");
-    if (!hasCommunal) {
+    // Migrate state: Phase 14-GAP04 — convert 'play' pile to region='spread', remove 'spread-communal'
+    const playPile = this.gameState.piles.find(p => p.id === "play");
+    if (playPile) {
+      playPile.region = "spread";
+    }
+    // Remove 'spread-communal' if it exists (now replaced by the 'play' pile as the communal spread zone)
+    const communalIdx = this.gameState.piles.findIndex(p => p.id === "spread-communal");
+    if (communalIdx !== -1) {
+      // Move any cards from spread-communal into the play pile before removing it
+      if (playPile) {
+        playPile.cards.push(...this.gameState.piles[communalIdx].cards);
+      }
+      this.gameState.piles.splice(communalIdx, 1);
+    }
+    // If 'play' pile doesn't exist at all (very old state), seed it as a spread zone
+    if (!this.gameState.piles.find(p => p.id === "play")) {
       this.gameState.piles.push({
-        id: "spread-communal",
-        name: "Communal",
+        id: "play",
+        name: "Play Area",
         cards: [],
         faceUp: true,
         region: "spread",
@@ -295,6 +307,32 @@ export default class GameRoom implements Party.Server {
         }
         const cardMap = new Map(hand.map(c => [c.id, c]));
         this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
+        break;
+      }
+      case "REORDER_PILE_SPREAD": {
+        const spreadPile = this.gameState.piles.find(p => p.id === action.pileId && p.region === "spread");
+        if (!spreadPile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No spread pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const spreadIdSet = new Set(spreadPile.cards.map(c => c.id));
+        if (
+          action.orderedCardIds.length !== spreadPile.cards.length ||
+          !action.orderedCardIds.every(id => spreadIdSet.has(id))
+        ) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_REORDER",
+            message: "orderedCardIds must contain exactly the spread pile's current cards",
+          } satisfies ServerEvent));
+          break;
+        }
+        const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
+        spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
         break;
       }
       case "SET_PILE_FACE": {

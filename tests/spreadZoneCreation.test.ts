@@ -42,21 +42,24 @@ function makeTestState(): GameState {
     hands: { "player-1": [] },
     piles: [
       { id: "draw", name: "Draw", cards: [], faceUp: false, region: "pile", ownerId: null },
-      { id: "spread-communal", name: "Communal", cards: [], faceUp: true, region: "spread", ownerId: null },
+      { id: "play", name: "Play Area", cards: [], faceUp: true, region: "spread", ownerId: null },
     ],
     undoSnapshots: [],
   };
 }
 
 describe("spread zone creation", () => {
-  it("defaultGameState includes spread-communal in piles", () => {
+  it("defaultGameState play pile has region spread and acts as communal zone", () => {
     const state = defaultGameState("room-id");
+    const playPile = state.piles.find(p => p.id === "play");
+    expect(playPile).toBeDefined();
+    expect(playPile?.region).toBe("spread");
+    expect(playPile?.ownerId).toBeNull();
+    expect(playPile?.faceUp).toBe(true);
+    expect(playPile?.cards).toHaveLength(0);
+    // spread-communal must no longer exist
     const communal = state.piles.find(p => p.id === "spread-communal");
-    expect(communal).toBeDefined();
-    expect(communal?.region).toBe("spread");
-    expect(communal?.ownerId).toBeNull();
-    expect(communal?.faceUp).toBe(true);
-    expect(communal?.cards).toHaveLength(0);
+    expect(communal).toBeUndefined();
   });
 
   it("defaultGameState existing piles have region pile and ownerId null", () => {
@@ -68,7 +71,7 @@ describe("spread zone creation", () => {
     expect(draw?.ownerId).toBeNull();
     expect(discard?.region).toBe("pile");
     expect(discard?.ownerId).toBeNull();
-    expect(play?.region).toBe("pile");
+    expect(play?.region).toBe("spread"); // was "pile" — GAP-04: play is now the communal spread zone
     expect(play?.ownerId).toBeNull();
   });
 
@@ -133,7 +136,7 @@ describe("spread zone creation", () => {
     }
   });
 
-  it("onStart migration seeds spread-communal if missing from persisted state", async () => {
+  it("onStart migration converts play pile to region spread and removes spread-communal", async () => {
     const mockRoom = makeMockRoom([], {
       storage: {
         get: vi.fn().mockResolvedValue(makeOldShapeState()),
@@ -143,9 +146,11 @@ describe("spread zone creation", () => {
     const room = new GameRoom(mockRoom);
     await room.onStart();
 
+    const playPile = room.gameState.piles.find(p => p.id === "play");
+    expect(playPile).toBeDefined();
+    expect(playPile?.region).toBe("spread");
+
     const communal = room.gameState.piles.find(p => p.id === "spread-communal");
-    expect(communal).toBeDefined();
-    expect(communal?.region).toBe("spread");
-    expect(communal?.ownerId).toBeNull();
+    expect(communal).toBeUndefined();
   });
 });
