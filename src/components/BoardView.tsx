@@ -25,7 +25,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
-  const communalZone = spreadPiles.find(p => p.id === 'spread-communal');
+  const communalZone = spreadPiles.find(p => p.id === 'play');
 
   const handleCopy = () => {
     const base = import.meta.env.BASE_URL || '/virtual-deck/';

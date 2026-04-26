@@ -121,7 +121,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         const targetPile = gameState.piles.find(p => p.id === toId);
         const isEmpty = !targetPile || targetPile.cards.length === 0;
         if (isEmpty) {
-          // Empty pile: bypass dialog, place at top immediately (D-02, D-03)
+          // Empty zone: bypass dialog, place at top immediately (D-02, D-03)
           sendAction({
             type: 'MOVE_CARD',
             cardId: card.id,
@@ -132,8 +132,22 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
             insertPosition: 'top',
           });
         } else {
-          // Non-empty pile: intercept and show position dialog (D-01)
-          setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
+          // Check if destination is a spread zone — spread zones always insert at top, no dialog (GAP-02)
+          const isSpread = targetPile?.region === 'spread';
+          if (isSpread) {
+            sendAction({
+              type: 'MOVE_CARD',
+              cardId: card.id,
+              fromZone: fromZone as 'hand' | 'pile',
+              fromId,
+              toZone,
+              toId,
+              insertPosition: 'top',
+            });
+          } else {
+            // Non-empty pile (non-spread): intercept and show position dialog (D-01)
+            setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
+          }
         }
       } else {
         // Hand drop: send immediately, no position dialog needed
