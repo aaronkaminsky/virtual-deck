@@ -143,6 +143,34 @@ describe("DEAL_CARDS handler", () => {
     expect(snap.hands["player-2"]).toHaveLength(0);
   });
 
+  it("late-joining player receives cards after reset and re-deal", async () => {
+    // player-1 and player-2 exist from beforeEach
+    // Simulate a prior deal then reset
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 2 }), sender);
+    await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
+
+    // Late joiner: add player-3 after initial deal cycle, before re-deal
+    room.gameState.players.push({ id: "player-3", connected: true, displayName: "Late" });
+    // Do NOT set room.gameState.hands["player-3"] — simulate the gap scenario
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 2 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(2);
+    expect(room.gameState.hands["player-2"]).toHaveLength(2);
+    expect(room.gameState.hands["player-3"]).toHaveLength(2);
+  });
+
+  it("DEAL_CARDS initializes missing hand entry for connected player before dealing", async () => {
+    // Manually add a player who is connected but has no hands entry
+    room.gameState.players.push({ id: "orphan-player", connected: true, displayName: "Orphan" });
+    // Deliberately omit: room.gameState.hands["orphan-player"] = []
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), sender);
+
+    expect(room.gameState.hands["orphan-player"]).toBeDefined();
+    expect(room.gameState.hands["orphan-player"]).toHaveLength(1);
+  });
+
   it("broadcasts PILE_SHUFFLED event to all connections on DEAL_CARDS", async () => {
     const conn1 = makeMockConnection("conn-1");
     const conn2 = makeMockConnection("conn-2");
