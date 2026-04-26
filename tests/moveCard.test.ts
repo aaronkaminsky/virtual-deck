@@ -274,7 +274,7 @@ describe("MOVE_CARD handler", () => {
     // Clear the full deck so only our test card is in the draw pile
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
     drawPile.cards = [makeCard("A-s")];
-    // defaultGameState (used by makeStateWithPlayerAndCards) already seeds spread-communal
+    // defaultGameState (used by makeStateWithPlayerAndCards) seeds 'play' as the communal spread zone (GAP-04)
 
     const msg = JSON.stringify({
       type: "MOVE_CARD",
@@ -282,12 +282,12 @@ describe("MOVE_CARD handler", () => {
       fromZone: "pile",
       fromId: "draw",
       toZone: "pile",
-      toId: "spread-communal",
+      toId: "play",
       insertPosition: "top",
     });
     await room.onMessage(msg, sender);
 
-    const communal = room.gameState.piles.find(p => p.id === "spread-communal")!;
+    const communal = room.gameState.piles.find(p => p.id === "play")!;
     expect(communal).toBeDefined();
     expect(communal.cards).toHaveLength(1);
     expect(communal.cards[0].id).toBe("A-s");

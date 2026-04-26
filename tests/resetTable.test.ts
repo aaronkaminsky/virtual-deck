@@ -99,14 +99,15 @@ describe("RESET_TABLE handler", () => {
   });
 
   it("clears cards from spread zones without removing the zone itself (SC-3, D-07)", async () => {
-    const communal = room.gameState.piles.find(p => p.id === "spread-communal")!;
+    // GAP-04: 'play' pile is now the communal spread zone (region='spread')
+    const communal = room.gameState.piles.find(p => p.id === "play")!;
     expect(communal).toBeDefined();
     communal.cards.push(makeCard("7-h", true));
 
     await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
 
     // Zone record persists (D-07: zones themselves remain)
-    const afterCommunal = room.gameState.piles.find(p => p.id === "spread-communal")!;
+    const afterCommunal = room.gameState.piles.find(p => p.id === "play")!;
     expect(afterCommunal).toBeDefined();
     expect(afterCommunal.cards).toHaveLength(0);
 
