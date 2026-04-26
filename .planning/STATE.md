@@ -56,7 +56,7 @@ Recent decisions affecting v1.2:
 
 ### Pending Todos
 
-None.
+- **Layout improvements discussion** — Play Area (communal zone) should visually read as middle-of-table, not in-front-of-player. Defer individual layout fixes until we have a holistic view covering vertical space usage, header/spread row reorganization. Added 2026-04-26 from Phase 14 UAT (test #1 deferred).
 
 ### Blockers/Concerns
 
