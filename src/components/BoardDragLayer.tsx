@@ -135,15 +135,20 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           // Check if destination is a spread zone — spread zones always insert at top, no dialog (GAP-02)
           const isSpread = targetPile?.region === 'spread';
           if (isSpread) {
-            sendAction({
-              type: 'MOVE_CARD',
-              cardId: card.id,
-              fromZone: fromZone as 'hand' | 'pile',
-              fromId,
-              toZone,
-              toId,
-              insertPosition: 'top',
-            });
+            // GAP-06: intra-spread reorder — skip MOVE_CARD so SpreadZone's useDndMonitor
+            // REORDER_PILE_SPREAD handler can fire without BoardDragLayer racing it.
+            const isIntraSpreadReorder = fromZone === 'pile' && fromId === toId;
+            if (!isIntraSpreadReorder) {
+              sendAction({
+                type: 'MOVE_CARD',
+                cardId: card.id,
+                fromZone: fromZone as 'hand' | 'pile',
+                fromId,
+                toZone,
+                toId,
+                insertPosition: 'top',
+              });
+            }
           } else {
             // Non-empty pile (non-spread): intercept and show position dialog (D-01)
             setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
