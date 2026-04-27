@@ -1,7 +1,8 @@
 ---
 phase: 15
 slug: multi-card-set-play
-status: draft
+status: approved
+reviewed_at: 2026-04-26
 shadcn_initialized: true
 preset: base-nova / neutral / css-variables
 created: 2026-04-26
