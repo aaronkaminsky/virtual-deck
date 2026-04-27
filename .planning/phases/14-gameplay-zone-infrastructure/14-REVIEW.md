@@ -1,8 +1,8 @@
 ---
 phase: 14-gameplay-zone-infrastructure
-reviewed: 2026-04-26T00:00:00Z
+reviewed: 2026-04-26T18:00:00Z
 depth: standard
-files_reviewed: 11
+files_reviewed: 13
 files_reviewed_list:
   - party/index.ts
   - src/components/BoardDragLayer.tsx
@@ -10,11 +10,13 @@ files_reviewed_list:
   - src/components/HandZone.tsx
   - src/components/SpreadZone.tsx
   - src/shared/types.ts
+  - tests/boardDragLayerDialog.test.ts
   - tests/dealCards.test.ts
   - tests/deck.test.ts
   - tests/moveCard.test.ts
   - tests/resetTable.test.ts
   - tests/spreadZoneCreation.test.ts
+  - playwright/game.spec.ts
 findings:
   critical: 1
   warning: 2
