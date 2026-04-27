@@ -102,13 +102,17 @@ Plans:
 **Depends on**: Phase 14
 **Requirements**: PLAY-03
 **Success Criteria** (what must be TRUE):
-  1. Player can click cards in their hand to toggle selection (1–5 cards); selected cards show a visible selection indicator
-  2. A "Play N cards" button appears when at least one card is selected and dispatches a `PLAY_CARD_SET` action
+  1. Player can click cards in their hand to toggle selection (1–5 cards); selected cards show a visible selection indicator (ring + 6px lift) per D-08
+  2. Dragging a selected card dispatches `PLAY_CARD_SET` with all selected card IDs to the dropped zone (no button — zone is implicit in drop target per D-06)
   3. All selected cards move from hand to the chosen zone simultaneously — no partial moves if one card is invalid
   4. The played cards appear spread (simultaneously visible) in the target zone; all connected players see the update in real time
-  5. Deselecting all cards (or canceling) removes the button without affecting the hand
-**Plans**: TBD
+  5. Pressing Escape, clicking outside, or successful set play clears the selection state (no button to remove; selection-only)
+**Plans**: 3 plans
 **UI hint**: yes
+Plans:
+- [ ] 15-01-PLAN.md — Add PLAY_CARD_SET to ClientAction union, server handler in party/index.ts, and Vitest unit tests (auth, atomic validation, faceUp, undo)
+- [ ] 15-02-PLAN.md — Client selection UI: dual sensors, selectedIds state in BoardDragLayer, ring+lift indicator, count badge, Escape/click-outside clearing, and PLAY_CARD_SET dispatch from handleDragEnd
+- [ ] 15-03-PLAN.md — Playwright e2e: fix stale spread-zone-spread-communal testid, add selection-toggle test, add multi-card set play 2-player sync test
 
 ### Phase 16: Developer README
 **Goal**: A developer joining the repo for the first time can set up locally, understand the architecture, run all tests, and deploy — using only README.md
@@ -166,5 +170,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
-| 15. Multi-Card Set Play | v1.2 | 0/TBD | Not started | - |
+| 15. Multi-Card Set Play | v1.2 | 0/3 | Not started | - |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
