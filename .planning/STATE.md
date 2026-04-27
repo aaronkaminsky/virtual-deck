@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Dev Infrastructure & Game Depth
 status: active
-last_updated: "2026-04-25T00:00:00.000Z"
-last_activity: 2026-04-25
+last_updated: "2026-04-26T00:00:00.000Z"
+last_activity: 2026-04-26
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 4
-  percent: 40
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.2 — Phase 14: Gameplay Zone Infrastructure
+**Current focus:** v1.2 — Phase 15: Multi-Card Set Play
 
 ## Current Position
 
-Phase: 14 of 16 (Gameplay Zone Infrastructure)
-Plan: 0 of 2 (ready to execute)
-Status: Phase 14 planned — 2 plans in 2 waves, ready to execute
-Last activity: 2026-04-25 — Phase 14 planned (14-01 server foundation, 14-02 client UI + e2e)
+Phase: 15 of 16 (Multi-Card Set Play)
+Plan: 0 of ? (ready to plan)
+Status: Phase 14 complete — all 6 plans executed, 5 human verification items pending UAT
+Last activity: 2026-04-26 — Phase 14 execution complete (14-06 GAP-06 intra-spread reorder fix)
 
-Progress: [████░░░░░░] 2/5 phases complete
+Progress: [██████░░░░] 3/5 phases complete
 
 ## Performance Metrics
 
