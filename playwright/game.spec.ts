@@ -119,24 +119,97 @@ test.describe('virtual-deck e2e', () => {
     const { p1, p2 } = twoPlayerRoom;
 
     // Both pages are already on the board (fixture waits for hand-zone).
-    // The communal spread zone has a stable id and must be visible to both players.
-    await expect(p1.getByTestId('spread-zone-spread-communal')).toBeVisible();
-    await expect(p2.getByTestId('spread-zone-spread-communal')).toBeVisible();
+    // The communal spread zone has pile id "play" → data-testid="spread-zone-play".
+    // Each player's personal spread zone has pile id "spread-{playerId}" → data-testid="spread-zone-spread-{playerId}".
+    // Therefore the prefix selector below matches PERSONAL zones only (not the communal zone).
+    await expect(p1.getByTestId('spread-zone-play')).toBeVisible();
+    await expect(p2.getByTestId('spread-zone-play')).toBeVisible();
 
-    // Each page should show AT LEAST 2 spread zones:
-    //   - the communal zone (spread-zone-spread-communal)
+    // Each page should show AT LEAST 2 personal spread zones:
     //   - the viewing player's personal zone in the spread row
     //   - the other player's personal zone in the header
-    // Expect >= 2 without hardcoding the opaque playerToken. (Total should be 3 in a 2-player room,
-    // but we assert >= 2 to stay robust against render timing on slower CI machines.)
+    // Expect >= 2 without hardcoding the opaque playerToken. (Total should be 2 in a 2-player room.)
     await expect(p1.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
     await expect(p2.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
 
-    // Strict: the communal zone must be present on both pages AND at least one personal zone
-    // (the player's own — in the spread row) must be present.
+    // Strict: the communal zone (spread-zone-play) is asserted directly above; this block confirms personal zones also render.
     const p1Zones = await p1.locator('[data-testid^="spread-zone-spread-"]').count();
     const p2Zones = await p2.locator('[data-testid^="spread-zone-spread-"]').count();
     expect(p1Zones).toBeGreaterThanOrEqual(2);
     expect(p2Zones).toBeGreaterThanOrEqual(2);
+  });
+
+  test('selection toggle: clicking hand card sets aria-pressed; clicking again clears it', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const handZone = p1.getByTestId('hand-zone');
+    await expect(handZone).toBeVisible();
+
+    // Initially nothing is selected
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+    // Click first hand card — distance:8 sensor must NOT trigger drag for a plain click
+    const firstCardWrapper = handZone.locator('[aria-pressed]').first();
+    await expect(firstCardWrapper).toBeVisible();
+    await firstCardWrapper.click();
+
+    // One card now selected
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(1);
+
+    // Click again to deselect
+    await firstCardWrapper.click();
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(0);
+  });
+
+  test('multi-card set play: select 2 cards, drag to communal zone, both players see them', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const p1Hand = p1.getByTestId('hand-zone');
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(5);
+
+    // Pick two cards by index
+    const card0 = p1Hand.locator('[aria-pressed]').nth(0);
+    const card1 = p1Hand.locator('[aria-pressed]').nth(1);
+
+    // Toggle selection on both
+    await card0.click();
+    await card1.click();
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(2);
+
+    // Drag card0 (which IS selected) to the communal spread zone
+    const communal = p1.getByTestId('spread-zone-play');
+    await expect(communal).toBeVisible();
+
+    const src = await card0.boundingBox();
+    const tgt = await communal.boundingBox();
+    if (!src || !tgt) throw new Error('bounding boxes unavailable');
+
+    await p1.mouse.move(src.x + src.width / 2, src.y + src.height / 2);
+    await p1.mouse.down();
+    // Move past the 8px threshold to activate PointerSensor
+    await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // P1: hand now has 3 cards
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(3);
+
+    // P1: communal zone shows 2 cards.
+    // Each card renders two nested [role="button"] divs (useSortable outer + useDraggable inner).
+    // Use :not(:has([role="button"])) to select only the innermost (leaf) role="button" per card.
+    const p1Cards = communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p1Cards).toHaveCount(2);
+
+    // P2: same communal zone shows 2 cards (real-time broadcast)
+    const p2Communal = p2.getByTestId('spread-zone-play');
+    await expect(p2Communal).toBeVisible();
+    const p2Cards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p2Cards).toHaveCount(2);
+
+    // Selection cleared on P1 after successful set play (D-05)
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(0);
   });
 });
