@@ -138,4 +138,28 @@ test.describe('virtual-deck e2e', () => {
     expect(p1Zones).toBeGreaterThanOrEqual(2);
     expect(p2Zones).toBeGreaterThanOrEqual(2);
   });
+
+  test('selection toggle: clicking hand card sets aria-pressed; clicking again clears it', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const handZone = p1.getByTestId('hand-zone');
+    await expect(handZone).toBeVisible();
+
+    // Initially nothing is selected
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+    // Click first hand card — distance:8 sensor must NOT trigger drag for a plain click
+    const firstCardWrapper = handZone.locator('[aria-pressed]').first();
+    await expect(firstCardWrapper).toBeVisible();
+    await firstCardWrapper.click();
+
+    // One card now selected
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(1);
+
+    // Click again to deselect
+    await firstCardWrapper.click();
+    await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(0);
+  });
 });
