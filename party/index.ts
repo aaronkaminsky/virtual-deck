@@ -567,7 +567,7 @@ export default class GameRoom implements Party.Server {
 
         // Set faceUp based on destination pile (spread zones are faceUp:true)
         cardsToPlay.forEach(card => {
-          card.faceUp = destPile.faceUp ?? true;
+          card.faceUp = destPile.faceUp === true;
         });
 
         // Atomic: remove all from hand, append all to dest pile
