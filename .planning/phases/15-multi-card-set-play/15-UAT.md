@@ -60,9 +60,12 @@ skipped: 0
 ## Gaps
 
 - truth: "Selected card should have a subtle visual indicator (lift is sufficient; ring/border should be minimal or absent)"
-  status: failed
+  status: resolved
   reason: "User reported: Orange border/ring is too much. Lifting might be enough, or a much more subtle border instead of the current ring."
   severity: cosmetic
   test: 2
-  artifacts: []
-  missing: []
+  artifacts:
+    - src/components/HandZone.tsx:50
+  root_cause: "ring-2 ring-primary ring-offset-1 classes on the selected card inner div produce a bold orange ring. Removing or softening these classes is the fix — the 6px translateY lift (line 24-27) already provides clear selection feedback on its own."
+  missing:
+    - Softer selection ring or lift-only indicator in SortableHandCard

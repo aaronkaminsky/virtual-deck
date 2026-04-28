@@ -74,12 +74,15 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Skip pile position dialog for empty piles (UX-01) — Phase 11
 - ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
 
+### Validated (v1.2)
+
+- ✓ Personal play area zone per player — visible to all, face-up cards (PLAY-01) — Phase 14
+- ✓ Shared communal zone on the table — any player can interact (PLAY-02) — Phase 14
+- ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
+
 ### Active
 
 - [ ] Developer README with setup, architecture, and deploy instructions (DEV-03)
-- [ ] Personal play area zone per player — visible to all, face-up cards (PLAY-01)
-- [ ] Shared communal zone on the table — any player can interact (PLAY-02)
-- [ ] Player can play 1–5 cards from hand as a set into either zone (PLAY-03)
 
 ### Out of Scope
 
@@ -118,6 +121,9 @@ Players can see the shared table and their own private hand update in real time,
 | Two BrowserContexts per Playwright test (not two Pages) | usePlayerId.ts stores playerId in localStorage; same context = same token = both pages join as same player | ✓ Validated Phase 13 |
 | mouse.move/down/move/up (steps:15) for dnd-kit e2e drag | Playwright dragAndDrop() uses HTML5 drag API; dnd-kit uses pointer events and ignores HTML5 events | ✓ Validated Phase 13 |
 | Playwright MCP via .mcp.json only | Project-scoped dev tool; must never appear in package.json or CI scripts | ✓ Validated Phase 13 |
+| Multi-card play via select-then-drag (not dnd-kit multi-drag) | dnd-kit multi-drag deferred; click-to-select + drag-selected-card-moves-all avoids dnd-kit multi-drag complexity | ✓ Validated Phase 15 |
+| aria-pressed placed after `{...attributes}` spread in dnd-kit components | dnd-kit's `attributes` object contains its own `aria-pressed`; explicit override must come last to avoid TS2783 | ✓ Validated Phase 15 |
+| `:not(:has([role="button"]))` to count leaf card elements in spread zone | Each card renders two nested `[role="button"]` divs (useSortable outer + useDraggable inner); leaf selector gives correct card count | ✓ Validated Phase 15 |
 
 ## Evolution
 
@@ -137,4 +143,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-22 — after Phase 13 (Playwright Infrastructure)*
+*Last updated: 2026-04-28 — after Phase 15 (Multi-Card Set Play)*

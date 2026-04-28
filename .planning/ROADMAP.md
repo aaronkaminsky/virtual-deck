@@ -170,5 +170,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
-| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete   | 2026-04-28 |
+| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
