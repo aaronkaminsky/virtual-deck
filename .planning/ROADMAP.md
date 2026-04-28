@@ -110,8 +110,8 @@ Plans:
 **Plans**: 3 plans
 **UI hint**: yes
 Plans:
-- [ ] 15-01-PLAN.md — Add PLAY_CARD_SET to ClientAction union, server handler in party/index.ts, and Vitest unit tests (auth, atomic validation, faceUp, undo)
-- [ ] 15-02-PLAN.md — Client selection UI: dual sensors, selectedIds state in BoardDragLayer, ring+lift indicator, count badge, Escape/click-outside clearing, and PLAY_CARD_SET dispatch from handleDragEnd
+- [x] 15-01-PLAN.md — Add PLAY_CARD_SET to ClientAction union, server handler in party/index.ts, and Vitest unit tests (auth, atomic validation, faceUp, undo)
+- [x] 15-02-PLAN.md — Client selection UI: dual sensors, selectedIds state in BoardDragLayer, ring+lift indicator, count badge, Escape/click-outside clearing, and PLAY_CARD_SET dispatch from handleDragEnd
 - [ ] 15-03-PLAN.md — Playwright e2e: fix stale spread-zone-spread-communal testid, add selection-toggle test, add multi-card set play 2-player sync test
 
 ### Phase 16: Developer README
@@ -170,5 +170,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
-| 15. Multi-Card Set Play | v1.2 | 0/3 | Not started | - |
+| 15. Multi-Card Set Play | v1.2 | 2/3 | In Progress|  |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
