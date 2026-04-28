@@ -244,7 +244,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   return (
-    <div className="contents" onPointerDown={() => setSelectedIds(new Set())}>
+    <div className="contents">
       <DndContext
         sensors={sensors}
         collisionDetection={customCollision}
