@@ -492,6 +492,16 @@ export default class GameRoom implements Party.Server {
       case "PLAY_CARD_SET": {
         const { cardIds, fromId, toZone, toId } = action;
 
+        // V1 Basic validation: cardIds must be non-empty
+        if (cardIds.length === 0) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "EMPTY_CARD_SET",
+            message: "cardIds must contain at least one card",
+          } satisfies ServerEvent));
+          break;
+        }
+
         // V4 Access Control: sender can only play from their own hand
         if (fromId !== senderToken) {
           sender.send(JSON.stringify({
