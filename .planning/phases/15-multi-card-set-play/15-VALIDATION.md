@@ -1,10 +1,11 @@
 ---
 phase: 15
 slug: multi-card-set-play
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: verified
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-27
+audited: 2026-04-28
 ---
 
 # Phase 15 — Validation Strategy
@@ -38,11 +39,11 @@ created: 2026-04-27
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 15-01-01 | 01 | 1 | PLAY-03 | T-15-01 | fromId validates sender token | unit | `npm test -- tests/playCardSet.test.ts` | ❌ Wave 0 | ⬜ pending |
-| 15-01-02 | 01 | 1 | PLAY-03 | T-15-01 | All cardIds exist in hand before any mutation | unit | `npm test -- tests/playCardSet.test.ts` | ❌ Wave 0 | ⬜ pending |
-| 15-02-01 | 02 | 1 | PLAY-03 | — | Selection ring + lift visible on selected cards | e2e | `npx playwright test --grep "selection toggle"` | ❌ Wave 0 | ⬜ pending |
-| 15-03-01 | 03 | 2 | PLAY-03 | — | Multi-card drag moves all selected to target zone | e2e | `npx playwright test --grep "multi-card set play"` | ❌ Wave 0 | ⬜ pending |
-| 15-03-02 | 03 | 2 | PLAY-03 | — | Both players see moved cards in real time | e2e | `npx playwright test --grep "multi-card set play"` | ❌ Wave 0 | ⬜ pending |
+| 15-01-01 | 01 | 1 | PLAY-03 | T-15-01 | fromId validates sender token | unit | `npm test -- tests/playCardSet.test.ts` | ✅ tests/playCardSet.test.ts:45 | ✅ green |
+| 15-01-02 | 01 | 1 | PLAY-03 | T-15-01 | All cardIds exist in hand before any mutation | unit | `npm test -- tests/playCardSet.test.ts` | ✅ tests/playCardSet.test.ts:69 | ✅ green |
+| 15-02-01 | 02 | 1 | PLAY-03 | — | Selection ring + lift visible on selected cards | e2e | `npx playwright test --grep "selection toggle"` | ✅ playwright/game.spec.ts:142 | ✅ green |
+| 15-03-01 | 03 | 2 | PLAY-03 | — | Multi-card drag moves all selected to target zone | e2e | `npx playwright test --grep "multi-card set play"` | ✅ playwright/game.spec.ts:166 | ✅ green |
+| 15-03-02 | 03 | 2 | PLAY-03 | — | Both players see moved cards in real time | e2e | `npx playwright test --grep "multi-card set play"` | ✅ playwright/game.spec.ts:166 | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,8 +51,8 @@ created: 2026-04-27
 
 ## Wave 0 Requirements
 
-- [ ] `tests/playCardSet.test.ts` — stubs for PLAY-03 server unit tests (atomic removal, authorization, no-partial-move)
-- [ ] `playwright/game.spec.ts` — fix stale `spread-zone-spread-communal` assertion; add multi-card selection and set play e2e scenarios
+- [x] `tests/playCardSet.test.ts` — 5 unit tests covering auth gate, CARD_NOT_IN_SOURCE, faceUp inheritance, happy path, undo round-trip
+- [x] `playwright/game.spec.ts` — stale `spread-zone-spread-communal` removed; `selection toggle` and `multi-card set play` e2e tests added and green
 
 *Existing infrastructure (vitest + playwright) covers phase requirements — no new framework installs needed.*
 
@@ -68,13 +69,23 @@ created: 2026-04-27
 
 ---
 
+## Validation Audit 2026-04-28
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 5 |
+| Escalated | 0 |
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 120s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** verified 2026-04-28
