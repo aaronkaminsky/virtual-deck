@@ -17,9 +17,11 @@ interface BoardViewProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   shufflingPileIds: Set<string>;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect }: BoardViewProps) {
   const [copied, setCopied] = useState(false);
 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
@@ -110,6 +112,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             connected={myPlayer?.connected ?? true}
             sendAction={sendAction}
             draggingCardId={draggingCardId}
+            selectedIds={selectedIds}
+            onToggleSelect={onToggleSelect}
           />
         );
       })()}
