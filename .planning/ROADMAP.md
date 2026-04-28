@@ -48,7 +48,7 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
 - [x] **Phase 12: Test Mock Fix** — Fix unit test helpers to correctly model local vs remote player behavior (completed 2026-04-20)
 - [x] **Phase 13: Playwright Infrastructure** — Install Playwright, configure e2e suite with 2-player fixture, commit MCP config (completed 2026-04-22)
 - [x] **Phase 14: Gameplay Zone Infrastructure** — Add spread zone type: personal play zone per player and shared communal zone (completed 2026-04-26)
-- [ ] **Phase 15: Multi-Card Set Play** — Player selects 1–5 cards from hand and plays them as a set into a zone
+- [x] **Phase 15: Multi-Card Set Play** — Player selects 1–5 cards from hand and plays them as a set into a zone (completed 2026-04-28)
 - [ ] **Phase 16: Developer README** — Write README covering local setup, architecture, test runners, and deploy
 
 ## Phase Details
@@ -112,7 +112,7 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — Add PLAY_CARD_SET to ClientAction union, server handler in party/index.ts, and Vitest unit tests (auth, atomic validation, faceUp, undo)
 - [x] 15-02-PLAN.md — Client selection UI: dual sensors, selectedIds state in BoardDragLayer, ring+lift indicator, count badge, Escape/click-outside clearing, and PLAY_CARD_SET dispatch from handleDragEnd
-- [ ] 15-03-PLAN.md — Playwright e2e: fix stale spread-zone-spread-communal testid, add selection-toggle test, add multi-card set play 2-player sync test
+- [x] 15-03-PLAN.md — Playwright e2e: fix stale spread-zone-spread-communal testid, add selection-toggle test, add multi-card set play 2-player sync test
 
 ### Phase 16: Developer README
 **Goal**: A developer joining the repo for the first time can set up locally, understand the architecture, run all tests, and deploy — using only README.md
@@ -170,5 +170,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
-| 15. Multi-Card Set Play | v1.2 | 2/3 | In Progress|  |
+| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete   | 2026-04-28 |
 | 16. Developer README | v1.2 | 0/TBD | Not started | - |
