@@ -162,4 +162,54 @@ test.describe('virtual-deck e2e', () => {
     await firstCardWrapper.click();
     await expect(handZone.locator('[aria-pressed="true"]')).toHaveCount(0);
   });
+
+  test('multi-card set play: select 2 cards, drag to communal zone, both players see them', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const p1Hand = p1.getByTestId('hand-zone');
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(5);
+
+    // Pick two cards by index
+    const card0 = p1Hand.locator('[aria-pressed]').nth(0);
+    const card1 = p1Hand.locator('[aria-pressed]').nth(1);
+
+    // Toggle selection on both
+    await card0.click();
+    await card1.click();
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(2);
+
+    // Drag card0 (which IS selected) to the communal spread zone
+    const communal = p1.getByTestId('spread-zone-play');
+    await expect(communal).toBeVisible();
+
+    const src = await card0.boundingBox();
+    const tgt = await communal.boundingBox();
+    if (!src || !tgt) throw new Error('bounding boxes unavailable');
+
+    await p1.mouse.move(src.x + src.width / 2, src.y + src.height / 2);
+    await p1.mouse.down();
+    // Move past the 8px threshold to activate PointerSensor
+    await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // P1: hand now has 3 cards
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(3);
+
+    // P1: communal zone shows 2 cards.
+    // Each card renders two nested [role="button"] divs (useSortable outer + useDraggable inner).
+    // Use :not(:has([role="button"])) to select only the innermost (leaf) role="button" per card.
+    const p1Cards = communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p1Cards).toHaveCount(2);
+
+    // P2: same communal zone shows 2 cards (real-time broadcast)
+    const p2Communal = p2.getByTestId('spread-zone-play');
+    await expect(p2Communal).toBeVisible();
+    const p2Cards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p2Cards).toHaveCount(2);
+
+    // Selection cleared on P1 after successful set play (D-05)
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(0);
+  });
 });
