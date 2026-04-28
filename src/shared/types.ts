@@ -64,6 +64,7 @@ export type ClientAction =
   | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
+  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromId: string; toZone: "pile"; toId: string }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" };

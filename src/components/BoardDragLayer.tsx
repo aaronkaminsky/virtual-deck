@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState } from '@/shared/types';
@@ -55,10 +55,33 @@ type PendingMove = {
 export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSelectedIds(new Set());
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) {
@@ -88,12 +111,39 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string } | undefined;
     if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
     dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
+    // D-04: dragging an unselected card while others are selected clears selection
+    if (!selectedIds.has(String(event.active.id))) {
+      setSelectedIds(new Set());
+    }
     setActiveCard(data.card);
     setDragging(true);
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
+    const activeId = String(event.active.id);
+    const isMultiCardSet =
+      selectedIds.size > 1 &&
+      selectedIds.has(activeId) &&
+      !!event.over &&
+      overData?.toZone === 'pile';
+
+    if (isMultiCardSet) {
+      setActiveCard(null);
+      setSelectedIds(new Set());
+      setDragging(false);
+      dropSuccessRef.current = true;
+      dragDataRef.current = null;
+      sendAction({
+        type: 'PLAY_CARD_SET',
+        cardIds: [...selectedIds],
+        fromId: playerId,
+        toZone: 'pile',
+        toId: overData!.toId,
+      });
+      return;
+    }
+
     const isHandReorder = dragDataRef.current?.fromZone === 'hand' && overData?.toZone === 'hand' && event.over?.id !== 'hand';
     const isHandMissed = dragDataRef.current?.fromZone === 'hand' && event.over?.id === 'hand';
     const isPassCard = !!(overData?.toZone === 'opponent-hand' && dragDataRef.current);
@@ -193,14 +243,15 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   return (
-    <>
+    <div className="contents" onPointerDown={() => setSelectedIds(new Set())}>
       <DndContext
+        sensors={sensors}
         collisionDetection={customCollision}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {activeCard ? <CardOverlay card={activeCard} /> : null}
@@ -251,6 +302,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
-    </>
+    </div>
   );
 }
