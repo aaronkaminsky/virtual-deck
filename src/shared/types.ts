@@ -67,7 +67,6 @@ export type ClientAction =
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromId: string; toZone: "pile"; toId: string }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
-  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromId: string; toZone: "pile"; toId: string }
   | { type: "PING" };
 
 export type ServerEvent =
