@@ -524,6 +524,17 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
+        // V6 Duplicate check: cardIds must not contain duplicates (prevents card duplication)
+        const cardIdSet = new Set(cardIds);
+        if (cardIdSet.size !== cardIds.length) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "DUPLICATE_CARD_IDS",
+            message: "cardIds must not contain duplicates",
+          } satisfies ServerEvent));
+          break;
+        }
+
         // toZone is the literal "pile" — only piles are valid set-play targets
         const destPile = toZone === "pile"
           ? this.gameState.piles.find(p => p.id === toId)
@@ -541,7 +552,6 @@ export default class GameRoom implements Party.Server {
         takeSnapshot(this.gameState);
 
         // Build cardsToPlay preserving the cardIds order (so set is appended in player-chosen order)
-        const cardIdSet = new Set(cardIds);
         const handById = new Map(hand.map(c => [c.id, c]));
         const cardsToPlay: Card[] = cardIds.map(id => handById.get(id)!);
 
