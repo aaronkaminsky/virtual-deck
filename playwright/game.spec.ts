@@ -119,21 +119,20 @@ test.describe('virtual-deck e2e', () => {
     const { p1, p2 } = twoPlayerRoom;
 
     // Both pages are already on the board (fixture waits for hand-zone).
-    // The communal spread zone has a stable id and must be visible to both players.
-    await expect(p1.getByTestId('spread-zone-spread-communal')).toBeVisible();
-    await expect(p2.getByTestId('spread-zone-spread-communal')).toBeVisible();
+    // The communal spread zone has pile id "play" → data-testid="spread-zone-play".
+    // Each player's personal spread zone has pile id "spread-{playerId}" → data-testid="spread-zone-spread-{playerId}".
+    // Therefore the prefix selector below matches PERSONAL zones only (not the communal zone).
+    await expect(p1.getByTestId('spread-zone-play')).toBeVisible();
+    await expect(p2.getByTestId('spread-zone-play')).toBeVisible();
 
-    // Each page should show AT LEAST 2 spread zones:
-    //   - the communal zone (spread-zone-spread-communal)
+    // Each page should show AT LEAST 2 personal spread zones:
     //   - the viewing player's personal zone in the spread row
     //   - the other player's personal zone in the header
-    // Expect >= 2 without hardcoding the opaque playerToken. (Total should be 3 in a 2-player room,
-    // but we assert >= 2 to stay robust against render timing on slower CI machines.)
+    // Expect >= 2 without hardcoding the opaque playerToken. (Total should be 2 in a 2-player room.)
     await expect(p1.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
     await expect(p2.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
 
-    // Strict: the communal zone must be present on both pages AND at least one personal zone
-    // (the player's own — in the spread row) must be present.
+    // Strict: the communal zone (spread-zone-play) is asserted directly above; this block confirms personal zones also render.
     const p1Zones = await p1.locator('[data-testid^="spread-zone-spread-"]').count();
     const p2Zones = await p2.locator('[data-testid^="spread-zone-spread-"]').count();
     expect(p1Zones).toBeGreaterThanOrEqual(2);
