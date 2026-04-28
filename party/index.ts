@@ -489,6 +489,72 @@ export default class GameRoom implements Party.Server {
         this.gameState.undoSnapshots = remainingSnapshots;
         break;
       }
+      case "PLAY_CARD_SET": {
+        const { cardIds, fromId, toZone, toId } = action;
+
+        // V4 Access Control: sender can only play from their own hand
+        if (fromId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot play another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        const hand = this.gameState.hands[fromId];
+        if (hand === undefined) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "HAND_NOT_FOUND",
+            message: `No hand found for player: ${fromId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V5 Input Validation: every cardId MUST exist in the sender's hand BEFORE any mutation
+        const handIdSet = new Set(hand.map(c => c.id));
+        const allPresent = cardIds.every(id => handIdSet.has(id));
+        if (!allPresent) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: "One or more card IDs not found in hand",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // toZone is the literal "pile" — only piles are valid set-play targets
+        const destPile = toZone === "pile"
+          ? this.gameState.piles.find(p => p.id === toId)
+          : undefined;
+        if (destPile === undefined) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${toId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // Snapshot BEFORE mutation so UNDO_MOVE can revert
+        takeSnapshot(this.gameState);
+
+        // Build cardsToPlay preserving the cardIds order (so set is appended in player-chosen order)
+        const cardIdSet = new Set(cardIds);
+        const handById = new Map(hand.map(c => [c.id, c]));
+        const cardsToPlay: Card[] = cardIds.map(id => handById.get(id)!);
+
+        // Set faceUp based on destination pile (spread zones are faceUp:true)
+        cardsToPlay.forEach(card => {
+          card.faceUp = destPile.faceUp ?? true;
+        });
+
+        // Atomic: remove all from hand, append all to dest pile
+        this.gameState.hands[fromId] = hand.filter(c => !cardIdSet.has(c.id));
+        destPile.cards.push(...cardsToPlay);
+        break;
+      }
       case "PING":
         break;
     }
