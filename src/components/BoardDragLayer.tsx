@@ -162,6 +162,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         fromId,
       });
     } else if (isSuccess) {
+      setSelectedIds(new Set());
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
       const toZone = overData!.toZone as 'hand' | 'pile';
