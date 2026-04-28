@@ -18,7 +18,7 @@ Requirements for milestone v1.2: Dev Infrastructure & Game Depth.
 
 - [ ] **PLAY-01**: Each connected player has a personal spread zone — all cards visible simultaneously (fanned/spread, not stacked), with a face-up/face-down toggle control like existing piles
 - [ ] **PLAY-02**: A shared communal spread zone exists on the table — all cards visible simultaneously, with a face-up/face-down toggle; any player can place or move cards
-- [ ] **PLAY-03**: Player can select 1–5 cards from their hand and play them as a set into their personal zone or the communal zone in one action
+- [x] **PLAY-03**: Player can select 1–5 cards from their hand and play them as a set into their personal zone or the communal zone in one action
 
 ## Future Requirements
 
@@ -50,7 +50,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEV-02 | Phase 13 | Pending |
 | PLAY-01 | Phase 14 | Pending |
 | PLAY-02 | Phase 14 | Pending |
-| PLAY-03 | Phase 15 | Pending |
+| PLAY-03 | Phase 15 | Complete |
 | DEV-03 | Phase 16 | Pending |
 
 **Coverage:**
