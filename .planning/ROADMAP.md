@@ -123,7 +123,9 @@ Plans:
   2. README documents both test runners: `vitest` for unit tests, `npx playwright test` for e2e
   3. README includes an architecture overview covering the PartyKit server, hand masking, and the client/server message flow
   4. README documents the GitHub Pages + PartyKit Cloud deploy procedure
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 16-01-PLAN.md — Write README.md (intro, Local Setup, Architecture, Tests, then Deploy)
 
 ## Backlog
 
@@ -171,4 +173,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
 | 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
-| 16. Developer README | v1.2 | 0/TBD | Not started | - |
+| 16. Developer README | v1.2 | 0/1 | Not started | - |
