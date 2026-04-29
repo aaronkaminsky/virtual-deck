@@ -102,9 +102,7 @@ The frontend is built by Vite and deployed via the workflow at `.github/workflow
 
 1. **Enable GitHub Pages.** In the repo on GitHub, go to **Settings → Pages**. Under "Build and deployment", set **Source** to `GitHub Actions`. (The workflow uses the official `actions/deploy-pages@v4` action.)
 
-2. **Add the `VITE_PARTYKIT_HOST` GitHub Actions secret.** The build needs to know the deployed PartyKit host URL so the production frontend connects to the right server. Go to **Settings → Secrets and variables → Actions → New repository secret**:
-   - **Name:** `VITE_PARTYKIT_HOST`
-   - **Value:** the host of your deployed PartyKit project (for the canonical deployment this is `virtual-deck.aaronkaminsky.partykit.dev`; if you fork, use your own PartyKit host — see Server section below)
+2. **Confirm the PartyKit host in `.github/workflows/deploy.yml`.** The `VITE_PARTYKIT_HOST` env var on line 32 is hardcoded to `virtual-deck.aaronkaminsky.partykit.dev` for the canonical deployment. If you fork, update this value to your own PartyKit host after your first server deploy (see Server section below).
 
 3. **Confirm `vite.config.ts` `base` matches the GitHub Pages path.** The repo ships with `base: '/virtual-deck/'` because the published URL is `https://<owner>.github.io/virtual-deck/`. If you fork to a repo with a different name, update `base` accordingly.
 
@@ -131,7 +129,7 @@ The PartyKit server lives at `party/index.ts` and is deployed to PartyKit Cloud 
 
 2. **Confirm the PartyKit project name.** `partykit.json` declares `"name": "virtual-deck"`. The first deploy will create a project under your PartyKit account at `<project-name>.<your-account>.partykit.dev`.
 
-3. **Update the `VITE_PARTYKIT_HOST` secret (if you forked).** After your first server deploy, copy the resulting host (printed by `npm run deploy`) into the `VITE_PARTYKIT_HOST` GitHub Actions secret from the Frontend section above. The frontend build embeds this value at compile time, so the secret must be set **before** the next frontend deploy.
+3. **Update `deploy.yml` (if you forked).** After your first server deploy, copy the resulting host (printed by `npm run deploy`) and update `VITE_PARTYKIT_HOST` at line 32 of `.github/workflows/deploy.yml`. The frontend build embeds this value at compile time, so the file must be updated before the next frontend deploy.
 
 **Deploying:**
 
@@ -146,5 +144,5 @@ This runs `partykit deploy` and pushes `party/index.ts` to PartyKit Cloud. The C
 For a clean first-time deploy of a fresh fork, run in this order:
 
 1. `npx partykit login` then `npm run deploy` — produces the PartyKit host URL.
-2. Add that host URL as the `VITE_PARTYKIT_HOST` GitHub Actions secret.
+2. Edit `.github/workflows/deploy.yml` line 32: set `VITE_PARTYKIT_HOST` to the host URL printed by `npm run deploy`.
 3. Push to `main` (or run the workflow manually) — frontend builds with the correct server host and goes live on GitHub Pages.
