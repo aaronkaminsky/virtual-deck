@@ -10,7 +10,7 @@ progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 100
 ---
 
@@ -18,10 +18,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-28)
+See: .planning/PROJECT.md (updated 2026-04-29)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 16 — developer-readme
+**Current focus:** v1.2 milestone complete — ready to ship
 
 ## Current Position
 
@@ -30,13 +30,13 @@ Plan: Not started
 Status: Milestone complete
 Last activity: 2026-04-29
 
-Progress: [████████░░] 4/5 phases complete
+Progress: [██████████] 5/5 phases complete
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: —
 - Total execution time: —
 
@@ -70,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-28T14:18:07.189Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-developer-readme/16-CONTEXT.md
+Last session: 2026-04-29
+Stopped at: Phase 16 complete — v1.2 milestone complete, all 5 phases done
+Resume file: None

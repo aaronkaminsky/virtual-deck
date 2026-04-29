@@ -79,10 +79,11 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Personal play area zone per player — visible to all, face-up cards (PLAY-01) — Phase 14
 - ✓ Shared communal zone on the table — any player can interact (PLAY-02) — Phase 14
 - ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
+- ✓ Developer README with setup, architecture, and deploy instructions (DEV-03) — Phase 16
 
 ### Active
 
-- [ ] Developer README with setup, architecture, and deploy instructions (DEV-03)
+(none — all v1.2 requirements validated)
 
 ### Out of Scope
 
@@ -143,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 — after Phase 16 (Developer README)*
+*Last updated: 2026-04-29 — Phase 16 complete, v1.2 milestone complete*
