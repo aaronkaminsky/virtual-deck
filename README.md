@@ -82,6 +82,8 @@ npm run test:e2e:ui   # interactive UI runner
 
 Playwright's `reuseExistingServer: !process.env.CI` means locally, if `npm run dev` and `npm run dev:client` are already running on ports 1999 and 5173, Playwright reuses them. Otherwise Playwright starts both servers automatically before the test run. No manual pre-start required for local e2e runs — just run `npm run test:e2e` directly.
 
+**Note:** `reuseExistingServer` applies independently per server. If only one of the two servers is already running when you invoke `npm run test:e2e`, Playwright will reuse the running one and start the other fresh — leaving one server in a stale state and the other newly started. To avoid mixed-state issues, either have **both** servers running or **neither** running when you start an e2e run.
+
 In CI, Playwright always starts fresh servers regardless of what is running.
 
 ### Playwright MCP (Claude Code dev sessions)
