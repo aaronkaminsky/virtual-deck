@@ -39,3 +39,30 @@ Known deferred items at close: 2 (see STATE.md Deferred Items — both are audit
 **Archive:** `.planning/milestones/v1.1-ROADMAP.md` · `.planning/milestones/v1.1-REQUIREMENTS.md`
 
 ---
+
+## v1.2 Dev Infrastructure & Game Depth (Shipped: 2026-04-29)
+
+**Phases completed:** 5 phases (12–16) · 14 plans
+**Timeline:** 2026-04-20 → 2026-04-29 (9 days)
+**LOC:** ~2,646 TypeScript (+444 vs v1.1)
+**Files changed:** 110 files, +17,684 / -775 lines
+
+**Key accomplishments:**
+
+1. Shared test helper module (`tests/helpers.ts`) + broadcast masking tests — proves `viewFor` per-connection masking through the real `broadcastState` path; 114 → 130+ tests (Phase 12, DEV-04)
+2. Playwright e2e infrastructure — dual-server config, two-BrowserContext isolation fixture, 5-scenario test suite covering state sync, deal, pass card, reset table, and hand privacy; `.mcp.json` for Claude Code dev sessions (Phase 13, DEV-01, DEV-02)
+3. Spread zone type system — `Pile.region`/`Pile.ownerId` fields, idempotent personal zone creation in `onConnect`, `play` pile converted to communal spread zone, `viewFor` exposes `myPlayZoneId` (Phase 14, PLAY-01, PLAY-02)
+4. SpreadZone component with cascade layout, intra-zone sort, face toggle, and BoardView 4-section restructure — personal zones per player + shared communal zone; 6 gaps found and closed during execution (Phase 14)
+5. PLAY_CARD_SET — atomic multi-card hand → spread zone: auth gate, pre-validate-all, undo support, selection UX (ring+lift+badge+Escape), real-time 2-player sync (Phase 15, PLAY-03)
+6. Developer README — local setup (two-terminal stack), architecture prose (PartyKit + viewFor + shared types), Vitest + Playwright test runners, GitHub Pages + PartyKit Cloud deploy procedure (Phase 16, DEV-03)
+
+**Tech debt noted:**
+- Missing VERIFICATION.md for phases 12, 13, 15 (process debt — work confirmed through UAT/SUMMARY/VALIDATION)
+- Stale VALIDATION.md draft frontmatter for phases 12, 13, 14
+- `tests/dealCards.test.ts` defines local helpers instead of importing from `tests/helpers.ts`
+- Phase 14: 5 behaviors deferred to live human session (visual layout, drag-to-spread, face toggle sync, reorder, late-joiner re-deal)
+- `communalZone` found by hardcoded pile ID `"play"` (fragile if ID changes)
+
+**Archive:** `.planning/milestones/v1.2-ROADMAP.md` · `.planning/milestones/v1.2-REQUIREMENTS.md`
+
+---

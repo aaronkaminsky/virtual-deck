@@ -8,27 +8,16 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.2 Dev Infrastructure & Game Depth
-
-**Goal:** Establish developer tooling and add played card sets with dedicated play zones for 13s-style games.
-
-**Target features:**
-- Playwright MCP server for Claude-driven browser testing during dev sessions
-- Committed Playwright e2e test suite for repeatable coverage
-- Developer README with architecture overview, local setup, and deploy instructions
-- Test setup fix — diagnose and fix two-remote-players issue so tests model local vs remote correctly
-- Personal play area zone per player — visible to all, cards placed face-up
-- Shared communal zone on the table — any player can place and interact with cards
-- Played card sets — player can play 1–5 cards from hand as a set into either zone
-
 ## Current State
 
-**v1.2 in progress (2026-04-28).** Developer README added — Phase 16 complete.
+**v1.2 shipped (2026-04-29).** Milestone archived. Planning v1.3.
 
-- ~2,202 TypeScript LOC across `src/`, `party/`, `shared/`
+- ~2,646 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- All 27 requirements across v1.0 + v1.1 satisfied and verified; DEV-03 (developer README) added in v1.2
-- Phase 16 complete: README.md at repo root — local setup, architecture, tests, deploy
+- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (130+ tests)
+- Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET)
+- Developer README at repo root covering local setup, architecture, tests, deploy
+- All 31 requirements across v1.0 + v1.1 + v1.2 satisfied and verified
 
 **v1.1 delivered (2026-04-16 → 2026-04-19):**
 - Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
@@ -63,9 +52,6 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Validated (v1.1)
 
-- ✓ Playwright MCP server configured for Claude-driven browser testing (DEV-01) — Phase 13
-- ✓ Playwright e2e test suite committed to repo (DEV-02) — Phase 13
-- ✓ Test setup correctly models local vs remote player behavior (DEV-04) — Phase 12
 - ✓ Players set a display name when joining a room (PRES-01) — Phase 9
 - ✓ Display name visible to all players on table (PRES-02) — Phase 9
 - ✓ Display name persists across reconnects (PRES-03) — Phase 9
@@ -76,6 +62,9 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Validated (v1.2)
 
+- ✓ Test mock helpers correctly model local vs remote player; viewFor masking tested (DEV-04) — Phase 12
+- ✓ Playwright MCP server configured for Claude-driven browser testing (DEV-01) — Phase 13
+- ✓ Playwright e2e test suite committed to repo (DEV-02) — Phase 13
 - ✓ Personal play area zone per player — visible to all, face-up cards (PLAY-01) — Phase 14
 - ✓ Shared communal zone on the table — any player can interact (PLAY-02) — Phase 14
 - ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
@@ -83,7 +72,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Active
 
-(none — all v1.2 requirements validated)
+(none — planning v1.3)
 
 ### Out of Scope
 
@@ -144,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-29 — Phase 16 complete, v1.2 milestone complete*
+*Last updated: 2026-04-29 — v1.2 milestone archived*

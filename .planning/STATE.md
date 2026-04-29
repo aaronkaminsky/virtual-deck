@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Dev Infrastructure & Game Depth
-status: milestone_complete
-stopped_at: Phase 16 context gathered
-last_updated: "2026-04-29T02:02:12.581Z"
-last_activity: 2026-04-29 -- Phase 16 execution started
+milestone: v1.3
+milestone_name: TBD
+status: milestone_archived
+stopped_at: v1.2 milestone archived
+last_updated: "2026-04-29T13:32:23Z"
+last_activity: 2026-04-29 -- v1.2 milestone complete and archived
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-29)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.2 milestone complete — ready to ship
+**Current focus:** v1.2 archived — planning next milestone
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
-Status: Milestone complete
+Phase: —
+Plan: —
+Status: Between milestones — v1.2 archived, v1.3 not yet planned
 Last activity: 2026-04-29
-
-Progress: [██████████] 5/5 phases complete
 
 ## Performance Metrics
 
