@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: './playwright',
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5173/virtual-deck/',
   },
   projects: [
     {
