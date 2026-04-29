@@ -44,6 +44,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
       <span className="text-xs text-muted-foreground">{pile.name}</span>
       <div
         ref={setNodeRef}
+        data-testid={`pile-${pile.id}`}
         className={cn(
           'w-[80px] h-[112px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary',
           isEmpty ? 'border-dashed' : '',

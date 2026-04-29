@@ -102,6 +102,58 @@
 
 ---
 
+## Milestone: v1.2 — Dev Infrastructure & Game Depth
+
+**Shipped:** 2026-04-29
+**Phases:** 5 (12–16) | **Plans:** 14 | **Timeline:** 9 days (2026-04-20 → 2026-04-29)
+
+### What Was Built
+
+- Shared test helper module + broadcast masking tests — viewFor per-connection masking proven through the real broadcastState path
+- Playwright e2e infrastructure: dual-server config, BrowserContext isolation fixture, 5-scenario test suite, `.mcp.json` for Claude Code dev sessions
+- Spread zones: `Pile.region`/`Pile.ownerId` type fields, idempotent personal zone per player in `onConnect`, communal zone from the existing `play` pile
+- SpreadZone component with cascade layout, intra-zone sort via `REORDER_PILE_SPREAD`, face toggle — 6 gaps found and closed during Phase 14 execution
+- PLAY_CARD_SET: atomic multi-card hand → zone with auth gate, pre-validate-all, undo support, and selection UX
+- Developer README covering local setup, architecture (PartyKit + viewFor + shared types), both test runners, and deploy
+
+### What Worked
+
+- **Reusing `Pile` records for spread zones** — adding `region`/`ownerId` fields to the existing type meant MOVE_CARD, UNDO_MOVE, RESET_TABLE, and viewFor all worked unchanged. No new collection type, no parallel dispatch path.
+- **BrowserContext isolation for Playwright** — discovering early that `usePlayerId.ts` stores the token in localStorage meant the two-BrowserContext pattern was identified at design time, not debugged at test time. The Phase 13 SUMMARY captures this as a key decision.
+- **PLAY_CARD_SET pre-validate-all pattern** — validating all cardIds before any mutation (not one-at-a-time) made atomicity trivial. The `takeSnapshot` after validation and before mutation means undo always has a valid state to revert to.
+- **Audit before close caught nothing critical** — `gsd-audit-milestone` confirmed tech_debt status (process gaps, no product blockers). v1.2 audit was the cleanest so far.
+
+### What Was Inefficient
+
+- **Phase 14 grew to 6 plans** — 2 were planned, 4 were gap-closure. The original 2-plan scope missed: late-joiner hand init, spread drop dialog bypass, sortable spread cards, communal zone migration, HandZone cascade, and intra-spread reorder insert position. A more thorough up-front research / discussion phase would have caught at least the last 3.
+- **Stale VALIDATION.md frontmatter** — phases 12, 13, 14 all shipped with `status: draft` / `nyquist_compliant: false` even though their validation work was complete. The frontmatter sign-off step is consistently skipped. Either automate it or add it as a hard gate in the plan transition step.
+- **Missing VERIFICATION.md for phases 12, 13, 15** — gsd-verify-work wasn't run for these phases. Phase 12 and 13 were executed before the verifier agent was part of the standard workflow for infra/tooling phases; Phase 15 had a VALIDATION.md pass instead. The audit had to piece together evidence from UAT + SUMMARY + VALIDATION.
+- **Phase 14 human-deferred behaviors** — 5 live-session behaviors (visual layout, drag-to-spread path, face toggle sync, spread reorder, late-joiner) were explicitly deferred. None of these have been confirmed since Phase 14 shipped. Adding a "human UAT" step to Phase 14-type phases before marking complete would close this gap.
+
+### Patterns Established
+
+- Spread zones as `Pile` records with `region: "spread"` — no new collection type; all existing handlers work via pile ID
+- `isIntraSpreadReorder` guard in BoardDragLayer — prevents MOVE_CARD from firing for same-pile reorders; lets SpreadZone's `useDndMonitor` REORDER_PILE_SPREAD fire uncontested
+- Two BrowserContexts per Playwright test — localStorage isolation; each context = independent player token
+- `mouse.move/down/move/up (steps:15)` for dnd-kit e2e drag — Playwright's native `dragAndDrop()` fires HTML5 drag events which dnd-kit ignores
+- `aria-pressed` placed after `{...attributes}` spread in dnd-kit draggable components — dnd-kit's attributes include their own `aria-pressed`; explicit override must come last to avoid TS2783
+- Pre-validate-all before snapshot: validate every item in a batch before taking the undo snapshot or mutating anything
+
+### Key Lessons
+
+1. **Type extension > parallel collections.** When adding a new zone concept, adding fields to an existing type (`Pile.region`) preserved all existing message handling. Adding a new `Zone[]` collection would have required new handlers throughout.
+2. **Playwright BrowserContext isolation is essential for multiplayer testing.** Two Pages in one context share localStorage and therefore share the player token — both pages join as the same player. Always use two BrowserContexts when testing multiple distinct player sessions.
+3. **`gsd-validate-phase` sign-off is a trailing step that gets dropped.** Consider making it part of the transition commit checklist rather than a separate command.
+4. **Gap-closure phases signal underspecified plans.** 4 unplanned plans in Phase 14 all came from behaviors that were implied but not explicitly stated in the success criteria. Success criteria should include edge cases (empty zone drops, intra-zone reorder, late-joiner re-deal) — not just the happy path.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~10 estimated
+- Notable: Phase 14 was the most expensive phase in any milestone — 6 plans, 6 gaps closed; research + discussion up front would have reduced execution cost
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -110,15 +162,20 @@
 |-----------|--------|-------|------------|
 | v1.0 | 8 (+2 bonus) | 21 | First milestone — baseline established |
 | v1.1 | 5 (2 pre-work + 3) | 11 | Faster cadence; pre-work phase pattern introduced |
+| v1.2 | 5 | 14 (2 planned → 6 for Phase 14) | e2e infrastructure + game depth; gap-closure plans normalized |
 
 ### Cumulative Quality
 
 | Milestone | Tests | Key Patterns |
 |-----------|-------|-------------|
 | v1.0 | 89 passing | WebSocket buffer, server-first privacy, stable player identity |
-| v1.1 | — | pointerWithin collision, deferred connect, joinState null-gate |
+| v1.1 | ~114 passing | pointerWithin collision, deferred connect, joinState null-gate |
+| v1.2 | 130+ unit + 8 e2e | Playwright BrowserContext isolation, spread zones as Pile records, pre-validate-all batch pattern |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Prove the core invariant first (hand masking in Phase 1)
 2. Run `gsd-audit-milestone` before closing — always surfaces something
+3. Type extension > parallel collections — reuse existing types with new fields when adding concepts
+4. VALIDATION.md sign-off is consistently skipped — needs to be a hard gate, not an optional step
+5. Success criteria should include edge cases, not just the happy path — Phase 14's 4 gap-closure plans all came from implied-but-unstated behavior

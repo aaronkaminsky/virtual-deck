@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
+- ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
 
 ## Phases
 
@@ -40,6 +41,19 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
 
 </details>
 
+<details>
+<summary>✅ v1.2 Dev Infrastructure & Game Depth (Phases 12–16) — SHIPPED 2026-04-29</summary>
+
+- [x] Phase 12: Test Mock Fix — shared test helpers, viewFor masking tests (completed 2026-04-20)
+- [x] Phase 13: Playwright Infrastructure — e2e suite, 2-player fixture, .mcp.json (completed 2026-04-22)
+- [x] Phase 14: Gameplay Zone Infrastructure — personal + communal spread zones (completed 2026-04-26)
+- [x] Phase 15: Multi-Card Set Play — select 1–5 cards, play as set into zone (completed 2026-04-28)
+- [x] Phase 16: Developer README — setup, architecture, tests, deploy docs (completed 2026-04-29)
+
+See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md).
+
+</details>
+
 ## Backlog
 
 Promote items with `/gsd-review-backlog` when ready to plan.
@@ -49,8 +63,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.3 | Play area card grid for poker-style games | TBD |
 | 999.4 | Personal player tableau visible to all | TBD |
 | 999.5 | Shuffle visual indicator | TBD |
-| 999.6 | Investigate test setup treating both players as remote | TBD |
-| 999.7 | README and architecture documentation | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
 | 999.16 | Turn indicators — show whose turn it is | TBD |
@@ -59,12 +71,15 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
-| 999.22 | Browser automation for Claude self-testing — explore adding MCP browser use (e.g. Playwright MCP) so Claude can drive UI flows during development | TBD |
 | 999.23 | Sound effects — card play, shuffle, deal sounds; group near art/customization features (see 999.14) | TBD |
 | 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
-| 999.25 | Played card sets (13s support) — play 1–5 cards as a visible set; display in front of player or in a dedicated play area zone | TBD |
 | 999.26 | Overlapping hand display — cards in hand overlap ~50% like a real held hand; better use of screen real estate | TBD |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
+| 999.28 | npm audit — investigate and resolve 4 vulnerabilities (3 moderate, 1 high) surfaced during Phase 13 UAT (`npm install` on 2026-04-22) | TBD |
+| 999.29 | Test helper consolidation — migrate `tests/dealCards.test.ts` (and remaining 11 pre-Phase-12 test files) to import shared helpers from `tests/helpers.ts` instead of defining local copies | TBD |
+| 999.30 | Phase 14 live session verification — confirm 5 human-deferred behaviors: two-player zone layout, drag-to-spread (no dialog), spread reorder by drag, face toggle sync, late-joiner re-deal after reset | TBD |
+| 999.31 | Restrict PLAY_CARD_SET target to spread-region piles — server currently accepts any pile ID; add `region === "spread"` guard to match UI intent | TBD |
+| 999.32 | Replace hardcoded communal zone ID "play" with ownerId-based lookup — `BoardView.communalZone` currently uses `p.id === "play"`; switch to `p.region === "spread" && p.ownerId === null` for resilience | TBD |
 
 ## Progress
 
@@ -85,3 +100,8 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 9. Player Identity + Presence | v1.1 | 3/3 | Complete | 2026-04-19 |
 | 10. Shuffle Before Deal | v1.1 | 3/3 | Complete | 2026-04-18 |
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
+| 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
+| 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
+| 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
+| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
+| 16. Developer README | v1.2 | 1/1 | Complete    | 2026-04-29 |

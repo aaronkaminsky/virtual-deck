@@ -24,6 +24,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
   return (
     <div
       ref={setNodeRef}
+      data-testid="opponent-hand"
       className={cn(
         'flex flex-col rounded-lg p-1',
         isOver

@@ -10,27 +10,49 @@ interface SortableHandCardProps {
   card: Card;
   playerId: string;
   isDraggingThis: boolean;
+  index: number;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
   });
 
+  const resolvedTransform = isSelected
+    ? 'translateY(-6px)'
+    : isDragging
+      ? undefined
+      : CSS.Transform.toString(transform);
+
   const style: React.CSSProperties = {
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transform: resolvedTransform,
     transition,
     touchAction: 'none',
     opacity: isDraggingThis ? 0 : 1,
   };
 
   return (
-    <div className="relative w-[63px] h-[88px] flex-shrink-0">
+    <div
+      className={cn('relative w-[63px] h-[88px] flex-shrink-0', index > 0 ? '-ml-5' : '')}
+      onClick={() => onToggleSelect(card.id)}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       {isDraggingThis && (
         <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
       )}
-      <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+        )}
+        {...listeners}
+        {...attributes}
+        aria-pressed={isSelected}
+      >
         {card.faceUp ? <CardFace card={card} /> : <CardBack />}
       </div>
     </div>
@@ -44,9 +66,11 @@ interface HandZoneProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect }: HandZoneProps) {
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
@@ -87,17 +111,31 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
       <div className="flex items-center gap-2 px-4 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
+        {selectedIds.size >= 2 && (
+          <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
+            {selectedIds.size} selected
+          </span>
+        )}
       </div>
       <div
         ref={setNodeRef}
+        data-testid="hand-zone"
         className={cn(
-          'h-[128px] flex items-center px-4 gap-2 overflow-x-auto bg-card',
+          'h-[128px] flex items-center px-4 overflow-x-auto bg-card',
           isOver ? 'border-t-2 border-primary' : ''
         )}
       >
         <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
-          {cards.map((card) => (
-            <SortableHandCard key={card.id} card={card} playerId={playerId} isDraggingThis={draggingCardId === card.id} />
+          {cards.map((card, index) => (
+            <SortableHandCard
+              key={card.id}
+              card={card}
+              playerId={playerId}
+              isDraggingThis={draggingCardId === card.id}
+              index={index}
+              isSelected={selectedIds.has(card.id)}
+              onToggleSelect={onToggleSelect}
+            />
           ))}
         </SortableContext>
       </div>

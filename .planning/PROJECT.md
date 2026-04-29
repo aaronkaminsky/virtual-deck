@@ -10,12 +10,14 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-**v1.1 shipped 2026-04-19.** Full card table with player identity and UX polish deployed and playable.
+**v1.2 shipped (2026-04-29).** Milestone archived. Planning v1.3.
 
-- ~2,202 TypeScript LOC across `src/`, `party/`, `shared/`
+- ~2,646 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- All 27 requirements across v1.0 + v1.1 satisfied and verified
-- 11 backlog phases queued for future milestones
+- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (130+ tests)
+- Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET)
+- Developer README at repo root covering local setup, architecture, tests, deploy
+- All 31 requirements across v1.0 + v1.1 + v1.2 satisfied and verified
 
 **v1.1 delivered (2026-04-16 → 2026-04-19):**
 - Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
@@ -58,7 +60,19 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Skip pile position dialog for empty piles (UX-01) — Phase 11
 - ✓ Pile drop dialog UX: Escape cancels, Enter confirms Top (UX-02/UX-03) — v1.1 pre-work (Phase 999.11)
 
+### Validated (v1.2)
+
+- ✓ Test mock helpers correctly model local vs remote player; viewFor masking tested (DEV-04) — Phase 12
+- ✓ Playwright MCP server configured for Claude-driven browser testing (DEV-01) — Phase 13
+- ✓ Playwright e2e test suite committed to repo (DEV-02) — Phase 13
+- ✓ Personal play area zone per player — visible to all, face-up cards (PLAY-01) — Phase 14
+- ✓ Shared communal zone on the table — any player can interact (PLAY-02) — Phase 14
+- ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
+- ✓ Developer README with setup, architecture, and deploy instructions (DEV-03) — Phase 16
+
 ### Active
+
+(none — planning v1.3)
 
 ### Out of Scope
 
@@ -94,6 +108,12 @@ Players can see the shared table and their own private hand update in real time,
 | displayName required string (not optional) on Player | Consistent presence; empty string default avoids null checks everywhere | ✓ Validated Phase 9 |
 | Deferred WebSocket connect via enabled flag | Name must be set before connecting so ?name= param is available on handshake | ✓ Validated Phase 9 |
 | joinState null-check gates both socket and board render | Single source of truth for join progression; avoids partial render before connection | ✓ Validated Phase 9 |
+| Two BrowserContexts per Playwright test (not two Pages) | usePlayerId.ts stores playerId in localStorage; same context = same token = both pages join as same player | ✓ Validated Phase 13 |
+| mouse.move/down/move/up (steps:15) for dnd-kit e2e drag | Playwright dragAndDrop() uses HTML5 drag API; dnd-kit uses pointer events and ignores HTML5 events | ✓ Validated Phase 13 |
+| Playwright MCP via .mcp.json only | Project-scoped dev tool; must never appear in package.json or CI scripts | ✓ Validated Phase 13 |
+| Multi-card play via select-then-drag (not dnd-kit multi-drag) | dnd-kit multi-drag deferred; click-to-select + drag-selected-card-moves-all avoids dnd-kit multi-drag complexity | ✓ Validated Phase 15 |
+| aria-pressed placed after `{...attributes}` spread in dnd-kit components | dnd-kit's `attributes` object contains its own `aria-pressed`; explicit override must come last to avoid TS2783 | ✓ Validated Phase 15 |
+| `:not(:has([role="button"]))` to count leaf card elements in spread zone | Each card renders two nested `[role="button"]` divs (useSortable outer + useDraggable inner); leaf selector gives correct card count | ✓ Validated Phase 15 |
 
 ## Evolution
 
@@ -113,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-19 — v1.1 milestone archived (Social Identity + UX Polish)*
+*Last updated: 2026-04-29 — v1.2 milestone archived*

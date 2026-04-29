@@ -68,13 +68,15 @@ describe("defaultGameState", () => {
     expect(state.phase).toBe("lobby");
   });
 
-  it("has 3 piles with ids draw, discard, play", () => {
+  it("has 3 piles with ids draw, discard, and play", () => {
     const state = defaultGameState("test-room");
     expect(state.piles).toHaveLength(3);
     const ids = state.piles.map(p => p.id);
     expect(ids).toContain("draw");
     expect(ids).toContain("discard");
     expect(ids).toContain("play");
+    const play = state.piles.find(p => p.id === "play");
+    expect(play?.region).toBe("spread");
   });
 
   it("play pile has name Play Area and 0 cards", () => {
