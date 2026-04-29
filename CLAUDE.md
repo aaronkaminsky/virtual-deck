@@ -38,7 +38,8 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 ### Drag-and-Drop
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| @dnd-kit/core + @dnd-kit/sortable | 6.x [UNVERIFIED] | Card drag between hand, zones, piles | dnd-kit is pointer-events based (works on touch/mouse), does not rely on the HTML5 drag-and-drop API (which has poor mobile support and z-index quirks). Accessible by default. react-beautiful-dnd is archived/deprecated — do not use. |
+| @dnd-kit/core | 6.x | Card drag primitives | dnd-kit is pointer-events based (works on touch/mouse), does not rely on the HTML5 drag-and-drop API (which has poor mobile support and z-index quirks). Accessible by default. react-beautiful-dnd is archived/deprecated — do not use. |
+| @dnd-kit/sortable | 10.x | Sortable list support for card ordering | Ships separately from core; major version diverged — check sortable docs for v10 API when adding sortable zones. |
 ### Randomization
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
@@ -70,7 +71,7 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 | Claim | Source to Check | Risk if Wrong |
 |-------|----------------|---------------|
 | React 18.x is current stable | https://react.dev | React 19 may be stable; breaking changes in concurrent features |
-| @dnd-kit/core 6.x is current | https://github.com/clauderic/dnd-kit | API changes between major versions |
+| @dnd-kit/core 6.x / @dnd-kit/sortable 10.x are current | https://github.com/clauderic/dnd-kit | These packages version independently — verified against package.json |
 | PartyKit server API (onConnect, onMessage, onBeforeConnect hooks) | https://docs.partykit.io | PartyKit is pre-1.0 and API has changed in the past |
 | `partysocket` is still the correct client package | https://docs.partykit.io | May have been renamed or merged |
 | Vite 5.x GitHub Pages deploy workflow | https://vitejs.dev/guide/static-deploy | `base` config path for GH Pages is version-sensitive |
