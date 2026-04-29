@@ -23,12 +23,12 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-**v1.1 shipped 2026-04-19.** Full card table with player identity and UX polish deployed and playable.
+**v1.2 in progress (2026-04-28).** Developer README added — Phase 16 complete.
 
 - ~2,202 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- All 27 requirements across v1.0 + v1.1 satisfied and verified
-- 11 backlog phases queued for future milestones
+- All 27 requirements across v1.0 + v1.1 satisfied and verified; DEV-03 (developer README) added in v1.2
+- Phase 16 complete: README.md at repo root — local setup, architecture, tests, deploy
 
 **v1.1 delivered (2026-04-16 → 2026-04-19):**
 - Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
@@ -143,4 +143,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-28 — after Phase 15 (Multi-Card Set Play)*
+*Last updated: 2026-04-28 — after Phase 16 (Developer README)*
