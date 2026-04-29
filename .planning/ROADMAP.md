@@ -49,7 +49,7 @@ See full phase details in [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.m
 - [x] **Phase 13: Playwright Infrastructure** — Install Playwright, configure e2e suite with 2-player fixture, commit MCP config (completed 2026-04-22)
 - [x] **Phase 14: Gameplay Zone Infrastructure** — Add spread zone type: personal play zone per player and shared communal zone (completed 2026-04-26)
 - [x] **Phase 15: Multi-Card Set Play** — Player selects 1–5 cards from hand and plays them as a set into a zone (completed 2026-04-28)
-- [ ] **Phase 16: Developer README** — Write README covering local setup, architecture, test runners, and deploy
+- [x] **Phase 16: Developer README** — Write README covering local setup, architecture, test runners, and deploy (completed 2026-04-29)
 
 ## Phase Details
 
@@ -125,7 +125,7 @@ Plans:
   4. README documents the GitHub Pages + PartyKit Cloud deploy procedure
 **Plans**: 1 plan
 Plans:
-- [ ] 16-01-PLAN.md — Write README.md (intro, Local Setup, Architecture, Tests, then Deploy)
+- [x] 16-01-PLAN.md — Write README.md (intro, Local Setup, Architecture, Tests, then Deploy)
 
 ## Backlog
 
@@ -173,4 +173,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
 | 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
-| 16. Developer README | v1.2 | 0/1 | Not started | - |
+| 16. Developer README | v1.2 | 1/1 | Complete   | 2026-04-29 |
