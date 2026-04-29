@@ -46,7 +46,7 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 ### Supporting Libraries
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| nanoid | 4.x [UNVERIFIED] | Generate short room codes and player IDs | nanoid's default alphabet produces URL-safe IDs. Use for room code generation on the PartyKit server. Confirm v4+ works in Cloudflare Workers (no Node.js crypto dependency). |
+| nanoid | 5.x | Generate short room codes and player IDs | nanoid's default alphabet produces URL-safe IDs. Use for room code generation on the PartyKit server. v5 dropped CJS support and uses pure ESM; confirmed working in Cloudflare Workers. |
 | zustand | 4.x [UNVERIFIED] | Local client-side UI state (drag preview, selected card, etc.) | Lightweight, no boilerplate. Use for ephemeral UI state that does not need to sync over the wire — not for game state (that lives on PartyKit). Do not put game state in zustand; it should flow from server messages. |
 | immer | 10.x [UNVERIFIED] | Immutable state updates inside zustand and PartyKit | Prevents accidental mutation of shared game state objects. Makes hand-masking logic easier to reason about. |
 ## Alternatives Considered
@@ -73,7 +73,6 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 | @dnd-kit/core 6.x is current | https://github.com/clauderic/dnd-kit | API changes between major versions |
 | PartyKit server API (onConnect, onMessage, onBeforeConnect hooks) | https://docs.partykit.io | PartyKit is pre-1.0 and API has changed in the past |
 | `partysocket` is still the correct client package | https://docs.partykit.io | May have been renamed or merged |
-| nanoid v4 works in Cloudflare Workers | https://github.com/ai/nanoid | v3 had a Node.js crypto dependency; v4 fixed it, but confirm |
 | Vite 5.x GitHub Pages deploy workflow | https://vitejs.dev/guide/static-deploy | `base` config path for GH Pages is version-sensitive |
 | crypto.getRandomValues in Cloudflare Workers | https://developers.cloudflare.com/workers/runtime-apis/web-crypto/ | If not available, need a fallback; LOW risk, Web Crypto is part of WinterCG |
 ## Sources
@@ -88,6 +87,18 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Conventions not yet established. Will populate as patterns emerge during development.
 <!-- GSD:conventions-end -->
+
+## Dev Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start PartyKit server (`partykit dev`) |
+| `npm run dev:client` | Start Vite frontend (`vite`) |
+| `npm test` | Run Vitest unit tests |
+| `npm run test:e2e` | Run Playwright e2e tests |
+| `npm run typecheck` | TypeScript check (`tsc --noEmit`) |
+
+To run the full local stack: `npm run dev` in one terminal, `npm run dev:client` in another.
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
