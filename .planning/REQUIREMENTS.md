@@ -11,7 +11,7 @@ Requirements for milestone v1.2: Dev Infrastructure & Game Depth.
 
 - [ ] **DEV-01**: Developer can use Playwright MCP in Claude Code sessions via a committed `.mcp.json` (project-scoped)
 - [ ] **DEV-02**: Playwright e2e test suite covers 2-player sync, deal, pass card, and reset table scenarios
-- [ ] **DEV-03**: README documents local setup, architecture overview, and deploy instructions (developer-facing)
+- [x] **DEV-03**: README documents local setup, architecture overview, and deploy instructions (developer-facing)
 - [ ] **DEV-04**: Unit test mock helpers correctly model local vs remote player; `viewFor` masking is tested for sender and recipients
 
 ### Gameplay Zones
@@ -51,7 +51,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PLAY-01 | Phase 14 | Pending |
 | PLAY-02 | Phase 14 | Pending |
 | PLAY-03 | Phase 15 | Complete |
-| DEV-03 | Phase 16 | Pending |
+| DEV-03 | Phase 16 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 7 total
