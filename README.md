@@ -34,6 +34,8 @@ npm run dev:client
 
 Then visit `http://localhost:5173/virtual-deck/` — note the `/virtual-deck/` path, which is required because `vite.config.ts` sets `base: '/virtual-deck/'` for GitHub Pages routing.
 
+**No `.env` file needed for local dev.** The client (`src/hooks/usePartySocket.ts`) defaults to `localhost:1999` when `VITE_PARTYKIT_HOST` is unset and `import.meta.env.DEV` is true. You only need to set `VITE_PARTYKIT_HOST` for production builds (done via the GitHub Actions secret documented in the Deploy section).
+
 ### Command Reference
 
 | Command | Purpose |
