@@ -51,5 +51,5 @@ What is below is just one approach, alternatives that improve on my goals are we
 ## 5. Cost & Scalability (2026 Outlook)
 * **Cost:** **$0** (Hobby Tier). Since it’s a project for friends, you will comfortably stay within the free limits of both GitHub Pages and PartyKit/Cloudflare.
 * **Maintenance:** "Serverless" architecture. There are no OS updates to manage or databases to tune.
-* **Location:** Since you are in **San Jose**, Cloudflare will likely host your active "Room" in a nearby Silicon Valley data center, resulting in sub-20ms latency for you and local friends.
+* **Location:** For example, for someone in **San Jose**, Cloudflare will likely host the active "Room" in a nearby Silicon Valley data center, resulting in sub-20ms latency for local users.
 
