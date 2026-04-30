@@ -71,7 +71,8 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
-| 999.23 | Sound effects — card play, shuffle, deal sounds; group near art/customization features (see 999.14) | TBD |
+| 999.12 | Mobile responsive layout — phone-friendly design; options include responsive breakpoints, progressive display, or smaller cards | TBD |
+| 999.23 | Sound effects — shuffle, deal, card drop/play sounds; icon toggle to mute; group near art/customization features (see 999.14) | TBD |
 | 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
 | 999.26 | Overlapping hand display — cards in hand overlap ~50% like a real held hand; better use of screen real estate | TBD |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
@@ -80,6 +81,10 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.30 | Phase 14 live session verification — confirm 5 human-deferred behaviors: two-player zone layout, drag-to-spread (no dialog), spread reorder by drag, face toggle sync, late-joiner re-deal after reset | TBD |
 | 999.31 | Restrict PLAY_CARD_SET target to spread-region piles — server currently accepts any pile ID; add `region === "spread"` guard to match UI intent | TBD |
 | 999.32 | Replace hardcoded communal zone ID "play" with ownerId-based lookup — `BoardView.communalZone` currently uses `p.id === "play"`; switch to `p.region === "spread" && p.ownerId === null` for resilience | TBD |
+| 999.33 | Spread pile multi-select and sort — spread zones should support the same multi-card select and drag-to-reorder behavior as the player's hand | TBD |
+| 999.34 | Play Area layout — move communal spread zone to center canvas area, to the right or below the discard pile | TBD |
+| 999.35 | Continuous multi-card drag-to-sort — when multiple adjacent cards are selected, dragging one moves all as a group to the new position; needs play-testing to validate the interaction model | TBD |
+| 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 
 ## Progress
 
