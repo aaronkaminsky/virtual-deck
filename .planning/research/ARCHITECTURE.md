@@ -1,444 +1,308 @@
-# Architecture Patterns — v1.2 Integration
+# Architecture Research
 
-**Project:** Virtual Deck
-**Researched:** 2026-04-19
-**Scope:** v1.2 new feature integration into existing architecture
-**Confidence:** HIGH for server-side patterns (code verified), MEDIUM for Playwright patterns (docs reviewed, not yet in-repo)
-
----
-
-## Current Architecture (v1.1 Baseline)
-
-```
-GitHub Pages (Static)
-┌──────────────────────────────────────────────────────────┐
-│  React 18 + Vite                                         │
-│                                                          │
-│  App.tsx → RoomView → LobbyPanel | BoardDragLayer        │
-│                                                          │
-│  BoardDragLayer                                          │
-│  └─ DndContext (dnd-kit, customCollision)                │
-│     └─ BoardView                                         │
-│        ├─ OpponentHand × N (card counts, pass target)   │
-│        ├─ PileZone × N    (droppable, shows top card)   │
-│        └─ HandZone        (sortable, local player only) │
-│                                                          │
-│  Hooks: usePartySocket (WS + drag buffer)               │
-│         usePlayerId (localStorage stable token)          │
-└──────────────────────┬───────────────────────────────────┘
-                       │ WSS ?player=<token>&name=<name>
-┌──────────────────────▼───────────────────────────────────┐
-│  PartyKit Cloud (Cloudflare Edge)                        │
-│                                                          │
-│  party/index.ts — GameRoom class                         │
-│  ├─ onStart()     — restore from Durable Objects storage │
-│  ├─ onConnect()   — stable token, displayName, 4-cap     │
-│  ├─ onMessage()   — validate + mutate GameState          │
-│  ├─ onClose()     — mark disconnected                    │
-│  ├─ viewFor()     — mask per-connection before send      │
-│  └─ broadcastState() — per-connection send (not room.broadcast)
-│                                                          │
-│  In-memory GameState (persisted to Durable Objects)      │
-│  { roomId, phase, players[], hands{}, piles[], undoSnapshots[] }
-└──────────────────────────────────────────────────────────┘
-
-Shared types: src/shared/types.ts (imported by both sides)
-```
-
-### Confirmed Constraints From Code Review
-
-- `MOVE_CARD` handler looks up zones in `piles[]` only (no concept of "zone" beyond pile and hand)
-- `fromZone` and `toZone` are typed `"hand" | "pile"` — zone type is a string enum, not a separate array
-- `piles[]` in `GameState` is a flat array; zone routing is purely by `pile.id`
-- `defaultGameState` initializes 3 piles: draw, discard, play (the "play" pile is generic, not per-player)
-- `viewFor()` maps all piles identically — no per-player visibility filtering exists for piles
-- `RESET_TABLE` gathers all non-draw piles back to draw, including any future play zones
-- Existing unit tests treat both senders as remote (no "local player" mock concept)
+**Domain:** Layout/UX polish and spread zone interactivity — v1.3 milestone
+**Researched:** 2026-05-01
+**Confidence:** HIGH (based on direct codebase inspection)
 
 ---
 
-## Integration Point 1: Personal Play Area Zones
+## Current Architecture (as-built, v1.2 baseline)
 
-### What's Needed
-
-A dedicated zone per player where they can place cards face-up, visible to all. Cards in this zone are public (not masked). The owner can move cards in/out; any player can see them.
-
-### GameState Change (Minimal-Diff Approach)
-
-The cleanest fit for the existing architecture: personal play zones are just piles with a naming convention and an `ownerId` field. They live in `piles[]` like everything else.
-
-**New field on `Pile` (server + shared types):**
-```typescript
-export interface Pile {
-  id: string;       // e.g. "play-<playerId>" for personal zones
-  name: string;
-  cards: Card[];
-  faceUp?: boolean;
-  ownerId?: string; // NEW: undefined = shared/communal, playerId = personal zone
-}
+```
+App.tsx
+└── RoomView
+    ├── LobbyPanel           (pre-join screen)
+    └── BoardDragLayer       (DndContext owner, all drag logic, pile-insert dialog)
+        └── BoardView        (pure layout, flex-col with 4 sections)
+            ├── ConnectionBanner
+            ├── Header strip  (bg-card, flex row)
+            │   ├── OpponentHand × N  (each with opponentSpread SpreadZone below it)
+            │   ├── Copy-link button
+            │   └── ControlsBar  (Deal popover | Undo + Reset alert-dialog)
+            ├── Pile row      (flex-1, centered, PileZone × N)
+            ├── Spread row    (bg-card, communalZone + mySpreadZone side by side)
+            └── HandZone      (player's private hand, fixed 128px height)
 ```
 
-**New field on `ClientPile`:**
-```typescript
-export interface ClientPile {
-  id: string;
-  name: string;
-  cards: (Card | MaskedCard)[];
-  faceUp?: boolean;
-  ownerId?: string; // NEW: passed through from server, UI uses to render label
-}
-```
-
-**defaultGameState change:** Do NOT add personal zones in `defaultGameState`. Personal play zones are created dynamically when a player connects (or on first join), so they scale to 2–4 players correctly.
-
-**Server: add zone on player join (in `onConnect`):**
-```typescript
-// After adding player to gameState.players:
-if (!this.gameState.piles.find(p => p.id === `play-${playerToken}`)) {
-  this.gameState.piles.push({
-    id: `play-${playerToken}`,
-    name: `${displayName}'s play area`,
-    cards: [],
-    faceUp: true,
-    ownerId: playerToken,
-  });
-}
-```
-
-**No changes needed to:**
-- `MOVE_CARD` handler — it already accepts any valid pile id as `toId`
-- `viewFor()` — personal zone piles are fully public (faceUp: true cards are never masked)
-- `RESET_TABLE` — already gathers all non-draw piles; will sweep personal zones too (correct behavior)
-
-**New `ClientGameState` field for convenience:**
-```typescript
-export interface ClientGameState {
-  // ... existing fields
-  myPlayZoneId: string; // NEW: "play-<myPlayerId>" — lets client locate own zone without string-building
-}
-```
-
-### Authorization Concern
-
-Currently `MOVE_CARD` allows any player to move cards from any pile to any pile. Personal zones should probably allow anyone to rearrange face-up cards (consistent with "no rule enforcement" principle). No authorization change needed unless the product requirement is to restrict who can move cards out of a personal zone — which it isn't.
+**State ownership:**
+- PartyKit server: all game state (piles, hands, players, phase, undo stack)
+- BoardDragLayer: `activeCard`, `pendingMove`, `selectedIds` (ephemeral drag/select state)
+- BoardView: `copied` (copy-link button flash) — trivial local state
 
 ---
 
-## Integration Point 2: Shared Communal Zone
+## Question 1: Communal Zone to Physical Center
 
-### What's Needed
+### Current layout structure
 
-A single zone on the table any player can place and interact with cards. This is simpler than personal zones.
+`BoardView` uses a flex-column with four top-to-bottom sections:
 
-### GameState Change
+1. Header strip (`bg-card`) — opponents + controls
+2. Pile row (`flex-1`) — draw/discard piles, centered
+3. Spread row (`bg-card`) — communal zone (`pile.id === 'play'`) + player's personal zone, side by side
+4. HandZone — player's private hand
 
-Add a single pile with `id: "communal"` to `defaultGameState`:
+The communal zone currently sits at the bottom of the board alongside the personal zone. "Physical center" means moving it to the vertical midpoint — between the pile row and the player area.
 
-```typescript
-{ id: "communal", name: "Communal", cards: [], faceUp: true }
+### Recommended approach: split the single spread row into two
+
+Replace the single spread row with two separate rows:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Header: opponents + controls        (bg-card)  │
+├─────────────────────────────────────────────────┤
+│  Pile row: Draw + Discard            (flex-1)   │
+├─────────────────────────────────────────────────┤
+│  Communal spread zone                (bg-card)  │  ← NEW CENTER POSITION
+├─────────────────────────────────────────────────┤
+│  Player personal spread zone(s)      (bg-card)  │
+├─────────────────────────────────────────────────┤
+│  HandZone                                       │
+└─────────────────────────────────────────────────┘
 ```
 
-No `ownerId` needed (undefined = communal). No schema changes beyond the `ownerId` field described above. No server logic changes.
+In `BoardView.tsx`, the single `<div className="flex items-start gap-4 px-4 py-2 bg-card">` that renders both `communalZone` and `mySpreadZone` becomes two separate `<div>` rows: one for `communalZone` only, one for `mySpreadZone`.
 
-### Board Layout
+**CSS approach: flexbox, not grid.** The sections have heterogeneous heights. The pile row uses `flex-1` to fill remaining space; other rows have fixed-height card content. CSS Grid's implicit row sizing would require explicit `grid-rows` accounting for the fixed card heights and would need updating whenever card dimensions change. Staying with `flex flex-col` on the outer wrapper and `flex-1` on the pile row preserves the existing approach exactly.
 
-`BoardView` currently renders `gameState.piles.map(pile => <PileZone />)` in a flat row. With personal zones added dynamically, this needs layout logic:
+**Variable player count (2–4) effect on communal zone position:** None. The communal zone's row is independent of how many players are present. Player count only affects the header strip (opponent hands and their spread zones) and the personal zone row (just `mySpreadZone` — the local player's personal zone is always one). The opponent spread zones remain in the header alongside `OpponentHand`, which is unchanged by this refactor.
 
-- Communal zone: center of table row
-- Draw pile + discard: left side (existing)
-- Personal play areas: below each opponent's hand display, or in a separate row
+**Communal zone width:** In its new full-row position, the communal zone should expand to fill available width. Add `w-full` to the `SpreadZone` container when rendered as the communal zone row, since `min-w-[80px]` was sized for a strip next to another element.
 
-**Approach:** Pass a `zoneLayout` classification to `BoardView` and split the pile array into regions. Or add a `region` field to `Pile` (simpler than layout logic in React).
+### Integration point
 
-**Recommended: layout-by-region approach** — add `region?: "table" | "player"` to `Pile`. Server sets it. `BoardView` splits `piles` into table piles and player piles and renders them in separate DOM regions.
+- **Modified:** `BoardView.tsx` — split one `<div>` into two `<div>` rows.
+- No server changes. No changes to `BoardDragLayer`.
 
 ---
 
-## Integration Point 3: Played Card Sets (Multi-Card Move)
+## Question 2: Collapsing Game Controls into a Menu Panel
 
-### What's Needed
+### Current ControlsBar
 
-Player selects 1–5 cards from hand and plays them as a set into a zone in a single atomic server action. The server receives the whole set and moves all cards at once.
+`ControlsBar` renders inline in the header strip as a horizontal button group. In setup/lobby phase: a Deal `Popover`. In playing phase: Undo button + Reset `AlertDialog`.
 
-### New ClientAction
+### Recommended approach: wrap ControlsBar in a Popover trigger
 
-```typescript
-| {
-    type: "PLAY_CARD_SET";
-    cardIds: string[];       // 1–5 card IDs from sender's hand
-    toZone: "pile";
-    toId: string;            // target pile id (personal zone or communal)
-  }
-```
+The existing `Popover` component (`src/components/ui/popover.tsx`) wraps `@base-ui/react/popover`. This primitive handles portal rendering, positioning, keyboard dismiss (Escape), and focus management. No new dependencies.
 
-**Server handler:**
-- Validate: all `cardIds` present in `hands[senderToken]`
-- Validate: `cardIds.length` between 1 and 5
-- Validate: `toId` is a valid pile
-- `takeSnapshot` once before the whole set move (not per card)
-- Splice all cards from hand, push all to destination pile
-- `broadcastState()` once after all cards moved
+**Trigger placement:** A single icon button (e.g., `SlidersHorizontal` from `lucide-react`, which is already a project dependency) lives in the header strip exactly where `ControlsBar` currently is. The Popover popup opens below it and renders the current controls as a vertical flex-col panel.
 
-This is atomic: either all cards move or none do. The single snapshot enables undo of the entire play.
+**Why not a floating button?** A floating button (bottom-right or similar) must be z-indexed above the dnd-kit `DragOverlay` portal. `DragOverlay` renders into `document.body` via `createPortal` in `BoardDragLayer`. Managing z-index stacking between a floating button and a dragging card overlay introduces fragility. Keeping the trigger in the header avoids this entirely.
 
-### dnd-kit Multi-Card Selection Integration
+**AlertDialog inside Popover:** `ControlsBar` uses `AlertDialog` from `@base-ui/react/alert-dialog` for the Reset confirmation. When Reset is triggered from inside a Popover, the `AlertDialog` opens in its own portal with its own backdrop. This composes correctly — the backdrop covers the Popover. The Popover stays mounted behind the backdrop, which is acceptable (dismissing the alert dialog returns focus to the Popover trigger, not an unrelated element). This behavior can be verified quickly with a manual test during LAYOUT-03.
 
-dnd-kit has no native multi-select drag. The confirmed approach used in the community (MEDIUM confidence):
+**What does NOT change:** The copy-link button stays outside the Popover, as a standalone header button. It is a room-setup utility (sharing the URL before a game), not a game control. Burying it in the panel makes the most common pre-game action harder to reach.
 
-**Selection state lives in zustand (client UI state):**
-```typescript
-// In zustand UI store (not game state):
-selectedCardIds: Set<string>
-toggleCardSelection: (cardId: string) => void
-clearSelection: () => void
-```
+**Restructuring ControlsBar layout:** The current component renders a `flex items-center gap-2 flex-shrink-0` wrapper with buttons side by side. For the Popover panel context, change the inner layout to `flex-col gap-2`. The component's `phase`-based conditional rendering is unchanged — only the wrapper layout CSS changes.
 
-**Interaction model (no dnd-kit drag for multi-card):**
-Multi-card play via drag is complex with dnd-kit and unnecessary for this use case. The cleaner approach:
+### Integration point
 
-1. Click to select cards (toggle selection state in zustand)
-2. "Play selected" button appears when 1+ cards selected and player is viewing their hand
-3. Button click sends `PLAY_CARD_SET` action with `selectedCardIds` array
-4. On server response, `clearSelection()`
-
-**Single-card drag to play zone still works via existing `MOVE_CARD` drag flow.** The multi-card path is a separate selection+button UI, not a drag UI.
-
-**Why not drag multi-select?**
-- dnd-kit issues/120 and discussions/1313 confirm there's no first-class multi-drag API
-- The workaround (track selected, move all on dragEnd) requires significant collision detection changes
-- "Play a set" is semantically a deliberate action, not a fluid drag — button is the right affordance
-- Existing drag UX for single cards is unchanged
-
-**SortableHandCard changes:** Add click handler for selection toggle. Add visual indicator (ring/border) when `selectedCardIds.has(card.id)`. Selection clears on drag start to avoid ambiguity.
-
-### PLAY_CARD_SET Authorization
-
-Same check as MOVE_CARD: sender's token must match `fromId` (all cards must be in sender's own hand). Server already validates card ownership by comparing senderToken to hands key.
+- **Modified:** `ControlsBar.tsx` — change wrapper layout from horizontal row to `flex-col`.
+- **Modified:** `BoardView.tsx` — wrap the `<ControlsBar>` usage in a `<Popover>` with a `<PopoverTrigger>` icon button; move `<PopoverContent>` to contain `<ControlsBar>`.
+- No new shadcn components needed. No server changes.
 
 ---
 
-## Integration Point 4: Playwright E2E Test Suite
+## Question 3: Responsive Layout Breakpoints
 
-### Two-Player Test Pattern
+### Current state
 
-Playwright supports multiple browser contexts in a single test. Each context is isolated (separate localStorage, separate WebSocket connection). This maps directly to two players in the same PartyKit room.
+`BoardView` uses `h-screen w-screen overflow-hidden flex flex-col`. Fixed heights: HandZone `h-[128px]`, SpreadZone `h-[112px]`. Cards are `w-[63px] h-[88px]` with `-ml-5` fan overlap. No existing responsive breakpoints.
 
-**Correct pattern:**
-```typescript
-// playwright.config.ts
-import { defineConfig } from '@playwright/test';
+### What breaks at phone width (~375px)
 
-export default defineConfig({
-  webServer: [
-    {
-      command: 'npm run dev',   // starts partykit dev (port 1999) + vite (port 5173)
-      url: 'http://localhost:5173',
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
-  use: {
-    baseURL: 'http://localhost:5173',
-  },
-});
-```
+| Zone | Current behavior | Problem at 375px |
+|------|-----------------|-----------------|
+| Header strip | `overflow-x-auto` | Works, but tight when controls button + copy-link + 3 opponents are all present |
+| Pile row | Two piles centered | Fine — 2 × ~70px + gap fits easily |
+| Communal spread row | `min-w-[80px]`, `overflow-x-auto` | Row narrower than available width; zone appears undersized |
+| Personal spread row | Same as communal | Same |
+| HandZone | `overflow-x-auto`, `h-[128px]` | Fine — horizontal scroll handles full hand |
 
-**Note:** `npm run dev` runs `partykit dev` which serves both the PartyKit server (port 1999) and the Vite frontend (port 5173) in one process. Both must be running for e2e tests. The `webServer` config handles this.
+### Recommended breakpoint strategy: single `sm:` breakpoint (640px)
 
-**Two-player fixture:**
-```typescript
-// tests/e2e/fixtures.ts
-import { test as base, expect } from '@playwright/test';
-import type { BrowserContext, Page } from '@playwright/test';
+Below `sm` (phone):
+- Header icon button labels hidden: the controls trigger shows icon only (no text label).
+- Copy-link button: icon only. Already has `aria-label="Copy room link"`. Text content `Copied!` / `Copy link` becomes `sm:inline` with a `hidden` default.
+- Communal and personal spread rows: `w-full` to fill the row.
 
-type TwoPlayerFixture = {
-  player1: { context: BrowserContext; page: Page };
-  player2: { context: BrowserContext; page: Page };
-  roomId: string;
-};
+Above `sm` (tablet/desktop): current layout is fully preserved.
 
-export const test = base.extend<TwoPlayerFixture>({
-  player1: async ({ browser }, use) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await use({ context, page });
-    await context.close();
-  },
-  player2: async ({ browser }, use) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await use({ context, page });
-    await context.close();
-  },
-  roomId: async ({}, use) => {
-    await use(`test-room-${Date.now()}`);
-  },
-});
+**No grid-based layout reflow.** The board stays a vertical stack at all widths. The zone order (opponent row → pile row → communal zone → personal zone → hand) is the correct physical analogy at any screen width. There is no horizontal layout variant.
 
-export { expect };
-```
+**Touch note:** PROJECT.md marks "Mobile-first layout" as Out of Scope and notes drag-and-drop UX is worse on touch. LAYOUT-04 requirement ("scales to phone-sized screens") is about visual fit, not touch interaction. No changes to the `PointerSensor` / `TouchSensor` configuration in `BoardDragLayer` are needed for this milestone.
 
-**Example test:**
-```typescript
-test('both players see deal result', async ({ player1, player2, roomId }) => {
-  const url = `http://localhost:5173/?room=${roomId}`;
-  await player1.page.goto(url);
-  await player2.page.goto(url);
-  // ... fill name input, join, deal, assert
-});
-```
+### Integration point
 
-Each context has its own localStorage, so `getOrCreatePlayerId()` generates a different stable token per context — correctly modeling two distinct players.
-
-### Test Setup Fix: "Local Player" Concept
-
-**The bug:** Current unit tests in `tests/*.test.ts` create mock connections where `connection.state = { playerToken: id }` directly. This skips the `onConnect` flow entirely. Both players are treated as if they connected with their `connection.id` as token, with no `?player=` URL param processing.
-
-**Root cause (from code review):** `makeMockConnection` in test helpers sets `state: { playerToken: id }`, bypassing the real `onConnect` which reads `?player=` from the URL and calls `connection.setState({ playerToken })`. Tests that need `senderToken` matching work accidentally because they set token = connection.id and also set `fromId` = same value.
-
-**Fix for unit tests:** The fix is cosmetic/clarifying rather than behavioral — existing logic in tests is correct. The missing concept is: unit tests should always go through `onConnect` for at least one player (the "local" player whose actions are being tested). Tests that call `onMessage` directly should set up state via `onConnect` first, not by manually patching `gameState`.
-
-**For Playwright e2e:** No "local player" concept is needed in the browser — each `BrowserContext` IS the local player from that context's perspective. The existing `usePlayerId` hook (localStorage) generates the stable token, and `LobbyPanel` gates connection until a name is entered. Both are correct behaviors to test through.
-
-### Playwright MCP Server
-
-The official Microsoft `@playwright/mcp` package (not `mcp-playwright` by executeautomation — that's a third party) provides Claude Code with browser automation tools.
-
-**Integration:** Add to `.claude/mcp.json` or the project's `claude.json`:
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
-    }
-  }
-}
-```
-
-The MCP server runs locally (stdio transport). It connects to whatever URL you navigate to. For dev sessions, point it at `http://localhost:5173/?room=<test-room-id>` after `npm run dev` is running. The MCP server opens a browser, so the dev server must be running independently.
-
-**Note:** `@playwright/mcp` uses the accessibility tree, not screenshots. This works correctly with React + shadcn components that use proper ARIA roles. The pile zone droppables and card draggables use dnd-kit which does set ARIA attributes — these will be navigable. Confirm specific role names during implementation.
+- **Modified:** `BoardView.tsx` — add `sm:` variants for text visibility in header.
+- **Modified:** `SpreadZone.tsx` — add `w-full` to outer container (or pass a `fullWidth` prop); this is a one-class change.
+- No server changes.
 
 ---
 
-## Component Changes Summary
+## Question 4: Spread Zone Multi-Select and Undo Interaction
 
-### New / Modified Components
+### SPREAD-01: Multi-select matching player hand UX
+
+`HandZone` already implements the full multi-select pattern:
+- `selectedIds: Set<string>` held in `BoardDragLayer`
+- `onToggleSelect` propagated to each `SortableHandCard`
+- Click to select, drag selected card moves the whole set (`PLAY_CARD_SET`)
+- Escape key clears selection
+- `aria-pressed` on each card
+- Visual ring (`ring-1 ring-primary/30`) + translateY lift on selected cards
+
+`SpreadZone` has none of this. Adding it requires:
+1. `selectedIds: Set<string>` and `onToggleSelect` props on `SpreadZoneProps`
+2. Click handler on each `SortableSpreadCard` (same pattern as `SortableHandCard`)
+3. Visual ring on selected cards
+4. "N selected" badge in the zone label (already present in HandZone label area)
+
+**Required server change (one field):** `PLAY_CARD_SET` in `party/index.ts` currently hardcodes that cards come from `hands[senderToken]` (line 515: `const hand = this.gameState.hands[fromId]`). The authorization check on line 506 also blocks any `fromId` that doesn't match `senderToken`. To support playing a set from the communal spread zone or the player's personal zone:
+
+- Add `fromZone?: 'hand' | 'pile'` to the `PLAY_CARD_SET` action type in `shared/types.ts`
+- In the server handler: if `fromZone === 'pile'`, source cards from `piles.find(p => p.id === fromId)?.cards` instead of `hands[fromId]`
+- Update the authorization check: for pile sources, allow any player to play from the communal zone (`pile.ownerId === null`) and restrict personal zone plays to the zone owner (`pile.ownerId === senderToken`)
+
+This is a backward-compatible addition — `fromZone` defaults to `'hand'` so all existing `PLAY_CARD_SET` dispatches (from `HandZone`) continue to work without changes.
+
+**`selectedIds` scoping:** `BoardDragLayer` holds one `selectedIds: Set<string>` for the hand. Spread zone selection must be a separate set — selecting a card in the communal zone and a card in the hand simultaneously makes no sense for a single play action.
+
+Recommended: add `spreadSelectedIds: Set<string>` as a second state in `BoardDragLayer`. Use the zone identity (hand vs spread) to determine which set is active during drag. Clear the opposite set whenever a drag starts from either zone (existing logic on line 115 already clears `selectedIds` when dragging an unselected card — extend this to also clear `spreadSelectedIds`).
+
+### SPREAD-02: Spread zone card reorder by drag
+
+This already works. `SpreadZone` uses `SortableContext` + `useSortable` per card + `useDndMonitor` to detect intra-pile reorder and dispatches `REORDER_PILE_SPREAD`. The server handles `REORDER_PILE_SPREAD` on lines 312–336 of `party/index.ts`. The communal zone (`pile.id === 'play'`) and personal zones all go through the same code path.
+
+After LAYOUT-01 moves the communal zone to its own center row, reorder continues to work without code changes. The `DndContext` in `BoardDragLayer` is global — sortable card IDs are registered regardless of DOM position. Collision detection is pointer-based, not DOM-order-based.
+
+SPREAD-02 is a verification task, not a development task.
+
+### Undo interaction with reorder
+
+`REORDER_PILE_SPREAD` does not call `takeSnapshot` (confirmed: no call in that switch branch in `party/index.ts`). `REORDER_HAND` also has no snapshot. Reorders are intentionally non-undoable — they are aesthetic/organizational changes, not game moves. This remains correct for v1.3. Undo applies only to card moves (`MOVE_CARD`, `PLAY_CARD_SET`, `FLIP_CARD`, `PASS_CARD`, `DEAL_CARDS`, `SHUFFLE_PILE`).
+
+---
+
+## Component Summary: New vs Modified
 
 | Component | Status | Change |
 |-----------|--------|--------|
-| `src/shared/types.ts` | Modified | Add `ownerId?: string` and `region?: string` to `Pile`/`ClientPile`; add `myPlayZoneId` to `ClientGameState`; add `PLAY_CARD_SET` to `ClientAction` |
-| `party/index.ts` | Modified | `onConnect`: create personal play zone; add `PLAY_CARD_SET` handler; update `viewFor` to include `myPlayZoneId`; update `RESET_TABLE` migration guard |
-| `party/index.ts` | Modified | `defaultGameState`: add communal zone pile |
-| `src/components/BoardView.tsx` | Modified | Split piles into table region + player region; render personal zones near opponent hands |
-| `src/components/HandZone.tsx` | Modified | Add card selection on click; show selection visual; show "Play selected" button when selection non-empty |
-| `src/components/BoardDragLayer.tsx` | Modified | Register new droppable zone IDs (personal zones, communal) in collision detection; these are just piles so minimal change |
-| `src/components/PlayZone.tsx` | New | Renders a personal play area zone — shows face-up cards in a spread layout, player name label, droppable |
-| `src/hooks/useSelection.ts` | New | Zustand slice or simple React state for card selection; `selectedCardIds: Set<string>`, `toggleCard`, `clearAll` |
-| `tests/e2e/` | New directory | Playwright e2e tests |
-| `tests/e2e/fixtures.ts` | New | Two-player browser context fixture |
-| `playwright.config.ts` | New | Playwright config with webServer for partykit dev + vite |
+| `BoardView.tsx` | Modified | Split single spread row into two rows; wrap controls in Popover; add `sm:` responsive variants |
+| `ControlsBar.tsx` | Modified | Change layout from horizontal row to `flex-col` for Popover panel rendering |
+| `SpreadZone.tsx` | Modified | Add `selectedIds` + `onToggleSelect` props; add selection visuals to `SortableSpreadCard`; add `w-full` responsive behavior |
+| `BoardDragLayer.tsx` | Modified | Add `spreadSelectedIds` state; thread selection props to SpreadZone instances; update multi-card drag dispatch to pass `fromZone: 'pile'` when source is spread |
+| `party/index.ts` | Modified | Update `PLAY_CARD_SET` handler to support `fromZone: 'pile'`; update authorization for pile-sourced set plays |
+| `shared/types.ts` | Modified | Add `fromZone?: 'hand' \| 'pile'` to `PLAY_CARD_SET` action type |
 
-### Unchanged Components
-
-- `src/components/PileZone.tsx` — personal zones and communal use the same `PileZone` or a thin variant; no logic changes to the pile drop/flip/shuffle mechanics
-- `src/components/DraggableCard.tsx` — single-card drag mechanics unchanged
-- `src/hooks/usePartySocket.ts` — no changes; `sendAction` is already generic
-- `src/hooks/usePlayerId.ts` — unchanged
+No new components. No new npm packages. No new shadcn components.
 
 ---
 
 ## Data Flow Changes
 
-### New: PLAY_CARD_SET Flow
+### Multi-select from spread zone (new path)
 
 ```
-User: selects cards in HandZone (click to toggle)
-  → useSelection.toggleCard(cardId)
-  → HandZone shows "Play N cards" button
+User clicks card in SpreadZone
+    → onToggleSelect(cardId) → BoardDragLayer.spreadSelectedIds updated
+    → SpreadZone re-renders with selection highlight
 
-User: clicks "Play N cards" button, selects target zone
-  → sendAction({ type: 'PLAY_CARD_SET', cardIds: [...], toId: 'play-<playerId>' })
-  → PartyKit onMessage: PLAY_CARD_SET handler
-      → validate all cardIds in hands[senderToken]
-      → takeSnapshot() once
-      → splice all cards from hand into target pile
-      → persist + broadcastState()
-  → STATE_UPDATE received
-  → useSelection.clearAll()
-  → React re-renders HandZone (cards gone) + PlayZone (cards appeared)
+User drags selected card out of SpreadZone toward a pile drop target
+    → BoardDragLayer.handleDragStart: if dragging unselected card, clear spreadSelectedIds
+    → BoardDragLayer.handleDragEnd: isMultiCardSet checks spreadSelectedIds
+    → sendAction({
+        type: 'PLAY_CARD_SET',
+        cardIds: [...spreadSelectedIds],
+        fromZone: 'pile',
+        fromId: pile.id,
+        toZone: 'pile',
+        toId: targetPileId
+      })
+    → Server: validates source pile, removes cards, appends to dest, takeSnapshot
+    → broadcastState() → all clients update
 ```
 
-### Modified: Personal Zone Creation Flow
+### Communal zone repositioning (no data flow change)
 
-```
-Player connects (onConnect):
-  → server creates play-<playerToken> pile if not exists
-  → persist + broadcastState()
-  → all clients receive updated piles[] including new zone
-  → BoardView splits piles by ownerId, renders personal zones in player section
-```
+The communal zone (`pile.id === 'play'`, `region: 'spread'`) already exists in `gameState.piles`. Moving its DOM position in `BoardView` does not change pile identity, drop routing, or reorder behavior. The `customCollision` function in `BoardDragLayer` identifies droppables by ID prefix (`pile-play`), not by DOM position.
 
 ---
 
-## Build Order Recommendation
+## Recommended Build Order
 
-The GameState shape change is the single critical dependency. Everything else fans out from it.
+1. **LAYOUT-01 + LAYOUT-02** — split the spread row in `BoardView.tsx`. Pure structural CSS. No logic changes. Validates visual concept before adding interaction. Verify existing e2e tests still pass.
 
-```
-Step 1: types.ts — add ownerId, region, myPlayZoneId, PLAY_CARD_SET (no behavior)
-Step 2: party/index.ts — personal zone on connect, communal in defaultGameState, PLAY_CARD_SET handler
-        (unit tests should still pass; add new unit tests for PLAY_CARD_SET)
-Step 3: BoardView layout — split piles by region/ownerId, render personal + communal zones
-        (new PlayZone component)
-Step 4: HandZone selection + "Play" button → PLAY_CARD_SET dispatch
-Step 5: Playwright config + fixture + first e2e test (join flow, two players)
-Step 6: Additional e2e tests (deal, play set, zone visibility)
-Step 7: Playwright MCP server config (dev tooling, not a code deliverable)
-```
+2. **LAYOUT-03** — wrap `ControlsBar` in Popover. Isolated to `BoardView.tsx` header markup and `ControlsBar.tsx` layout. Manually verify that the `AlertDialog` (Reset) composes correctly inside the Popover popup.
 
-Steps 1–2 must complete before Steps 3–4. Step 5 can start after Step 2 (server must exist for real WebSocket tests). Steps 6–7 are independent of each other.
+3. **LAYOUT-04** — add `sm:` responsive variants. Low-risk CSS additions on top of the restructured layout. No logic.
+
+4. **shared/types.ts + party/index.ts for SPREAD-01** — add `fromZone` to `PLAY_CARD_SET` in types and update the server handler. This is the only change that crosses the wire. Add/update unit tests before the UI lands. The change is backward-compatible — no existing dispatch breaks.
+
+5. **SPREAD-01 UI** — add `spreadSelectedIds` to `BoardDragLayer`, thread `selectedIds` + `onToggleSelect` to `SpreadZone`, add selection visuals to `SortableSpreadCard`.
+
+6. **SPREAD-02 verification** — confirm intra-zone drag reorder works for the communal zone in its new center-row position. No code changes expected.
+
+**Rationale:** Layout changes are visually reviewable in isolation and carry no server risk. The server change for `PLAY_CARD_SET` is the only cross-layer dependency and should be tested server-side before the UI builds on it.
+
+---
+
+## Integration Points with Existing Architecture
+
+| Concern | Detail |
+|---------|--------|
+| `DndContext` boundary | `BoardDragLayer` owns the single `DndContext`. All zones — including the communal zone in its new row position — are children of this context. No new context needed. |
+| `customCollision` function | Filters droppables by ID prefix: `hand`, `opponent-hand-`, `pile-`. The communal zone droppable is `pile-play`. Moving it in the DOM has no effect on collision detection. |
+| shadcn/ui primitives in use | `Popover` (`@base-ui/react/popover`) is already in the project. The controls collapse uses the existing component. No new shadcn components needed. |
+| `REORDER_PILE_SPREAD` action | Already complete in server and client. Works for all spread piles. No change. |
+| Undo stack | `PLAY_CARD_SET` calls `takeSnapshot`. Multi-card plays from spread zones will be undoable. Reorders remain non-undoable (consistent with `REORDER_HAND`). |
+| `viewFor` masking | Communal zone cards are already visible to all players (`region: 'spread'`, `faceUp: true` by default). No masking changes. |
+| Per-connection broadcast | `broadcastState` uses `viewFor` per connection. No change needed. |
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Separate "zones" array in GameState
+### Separate DndContext for communal zone
 
-Adding `zones: Zone[]` alongside `piles: Pile[]` would require duplicating all the MOVE_CARD routing, viewFor masking, and RESET_TABLE logic. Personal zones ARE piles with an `ownerId`. Reuse the pile infrastructure.
+**What it looks like:** Creating a second `DndContext` scoped to the communal spread row.
+**Why it's wrong:** dnd-kit does not support dragging between separate `DndContext` instances. Cards would not be draggable between the communal zone and the hand or piles.
+**Do this instead:** All zones remain children of the single `DndContext` in `BoardDragLayer`.
 
-### dnd-kit multi-drag for PLAY_CARD_SET
+### Storing selection state in server GameState
 
-dnd-kit has no first-class multi-drag. Community workarounds require overriding collision detection and tracking selection during drag, adding ~200 LOC of brittle DragOverlay composition. The button-based approach (select → play) is cleaner and more discoverable.
+**What it looks like:** Adding `selectedCardIds` to `GameState` to broadcast selection to other players.
+**Why it's wrong:** Selection is ephemeral pointer state, not a game event. Broadcasting it causes unnecessary undo snapshots, server round-trips for every click, and race conditions between fast clicks.
+**Do this instead:** Keep all selection state in `BoardDragLayer` React state, local to each client.
 
-### Personal zone created client-side
+### CSS Grid for board layout
 
-The zone must be server-created (in onConnect) so all connected players receive it via broadcastState. A client creating a zone locally breaks state consistency and would be overwritten on next STATE_UPDATE.
+**What it looks like:** Converting `BoardView`'s outer container to `display: grid` for zone proportions.
+**Why it's wrong:** The pile row needs `flex-1` to fill remaining viewport height. Other rows have fixed card-height constraints. CSS Grid's implicit row track sizing fights with `flex-1` semantics and requires explicit `grid-rows` values that encode card dimensions.
+**Do this instead:** Stay with `flex flex-col` on the outer container with `flex-1` on the pile row.
 
-### Playwright webServer pointing at Vite only
+### Moving copy-link into the controls panel
 
-`partykit dev` starts both the PartyKit server (ws://localhost:1999) and the Vite frontend (http://localhost:5173) in one process. The webServer config's `command` must be `npm run dev` (not `npm run dev:client`). Tests that navigate to the frontend but have no PartyKit server will fail on WebSocket connect.
+**What it looks like:** Placing the "Copy link" button inside the Popover panel alongside Deal/Undo/Reset.
+**Why it's wrong:** Copy link is used before the game starts to share the URL with other players. It belongs at top-level header accessibility, not inside a menu that requires two clicks to reach.
+**Do this instead:** Keep the copy-link button as a standalone icon button in the header, outside the Popover.
 
-### Zone name embedded in ID
+### Single `selectedIds` set covering both hand and spread zones
 
-`play-<playerToken>` makes the zone discoverable from a player token. This is intentional. The alternative (opaque IDs) requires a separate lookup mechanism. Use the convention consistently.
-
----
-
-## Scalability Note
-
-At 2–4 players, personal zones add at most 4 piles to `piles[]`. The full state snapshot stays under 10 KB. No pagination or lazy loading concerns.
+**What it looks like:** Reusing `BoardDragLayer.selectedIds` for spread zone card selection.
+**Why it's wrong:** A user could have cards selected in their hand and cards selected in the spread zone simultaneously with no clear semantics for what dragging one of them should do.
+**Do this instead:** Separate `selectedIds` (hand) and `spreadSelectedIds` (spread zone) state in `BoardDragLayer`. Clear the opposite set when a drag starts from either zone.
 
 ---
 
 ## Sources
 
-- `/Users/aaronkaminsky/code/virtual-deck/src/shared/types.ts` — HIGH confidence (code)
-- `/Users/aaronkaminsky/code/virtual-deck/party/index.ts` — HIGH confidence (code)
-- `/Users/aaronkaminsky/code/virtual-deck/src/components/BoardDragLayer.tsx` — HIGH confidence (code)
-- `/Users/aaronkaminsky/code/virtual-deck/src/components/HandZone.tsx` — HIGH confidence (code)
-- `/Users/aaronkaminsky/code/virtual-deck/tests/*.test.ts` — HIGH confidence (code)
-- Playwright browser-contexts docs (WebSearch verified) — MEDIUM confidence
-- Playwright webServer config (WebSearch verified) — MEDIUM confidence
-- dnd-kit multi-select issues #120 and discussion #1313 (WebSearch verified) — MEDIUM confidence
-- `@playwright/mcp` Microsoft official package (WebSearch verified) — MEDIUM confidence
+- Direct codebase inspection: `src/components/BoardView.tsx`, `src/components/SpreadZone.tsx`, `src/components/HandZone.tsx`, `src/components/BoardDragLayer.tsx`, `src/components/ControlsBar.tsx`, `src/components/ui/popover.tsx`, `src/components/ui/alert-dialog.tsx`, `party/index.ts`, `src/shared/types.ts`, `src/globals.css`
+- `package.json` — confirmed `@base-ui/react ^1.3.0`, `@dnd-kit/core ^6.3.1`, `@dnd-kit/sortable ^10.0.0`, `lucide-react ^1.7.0`, Tailwind 4.x
+- `.planning/PROJECT.md` — v1.3 requirements LAYOUT-01 through LAYOUT-04, SPREAD-01, SPREAD-02; Key Decisions log
+
+---
+*Architecture research for: v1.3 Layout & UX Polish — Virtual Deck*
+*Researched: 2026-05-01*
