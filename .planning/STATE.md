@@ -1,11 +1,10 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.3
-milestone_name: TBD
-status: milestone_archived
-stopped_at: v1.2 milestone archived
-last_updated: "2026-04-29T13:32:23Z"
-last_activity: 2026-04-29 -- v1.2 milestone complete and archived
+milestone_name: Layout & UX Polish
+status: planning
+last_updated: "2026-05-01T14:46:38.472Z"
+last_activity: 2026-05-01
 progress:
   total_phases: 0
   completed_phases: 0
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-04-29)
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: Between milestones — v1.2 archived, v1.3 not yet planned
-Last activity: 2026-04-29
+Status: Defining requirements
+Last activity: 2026-05-01 — Milestone v1.3 started
 
 ## Performance Metrics
 

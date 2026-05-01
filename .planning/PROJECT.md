@@ -8,9 +8,21 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
+## Current Milestone: v1.3 Layout & UX Polish
+
+**Goal:** Redesign the board so it reads as a shared physical space — communal zone centered, controls out of the way, spread zones as interactive as the player hand, and the whole thing usable on a phone screen.
+
+**Target features:**
+- Communal zone repositioned to physical center of board
+- Board layout reorganized with better vertical proportions
+- Game controls collapsed into a dropdown/slide-out panel
+- Responsive layout: scales to phone screen (mouse-only)
+- Spread zone multi-card select (same UX as player hand)
+- Spread zone card reorder by drag
+
 ## Current State
 
-**v1.2 shipped (2026-04-29).** Milestone archived. Planning v1.3.
+**v1.2 shipped (2026-04-29).** Milestone archived. v1.3 in planning.
 
 - ~2,646 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
@@ -70,9 +82,14 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
 - ✓ Developer README with setup, architecture, and deploy instructions (DEV-03) — Phase 16
 
-### Active
+### Active (v1.3)
 
-(none — planning v1.3)
+- [ ] Communal zone repositioned to physical center of board (LAYOUT-01)
+- [ ] Board layout reorganized with better vertical proportions (LAYOUT-02)
+- [ ] Game controls collapsed into a dropdown/slide-out panel (LAYOUT-03)
+- [ ] Responsive layout: page scales to phone-sized screens (LAYOUT-04)
+- [ ] Spread zone multi-card select matching player hand UX (SPREAD-01)
+- [ ] Spread zone card reorder by drag (SPREAD-02)
 
 ### Out of Scope
 
@@ -133,4 +150,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-29 — v1.2 milestone archived*
+*Last updated: 2026-05-01 — v1.3 milestone started*
