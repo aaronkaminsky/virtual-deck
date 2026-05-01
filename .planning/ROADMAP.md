@@ -5,6 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
 - ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
+- **v1.3** — Phases 17–25 (upcoming)
 
 ## Phases
 
@@ -54,6 +55,20 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 
 </details>
 
+## Upcoming — v1.3
+
+| Phase | Goal | Plans |
+|-------|------|-------|
+| 17 | Mobile responsive layout — phone-friendly design; options include responsive breakpoints, progressive display, or smaller cards | TBD |
+| 18 | Sticky pile placement choice — remember top/bottom/random to reduce popup frequency | TBD |
+| 19 | npm audit — investigate and resolve 4 vulnerabilities (3 moderate, 1 high) surfaced during Phase 13 UAT (`npm install` on 2026-04-22) | TBD |
+| 20 | Test helper consolidation — migrate `tests/dealCards.test.ts` (and remaining 11 pre-Phase-12 test files) to import shared helpers from `tests/helpers.ts` instead of defining local copies | TBD |
+| 21 | Phase 14 live session verification — confirm 5 human-deferred behaviors: two-player zone layout, drag-to-spread (no dialog), spread reorder by drag, face toggle sync, late-joiner re-deal after reset | TBD |
+| 22 | Restrict PLAY_CARD_SET target to spread-region piles — server currently accepts any pile ID; add `region === "spread"` guard to match UI intent | TBD |
+| 23 | Replace hardcoded communal zone ID "play" with ownerId-based lookup — `BoardView.communalZone` currently uses `p.id === "play"`; switch to `p.region === "spread" && p.ownerId === null` for resilience | TBD |
+| 24 | Spread pile multi-select and sort — spread zones should support the same multi-card select and drag-to-reorder behavior as the player's hand | TBD |
+| 25 | Play Area layout — move communal spread zone to center canvas area, to the right or below the discard pile | TBD |
+
 ## Backlog
 
 Promote items with `/gsd-review-backlog` when ready to plan.
@@ -61,28 +76,16 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | Phase | Goal | Plans |
 |-------|------|-------|
 | 999.3 | Play area card grid for poker-style games | TBD |
-| 999.4 | Personal player tableau visible to all | TBD |
-| 999.5 | Shuffle visual indicator | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
-| 999.15 | Sticky pile placement choice (remember top/bottom/random to reduce popup frequency) | TBD |
 | 999.16 | Turn indicators — show whose turn it is | TBD |
 | 999.17 | Chips — poker/betting chip support | TBD |
 | 999.18 | Show hand — player can reveal their hand to all players | TBD |
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
-| 999.12 | Mobile responsive layout — phone-friendly design; options include responsive breakpoints, progressive display, or smaller cards | TBD |
 | 999.23 | Sound effects — shuffle, deal, card drop/play sounds; icon toggle to mute; group near art/customization features (see 999.14) | TBD |
 | 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
-| 999.26 | Overlapping hand display — cards in hand overlap ~50% like a real held hand; better use of screen real estate | TBD |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
-| 999.28 | npm audit — investigate and resolve 4 vulnerabilities (3 moderate, 1 high) surfaced during Phase 13 UAT (`npm install` on 2026-04-22) | TBD |
-| 999.29 | Test helper consolidation — migrate `tests/dealCards.test.ts` (and remaining 11 pre-Phase-12 test files) to import shared helpers from `tests/helpers.ts` instead of defining local copies | TBD |
-| 999.30 | Phase 14 live session verification — confirm 5 human-deferred behaviors: two-player zone layout, drag-to-spread (no dialog), spread reorder by drag, face toggle sync, late-joiner re-deal after reset | TBD |
-| 999.31 | Restrict PLAY_CARD_SET target to spread-region piles — server currently accepts any pile ID; add `region === "spread"` guard to match UI intent | TBD |
-| 999.32 | Replace hardcoded communal zone ID "play" with ownerId-based lookup — `BoardView.communalZone` currently uses `p.id === "play"`; switch to `p.region === "spread" && p.ownerId === null` for resilience | TBD |
-| 999.33 | Spread pile multi-select and sort — spread zones should support the same multi-card select and drag-to-reorder behavior as the player's hand | TBD |
-| 999.34 | Play Area layout — move communal spread zone to center canvas area, to the right or below the discard pile | TBD |
 | 999.35 | Continuous multi-card drag-to-sort — when multiple adjacent cards are selected, dragging one moves all as a group to the new position; needs play-testing to validate the interaction model | TBD |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 
@@ -110,3 +113,12 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
 | 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
 | 16. Developer README | v1.2 | 1/1 | Complete    | 2026-04-29 |
+| 17. Mobile Responsive Layout | v1.3 | 0/3 | Not started | — |
+| 18. Sticky Pile Placement Choice | v1.3 | 0/3 | Not started | — |
+| 19. npm Audit | v1.3 | 0/1 | Not started | — |
+| 20. Test Helper Consolidation | v1.3 | 0/1 | Not started | — |
+| 21. Phase 14 Live Session Verification | v1.3 | 0/1 | Not started | — |
+| 22. Restrict PLAY_CARD_SET to Spread Region | v1.3 | 0/1 | Not started | — |
+| 23. Replace Hardcoded Communal Zone ID | v1.3 | 0/1 | Not started | — |
+| 24. Spread Pile Multi-Select and Sort | v1.3 | 0/3 | Not started | — |
+| 25. Play Area Layout — Center Canvas | v1.3 | 0/3 | Not started | — |
