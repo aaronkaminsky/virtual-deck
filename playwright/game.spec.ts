@@ -277,6 +277,52 @@ test.describe('virtual-deck e2e', () => {
     expect(duplicateIdWarnings).toHaveLength(0);
   });
 
+  test('communal zone position: rendered in center row band, not bottom bar', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const communal = await p1.getByTestId('spread-zone-play').boundingBox();
+    const hand = await p1.getByTestId('hand-zone').boundingBox();
+    const personal = await p1.locator('[data-testid^="spread-zone-spread-"]').first().boundingBox();
+
+    if (!communal || !hand || !personal) throw new Error('bounding boxes unavailable');
+
+    // Communal zone is above personal spread zone (communal in Band 2, personal in Band 3)
+    expect(communal.y).toBeLessThan(personal.y);
+
+    // Communal zone is above hand zone
+    expect(communal.y + communal.height).toBeLessThan(hand.y);
+
+    // Communal zone is meaningfully wide (fills flex-1 parent — default min-width was 80px)
+    expect(communal.width).toBeGreaterThan(160);
+
+    // P2 sees the same arrangement
+    await dealCards(p2, 0); // ensure P2 board is rendered with zones
+    const p2Communal = await p2.getByTestId('spread-zone-play').boundingBox();
+    const p2Hand = await p2.getByTestId('hand-zone').boundingBox();
+    const p2Personal = await p2.locator('[data-testid^="spread-zone-spread-"]').first().boundingBox();
+
+    if (!p2Communal || !p2Hand || !p2Personal) throw new Error('P2 bounding boxes unavailable');
+
+    expect(p2Communal.y).toBeLessThan(p2Personal.y);
+    expect(p2Communal.y + p2Communal.height).toBeLessThan(p2Hand.y);
+    expect(p2Communal.width).toBeGreaterThan(160);
+  });
+
+  test('no horizontal scrollbar on board at 1280x720', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await p1.setViewportSize({ width: 1280, height: 720 });
+
+    const overflowed = await p1.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    expect(overflowed).toBe(false);
+
+    await p2.setViewportSize({ width: 1280, height: 720 });
+    const p2Overflowed = await p2.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    expect(p2Overflowed).toBe(false);
+  });
+
   test('spread zone reorder: drag-reorder within communal spread zone preserves useSortable data routing', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
