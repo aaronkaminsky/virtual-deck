@@ -1,7 +1,8 @@
 ---
 phase: 17
 slug: board-layout-restructure
-status: draft
+status: approved
+reviewed_at: 2026-05-01T00:00:00Z
 shadcn_initialized: true
 preset: base-nova
 created: 2026-05-01

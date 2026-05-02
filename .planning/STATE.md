@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
 status: planning
-stopped_at: v1.3 roadmap created — 5 phases (17–21), 8 requirements mapped, ready to plan Phase 17
-last_updated: "2026-05-02T04:03:04.582Z"
-last_activity: 2026-05-01 — v1.3 roadmap created (Phases 17–21)
+stopped_at: Phase 17 context gathered
+last_updated: "2026-05-02T06:04:43.011Z"
+last_activity: "2026-05-01 — Phase 16.1 inserted (urgent: PartyKit not deploying via CI)"
 progress:
   total_phases: 6
   completed_phases: 0
@@ -72,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-01
-Stopped at: v1.3 roadmap created — 5 phases (17–21), 8 requirements mapped, ready to plan Phase 17
-Resume file: None
+Last session: 2026-05-02T06:04:42.999Z
+Stopped at: Phase 17 context gathered
+Resume file: .planning/phases/17-board-layout-restructure/17-CONTEXT.md
