@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
 status: planning
-stopped_at: Phase 17 context gathered
-last_updated: "2026-05-02T06:04:43.011Z"
+stopped_at: Phase 17 UI-SPEC approved
+last_updated: "2026-05-02T06:23:12.212Z"
 last_activity: "2026-05-01 — Phase 16.1 inserted (urgent: PartyKit not deploying via CI)"
 progress:
   total_phases: 6
@@ -72,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-02T06:04:42.999Z
-Stopped at: Phase 17 context gathered
-Resume file: .planning/phases/17-board-layout-restructure/17-CONTEXT.md
+Last session: 2026-05-02T06:23:12.197Z
+Stopped at: Phase 17 UI-SPEC approved
+Resume file: .planning/phases/17-board-layout-restructure/17-UI-SPEC.md
