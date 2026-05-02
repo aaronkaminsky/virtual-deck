@@ -212,4 +212,134 @@ test.describe('virtual-deck e2e', () => {
     // Selection cleared on P1 after successful set play (D-05)
     await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(0);
   });
+
+  test('spread zone drag: drag card from communal spread zone to hand', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const p1Hand = p1.getByTestId('hand-zone');
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(5);
+
+    // Select 2 cards and play them into the communal spread zone
+    const card0 = p1Hand.locator('[aria-pressed]').nth(0);
+    const card1 = p1Hand.locator('[aria-pressed]').nth(1);
+    await card0.click();
+    await card1.click();
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(2);
+
+    const communal = p1.getByTestId('spread-zone-play');
+    await expect(communal).toBeVisible();
+
+    const srcPlay = await card0.boundingBox();
+    const tgtPlay = await communal.boundingBox();
+    if (!srcPlay || !tgtPlay) throw new Error('bounding boxes unavailable for play drag');
+
+    await p1.mouse.move(srcPlay.x + srcPlay.width / 2, srcPlay.y + srcPlay.height / 2);
+    await p1.mouse.down();
+    await p1.mouse.move(tgtPlay.x + tgtPlay.width / 2, tgtPlay.y + tgtPlay.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // P1 hand now has 3 cards; communal zone has 2
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(3);
+    const p1SpreadCards = communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p1SpreadCards).toHaveCount(2);
+
+    // Capture console warnings before dragging back
+    const consoleMessages: string[] = [];
+    p1.on('console', msg => { consoleMessages.push(msg.text()); });
+
+    // Drag first card from communal spread zone back to hand
+    const firstSpreadCard = communal.locator('[role="button"]:not(:has([role="button"]))').first();
+    await expect(firstSpreadCard).toBeVisible();
+
+    const srcSpread = await firstSpreadCard.boundingBox();
+    const tgtHand = await p1Hand.boundingBox();
+    if (!srcSpread || !tgtHand) throw new Error('bounding boxes unavailable for spread-to-hand drag');
+
+    await p1.mouse.move(srcSpread.x + srcSpread.width / 2, srcSpread.y + srcSpread.height / 2);
+    await p1.mouse.down();
+    await p1.mouse.move(tgtHand.x + tgtHand.width / 2, tgtHand.y + tgtHand.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // P1 hand gains one card (4 total); communal loses one (1 total)
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(4);
+    await expect(p1SpreadCards).toHaveCount(1);
+
+    // P2 sees the same communal zone state (real-time broadcast)
+    const p2Communal = p2.getByTestId('spread-zone-play');
+    await expect(p2Communal).toBeVisible();
+    const p2SpreadCards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p2SpreadCards).toHaveCount(1);
+
+    // No console warnings about duplicate dnd-kit IDs
+    const duplicateIdWarnings = consoleMessages.filter(msg => /duplicate id|multiple elements with the same id/i.test(msg));
+    expect(duplicateIdWarnings).toHaveLength(0);
+  });
+
+  test('spread zone reorder: drag-reorder within communal spread zone preserves useSortable data routing', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const p1Hand = p1.getByTestId('hand-zone');
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(5);
+
+    // Select 3 cards and play them into the communal spread zone
+    const card0 = p1Hand.locator('[aria-pressed]').nth(0);
+    const card1 = p1Hand.locator('[aria-pressed]').nth(1);
+    const card2 = p1Hand.locator('[aria-pressed]').nth(2);
+    await card0.click();
+    await card1.click();
+    await card2.click();
+    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(3);
+
+    const communal = p1.getByTestId('spread-zone-play');
+    await expect(communal).toBeVisible();
+
+    const srcPlay = await card0.boundingBox();
+    const tgtPlay = await communal.boundingBox();
+    if (!srcPlay || !tgtPlay) throw new Error('bounding boxes unavailable for play drag');
+
+    await p1.mouse.move(srcPlay.x + srcPlay.width / 2, srcPlay.y + srcPlay.height / 2);
+    await p1.mouse.down();
+    await p1.mouse.move(tgtPlay.x + tgtPlay.width / 2, tgtPlay.y + tgtPlay.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // Communal zone should now have 3 cards
+    const spreadCards = communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(spreadCards).toHaveCount(3);
+
+    // Capture console warnings
+    const consoleMessages: string[] = [];
+    p1.on('console', msg => { consoleMessages.push(msg.text()); });
+
+    // Drag card at index 0 to position of card at index 2 within spread zone
+    const firstCard = spreadCards.nth(0);
+    const thirdCard = spreadCards.nth(2);
+    await expect(firstCard).toBeVisible();
+    await expect(thirdCard).toBeVisible();
+
+    const srcFirst = await firstCard.boundingBox();
+    const tgtThird = await thirdCard.boundingBox();
+    if (!srcFirst || !tgtThird) throw new Error('bounding boxes unavailable for reorder drag');
+
+    await p1.mouse.move(srcFirst.x + srcFirst.width / 2, srcFirst.y + srcFirst.height / 2);
+    await p1.mouse.down();
+    await p1.mouse.move(tgtThird.x + tgtThird.width / 2, tgtThird.y + tgtThird.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // Card count unchanged after reorder (3 cards still in spread zone)
+    await expect(spreadCards).toHaveCount(3);
+
+    // P2 sees the same card count (real-time broadcast)
+    const p2Communal = p2.getByTestId('spread-zone-play');
+    await expect(p2Communal).toBeVisible();
+    const p2SpreadCards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p2SpreadCards).toHaveCount(3);
+
+    // No console warnings about duplicate dnd-kit IDs
+    const duplicateIdWarnings = consoleMessages.filter(msg => /duplicate id|multiple elements with the same id/i.test(msg));
+    expect(duplicateIdWarnings).toHaveLength(0);
+  });
 });
