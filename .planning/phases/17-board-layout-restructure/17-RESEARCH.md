@@ -483,12 +483,13 @@ If opponent spread zones are empty (only hand count shown), Band 1 collapses to 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Communal SpreadZone width in flex-1 context**
    - What we know: `SpreadZone`'s inner spread container is `min-w-[80px] h-[112px]` (fixed). The outer `SpreadZone` wrapper is `flex flex-col gap-1` with no width set.
    - What's unclear: Will wrapping communal `SpreadZone` in `<div className="flex-1 min-w-0">` cause the inner container to stretch to fill, or will it stay at `min-w-[80px]`? In Tailwind v4 Flexbox, a child with no explicit width inside a `flex-1` parent will not automatically stretch — it only grows if it is itself a flex item with `flex-1` or has `width: 100%`.
    - Recommendation: The plan should instruct the implementer to verify this empirically and, if the zone doesn't fill, either (a) add a `w-full` to the inner spread container via an optional `className` prop on `SpreadZone`, or (b) apply `w-full` directly to the `SpreadZone` outer div. Option (a) is the cleaner minimal change. The planner should include a verification step: confirm communal zone is visually wide at the expected `flex-1` proportion.
+   - **RESOLVED:** Add optional `className` prop to `SpreadZone`; pass `"w-full"` for communal zone only — implemented in Plan 02, Task 2.1.
 
 ---
 

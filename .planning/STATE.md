@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
-status: planning
+status: executing
 stopped_at: Phase 17 UI-SPEC approved
-last_updated: "2026-05-02T06:23:12.212Z"
-last_activity: "2026-05-01 — Phase 16.1 inserted (urgent: PartyKit not deploying via CI)"
+last_updated: "2026-05-02T14:32:38.845Z"
+last_activity: 2026-05-02 -- Phase 17 planning complete
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
+  total_plans: 2
   completed_plans: 0
   percent: 0
 ---
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-01)
 
 Phase: 16.1 of 21 (Fix PartyKit CI Deploy)
 Plan: —
-Status: Ready to plan
-Last activity: 2026-05-01 — Phase 16.1 inserted (urgent: PartyKit not deploying via CI)
+Status: Ready to execute
+Last activity: 2026-05-02 -- Phase 17 planning complete
 
 Progress: [░░░░░░░░░░] 0%
 
