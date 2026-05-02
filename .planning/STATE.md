@@ -2,11 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
-status: ready_to_plan
-last_updated: "2026-05-01"
-last_activity: 2026-05-01
+status: planning
+stopped_at: v1.3 roadmap created — 5 phases (17–21), 8 requirements mapped, ready to plan Phase 17
+last_updated: "2026-05-02T04:03:04.582Z"
+last_activity: 2026-05-01 — v1.3 roadmap created (Phases 17–21)
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.3 Layout & UX Polish — Phase 17 ready to plan
+**Current focus:** v1.3 Layout & UX Polish — Phase 16.1 ready to plan
 
 ## Current Position
 
-Phase: 17 of 21 (Board Layout Restructure)
+Phase: 16.1 of 21 (Fix PartyKit CI Deploy)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-05-01 — v1.3 roadmap created (Phases 17–21)
+Last activity: 2026-05-01 — Phase 16.1 inserted (urgent: PartyKit not deploying via CI)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -42,6 +43,10 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 16.1 inserted after Phase 16: Fix PartyKit CI deploy — add partykit deploy step to GitHub Actions so server and client stay in sync on every push to main (URGENT)
 
 ### Decisions
 
