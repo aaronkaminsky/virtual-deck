@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1–8 + 999.1, 999.2 (shipped 2026-04-12) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
 - ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
-- **v1.3** — Phases 17–25 (upcoming)
+- **v1.3 Layout & UX Polish** — Phases 17–21 (in progress)
 
 ## Phases
 
@@ -55,19 +55,73 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 
 </details>
 
-## Upcoming — v1.3
+## Upcoming — v1.3 Layout & UX Polish
 
-| Phase | Goal | Plans |
-|-------|------|-------|
-| 17 | Mobile responsive layout — phone-friendly design; options include responsive breakpoints, progressive display, or smaller cards | TBD |
-| 18 | Sticky pile placement choice — remember top/bottom/random to reduce popup frequency | TBD |
-| 19 | npm audit — investigate and resolve 4 vulnerabilities (3 moderate, 1 high) surfaced during Phase 13 UAT (`npm install` on 2026-04-22) | TBD |
-| 20 | Test helper consolidation — migrate `tests/dealCards.test.ts` (and remaining 11 pre-Phase-12 test files) to import shared helpers from `tests/helpers.ts` instead of defining local copies | TBD |
-| 21 | Phase 14 live session verification — confirm 5 human-deferred behaviors: two-player zone layout, drag-to-spread (no dialog), spread reorder by drag, face toggle sync, late-joiner re-deal after reset | TBD |
-| 22 | Restrict PLAY_CARD_SET target to spread-region piles — server currently accepts any pile ID; add `region === "spread"` guard to match UI intent | TBD |
-| 23 | Replace hardcoded communal zone ID "play" with ownerId-based lookup — `BoardView.communalZone` currently uses `p.id === "play"`; switch to `p.region === "spread" && p.ownerId === null` for resilience | TBD |
-| 24 | Spread pile multi-select and sort — spread zones should support the same multi-card select and drag-to-reorder behavior as the player's hand | TBD |
-| 25 | Play Area layout — move communal spread zone to center canvas area, to the right or below the discard pile | TBD |
+- [ ] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select
+- [ ] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button
+- [ ] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling
+- [ ] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone
+- [ ] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract
+
+## Phase Details
+
+### Phase 17: Board Layout Restructure
+**Goal**: The board reads as a shared physical space with the communal zone at visual center, all zones get usable vertical space, and the dnd-kit ID collision that would break multi-select in Phase 20 is eliminated
+**Depends on**: Phase 16
+**Requirements**: LAYOUT-01, LAYOUT-02, SPREAD-04
+**Success Criteria** (what must be TRUE):
+  1. The communal spread zone is visually centered between opponent zones (top) and the player's own hand (bottom)
+  2. All zones — opponent hands, communal zone, personal spread zones, player hand — are simultaneously visible on a 1080p desktop without scrolling
+  3. Vertical proportions give each zone a usable card-height slot; no zone is squashed or hidden by default
+  4. Drag interactions on spread zones produce no event misfires or ghost drags when cards are selected (dnd-kit ID collision between SortableSpreadCard and nested DraggableCard resolved)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 18: Controls Collapse
+**Goal**: All game controls are hidden behind a single header button; the board surface is uncluttered by default
+**Depends on**: Phase 17
+**Requirements**: LAYOUT-03
+**Success Criteria** (what must be TRUE):
+  1. A single button in the header opens and closes the controls panel
+  2. All existing game controls (deal, shuffle, reset, undo, flip, pass) are accessible from the collapsed panel
+  3. The controls panel is closed by default when a player first loads the board
+  4. Closing the panel returns focus to the board with no controls visible
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 19: Responsive Layout
+**Goal**: The board is usable at phone-width screens without horizontal scrolling
+**Depends on**: Phase 17
+**Requirements**: LAYOUT-04
+**Success Criteria** (what must be TRUE):
+  1. At 375px viewport width, no horizontal scrollbar appears on any board view
+  2. All zones remain visible and operable at 375px — cards are not clipped or hidden off-screen
+  3. The header, zone labels, and controls button are readable at phone width
+  4. Pointer/mouse interactions (drag, click) function correctly at 375px — no interaction targets become too small to hit
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 20: Spread Zone Multi-Select
+**Goal**: Players can select multiple cards in a spread zone and drag the selected set to another zone, matching the selection UX of the player hand
+**Depends on**: Phase 17
+**Requirements**: SPREAD-01, SPREAD-03
+**Success Criteria** (what must be TRUE):
+  1. Clicking a card in a spread zone toggles its selection state with the same visual ring/lift treatment as hand card selection
+  2. Multiple cards in a spread zone can be selected in a single session without deselecting previous picks
+  3. Pressing Escape clears the spread zone selection
+  4. Dragging a selected card from a spread zone moves the entire selected set as a group to the target zone (pile, hand, or another spread zone)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 21: Spread Zone Reorder Verification
+**Goal**: Drag-reorder within a spread zone coexists correctly with multi-select state, and undo correctly reverses a reorder
+**Depends on**: Phase 20
+**Requirements**: SPREAD-02
+**Success Criteria** (what must be TRUE):
+  1. A player can drag a card within a spread zone to a new position and the order is preserved for all players
+  2. Drag-reorder works correctly when one or more cards are in a selected state — reordering a non-selected card does not clear selection unexpectedly
+  3. Undo reverses the last reorder operation and restores the previous card order
+**Plans**: TBD
 
 ## Backlog
 
@@ -110,15 +164,11 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 11. Empty Pile Drop UX | v1.1 | 1/1 | Complete | 2026-04-18 |
 | 12. Test Mock Fix | v1.2 | 1/1 | Complete | 2026-04-20 |
 | 13. Playwright Infrastructure | v1.2 | 3/3 | Complete | 2026-04-22 |
-| 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-26 |
-| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete    | 2026-04-28 |
-| 16. Developer README | v1.2 | 1/1 | Complete    | 2026-04-29 |
-| 17. Mobile Responsive Layout | v1.3 | 0/3 | Not started | — |
-| 18. Sticky Pile Placement Choice | v1.3 | 0/3 | Not started | — |
-| 19. npm Audit | v1.3 | 0/1 | Not started | — |
-| 20. Test Helper Consolidation | v1.3 | 0/1 | Not started | — |
-| 21. Phase 14 Live Session Verification | v1.3 | 0/1 | Not started | — |
-| 22. Restrict PLAY_CARD_SET to Spread Region | v1.3 | 0/1 | Not started | — |
-| 23. Replace Hardcoded Communal Zone ID | v1.3 | 0/1 | Not started | — |
-| 24. Spread Pile Multi-Select and Sort | v1.3 | 0/3 | Not started | — |
-| 25. Play Area Layout — Center Canvas | v1.3 | 0/3 | Not started | — |
+| 14. Gameplay Zone Infrastructure | v1.2 | 6/6 | Complete | 2026-04-26 |
+| 15. Multi-Card Set Play | v1.2 | 3/3 | Complete | 2026-04-28 |
+| 16. Developer README | v1.2 | 1/1 | Complete | 2026-04-29 |
+| 17. Board Layout Restructure | v1.3 | 0/TBD | Not started | — |
+| 18. Controls Collapse | v1.3 | 0/TBD | Not started | — |
+| 19. Responsive Layout | v1.3 | 0/TBD | Not started | — |
+| 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
+| 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |

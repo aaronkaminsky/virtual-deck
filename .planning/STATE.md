@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
-status: planning
-last_updated: "2026-05-01T14:46:38.472Z"
+status: ready_to_plan
+last_updated: "2026-05-01"
 last_activity: 2026-05-01
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,23 +17,25 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-29)
+See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.2 archived — planning next milestone
+**Current focus:** v1.3 Layout & UX Polish — Phase 17 ready to plan
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 17 of 21 (Board Layout Restructure)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-01 — Milestone v1.3 started
+Status: Ready to plan
+Last activity: 2026-05-01 — v1.3 roadmap created (Phases 17–21)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5
+- Total plans completed: 0 (v1.3)
 - Average duration: —
 - Total execution time: —
 
@@ -43,23 +45,21 @@ Last activity: 2026-05-01 — Milestone v1.3 started
 
 ### Decisions
 
-All v1.0 and v1.1 decisions are logged in `.planning/PROJECT.md` Key Decisions table.
+All v1.0–v1.2 decisions are logged in `.planning/PROJECT.md` Key Decisions table.
 
-Recent decisions affecting v1.2:
+Recent decisions affecting v1.3:
 
-- Reuse `piles[]` for spread zones (add `ownerId`/`region` fields) — avoids parallel `zones[]` collection and keeps MOVE_CARD/viewFor/RESET_TABLE working unchanged
-- Multi-card play via select-then-drag (not dnd-kit multi-drag, not button) — click to select, drag selected card moves all as a set; dnd-kit multi-drag deferred to v1.3+
-- Playwright MCP via `.mcp.json` only — never added to `package.json` or CI
-- Two separate BrowserContexts per e2e test (not two Pages in one context) — usePlayerId.ts reads localStorage; same context = same player token
-- mouse.move/down/move/up with steps:15 for dnd-kit drag — Playwright dragAndDrop() uses HTML5 API which dnd-kit ignores
+- Multi-card play via select-then-drag (not dnd-kit multi-drag) — click to select, drag selected card moves all; same pattern now extended to spread zones in Phase 20
+- dnd-kit ID collision between SortableSpreadCard and nested DraggableCard must be resolved in Phase 17 before multi-select work begins in Phase 20
+- SPREAD-04 (ID collision fix) assigned to Phase 17 as pre-work, not a standalone phase
 
 ### Pending Todos
 
-- **Layout improvements discussion** — Play Area (communal zone) should visually read as middle-of-table, not in-front-of-player. Defer individual layout fixes until we have a holistic view covering vertical space usage, header/spread row reorganization. Added 2026-04-26 from Phase 14 UAT (test #1 deferred).
+- **Layout improvements discussion** — Play Area (communal zone) should visually read as middle-of-table; holistic layout pass is Phase 17. Added 2026-04-26 from Phase 14 UAT. (RESOLVED by Phase 17 scope)
 
 ### Blockers/Concerns
 
-None. (Phase 13 research resolved: use `port: 1999` for PartyKit webServer, `npm run dev:client` for Vite — both confirmed from package.json.)
+None.
 
 ## Deferred Items
 
@@ -67,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-29
-Stopped at: Phase 16 complete — v1.2 milestone complete, all 5 phases done
+Last session: 2026-05-01
+Stopped at: v1.3 roadmap created — 5 phases (17–21), 8 requirements mapped, ready to plan Phase 17
 Resume file: None

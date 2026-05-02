@@ -38,14 +38,15 @@ Deferred to a later milestone:
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| LAYOUT-01 | — | Pending roadmap |
-| LAYOUT-02 | — | Pending roadmap |
-| LAYOUT-03 | — | Pending roadmap |
-| LAYOUT-04 | — | Pending roadmap |
-| SPREAD-01 | — | Pending roadmap |
-| SPREAD-02 | — | Pending roadmap |
-| SPREAD-03 | — | Pending roadmap |
-| SPREAD-04 | — | Pending roadmap |
+| LAYOUT-01 | Phase 17 | Pending |
+| LAYOUT-02 | Phase 17 | Pending |
+| LAYOUT-03 | Phase 18 | Pending |
+| LAYOUT-04 | Phase 19 | Pending |
+| SPREAD-01 | Phase 20 | Pending |
+| SPREAD-02 | Phase 21 | Pending |
+| SPREAD-03 | Phase 20 | Pending |
+| SPREAD-04 | Phase 17 | Pending |
 
 ---
 *Created: 2026-05-01 — v1.3 milestone planning*
+*Updated: 2026-05-01 — phase assignments added*
