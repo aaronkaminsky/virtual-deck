@@ -3,7 +3,7 @@ import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove 
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Button } from '@/components/ui/button';
-import { DraggableCard } from './DraggableCard';
+import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +35,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpr
       {...attributes}
       className={cn('flex-shrink-0', index > 0 ? '-ml-5' : '')}
     >
-      <DraggableCard card={card} fromZone="pile" fromId={pileId} />
+      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
   );
 }
