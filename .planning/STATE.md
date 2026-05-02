@@ -4,8 +4,8 @@ milestone: v1.3
 milestone_name: Layout & UX Polish
 status: executing
 stopped_at: Phase 17 UI-SPEC approved
-last_updated: "2026-05-02T14:32:38.845Z"
-last_activity: 2026-05-02 -- Phase 17 planning complete
+last_updated: "2026-05-02T14:34:00.752Z"
+last_activity: 2026-05-02 -- Phase 17 execution started
 progress:
   total_phases: 6
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.3 Layout & UX Polish — Phase 16.1 ready to plan
+**Current focus:** Phase 17 — board-layout-restructure
 
 ## Current Position
 
-Phase: 16.1 of 21 (Fix PartyKit CI Deploy)
-Plan: —
-Status: Ready to execute
-Last activity: 2026-05-02 -- Phase 17 planning complete
+Phase: 17 (board-layout-restructure) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 17
+Last activity: 2026-05-02 -- Phase 17 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
