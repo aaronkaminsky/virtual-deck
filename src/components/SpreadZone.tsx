@@ -44,9 +44,10 @@ interface SpreadZoneProps {
   pile: ClientPile;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
+  className?: string;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -93,7 +94,8 @@ export function SpreadZone({ pile, sendAction, draggingCardId }: SpreadZoneProps
         className={cn(
           'min-w-[80px] h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
           isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border'
+          isOver ? 'border-primary' : 'border-border',
+          className
         )}
       >
         {isEmpty ? (
