@@ -179,7 +179,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 15. Multi-Card Set Play | v1.2 | 3/3 | Complete | 2026-04-28 |
 | 16. Developer README | v1.2 | 1/1 | Complete | 2026-04-29 |
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 0/TBD | Not started | — |
-| 17. Board Layout Restructure | v1.3 | 2/2 | Complete   | 2026-05-03 |
+| 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 0/TBD | Not started | — |
 | 19. Responsive Layout | v1.3 | 0/TBD | Not started | — |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
