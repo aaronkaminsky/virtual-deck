@@ -284,12 +284,26 @@ test.describe('virtual-deck e2e', () => {
 
     const communal = await p1.getByTestId('spread-zone-play').boundingBox();
     const hand = await p1.getByTestId('hand-zone').boundingBox();
-    const personal = await p1.locator('[data-testid^="spread-zone-spread-"]').first().boundingBox();
 
-    if (!communal || !hand || !personal) throw new Error('bounding boxes unavailable');
+    if (!communal || !hand) throw new Error('communal or hand bounding box unavailable');
+
+    // Find P1's personal spread zone: the one in Band 3, which is directly above the hand zone.
+    // Among all personal spread zones (header opponent zone + player's own zone), the player's own
+    // zone is the one with a y coordinate greater than the communal zone's y.
+    const allPersonalBoxes = await p1.evaluate(() => {
+      const els = Array.from(document.querySelectorAll('[data-testid^="spread-zone-spread-"]'));
+      return els.map(el => {
+        const rect = el.getBoundingClientRect();
+        return { y: rect.y, height: rect.height, width: rect.width };
+      });
+    });
+
+    // P1's own Band 3 personal zone is below the communal zone (higher y value)
+    const personalBox = allPersonalBoxes.find(b => b.y > communal.y);
+    if (!personalBox) throw new Error('P1 personal spread zone not found below communal zone');
 
     // Communal zone is above personal spread zone (communal in Band 2, personal in Band 3)
-    expect(communal.y).toBeLessThan(personal.y);
+    expect(communal.y).toBeLessThan(personalBox.y);
 
     // Communal zone is above hand zone
     expect(communal.y + communal.height).toBeLessThan(hand.y);
@@ -298,14 +312,23 @@ test.describe('virtual-deck e2e', () => {
     expect(communal.width).toBeGreaterThan(160);
 
     // P2 sees the same arrangement
-    await dealCards(p2, 0); // ensure P2 board is rendered with zones
     const p2Communal = await p2.getByTestId('spread-zone-play').boundingBox();
     const p2Hand = await p2.getByTestId('hand-zone').boundingBox();
-    const p2Personal = await p2.locator('[data-testid^="spread-zone-spread-"]').first().boundingBox();
 
-    if (!p2Communal || !p2Hand || !p2Personal) throw new Error('P2 bounding boxes unavailable');
+    if (!p2Communal || !p2Hand) throw new Error('P2 communal or hand bounding box unavailable');
 
-    expect(p2Communal.y).toBeLessThan(p2Personal.y);
+    const p2AllPersonalBoxes = await p2.evaluate(() => {
+      const els = Array.from(document.querySelectorAll('[data-testid^="spread-zone-spread-"]'));
+      return els.map(el => {
+        const rect = el.getBoundingClientRect();
+        return { y: rect.y, height: rect.height, width: rect.width };
+      });
+    });
+
+    const p2PersonalBox = p2AllPersonalBoxes.find(b => b.y > p2Communal.y);
+    if (!p2PersonalBox) throw new Error('P2 personal spread zone not found below communal zone');
+
+    expect(p2Communal.y).toBeLessThan(p2PersonalBox.y);
     expect(p2Communal.y + p2Communal.height).toBeLessThan(p2Hand.y);
     expect(p2Communal.width).toBeGreaterThan(160);
   });

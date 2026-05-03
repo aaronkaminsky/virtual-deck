@@ -87,20 +87,31 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center gap-6 px-4">
+      <div className="flex-1 flex items-center px-4 gap-4">
         {pilePiles.map((pile) => (
           <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
         ))}
+        {communalZone && (
+          <div className="flex-1 min-w-0">
+            <SpreadZone
+              pile={communalZone}
+              sendAction={sendAction}
+              draggingCardId={draggingCardId}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
 
-      <div className="flex items-start gap-4 px-4 py-2 bg-card">
-        {communalZone && (
-          <SpreadZone pile={communalZone} sendAction={sendAction} draggingCardId={draggingCardId} />
-        )}
-        {mySpreadZone && (
-          <SpreadZone pile={mySpreadZone} sendAction={sendAction} draggingCardId={draggingCardId} />
-        )}
-      </div>
+      {mySpreadZone && (
+        <div className="bg-card px-4 py-2">
+          <SpreadZone
+            pile={mySpreadZone}
+            sendAction={sendAction}
+            draggingCardId={draggingCardId}
+          />
+        </div>
+      )}
 
       {(() => {
         const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
