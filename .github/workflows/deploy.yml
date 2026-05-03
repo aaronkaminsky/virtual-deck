@@ -35,7 +35,7 @@ jobs:
           VITE_PARTYKIT_HOST: virtual-deck.aaronkaminsky.partykit.dev
       - run: |
           mkdir -p ~/.partykit
-          echo "$PARTYKIT_TOKEN" > ~/.partykit/config.json
+          printf '%s' "$PARTYKIT_TOKEN" > ~/.partykit/config.json
           npm run deploy
         env:
           PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
