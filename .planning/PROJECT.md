@@ -22,7 +22,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-**v1.2 shipped (2026-04-29).** Milestone archived. **v1.3 in progress — Phase 17 complete (2026-05-02).**
+**v1.2 shipped (2026-04-29).** Milestone archived. **v1.3 in progress — Phase 17 complete (2026-05-02); Phase 16.1 complete (2026-05-03, CI partykit deploy fix).**
 
 - ~2,646 TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
@@ -153,4 +153,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-02 — Phase 17 complete; LAYOUT-01, LAYOUT-02, SPREAD-04 validated*
+*Last updated: 2026-05-03 — Phase 16.1 complete; PartyKit now auto-deploys on push to main alongside GitHub Pages*
