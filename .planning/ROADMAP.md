@@ -58,7 +58,7 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 ## Upcoming — v1.3 Layout & UX Polish
 
 - [ ] **Phase 16.1: Fix PartyKit CI Deploy** (INSERTED) — Add `partykit deploy` step to GitHub Actions workflow so server and client are always deployed together on push to main
-- [ ] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select
+- [x] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select (completed 2026-05-03)
 - [ ] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button
 - [ ] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling
 - [ ] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone
@@ -179,7 +179,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 15. Multi-Card Set Play | v1.2 | 3/3 | Complete | 2026-04-28 |
 | 16. Developer README | v1.2 | 1/1 | Complete | 2026-04-29 |
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 0/TBD | Not started | — |
-| 17. Board Layout Restructure | v1.3 | 1/2 | In Progress|  |
+| 17. Board Layout Restructure | v1.3 | 2/2 | Complete   | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 0/TBD | Not started | — |
 | 19. Responsive Layout | v1.3 | 0/TBD | Not started | — |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
