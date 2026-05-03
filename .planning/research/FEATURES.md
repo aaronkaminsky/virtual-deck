@@ -1,345 +1,262 @@
-# Feature Landscape — Virtual Deck v1.2
+# Feature Landscape — Virtual Deck v1.3
 
-**Domain:** Real-time multiplayer card table — dev infrastructure + gameplay zone depth
-**Researched:** 2026-04-19
-**Context:** SUBSEQUENT MILESTONE. v1.0 and v1.1 shipped. This file covers v1.2 feature areas only.
+**Domain:** Real-time multiplayer card table — layout/UX polish and spread zone interactivity
+**Researched:** 2026-05-01
+**Context:** SUBSEQUENT MILESTONE. v1.2 shipped. This file covers v1.3 feature areas only.
 
 ---
 
-## Feature Categories
+## Overview
 
-v1.2 has two distinct categories that should be tracked separately:
+v1.3 has two distinct categories:
 
 | Category | Features | Nature |
 |----------|----------|--------|
-| Dev Infrastructure | Playwright MCP, e2e test suite, README, test model fix | Tooling — no user-visible change |
-| Gameplay Zones | Personal play area, shared communal zone, multi-card play set | User-visible — new game surface |
+| Layout & UX | Communal zone repositioned, board proportions, controls collapsed, responsive scaling | Visual / structural — affects every player on every session |
+| Spread Zone Interactivity | Multi-card select in spread zones, drag reorder in spread zones | Interaction parity with HandZone — user-visible new capability |
 
 ---
 
-## Category A: Dev Infrastructure
+## Category A: Board Layout
 
-### A1 — Playwright MCP Server (DEV-01)
+### A1 — Communal Zone to Physical Center (LAYOUT-01)
 
-**What it is:** `@playwright/mcp` is Microsoft's official MCP server that gives Claude Code direct browser control through the accessibility tree. Claude can navigate to a running app, click, type, and observe state — no screenshot vision required.
+**What it is:** Move the communal spread zone out of the bottom bar and into the vertical center of the board, so it reads spatially as "the middle of the table" between opponents above and the player's hand below.
 
-**How it works:**
-- Registered per-project via `claude mcp add playwright npx @playwright/mcp@latest --scope project`
-- Persists as `.mcp.json` in the project root (designed to be committed to version control)
-- Claude must be explicitly told "use Playwright MCP" in the first message of a session, or it defaults to running Playwright through bash commands
-- MCP tools include: `browser_navigate`, `browser_click`, `browser_type`, `browser_snapshot`, `browser_wait_for_element`
-- Operates on the accessibility tree, not screenshots — faster and more token-efficient
+**How other card games handle it:**
 
-**Table stakes for this feature:**
+Card game UIs universally follow a vertical axis: opponents at top, shared space at center, player's hand at bottom. This mirrors physical seating. Hearthstone, MTG Arena, and most tabletop simulators all use this axis even with different visual treatments. The center zone carries the most visual weight of any non-card element — it should have the largest allocated row height after the hands.
 
-| Behavior | Why Required | Notes |
-|----------|--------------|-------|
-| `.mcp.json` committed to repo | All developers and Claude sessions get identical tooling without manual setup | Scope = project, not user-global |
-| Works with existing `npm run dev` | MCP session navigates `localhost:1999` (partykit dev port) | No special test server needed |
-| Claude can open two tabs in same session | Needed for observing two-player state | Two pages in same browser context share nothing in PartyKit — each has distinct player token |
+**Current state in this codebase:** The communal zone (`pile.id === 'play'`) renders in the bottom bar alongside the player's personal spread zone. Players have reported (implicitly, via PROJECT.md goals) that it does not read as the table center. The piles row (`flex-1`) occupies the center but only contains draw/discard stacks.
+
+**Implementation pattern:** Replace the current two-section flex column (`flex-1` piles row + bottom bar) with a three-row layout:
+- Row 1 (fixed height): Opponent hands + their spread zones
+- Row 2 (`flex-1` or `2fr`): Communal spread zone + draw/discard piles, centered — this is the "table"
+- Row 3 (fixed height): Player hand
+
+The communal zone should receive meaningfully more vertical space than the bottom bar currently gives it. A `min-h-[160px]` or equivalent is appropriate — enough to display 2 rows of overlapping cards without scrolling.
+
+**Visual cues that make it read as "center of table":**
+1. Largest allocated row height in the layout
+2. Different background color or border treatment than the header/hand bars
+3. Label reads "Table" or "Center" (not "Play Area"), centered within the zone
+4. Draw and discard piles remain in this same center row — they belong to the shared space
+
+**Complexity:** MEDIUM. CSS layout restructure in `BoardView`. No data model changes. Must not break dnd-kit drop targets (droppable `id`s are positional-independent, so layout changes are safe).
+
+**dnd-kit dependency:** Droppable regions use logical IDs (`pile-play`, `pile-draw`) — they are not affected by DOM position changes. Layout refactor is safe.
+
+---
+
+### A2 — Board Vertical Proportions (LAYOUT-02)
+
+**What it is:** Adjust the relative sizes of the four visual rows so no single region dominates incorrectly and every row has adequate breathing room.
+
+**Target proportions (based on card game conventions):**
+
+| Row | Content | Suggested Sizing | Rationale |
+|-----|---------|-----------------|-----------|
+| Connection banner | Status only | Auto / 24–32px | Disappears when connected |
+| Header bar | Opponent hands + controls | Auto / min content | Grows with number of opponents (up to 3) |
+| Center row | Table piles + communal zone | `flex-1` (takes remaining space) | The main shared surface |
+| Bottom row | Player spread zone + hand | Auto / ~140px hand + spread below | Fixed height preserves hand readability |
+
+The critical behavior: center row must grow to fill the screen regardless of viewport height. Currently `flex-1` on the piles row does this for the draw/discard piles, but the communal zone is outside that row.
+
+**What not to do:** Fixed pixel heights on the center row. On 1080p monitors it looks sparse; on phones it clips content. Use `flex-1` / `min-height` on the center row and let cards scroll horizontally within fixed-height spread containers.
+
+**Complexity:** LOW (a consequence of A1 layout restructure, not a separate change).
+
+---
+
+### A3 — Game Controls Collapsed (LAYOUT-03)
+
+**What it is:** Move game controls (Deal, Undo, Reset, and any future controls) out of the always-visible header bar and into a collapsed panel, freeing header real estate for opponent hands on small screens.
+
+**Pattern comparison:**
+
+| Pattern | Pros | Cons | Verdict for this app |
+|---------|------|------|---------------------|
+| Popover (current partial) | Already implemented via shadcn Popover for Deal | Anchored to trigger; only one action at a time | Keep for single-action flows (Deal); not for the full controls panel |
+| Sheet (side drawer) | Standard mobile/tablet pattern; hides gracefully; shadcn Sheet is available | Side slide-in doesn't feel game-native; steals screen edge | Avoid for in-game controls |
+| Dropdown menu | Compact, dismisses easily, stays near trigger, works in header | Limited vertical space for forms (deal count input) | Best for action list + modal sub-forms |
+| FAB (floating action button) | Unobtrusive, always accessible, works on mobile | Covers board content; not a web card game convention | Anti-feature (see below) |
+
+**Recommendation:** Dropdown menu anchored to a "Controls" button in the header. The existing `ControlsBar` already returns different JSX for `setup` and `playing` phases — this pattern stays, but the entire set of controls collapses behind one trigger. The Deal form (input + button) appears as a popover inside the dropdown or as a separate popover triggered from within the dropdown.
+
+**shadcn components to use:** shadcn `DropdownMenu` (already available as a shadcn primitive) for the collapsible list; existing `Popover` for the Deal sub-form. Do not introduce `Sheet` — it is not currently installed and adds unnecessary complexity.
+
+**Behavior contract:**
+- Controls button always visible in header (does not hide on small screens)
+- Dropdown closes when an action is dispatched (except Deal, which waits for user confirmation)
+- Keyboard accessible: Escape closes; Tab navigates items
+- Phase-aware rendering stays: setup phase shows Deal; playing phase shows Undo + Reset
+
+**Complexity:** LOW-MEDIUM. `ControlsBar` already exists with the phase-conditional logic. The change is wrapping the existing button groups in a `DropdownMenu`. The Deal popover sub-form needs to compose inside a `DropdownMenuContent`.
 
 **Anti-features:**
-- Do NOT configure Playwright MCP as a global user-level MCP (`claude mcp add ... --scope user`). It must be project-scoped so the config travels with the repo.
-- Do NOT write MCP usage into committed tests. MCP is for Claude's exploratory dev use, not automated CI coverage.
-
-**Complexity:** Low — pure config file, no code changes.
-
-**Dependency:** Requires `npm run dev` to be running (partykit dev server).
+- Do NOT use a FAB. It floats over the card table and obscures cards during play.
+- Do NOT use a Sheet/Drawer. The side-slide animation is unexpected for in-game controls and uses significant screen real estate.
+- Do NOT require two clicks to reach Undo (a frequent action during play). Either keep Undo directly visible or in a one-click dropdown.
 
 ---
 
-### A2 — Committed Playwright e2e Test Suite (DEV-02)
+### A4 — Responsive Layout for Phone Screens (LAYOUT-04)
 
-**What it is:** Playwright tests checked into the repo that exercise real browser + real PartyKit server interactions. These are repeatable automated tests (distinct from MCP-driven exploration).
+**What it is:** The board must be usable on phone-sized screens (320–430px wide). Mobile-first means no horizontal overflow, no clipped controls, and all interactive elements remain reachable. **Touch drag is explicitly out of scope per PROJECT.md** — this is mouse-only responsive design.
 
-**Two-player test architecture (the correct pattern):**
+**How web card games handle small screens:**
 
-The fundamental pattern for this codebase is: one `browser.newContext()` per player. Each context gets its own cookies/localStorage, simulating a distinct user.
+Card game UIs fall into three camps:
+1. **Scale-down / viewport zoom**: Set a fixed game canvas size and scale with CSS `transform: scale()` or `zoom`. Works for pixel-perfect games. Poor fit here because HTML drag-and-drop does not interact correctly with CSS transforms.
+2. **Reflowing layout**: Use CSS Flexbox/Grid with media queries to reflow — e.g., opponent hands stack vertically instead of horizontally, controls collapse. Best fit for this app.
+3. **Scroll-to-pan**: Accept that the board is wider than the phone and allow horizontal scroll within zones. Acceptable fallback for the spread zones, but the core board chrome (header, hand, controls) must not scroll off screen.
+
+**Recommended approach for this codebase:** Reflowing layout with `overflow-x: auto` within individual zones (spread zones, opponent hands row) and `overflow: hidden` on the board shell. The board shell stays `h-screen w-screen` and never scrolls. Individual zones scroll internally when their content overflows.
+
+**Specific responsive behaviors:**
+
+| Element | Desktop | Phone |
+|---------|---------|-------|
+| Opponent hands row | Horizontal flex, multiple opponents side by side | Horizontal `overflow-x: auto` scroll — same flex, just scrollable |
+| Header bar | Controls + room link + opponent presence in one row | Controls button + room link only; presence may need to compress |
+| Center table row | Piles + communal zone side by side | Stack vertically (piles above, communal zone below) OR communal zone takes full width |
+| Spread zones | Fixed-height with horizontal scroll | Same — `overflow-x: auto` already applied |
+| Hand zone | Fixed-height horizontal scroll | Same — unchanged |
+
+**dvh vs vh:** Use `100dvh` instead of `100vh` on the board shell. On mobile Chrome and Safari, `100vh` includes the address bar; `dvh` adjusts dynamically as the browser chrome shows/hides. This prevents the board from being taller than the visible area.
+
+**Tailwind breakpoints:** The board does not need elaborate breakpoints. One breakpoint (`sm:`) to adjust the center row stacking direction (`flex-col` on mobile, `flex-row` on desktop) is sufficient.
+
+**Complexity:** MEDIUM. Requires touching `BoardView` layout and potentially `ControlsBar`. Using `dvh` requires a Tailwind config update (`h-screen` uses `100vh` — needs a custom class or inline style). Main risk is ensuring existing dnd-kit drag interactions remain functional after layout changes (pointer event coordinates are viewport-relative and should be unaffected by Flexbox reflows).
+
+**Anti-features:**
+- Do NOT try to optimize for touch drag. The project explicitly defers touch drag support.
+- Do NOT add `meta viewport user-scalable=no` — this blocks accessibility zoom.
+- Do NOT use CSS `transform: scale()` on the board — it breaks pointer event coordinates for dnd-kit.
+
+---
+
+## Category B: Spread Zone Interactivity
+
+### B1 — Spread Zone Multi-Card Select (SPREAD-01)
+
+**What it is:** Players can select multiple cards within a spread zone (personal or communal) by clicking them — same click-to-toggle UX already implemented in `HandZone`. Selected cards are then dragged or otherwise acted upon as a group.
+
+**Current state:** `SpreadZone` has no selection state. `HandZone` implements `selectedIds: Set<string>` via `onToggleSelect` prop, with visual feedback (`translateY(-6px)` lift, ring styling) on selected cards. Multi-card play dispatches `PLAY_CARD_SET`.
+
+**Why this is a table stake (not a differentiator):** v1.2 shipped multi-select for `HandZone`. Users will immediately try to do the same in spread zones — the inconsistency will feel broken. Parity with HandZone is the expectation.
+
+**Implementation pattern:**
+
+The `HandZone` approach (props-drilled `selectedIds` + `onToggleSelect` from `BoardDragLayer`) can be replicated for spread zones. The key question is where selection state lives:
+
+Option 1: Selection state per-zone in `BoardDragLayer` — one `selectedIds: Set<string>` and `onToggleSelect` per spread zone. This is the same pattern as HandZone today. Drawback: many props, and multi-zone selection (selecting across zones) becomes impossible.
+
+Option 2: Single unified selection state in `BoardDragLayer` with the zone source tracked — `selectedIds: Map<cardId, zoneId>` or `selectedIds: Set<string>` with a separate `selectionZone: string | null`. The second form is simpler: when a selection is active, all selected cards must be in the same zone (cross-zone selection is not a goal).
+
+**Recommendation:** Option 2 — single `selectedIds: Set<string>` + `selectionSourceZone: string | null` in `BoardDragLayer`. When `onToggleSelect(cardId, zoneId)` is called: if `selectionSourceZone !== zoneId`, clear the selection first (prevents cross-zone selection confusion), then select the new card. This is the expected behavior in physical card games — you can only "pick up" cards from one zone at a time.
+
+**Visual states to implement (matching HandZone):**
+- Selected: `translateY(-6px)` lift + ring highlight
+- Multiple selected: badge showing count (already shown in HandZone when `selectedIds.size >= 2`)
+- Unselected while others selected in same zone: subtle dim or opacity
+
+**What triggers a multi-card move from spread zone:**
+- Drag any selected card — move all selected cards in that zone (same as HandZone)
+- This uses the existing drag-moves-all pattern via `PLAY_CARD_SET` or a new action `MOVE_CARD_SET` if destination is another pile (not a play zone)
+
+**Undo implication:** If all selected cards in a spread zone are moved atomically via a single action, one `UNDO_MOVE` should restore all of them. This requires the server's undo snapshot to capture the entire batch move, which is already how `PLAY_CARD_SET` works.
+
+**Edge case — cross-zone drag:** If a player selects 3 cards in their personal spread zone and drags one to the communal zone, the expected behavior is all 3 move to the communal zone. The `onDragEnd` handler in `BoardDragLayer` must check if the active card is selected and, if so, dispatch all selected cards. This is the same logic already in HandZone.
+
+**Complexity:** MEDIUM. Requires lifting selection state from HandZone to BoardDragLayer (it is currently prop-drilled per-zone), extending the selection state shape to include zone source, and updating SpreadZone to accept and render selection props. No server changes beyond possibly a new `MOVE_CARD_SET` action if moves between spread zones need to be atomic.
+
+---
+
+### B2 — Spread Zone Drag Reorder (SPREAD-02)
+
+**What it is:** Players can drag cards within a spread zone to reorder them, using the same `useSortable` + `SortableContext` + `REORDER_PILE_SPREAD` pattern already implemented in `SpreadZone`.
+
+**Current state:** Reordering is already implemented in `SpreadZone` via the `useDndMonitor` / `REORDER_PILE_SPREAD` pattern. What is likely missing is that this only works for single-card reorder. With multi-select (B1) added, the reorder behavior must be clarified when multiple cards are selected.
+
+**Expected behavior for multi-select + reorder:**
+- If only one card is selected (or nothing is selected), drag = single-card reorder. This already works.
+- If multiple cards are selected and the drag starts on one of them, there are two possible interpretations:
+  1. Move all selected cards to the new position as a group (preserving their relative order within the selection)
+  2. Reorder only the dragged card, ignoring selection
+
+Interpretation 1 is more consistent with HandZone multi-drag behavior. Interpretation 2 is much simpler to implement. The right answer depends on how often players actually multi-select within a spread zone to reorganize.
+
+**Recommendation:** For v1.3, implement interpretation 2 (single-card reorder only, ignoring multi-select during intra-zone reorder). Multi-card reorder within a zone is a rare operation and adds significant complexity to the `arrayMove` logic. Document this as a known limitation.
+
+**dnd-kit reorder edge cases (confirmed from codebase inspection):**
+
+The current implementation in `SpreadZone` has a subtle issue: `useDndMonitor` fires for every zone on the board, not just the one rendering it. The `fromThisPile && toThisPile` guard prevents cross-zone interference, but if both conditions are simultaneously true for two zones (impossible with unique pile IDs but worth noting), both handlers would fire. With multi-select added, the order of operations in `onDragEnd` becomes important: multi-card move handlers in `BoardDragLayer` must fire before (or instead of) the single-card reorder in `SpreadZone`.
+
+**Recommended approach:** Keep `REORDER_PILE_SPREAD` for intra-zone single-card reorder. For multi-card moves out of a zone, use the `BoardDragLayer`-level handler (same as HandZone). Ensure `BoardDragLayer` checks `selectedIds.size > 1` before dispatching `MOVE_CARD_SET`; if size is 1 or 0, fall through to normal single-card move/reorder logic in `SpreadZone`.
+
+**Undo implication:** `REORDER_PILE_SPREAD` takes a full `orderedCardIds` array, which is already undo-snapshottable server-side. No undo changes needed for reorder.
+
+**Complexity:** LOW (single-card reorder is already implemented). The work is ensuring it coexists correctly with multi-select without handler conflicts.
+
+---
+
+## Feature Dependencies (v1.3)
 
 ```
-context1 (Player 1 — "local") → page1 → connects to PartyKit room with ?player=token1
-context2 (Player 2 — "remote") → page2 → connects to same PartyKit room with ?player=token2
+LAYOUT-01 (communal zone repositioned)
+    └──layout restructure──> LAYOUT-02 (proportions) [same change]
+    
+LAYOUT-03 (controls collapsed)
+    └──standalone (wraps existing ControlsBar)
+
+LAYOUT-04 (responsive scaling)
+    └──depends on──> LAYOUT-01 (must know final layout structure before adding breakpoints)
+    └──touches──> LAYOUT-03 (header must fit in smaller width after controls collapse)
+
+SPREAD-01 (spread multi-select)
+    └──requires lift of──> selectedIds state from HandZone to BoardDragLayer
+    └──is prerequisite for──> SPREAD-02 edge case handling
+
+SPREAD-02 (spread drag reorder)
+    └──already partially implemented (single-card reorder exists)
+    └──must not conflict with──> SPREAD-01 drag handlers
 ```
 
-Both pages connect to the same real PartyKit room via the dev server. Actions on page1 broadcast to page2 via PartyKit's broadcastState().
+**Dependency notes:**
 
-**What the test infrastructure needs:**
-
-| Requirement | Why | Implementation |
-|-------------|-----|----------------|
-| `webServer` in `playwright.config.ts` | Starts `partykit dev` before tests run | `{ command: "npm run dev", url: "http://localhost:1999/", reuseExistingServer: true }` |
-| Unique room code per test | Prevents test pollution across parallel runs | Generate with `nanoid()` in test setup |
-| Wait for WebSocket state — no fixed `sleep()` | PartyKit broadcast is async; DOM must reflect server state before asserting | `page.waitForSelector`, `page.waitForFunction` with retry |
-| Per-test `?player=` tokens | Each test creates fresh player identities | Generate unique tokens in `test.beforeEach` |
-
-**Table stakes tests to cover:**
-
-| Scenario | What it validates |
-|----------|------------------|
-| Player 1 drags card from hand to pile; Player 2 sees pile update | Core real-time sync |
-| Player 1 deals cards; both players receive correct hand counts | Deal + hand masking |
-| Player 1 passes card to Player 2; Player 2's hand count increases | PASS_CARD action |
-| Reset table; all piles restored | RESET_TABLE action |
-| Player 2 cannot see Player 1's card faces | Hand privacy (opponentHandCounts vs myHand) |
-
-**Differentiating tests (nice-to-have):**
-
-| Scenario | Value |
-|----------|-------|
-| Player disconnects and reconnects; hand preserved | Reconnect correctness |
-| Undo after move; both players see pre-move state | Undo sync |
-| 4-player room cap; 5th player rejected | Room full error |
-
-**Anti-features:**
-- Do NOT mock the WebSocket. The value of e2e tests for this codebase is testing real PartyKit message flow. Mocking WebSockets would reduce these to unit tests. Unit tests for server logic already exist in `tests/*.test.ts` (vitest).
-- Do NOT use `page.routeWebSocket()` for intercepting production messages. Use it only for testing error paths (e.g., simulating a server that refuses connection).
-- Do NOT write fragile `setTimeout`-based waits. Every state assertion must use Playwright's built-in retry-until-timeout locators.
-
-**Complexity:** Medium. The multi-context setup and WebSocket timing are non-trivial. The `partykit dev` webServer integration may require a startup health-check URL (PartyKit dev server has `/~partykit/ping` or similar — needs verification).
-
-**Dependency:** Requires Playwright installed (`npm install -D @playwright/test`), separate from MCP package. The existing `vitest` test suite (`tests/*.test.ts`) covers server logic unit tests and stays; Playwright is additive for browser e2e coverage.
+- LAYOUT-01 and LAYOUT-02 are the same code change. Treat as one phase.
+- LAYOUT-04 should come after LAYOUT-01 so the breakpoint targets are the final layout structure, not the old one.
+- SPREAD-01 requires modifying `BoardDragLayer` to hold unified selection state — do this before writing SpreadZone selection rendering, or the state will need to move again.
+- SPREAD-02 single-card reorder already works; it only needs to survive SPREAD-01's state changes without regression.
 
 ---
 
-### A3 — Developer README (DEV-03)
+## Feature Prioritization Matrix
 
-**What it is:** A committed `README.md` (or `docs/` directory) with enough content for a new developer to clone, run, and deploy the project without asking the original author.
-
-**Table stakes content:**
-
-| Section | Why Required |
-|---------|--------------|
-| Architecture overview | ~2,200 LOC across 3 directories — not obvious without a map |
-| Local dev setup (`npm install`, `npm run dev`) | Without this, dev server start is trial-and-error |
-| Running tests | `npm test` for vitest; `npx playwright test` for e2e — two different runners |
-| Deploy instructions (GitHub Pages + PartyKit) | `npm run build` + `partykit deploy` — each has separate configuration |
-| Environment variables / config | Any values needed in `.env` or `partykit.json` |
-| Key decisions log pointer | Point to PROJECT.md Key Decisions table |
-
-**Anti-features:**
-- Do NOT write a changelog or feature list — PROJECT.md already has requirements and evolution history.
-- Do NOT duplicate the Key Decisions content — reference PROJECT.md.
-
-**Complexity:** Low. Pure documentation.
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| LAYOUT-01: Communal zone center | HIGH — removes spatial confusion about table structure | MEDIUM — CSS restructure only | P1 |
+| LAYOUT-02: Vertical proportions | MEDIUM — polish, not blocking | LOW — same change as LAYOUT-01 | P1 (bundled) |
+| LAYOUT-03: Controls collapsed | HIGH on phones, MEDIUM on desktop — frees space for opponents | LOW-MEDIUM — wrap existing ControlsBar | P1 |
+| LAYOUT-04: Responsive scaling | HIGH if any player is on phone | MEDIUM — needs dvh, one media query, test on small viewport | P2 |
+| SPREAD-01: Spread multi-select | HIGH — parity with hand; users expect it after v1.2 | MEDIUM — state lift + SpreadZone rendering | P1 |
+| SPREAD-02: Spread drag reorder | MEDIUM — reorder is already partially there | LOW — coexistence check with SPREAD-01 | P2 |
 
 ---
 
-### A4 — Test Setup Fix: Local vs Remote Player Model (DEV-04)
-
-**What it is:** The current unit tests in `tests/*.test.ts` instantiate a `GameRoom` directly and call `onMessage()` on a mock connection. The mock connection's `state` is set to `{ playerToken: id }` so `getPlayerToken()` works. However, the tests do not distinguish between a "local" player (the one sending the action) and a "remote" player (a connected spectator receiving broadcasts).
-
-**The bug:** `makeMockRoom()` returns a `getConnections` that always yields an empty iterator (`[][Symbol.iterator]()`). This means `broadcastState()` sends nothing during tests. Tests currently assert only on `gameState` mutations, never on what each connection's `.send()` received. This is fine for server-logic unit tests but means the "what each player sees" layer is untested.
-
-**The fix:** Tests that care about per-player view (hand masking, opponentHandCounts) need to:
-1. Populate `mockRoom.getConnections()` to return the actual connection mocks
-2. Assert on `conn.send.mock.calls` to verify each player received the correct `ClientGameState`
-
-**What "local vs remote" means in this context:**
-- Local player: The connection that sent the action (has `state.playerToken = senderToken`)
-- Remote player: Other connections in the room (each has their own `state.playerToken`)
-- `viewFor(state, playerToken)` produces a different `ClientGameState` for each — the sender sees their own hand in `myHand`; every other connection sees it masked in `opponentHandCounts`
-
-**Table stakes for the fix:**
-
-| Test scenario | What to assert |
-|---------------|---------------|
-| After DEAL_CARDS, local player's ClientGameState has correct myHand | viewFor masking works for sender |
-| After DEAL_CARDS, remote player's ClientGameState has opponentHandCounts (not myHand) | viewFor masking works for recipients |
-| After PASS_CARD, recipient's ClientGameState shows card in myHand | Pass card shows up for recipient |
-
-**Complexity:** Low-Medium. The mock helpers need extension, not architectural changes. About 10–20 tests need updated mock setup.
-
-**Dependency:** No code changes to production code. Tests only.
-
----
-
-## Category B: Gameplay Zones
-
-### B1 — Personal Play Area Zone (PLAY-01)
-
-**What it is:** Each player has a dedicated zone below their hand, visible face-up to all players. This is where a player places cards they have "played" in front of them — equivalent to the table area in front of a player's seat in a physical game.
-
-**How similar products do it (Tabletop Simulator, playingcards.io):**
-- Each player has a "play area" that spatially belongs to them — positioned near their hand zone
-- Cards placed there are face-up and public by default
-- Any player can technically pick up a card from another player's play area (no enforcement — this is a sandbox)
-- The zone shows the player's name as a label
-
-**Data model implications for this codebase:**
-
-The existing `Pile` type already supports this use case. The cleanest approach is to create one pile per player with `id: "play-{playerToken}"`, `faceUp: true`, added when the player joins.
-
-Current `GameState.piles` is a flat array. Personal play zones would add N piles dynamically (N = number of players). The existing `defaultGameState` creates 3 static piles. This must become dynamic.
-
-Alternatives:
-1. Add a `playZones: Record<string, Pile>` to GameState (keyed by player token) — cleaner semantically, requires BoardView changes
-2. Reuse `piles[]` with naming convention `"play-{playerId}"` — minimal schema change, harder to query
-
-Option 1 is cleaner long-term. Option 2 ships faster and lets existing `MOVE_CARD` action work unchanged (since it already handles any pile by ID).
-
-**Table stakes behavior:**
-
-| Behavior | Notes |
-|----------|-------|
-| Zone exists for each connected player | Created when player joins; persists for reconnect |
-| Cards placed face-up by default | `pile.faceUp = true` |
-| Zone labeled with player's display name | Needs display name at zone creation time |
-| Drag from hand to own play zone works | Uses existing MOVE_CARD with toZone="pile", toId="play-{token}" |
-| Any player can drag from any play zone to anywhere | No ownership enforcement — sandbox |
-| Zone visible in all players' BoardView | Needs layout space in BoardView |
-
-**Anti-features:**
-- Do NOT enforce "can only play to your own zone" — breaks the sandbox promise.
-- Do NOT create separate React component for personal play area if PileZone already works — reuse PileZone with a `isPersonalZone` prop for visual differentiation.
-
-**Layout concern:** BoardView currently uses a single row of `PileZone` components for table piles, with `HandZone` at the bottom and `OpponentHand` at the top. Adding per-player play areas requires a layout redesign. Personal zones logically belong between the opponent hands area and the shared table piles.
-
-**Complexity:** Medium. Data model change (dynamic pile creation) + BoardView layout redesign.
-
-**Dependency:** Existing Pile infrastructure, MOVE_CARD handler (unchanged), PileZone component (reused).
-
----
-
-### B2 — Shared Communal Zone (PLAY-02)
-
-**What it is:** One shared zone on the table that any player can place cards into. Unlike the draw and discard piles (which are vertical stacks with position semantics), this is a flat face-up zone where cards are spread and visible — equivalent to "the center of the table."
-
-**How similar products handle it:**
-
-In Tabletop Simulator and playingcards.io, a "shared zone" is just another pile/zone — it has no special mechanics, just placement. It's visually distinguished from private piles but structurally identical in the data model.
-
-**Data model:** A single static `Pile` with `id: "communal"`, `name: "Table"` (or similar), `faceUp: true`. This is nearly identical to the existing `"discard"` pile — the distinction is semantic and visual (layout position, appearance).
-
-Actually, the existing `"play"` pile (id: `"play"`, name: `"Play Area"`) in `defaultGameState` already serves this purpose. The question is whether it should be renamed or if the personal zones (PLAY-01) co-opt the concept.
-
-**Recommendation:** Rename the existing `"play"` pile to `"communal"` (or similar) to cleanly separate it from personal play areas. This is a one-line change to `defaultGameState`.
-
-**Table stakes behavior:**
-
-| Behavior | Notes |
-|----------|-------|
-| Visible to all players face-up | `faceUp: true` |
-| Any player can drag cards to/from it | No ownership — existing MOVE_CARD already handles any pile |
-| Visually distinct from draw/discard | Different color, label, or position in layout |
-| Undo works | Already handled by UNDO_MOVE |
-
-**Anti-features:**
-- Do NOT add any "only the person who played it can move it" rule.
-- Do NOT create a new data type for this — reuse `Pile`.
-
-**Complexity:** Low. Mostly a renaming + layout positioning decision. No new server logic.
-
-**Dependency:** PLAY-01 personal zones must be decided first (they share the concept of "play area").
-
----
-
-### B3 — Played Card Sets: Multi-Card Selection and Play (PLAY-03)
-
-**What it is:** A player selects 1–5 cards from their hand and plays them as a group into either their personal play area (PLAY-01) or the communal zone (PLAY-02). In 13s-style games, a "play" is a set of 1–5 cards committed simultaneously (single, pair, triple, four-of-a-kind, or a 5-card combination like a straight or full house).
-
-**Why this isn't just dragging one card at a time:**
-- A set must land as a group — spatial grouping signals "these cards go together"
-- In the card game context, playing a set is an atomic action: either all cards move or none do
-- Players need to be able to say "I played these 5 cards together" — visual grouping conveys that to opponents
-
-**UI mechanics (what users expect):**
-
-| Interaction | Expected behavior |
-|-------------|-------------------|
-| Click/tap a card in hand | Toggles selected state (highlighted border) |
-| Click another card | Adds to selection (multi-select, not replace) |
-| Click selected card again | Deselects it |
-| Click Play (or drag selected cards) | All selected cards move to target zone as a set |
-| Escape or click empty area | Clears selection |
-| Max 5 cards can be selected | Error or visual stop at 6th card |
-
-**dnd-kit multi-drag pattern:**
-
-dnd-kit does not have built-in multi-drag. The established pattern (MEDIUM confidence, from dnd-kit GitHub issues #120 and discussion #1313):
-1. Maintain `selectedCardIds: Set<string>` in local UI state (zustand is appropriate here)
-2. Only one card is the "active" draggable (`useDraggable` per card)
-3. On `onDragEnd`, if the active card is in the selection set, dispatch a new action `PLAY_CARD_SET` with all selected card IDs, not just the one dragged
-4. Render a custom `DragOverlay` that shows all selected cards stacked/fanned during drag
-
-Alternatively, for the simpler "select then click Play button" flow (no drag), no dnd-kit changes are needed — just a Play button that dispatches `PLAY_CARD_SET`.
-
-**Recommended approach for v1.2:** Start with select-then-button (no drag multi-select). Drag-based multi-select is a differentiator, not table stakes. The select-then-button approach avoids dnd-kit complexity and is how many digital card games implement plays (e.g., click cards to stage them, hit "Play").
-
-**New server action needed:**
-
-```typescript
-{ type: "PLAY_CARD_SET"; cardIds: string[]; toZoneId: string }
-```
-
-Server logic: validate all cards are in sender's hand, atomically move all to target pile. Atomicity is important — partial moves leave state inconsistent.
-
-**Table stakes behavior:**
-
-| Behavior | Notes |
-|----------|-------|
-| Select 1–5 cards in hand | Toggle selection on click |
-| Visual selection state (highlight) | Distinct color/border on selected cards |
-| "Play" action button enabled when 1+ cards selected | Target zone must be specified (or default to communal) |
-| All selected cards move atomically | Server: remove all from hand, add all to pile in one state update |
-| Selection cleared after play | Reset `selectedCardIds` to empty |
-| Undo works for a played set | One UNDO_MOVE snapshot rolls back all cards |
-| Other players see the cards appear together | Normal broadcastState — ordering within pile handles grouping |
-
-**Differentiating behavior (nice-to-have, not v1.2):**
-
-| Feature | Notes |
-|---------|-------|
-| Drag multi-selected cards as a fan | Complex dnd-kit customization |
-| Visual grouping / set separator in play zone | Distinguishes one player's play from another's in the communal zone |
-| Set history / log | Shows "Player 1 played 3 cards" in action log |
-
-**Anti-features:**
-- Do NOT validate that the card set is a legal combination (pair, straight, etc.) — no rule enforcement.
-- Do NOT implement drag-based multi-select as part of initial implementation — too complex for the gain, and the project explicitly avoids rule enforcement anyway.
-- Do NOT conflate this with the existing `REORDER_HAND` action — that's a different concept.
-
-**Complexity:** Medium. New `PLAY_CARD_SET` server action + selection UI state in client + integration with PLAY-01/PLAY-02 zones. The selection state is client-only until Play is triggered, which keeps it clean.
-
-**Dependencies:**
-- Requires PLAY-01 or PLAY-02 to exist as target zones
-- Server action is new but follows existing MOVE_CARD pattern
-- Client selection state fits naturally in zustand (already a dependency)
-
----
-
-## Feature Dependencies (v1.2)
-
-```
-DEV-01 (Playwright MCP) → standalone (config only)
-DEV-02 (e2e test suite) → DEV-01 for exploratory use; DEV-04 fix should precede to avoid writing tests with the wrong model
-DEV-03 (README) → standalone
-DEV-04 (test model fix) → standalone, but pairs with DEV-02
-PLAY-01 (personal play area) → requires dynamic pile creation (data model change)
-PLAY-02 (communal zone) → depends on PLAY-01 decision (naming conflict with existing "play" pile)
-PLAY-03 (multi-card play) → requires PLAY-01 and/or PLAY-02 as target zones
-```
-
-Recommended sequencing:
-1. DEV-04 → DEV-02 → DEV-01 → DEV-03 (fix tests before writing more; MCP and README are parallel)
-2. PLAY-02 → PLAY-01 → PLAY-03 (rename communal zone first; add personal zones; then multi-select play last)
-
----
-
-## MVP Recommendation (v1.2)
-
-**Must have (all 7 are already committed in PROJECT.md):**
-1. DEV-01: Playwright MCP `.mcp.json` committed
-2. DEV-02: Playwright e2e suite covering 2-player sync, deal, pass, reset
-3. DEV-03: README with setup, architecture, deploy
-4. DEV-04: Test model fix for local/remote distinction
-5. PLAY-01: Personal play area per player
-6. PLAY-02: Shared communal zone (may be trivial rename of existing pile)
-7. PLAY-03: Multi-card selection and play (select-then-button, not drag multi-select)
-
-**Defer to v1.3+:**
-- Drag-based multi-select (dnd-kit custom overlay)
-- Visual set grouping in play zone (card set separator rendering)
-- Action log showing "Player X played N cards"
+## Anti-Features
+
+| Anti-Feature | Why Avoid | Better Approach |
+|-------------|-----------|-----------------|
+| FAB for game controls | Floats over cards during play; web card games don't use this pattern | Dropdown menu anchored to header button |
+| Sheet/drawer for controls | Side-slide animation unexpected in-game; large screen footprint | Dropdown menu |
+| Cross-zone multi-select (selecting cards from HandZone + SpreadZone simultaneously) | Physical card games don't work this way; adds complex state; unclear UX | Clear selection when user clicks a card in a different zone |
+| CSS `transform: scale()` for phone scaling | Breaks dnd-kit pointer event coordinates | CSS Flexbox reflow + dvh |
+| Multi-card intra-zone reorder (move a selection within one spread zone) | High implementation cost, low real-world frequency | Single-card reorder (already works); defer multi-card reorder |
+| `100vh` on board shell | Clips content on mobile Safari/Chrome due to browser chrome | `100dvh` |
+| Touch drag support in v1.3 | Explicitly deferred in PROJECT.md | Out of scope; mouse-only |
 
 ---
 
@@ -347,25 +264,39 @@ Recommended sequencing:
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Playwright MCP setup/config | HIGH | Official `@playwright/mcp` package, well-documented, `.mcp.json` format confirmed |
-| e2e two-context pattern | HIGH | Standard Playwright pattern, documented in official docs |
-| WebSocket test strategy (no mocking) | MEDIUM | Best-practice recommendation; actual PartyKit dev server startup behavior in webServer config needs testing |
-| Test model fix scope | HIGH | Root cause is clear from code inspection |
-| Personal play zone data model | MEDIUM | Recommending Option 2 (piles with naming convention) for speed; Option 1 (separate map) is cleaner but requires more refactoring |
-| Communal zone | HIGH | Trivially mapped to existing pile infrastructure |
-| Multi-card play (select-then-button) | HIGH | Standard card game UX pattern; server-side atomicity via new action type |
-| dnd-kit multi-drag | LOW | Confirmed as not natively supported; community patterns exist but are custom implementations |
+| Board layout pattern (vertical axis, communal center) | HIGH | Universal in digital card game genre; consistent across Hearthstone, MTG Arena, tabletop simulators |
+| Controls: dropdown over FAB/sheet | HIGH | FAB covers content (confirmed anti-pattern for card games); Sheet is web convention not game convention; Dropdown is what ControlsBar already starts to do with Popover |
+| dvh for mobile viewport | HIGH | CSS specification; browser support universal as of 2023; dnd-kit coordinate safety confirmed by pointer-event architecture |
+| Responsive reflow approach (not CSS scale) | HIGH | dnd-kit uses pointer events (viewport-relative), incompatible with CSS transform scale |
+| SpreadZone multi-select state lift | MEDIUM | HandZone pattern is proven in codebase; adapting to multi-zone selection adds complexity; recommendation is opinionated but unverified against existing component tree |
+| REORDER_PILE_SPREAD + multi-select coexistence | MEDIUM | onDragEnd handler interaction is subtle; needs testing; race condition possible between BoardDragLayer handler and SpreadZone useDndMonitor handler |
+| shadcn DropdownMenu availability | MEDIUM — LOW | shadcn Popover and AlertDialog are installed; DropdownMenu may need to be added via `npx shadcn add dropdown-menu`. Needs verification against local installation |
+
+---
+
+## Open Questions for Implementation
+
+1. Is `shadcn DropdownMenu` already installed in this project? If not, `npx shadcn add dropdown-menu` before LAYOUT-03.
+2. Does `MOVE_CARD_SET` need to be a new server action for multi-card moves between spread zones, or can multiple `MOVE_CARD` actions be batched? (Atomicity matters for undo correctness — a single server action for multi-card moves is the correct approach.)
+3. Should personal spread zones also support multi-select? (Yes — same code path as communal zone once state is lifted to `BoardDragLayer`.)
+4. What happens to selection state when the player drops a multi-card move and the server broadcasts new state? Selection should clear on confirmed move, which requires the state reset to happen in the WS message handler, not just on `onDragEnd`. Needs verification against `usePartySocket` flow.
 
 ---
 
 ## Sources
 
-- [Using Playwright MCP with Claude Code — Simon Willison](https://til.simonwillison.net/claude-code/playwright-mcp-claude-code)
-- [Playwright MCP official docs](https://playwright.dev/docs/getting-started-mcp)
-- [microsoft/playwright-mcp GitHub](https://github.com/microsoft/playwright-mcp)
-- [dnd-kit multi-select discussion #1313](https://github.com/clauderic/dnd-kit/discussions/1313)
-- [dnd-kit multi-select issue #120](https://github.com/clauderic/dnd-kit/issues/120)
-- [Playwright WebSocket testing — dzone](https://dzone.com/articles/playwright-for-real-time-applications-testing-webs)
-- [Playwright browser contexts isolation](https://playwright.dev/docs/browser-contexts)
-- [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp)
-- Existing codebase: `party/index.ts`, `src/shared/types.ts`, `tests/*.test.ts` (direct inspection)
+- Existing codebase: `src/components/BoardView.tsx`, `SpreadZone.tsx`, `HandZone.tsx`, `ControlsBar.tsx`, `App.tsx` (direct inspection)
+- [dnd-kit multi-select issue #120](https://github.com/clauderic/dnd-kit/issues/843) — multi-select drag pattern discussions
+- [dnd-kit sortable state management](https://dndkit.com/react/guides/sortable-state-management/) — snapshot/restore pattern for undo
+- [shadcn Sheet vs Drawer discussion](https://github.com/shadcn-ui/ui/discussions/3043) — component pattern differences
+- [shadcn Popover docs](https://www.shadcn.io/ui/popover)
+- [shadcn Sheet docs](https://www.shadcn.io/ui/sheet)
+- [CSS dvh units for mobile layouts](https://dev.to/web_dev-usman/the-new-css-viewport-units-that-finally-fix-mobile-layouts-2cjd)
+- [Card game UI design principles — GDKeys](https://gdkeys.com/the-card-games-ui-design-of-fairtravel-battle/)
+- [TCG board layout design](https://medium.com/@Heathrileyo/designing-a-tcg-game-board-layout-frontline-vs-backline-and-strategic-choice-8eb3effff7d1)
+- [CSS Grid gameboard approach](https://medium.com/@gwhi94/creating-a-gameboard-with-css-grid-47da8ac25078)
+- PROJECT.md v1.3 requirements and Key Decisions (this repo)
+
+---
+*Feature research for: Virtual Deck v1.3 Layout & UX Polish*
+*Researched: 2026-05-01*

@@ -1,139 +1,135 @@
 # Technology Stack
 
 **Project:** Virtual Deck
-**Researched:** 2026-04-19 (v1.2 additions only — existing stack not re-researched)
-**Confidence note:** New package versions verified against npm registry search results (April 2026). Versions without [UNVERIFIED] are confirmed current.
+**Researched:** 2026-05-01 (v1.3 additions only — existing stack and v1.2 additions not re-researched)
+**Confidence note:** All findings verified against official docs, npm registry, and base-ui release notes. No [UNVERIFIED] tags — every claim below has a source.
 
 ---
 
 ## Existing Stack (validated, do not re-recommend)
 
-React 18 + Vite + TypeScript + shadcn v4 + dnd-kit + zustand + partysocket + PartyKit + vitest.
-All installed and working. See CLAUDE.md for full version list from package.json.
+React 18 + Vite + TypeScript + shadcn v4 (base-nova style, `@base-ui/react` primitives) + dnd-kit/core 6.x + dnd-kit/sortable 10.x + partysocket + PartyKit + Vitest + Playwright. All installed and working. See package.json for exact versions.
 
 ---
 
-## New Additions for v1.2
+## v1.3 Scope: What's Actually New
 
-### E2E Testing
+The four v1.3 features map to library decisions as follows:
 
-| Package | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `@playwright/test` | 1.51.x (latest as of April 2026) | E2E test runner + assertions | Industry-standard for browser automation. Built-in support for multiple browser contexts in a single test — the correct primitive for simulating two players in the same room. Playwright is the dominant choice over Cypress in 2026 for speed and multi-context support. |
-| `@playwright/test` (browser binaries) | installed via `npx playwright install chromium` | Chromium browser for test execution | Only Chromium needed for this project — no cross-browser matrix required for a dev infrastructure milestone. Chromium is the smallest download and fastest CI runner. |
+| Feature | Library decision |
+|---------|-----------------|
+| Responsive layout (phone screens) | No new library — Tailwind v4 breakpoints + `h-dvh` |
+| Collapsible dropdown/slide-out panel | No new library — `@base-ui/react/drawer` (already installed at ^1.3.0, stable since v1.3.0) |
+| Drag-to-reorder cards in spread zones | No new library — `@dnd-kit/sortable` already in use in SpreadZone.tsx; extend existing pattern |
+| Multi-card select in spread zones | No new library — replicate existing HandZone select pattern into SpreadZone |
 
-**Installation:**
-```bash
-npm install -D @playwright/test
-npx playwright install chromium
-```
-
-**playwright.config.ts key settings:**
-```ts
-webServer: [
-  {
-    command: "npm run dev:client",   // vite on localhost:5173
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-  },
-  {
-    command: "npx partykit dev",     // partykit on localhost:1999
-    url: "http://localhost:1999",
-    reuseExistingServer: !process.env.CI,
-  },
-],
-use: {
-  baseURL: "http://localhost:5173",
-},
-testDir: "./e2e",
-```
-
-Rationale for two `webServer` entries: the Vite frontend and PartyKit server are independent processes. Both must be up before any test navigates to the UI. Playwright supports an array of `webServer` configs for exactly this pattern.
-
-**Vitest coexistence:** Keep vitest for the existing unit/server-logic tests in `tests/`. Add `e2e/` as a separate directory for Playwright tests. Do not merge them — vitest runs pure TypeScript logic (no browser), Playwright runs full browser scenarios. No config changes to `vitest.config.ts` required.
-
-### Playwright MCP Server (Claude Code Integration)
-
-| Package | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `@playwright/mcp` | 0.0.70 (latest as of April 2026) | MCP server giving Claude Code browser control | Allows Claude Code to drive a real Chromium browser during dev sessions — navigate, click, inspect DOM, take screenshots. Used interactively for exploratory testing and test authoring, not in the committed test suite itself. |
-
-**This is NOT a project dependency.** Do not add to `package.json`. Register as a project-scoped MCP server via `.mcp.json` in the repo root so all team members get it automatically via Claude Code.
-
-**`.mcp.json` (project-scoped, commit to repo):**
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
-    }
-  }
-}
-```
-
-Alternatively, register per-developer via:
-```bash
-claude mcp add playwright npx @playwright/mcp@latest --scope project
-```
-This writes the same `.mcp.json` entry.
-
-**Usage during dev:** Say "Use Playwright MCP to open the app at localhost:5173 and verify the play zone renders" — Claude Code controls a visible Chromium window and reports what it sees.
-
-### UI Additions for Play Zones
-
-No new UI library packages needed. The existing stack is sufficient:
-
-- **Personal play area zone** and **shared communal zone** are layout/structural additions — styled `div` containers with Tailwind classes and the dark felt theme already in place via shadcn v4.
-- **Card set selection** (1–5 cards) uses existing dnd-kit drag state and can be layered on top of the existing `Card` component with a selection indicator (border highlight via Tailwind).
-- `@base-ui/react` (already installed as `^1.3.0`) covers any dialog or popover needed for play set confirmation — consistent with the existing pile insert dialog pattern.
-
-The only UI consideration is zone layout: two new named regions on the board. This is a CSS/component composition problem, not a library gap.
+**Bottom line: v1.3 requires zero new npm installs.** All needed primitives are already present in `node_modules`. The milestone is entirely a refactor/extension of existing code.
 
 ---
 
-## Alternatives Considered
+## Feature-by-Feature Technical Analysis
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| E2E runner | `@playwright/test` | Cypress | Playwright supports multiple browser contexts per test natively — needed for two-player simulation. Cypress requires separate processes per "user" and has worse WS support. |
-| E2E runner | `@playwright/test` | Vitest browser mode | Vitest browser mode is for component tests, not full stack e2e with a running WebSocket server. Wrong layer. |
-| MCP package | `@playwright/mcp` (Microsoft) | `@executeautomation/playwright-mcp-server` | Use the official Microsoft package. The executeautomation one is a community fork; the Microsoft version is what Claude Code documentation recommends. |
-| MCP scope | Project (`.mcp.json`) | User-global | Project scope commits the config to the repo so any contributor who opens the project in Claude Code gets Playwright MCP automatically. User-global is appropriate for personal tools, not team tooling. |
-| Play zone UI | Tailwind + existing components | New UI library (e.g. react-grid-layout) | No dynamic resizable grid needed — zones are fixed regions. Adding a grid library for two static zones is over-engineering. |
+### 1. Responsive Layout (LAYOUT-04)
 
----
+**What's needed:** `h-screen` → `h-dvh` swap, Tailwind responsive prefixes (`sm:`, `md:`), and layout rework in `BoardView.tsx`.
 
-## Two-Remote-Players Test Issue
+**Why `h-dvh` not `h-screen`:** `h-screen` maps to `100vh`. On mobile browsers, `100vh` includes the address bar height even when the bar is visible, which causes the board to overflow below the fold. `h-dvh` (`100dvh`) is the dynamic viewport height unit — it reflects the actual visible area and updates as the browser UI shows/hides. Tailwind v4 includes `h-dvh` as a first-class utility (added in Tailwind 3.4, carried forward). No config change needed.
 
-The existing vitest tests in `tests/` mock the PartyKit room and connections at the TypeScript level — no real WebSocket or browser involved. The "two remote players" issue is a test setup problem, not a missing package.
+**Breakpoints:** Tailwind v4 uses CSS-first config. Default breakpoints (`sm: 640px`, `md: 768px`) are available without any `@theme` additions. The existing `globals.css` does not override them, so they are already available in the project. Phone-screen targeting means writing base (unprefixed) styles for small and using `sm:` or `md:` to unlock wider layouts.
 
-The fix path: use Playwright's `browser.newContext()` twice in a single test to create two isolated browser sessions, each connecting to the real running PartyKit dev server. This is how real multi-player behavior is tested end-to-end without mocking. No new packages required beyond `@playwright/test`.
+**No new packages.** Pure Tailwind class changes in `BoardView.tsx` and possibly `HandZone.tsx`.
 
 ---
 
-## Installation Summary (v1.2 additions only)
+### 2. Collapsible Panel for Game Controls (LAYOUT-03)
 
-```bash
-# E2E test runner (dev dependency)
-npm install -D @playwright/test
+**What's needed:** A panel that can open/close, triggered by a button, showing the game controls (Deal, Undo, Reset).
 
-# Browser binaries (one-time, not in package.json)
-npx playwright install chromium
+**Use `@base-ui/react/drawer` — already installed.**
 
-# Playwright MCP — do NOT npm install; register via Claude Code
-claude mcp add playwright npx @playwright/mcp@latest --scope project
-# or: create .mcp.json manually (see above)
+The project is on `@base-ui/react ^1.3.0`. In v1.3.0 (released March 2026), the `Drawer` component graduated from preview to stable. Import: `import { Drawer } from '@base-ui/react/drawer'`. It wraps `Dialog` and adds slide-in positioning plus optional swipe gesture support. For a game controls panel that slides down from the top or in from the side, this is the correct primitive. If gesture support is not needed, `Dialog` from `@base-ui/react/dialog` also works as a positioned panel (Base UI docs: "a panel that slides in from the edge of the screen and doesn't need gesture support is a positioned Dialog").
+
+**Why not shadcn `Sheet` or `Drawer`:** The shadcn CLI's `sheet` and `drawer` components are designed for Radix UI-based projects (style: `default`). This project uses `style: "base-nova"` — shadcn generates `@base-ui/react` wrappers. The `shadcn add sheet` command may generate a Radix-based sheet incompatible with the project's base-ui pattern. Even if shadcn generates a base-ui sheet, the project already has `@base-ui/react/drawer` which is the exact same primitive. Use it directly, as `ControlsBar.tsx` already does for its popover (see: `@base-ui/react/popover` in `popover.tsx`). Keep the pattern consistent.
+
+**Why not a Popover:** The existing `Popover` in `ControlsBar.tsx` works for the deal count input but is anchored to its trigger button. A game controls panel with multiple buttons (Deal, Undo, Reset) is better served by a modal-style panel that overlays the board rather than a tooltip-style float. Use `Drawer` for clear affordance.
+
+**Implementation pattern:**
+```tsx
+import { Drawer } from '@base-ui/react/drawer';
+
+// Drawer.Root wraps the trigger and content
+// Drawer.Trigger renders the "Controls" button
+// Drawer.Portal + Drawer.Backdrop + Drawer.Popup render the panel
+// Drawer.Close inside the panel
 ```
+
+Style the Popup with `fixed bottom-0 inset-x-0` (or `top-0`) and CSS `data-open:animate-in data-closed:animate-out` slide transitions — same animation pattern as the existing `PopoverContent` in `popover.tsx`.
+
+---
+
+### 3. Drag-to-Reorder Cards in Spread Zones (SPREAD-02)
+
+**What's needed:** Already implemented in `SpreadZone.tsx`. Review the code before touching it.
+
+`SpreadZone.tsx` already uses `SortableContext` with `horizontalListSortingStrategy`, `useSortable` on each card, and `useDndMonitor` to detect intra-pile reorders and dispatch `REORDER_PILE_SPREAD`. The drag-to-reorder infrastructure is complete.
+
+The v1.3 work here is validation and ensuring the UX is wire-compatible with what `HandZone.tsx` does — both already use the same `arrayMove` + server action pattern. No new dnd-kit features or packages needed.
+
+**Potential integration point for multi-select (SPREAD-01):** The `SortableSpreadCard` does not yet receive `isSelected` or `onToggleSelect` props. When multi-select is added, it must mirror the `SortableHandCard` pattern exactly: `isSelected` drives a visual indicator, `onToggleSelect` is called on click, and the drag action moves all selected cards (same "select-then-drag" pattern validated in Phase 15, see Key Decision in PROJECT.md).
+
+---
+
+### 4. Multi-Card Select in Spread Zones (SPREAD-01)
+
+**What's needed:** Replicate the `HandZone` selection UX into `SpreadZone`.
+
+`HandZone.tsx` uses:
+- `selectedIds: Set<string>` and `onToggleSelect: (id: string) => void` as props
+- `isSelected` drives `translateY(-6px)` transform and a `ring-1` highlight on the card div
+- `onClick` on the outer wrapper calls `onToggleSelect`
+- `onPointerDown` stops propagation to prevent dnd-kit from stealing the click
+- An `aria-pressed` override after the `{...attributes}` spread (Project Key Decision: must come last to override dnd-kit's own `aria-pressed`)
+
+The same props and the same DOM structure need to be added to `SortableSpreadCard` and `SpreadZoneProps`. The selection state for spread zones likely needs to live in the same parent as hand selection state (currently managed in `App.tsx` or `BoardView.tsx`), or in a dedicated per-zone `useState`.
+
+**Why not dnd-kit multi-drag plugin:** dnd-kit's multi-drag is unfinished and not officially shipped (GitHub issue #120, open since 2021). The project already uses the select-then-drag pattern as a validated Key Decision. Do not change the approach.
+
+**No new packages.** This is a prop threading and component extension exercise.
+
+---
+
+## What NOT to Add
+
+| Do not add | Why |
+|-----------|-----|
+| `vaul` | shadcn's Drawer uses it, but this project's base-nova style uses `@base-ui/react/drawer` instead. Adding vaul creates a second primitive library for the same use case. |
+| `@radix-ui/react-dialog` or any `@radix-ui/*` | The project explicitly chose `@base-ui/react`. Key Decision: `@base-ui/react/dialog` for pile insert dialog because Radix AlertDialog had a `disablePointerDismissal` bug. Do not introduce Radix primitives. |
+| `framer-motion` / `motion` | tw-animate-css already handles the CSS-driven `data-open/data-closed` animations consistent with shadcn base-nova. No JS animation library needed for panel slide. |
+| `react-spring`, `@use-gesture/react` | No new gesture/animation infrastructure needed. |
+| Any grid layout library (`react-grid-layout`, etc.) | Board layout is a fixed structure, not a resizable dashboard. Tailwind flex/grid is sufficient. |
+| `@dnd-kit/modifiers` (if not already present) | Modifiers are only needed for constrained drag (e.g., axis-lock). The spread zone reorder is unconstrained horizontal. Do not add unless a specific drag constraint is needed. |
+
+---
+
+## Version Compatibility Notes
+
+| Package | Current version | Notes |
+|---------|----------------|-------|
+| `@base-ui/react` | `^1.3.0` (installed) | Drawer stable since 1.3.0. Import from `@base-ui/react/drawer`. |
+| `@dnd-kit/core` | `^6.3.1` (installed) | No changes needed. |
+| `@dnd-kit/sortable` | `^10.0.0` (installed) | Already used in both HandZone and SpreadZone. No upgrade. |
+| `tailwindcss` | `^4.2.2` (installed) | `h-dvh` available. Default breakpoints (`sm`, `md`) available without config changes. |
 
 ---
 
 ## Sources
 
-- npm search results (April 2026): `@playwright/test` 1.51.x, `@playwright/mcp` 0.0.70 — MEDIUM confidence (search snippets, not direct npm page read)
-- Playwright official docs: https://playwright.dev/docs/test-webserver (webServer config), https://playwright.dev/docs/browser-contexts (multi-context testing)
-- Microsoft playwright-mcp GitHub: https://github.com/microsoft/playwright-mcp
-- Simon Willison's TIL on Playwright MCP + Claude Code: https://til.simonwillison.net/claude-code/playwright-mcp-claude-code
-- Builder.io guide (Claude Code + Playwright MCP): https://www.builder.io/blog/playwright-mcp-server-claude-code
-- package.json in this repo (confirmed existing deps, no Playwright present)
-- vitest.config.ts in this repo (confirmed test structure — `tests/` dir for unit tests)
+- `package.json` in this repo — exact installed versions (HIGH confidence)
+- `src/components/SpreadZone.tsx`, `HandZone.tsx`, `ControlsBar.tsx` — existing implementation patterns (HIGH confidence)
+- `components.json` — confirmed `style: "base-nova"`, `@base-ui/react` is the primitive library (HIGH confidence)
+- Base UI v1.3.0 release notes: https://base-ui.com/react/overview/releases/v1-3-0 — Drawer stable (HIGH confidence)
+- Base UI Drawer docs: https://base-ui.com/react/components/drawer — Drawer vs positioned Dialog guidance (HIGH confidence)
+- Tailwind CSS height docs: https://tailwindcss.com/docs/height — `h-dvh` availability (HIGH confidence)
+- Tailwind CSS responsive design: https://tailwindcss.com/docs/responsive-design — breakpoint defaults (HIGH confidence)
+- shadcn/ui changelog: https://ui.shadcn.com/docs/changelog — base-nova style context (MEDIUM confidence)
+- dnd-kit GitHub issue #120 (multi-drag): https://github.com/clauderic/dnd-kit/issues/120 — confirmed unshipped (HIGH confidence)
