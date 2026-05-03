@@ -74,7 +74,9 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
   1. Pushing to main triggers both a GitHub Pages deploy and a `partykit deploy`
   2. After a push, the live PartyKit server reflects the current `party/index.ts` on main
   3. A `PARTYKIT_TOKEN` secret is stored in the repo and used by the workflow
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 16.1-01-PLAN.md — Insert `npm run deploy` step into deploy.yml between build and Pages publish; document PARTYKIT_TOKEN repo-secret setup
 
 ### Phase 17: Board Layout Restructure
 **Goal**: The board reads as a shared physical space with the communal zone at visual center, all zones get usable vertical space, and the dnd-kit ID collision that would break multi-select in Phase 20 is eliminated
