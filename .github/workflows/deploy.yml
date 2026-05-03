@@ -33,7 +33,13 @@ jobs:
       - run: npm run build
         env:
           VITE_PARTYKIT_HOST: virtual-deck.aaronkaminsky.partykit.dev
-      - run: npm run deploy
+      - run: |
+          if [ -n "$PARTYKIT_TOKEN" ]; then
+            echo "PARTYKIT_TOKEN is set (length: ${#PARTYKIT_TOKEN})"
+          else
+            echo "PARTYKIT_TOKEN is NOT set"
+          fi
+          npm run deploy
         env:
           PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
       - uses: actions/configure-pages@v4
