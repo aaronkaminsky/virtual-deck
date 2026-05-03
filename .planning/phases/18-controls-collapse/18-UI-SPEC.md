@@ -1,7 +1,7 @@
 ---
 phase: 18
 slug: controls-collapse
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova / neutral / css-variables
 created: 2026-05-03
@@ -35,7 +35,7 @@ Declared values (multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon-to-label gaps (`gap-1`) |
-| sm | 8px | Compact button padding (`px-2.5`, `gap-1`) |
+| sm | 8px | Compact button padding (`px-2`, `gap-2`) |
 | md | 16px | Panel internal padding (`p-4`) |
 | lg | 24px | Panel section divider vertical breathing room |
 | xl | 32px | — not used in this phase |
@@ -153,7 +153,7 @@ Inline within the Popover panel — no AlertDialog (source: CONTEXT.md D-07).
 State: `confirmReset: boolean` (via `useState`, default `false`).
 
 - **Step 1** — Reset row shows: `<Button variant="destructive" size="sm"><RotateCcw /> Reset table</Button>`
-- **Step 2** — After click, same row morphs to: `<span className="text-sm text-muted-foreground">Are you sure?</span> <Button variant="outline" size="sm" onClick={cancel}>Cancel</Button> <Button variant="destructive" size="sm" onClick={confirm}>Reset table</Button>`
+- **Step 2** — After click, same row morphs to: `<span className="text-sm text-muted-foreground">Are you sure?</span> <Button variant="outline" size="sm" onClick={cancel}>Keep playing</Button> <Button variant="destructive" size="sm" onClick={confirm}>Reset table</Button>`
 - Clicking Cancel returns to Step 1 (`confirmReset = false`). Clicking Reset table fires `sendAction` and closes panel.
 
 ### Copy Link
@@ -178,7 +178,7 @@ State: `confirmReset: boolean` (via `useState`, default `false`).
 | Undo button | "Undo" | Existing (ControlsBar.tsx) |
 | Reset button (step 1) | "Reset table" | Existing (ControlsBar.tsx) |
 | Reset confirmation question | "Are you sure?" | Default — matches existing AlertDialog copy intent |
-| Reset confirmation cancel | "Cancel" | Default (replaces "Keep playing" from AlertDialog) |
+| Reset confirmation cancel | "Keep playing" | Existing (ControlsBar.tsx AlertDialogCancel) |
 | Reset confirmation confirm | "Reset table" | Existing (ControlsBar.tsx AlertDialogAction) |
 
 No empty state needed — the panel always contains controls (all phases show all controls, some disabled).
@@ -199,11 +199,11 @@ No third-party registries. `components.json` confirms `"registries": {}`.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: FLAG (non-blocking — existing codebase labels)
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-05-03
