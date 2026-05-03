@@ -85,7 +85,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.error('sendPendingMove called with no pendingMove — this is a bug');
       }
       return;
