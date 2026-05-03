@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
-status: executing
+status: ready_to_plan
 stopped_at: Phase 16.1 context gathered
 last_updated: "2026-05-03T16:44:36.947Z"
 last_activity: 2026-05-03 -- Phase 16.1 execution started
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
   completed_plans: 2
-  percent: 67
+  percent: 33
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-01)
 
 ## Current Position
 
-Phase: 16.1 (fix-partykit-ci-deploy) — EXECUTING
-Plan: 1 of 1
-Status: Executing Phase 16.1
-Last activity: 2026-05-03 -- Phase 16.1 execution started
+Phase: 17
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-03
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -36,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 2 (v1.3)
+- Total plans completed: 3 (v1.3)
 - Average duration: —
 - Total execution time: —
 
