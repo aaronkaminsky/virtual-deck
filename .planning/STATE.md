@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
 status: planning
-stopped_at: Phase 18 context gathered
-last_updated: "2026-05-03T22:37:27.323Z"
+stopped_at: Phase 18 UI-SPEC approved
+last_updated: "2026-05-03T22:45:36.504Z"
 last_activity: 2026-05-03
 progress:
   total_phases: 8
@@ -72,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-03T22:37:27.309Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-controls-collapse/18-CONTEXT.md
+Last session: 2026-05-03T22:45:36.489Z
+Stopped at: Phase 18 UI-SPEC approved
+Resume file: .planning/phases/18-controls-collapse/18-UI-SPEC.md
