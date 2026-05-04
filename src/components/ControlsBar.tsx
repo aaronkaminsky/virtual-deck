@@ -41,23 +41,27 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
         setCopied(false);
         setOpen(false);
       }, 1500);
-    }).catch(() => {});
+    }).catch(() => {
+      // Clipboard unavailable — close the panel so the user isn't stuck
+      setOpen(false);
+    });
   }
 
   function handleDeal() {
-    sendAction({ type: 'DEAL_CARDS', cardsPerPlayer: parseInt(dealCount, 10) });
-    setOpen(false);
+    const parsed = parseInt(dealCount, 10);
+    if (Number.isNaN(parsed) || parsed < 1 || parsed > maxCards) return;
+    sendAction({ type: 'DEAL_CARDS', cardsPerPlayer: parsed });
+    handleOpenChange(false);
   }
 
   function handleUndo() {
     sendAction({ type: 'UNDO_MOVE' });
-    setOpen(false);
+    handleOpenChange(false);
   }
 
   function handleResetConfirm() {
     sendAction({ type: 'RESET_TABLE' });
-    setConfirmReset(false);
-    setOpen(false);
+    handleOpenChange(false);
   }
 
   return (
