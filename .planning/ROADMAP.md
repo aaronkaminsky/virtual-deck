@@ -59,7 +59,7 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 
 - [x] **Phase 16.1: Fix PartyKit CI Deploy** (INSERTED) — Add `partykit deploy` step to GitHub Actions workflow so server and client are always deployed together on push to main (completed 2026-05-03)
 - [x] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select (completed 2026-05-03)
-- [ ] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button
+- [x] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button (completed 2026-05-04)
 - [ ] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling
 - [ ] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone
 - [ ] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract
@@ -102,7 +102,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 18-01-PLAN.md — Wave 1: Write Vitest contract tests for ControlsBar collapse logic (auto-close, confirmReset reset, enabled/disabled derivation) before the rewrite
-- [ ] 18-02-PLAN.md — Wave 2: Rewrite ControlsBar as single Popover with Copy link + Deal stepper + Undo + inline two-step Reset; excise Copy link block from BoardView (paired edit) — manual smoke checkpoint
+- [x] 18-02-PLAN.md — Wave 2: Rewrite ControlsBar as single Popover with Copy link + Deal stepper + Undo + inline two-step Reset; excise Copy link block from BoardView (paired edit) — manual smoke checkpoint
 **UI hint**: yes
 
 ### Phase 19: Responsive Layout
@@ -185,7 +185,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 16. Developer README | v1.2 | 1/1 | Complete | 2026-04-29 |
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 1/1 | Complete    | 2026-05-03 |
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
-| 18. Controls Collapse | v1.3 | 1/2 | In Progress|  |
+| 18. Controls Collapse | v1.3 | 2/2 | Complete   | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 0/TBD | Not started | — |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
