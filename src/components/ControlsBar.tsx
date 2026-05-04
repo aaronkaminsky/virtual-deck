@@ -63,7 +63,7 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger render={
-        <Button variant="outline" size="icon-sm" aria-label={open ? 'Close controls' : 'Open controls'}>
+        <Button variant="ghost" size="icon-sm" aria-label={open ? 'Close controls' : 'Open controls'}>
           <Menu className="size-4" />
         </Button>
       } />
@@ -131,14 +131,16 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
           </div>
 
           {confirmReset && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground flex-1">Are you sure?</span>
-              <Button variant="outline" size="sm" onClick={() => setConfirmReset(false)}>
-                Keep playing
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleResetConfirm}>
-                Reset table
-              </Button>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm text-muted-foreground">Are you sure?</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => setConfirmReset(false)}>
+                  Keep playing
+                </Button>
+                <Button variant="destructive" size="sm" className="flex-1" onClick={handleResetConfirm}>
+                  Reset table
+                </Button>
+              </div>
             </div>
           )}
         </div>
