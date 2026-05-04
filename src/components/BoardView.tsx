@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
-import { Button } from '@/components/ui/button';
+
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
@@ -22,23 +20,10 @@ interface BoardViewProps {
 }
 
 export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect }: BoardViewProps) {
-  const [copied, setCopied] = useState(false);
-
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
   const communalZone = spreadPiles.find(p => p.id === 'play');
-
-  const handleCopy = () => {
-    const base = import.meta.env.BASE_URL || '/virtual-deck/';
-    const url = `${window.location.origin}${base}?room=${roomId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      // Clipboard write failed (e.g., permission denied or non-HTTPS context)
-    });
-  };
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
@@ -65,25 +50,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           })}
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopy}
-            aria-label="Copy room link"
-          >
-            {copied ? (
-              <>
-                <Check className="mr-2 size-4" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="mr-2 size-4" />
-                Copy link
-              </>
-            )}
-          </Button>
-          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} />
+          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} />
         </div>
       </div>
 
