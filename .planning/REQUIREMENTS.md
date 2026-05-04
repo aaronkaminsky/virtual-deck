@@ -10,7 +10,7 @@ Redesign the board so it reads as a shared physical space — communal zone cent
 
 - [x] **LAYOUT-01**: Player can view the communal spread zone physically centered on the board, between opponent zones (top) and their own hand (bottom)
 - [x] **LAYOUT-02**: Board vertical proportions give all zones usable space without scrolling on a standard 1080p desktop viewport
-- [ ] **LAYOUT-03**: Player can access all game controls from a collapsible panel triggered by a single header button; controls are hidden by default
+- [x] **LAYOUT-03**: Player can access all game controls from a collapsible panel triggered by a single header button; controls are hidden by default
 - [ ] **LAYOUT-04**: Board is usable at phone-width screens (≥375px) without horizontal scrolling; pointer/mouse interaction only (no touch drag)
 
 ### Spread Zones
@@ -40,7 +40,7 @@ Deferred to a later milestone:
 |--------|-------|--------|
 | LAYOUT-01 | Phase 17 | Complete |
 | LAYOUT-02 | Phase 17 | Complete |
-| LAYOUT-03 | Phase 18 | Pending |
+| LAYOUT-03 | Phase 18 | Complete |
 | LAYOUT-04 | Phase 19 | Pending |
 | SPREAD-01 | Phase 20 | Pending |
 | SPREAD-02 | Phase 21 | Pending |
