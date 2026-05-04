@@ -101,7 +101,7 @@ Plans:
   4. Closing the panel returns focus to the board with no controls visible
 **Plans**: 2 plans
 Plans:
-- [ ] 18-01-PLAN.md — Wave 1: Write Vitest contract tests for ControlsBar collapse logic (auto-close, confirmReset reset, enabled/disabled derivation) before the rewrite
+- [x] 18-01-PLAN.md — Wave 1: Write Vitest contract tests for ControlsBar collapse logic (auto-close, confirmReset reset, enabled/disabled derivation) before the rewrite
 - [ ] 18-02-PLAN.md — Wave 2: Rewrite ControlsBar as single Popover with Copy link + Deal stepper + Undo + inline two-step Reset; excise Copy link block from BoardView (paired edit) — manual smoke checkpoint
 **UI hint**: yes
 
@@ -185,7 +185,7 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 16. Developer README | v1.2 | 1/1 | Complete | 2026-04-29 |
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 1/1 | Complete    | 2026-05-03 |
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
-| 18. Controls Collapse | v1.3 | 0/2 | Not started | — |
+| 18. Controls Collapse | v1.3 | 1/2 | In Progress|  |
 | 19. Responsive Layout | v1.3 | 0/TBD | Not started | — |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |

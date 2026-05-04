@@ -4,8 +4,8 @@ milestone: v1.3
 milestone_name: Layout & UX Polish
 status: executing
 stopped_at: Phase 18 UI-SPEC approved
-last_updated: "2026-05-04T12:36:16.859Z"
-last_activity: 2026-05-04 -- Phase 18 planning complete
+last_updated: "2026-05-04T12:40:28.147Z"
+last_activity: 2026-05-04 -- Phase 18 execution started
 progress:
   total_phases: 8
   completed_phases: 2
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-01)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 16.1 — fix-partykit-ci-deploy
+**Current focus:** Phase 18 — controls-collapse
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-04 -- Phase 18 planning complete
+Phase: 18 (controls-collapse) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 18
+Last activity: 2026-05-04 -- Phase 18 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
