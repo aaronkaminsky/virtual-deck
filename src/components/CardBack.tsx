@@ -11,7 +11,7 @@ export function CardBack({ className }: CardBackProps) {
       <img
         src={CARD_BACK_URL}
         alt="Card back"
-        className={cn('w-[63px] h-[88px] rounded-md select-none object-cover', className)}
+        className={cn('w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] rounded-md select-none object-cover', className)}
         draggable={false}
       />
     );
@@ -19,7 +19,7 @@ export function CardBack({ className }: CardBackProps) {
 
   return (
     <div
-      className={cn('w-[63px] h-[88px] rounded-md border border-gray-600 select-none', className)}
+      className={cn('w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] rounded-md border border-gray-600 select-none', className)}
       style={{
         background:
           'repeating-linear-gradient(45deg, #1e3a5f 0, #1e3a5f 1px, transparent 0, transparent 50%), repeating-linear-gradient(-45deg, #1e3a5f 0, #1e3a5f 1px, transparent 0, transparent 50%)',
