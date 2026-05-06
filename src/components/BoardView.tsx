@@ -26,7 +26,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const communalZone = spreadPiles.find(p => p.id === 'play');
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
+    <div className="h-screen w-screen overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-x-auto">
