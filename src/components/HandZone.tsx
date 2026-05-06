@@ -36,7 +36,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
 
   return (
     <div
-      className={cn('relative w-[63px] h-[88px] flex-shrink-0', index > 0 ? '-ml-5' : '')}
+      className={cn('relative w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
       onClick={() => onToggleSelect(card.id)}
       onPointerDown={(e) => e.stopPropagation()}
     >
@@ -121,7 +121,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
-          'h-[128px] flex items-center px-4 overflow-x-auto bg-card',
+          'h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card',
           isOver ? 'border-t-2 border-primary' : ''
         )}
       >

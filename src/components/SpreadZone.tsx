@@ -33,7 +33,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpr
       style={style}
       {...listeners}
       {...attributes}
-      className={cn('flex-shrink-0', index > 0 ? '-ml-5' : '')}
+      className={cn('flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
     >
       {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
@@ -92,7 +92,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
         className={cn(
-          'min-w-[80px] h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
+          'min-w-[56px] h-[79px] sm:min-w-[80px] sm:h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
           isEmpty ? 'border-dashed' : '',
           isOver ? 'border-primary' : 'border-border',
           className
@@ -115,7 +115,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
                       draggingCardId={draggingCardId}
                     />
                   ) : (
-                    <div className={cn('flex-shrink-0', i > 0 ? '-ml-5' : '')}>
+                    <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
                       <CardBack />
                     </div>
                   )}
