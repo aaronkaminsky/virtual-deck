@@ -186,6 +186,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 1/1 | Complete    | 2026-05-03 |
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
-| 19. Responsive Layout | v1.3 | 1/3 | In Progress|  |
+| 19. Responsive Layout | v1.3 | 2/3 | In Progress|  |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
