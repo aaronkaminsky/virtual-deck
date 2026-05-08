@@ -26,16 +26,17 @@ result: passed
 
 ### 4. All zones visible at 375px — final confirmation after gap closure
 expected: All three pile columns (Draw, Discard, Play Area) visible without horizontal clipping. Opponent hand shows at most 5 cards. Opponent column stays within viewport. All zones accessible by vertical scroll. No zone cropped off-screen horizontally.
-result: [pending]
+result: failed — opponent hand is slightly clipped; last card back and count badge are not visible at 375px. Root cause: max-w-[160px] on the per-opponent column wrapper is too narrow to fully show 5 overlapping 42px cards plus the badge.
 
 ## Summary
 
 total: 4
 passed: 2
-issues: 1
-pending: 1
+issues: 2
+pending: 0
 skipped: 0
 blocked: 0
+open_gaps: 3
 
 ## Gaps
 
@@ -50,3 +51,15 @@ detail: OpponentHand caps visible card-back strip at MAX_VISIBLE_OPPONENT_CARDS=
 ### Gap 3: Opponent spread zone overflows viewport
 status: resolved
 detail: Per-opponent column wrapper in BoardView bounded at max-w-[160px] sm:max-w-none overflow-x-hidden. Fixed in Plan 05, commit 315e36d.
+
+### Gap 4: Opponent column too narrow — last card and badge clipped
+status: failed
+detail: max-w-[160px] clips the OpponentHand at 375px. Five 42px cards with -ml-3 (12px) overlap need ~162px for the strip alone; the count badge adds another ~24px. Fix: widen the column cap to max-w-[200px] or reduce MAX_VISIBLE_OPPONENT_CARDS to 4 (which fits in ~136px + badge = ~160px).
+
+### Gap 5: Hamburger menu not fixed at top — scrolls under opponent hand area
+status: failed
+detail: At 375px the hamburger (controls collapse) menu does not stay at the top of the viewport; it appears under or behind the opponent hand area. Fix: ensure the header/controls bar has a fixed or sticky position above the board scroll area.
+
+### Gap 6: Opponent area too narrow when only one opponent — should fill available width
+status: failed
+detail: When there is only one opponent the column is pinned to max-w-[160px] even though the rest of the horizontal space is empty. Fix: let the opponent column grow to fill available space up to the edge of the hamburger menu (e.g. flex-1 or a wider max-w) when there is only one opponent.
