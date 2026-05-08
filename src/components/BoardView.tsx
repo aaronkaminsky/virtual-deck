@@ -34,7 +34,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             const player = gameState.players.find(p => p.id === id);
             const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
             return (
-              <div key={id} className="flex flex-col gap-1">
+              <div key={id} className="flex flex-col gap-1 max-w-[160px] sm:max-w-none overflow-x-hidden">
                 <OpponentHand
                   playerId={id}
                   cardCount={count}

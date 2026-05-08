@@ -4,6 +4,8 @@ import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 import type { ClientAction } from '@/shared/types';
 
+const MAX_VISIBLE_OPPONENT_CARDS = 5;
+
 interface OpponentHandProps {
   playerId: string;
   cardCount: number;
@@ -41,7 +43,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
       </div>
       <div className="flex items-center gap-1">
         <div className="flex items-center">
-          {Array.from({ length: cardCount }).map((_, i) => (
+          {Array.from({ length: Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS) }).map((_, i) => (
             <CardBack
               key={i}
               className={cn('w-[42px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
