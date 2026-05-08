@@ -3,12 +3,12 @@ status: partial
 phase: 19-npm-audit
 source: [19-VERIFICATION.md]
 started: 2026-05-06T06:40:00Z
-updated: 2026-05-08T13:20:00Z
+updated: 2026-05-08T14:55:00Z
 ---
 
 ## Current Test
 
-Final visual confirmation required at 375px after gap-closure plans 04 and 05.
+Final visual confirmation required at 375px after gap-closure plan 06 (sticky header, adaptive opponent column, max-w-[200px] fix).
 
 ## Tests
 
@@ -28,12 +28,16 @@ result: passed
 expected: All three pile columns (Draw, Discard, Play Area) visible without horizontal clipping. Opponent hand shows at most 5 cards. Opponent column stays within viewport. All zones accessible by vertical scroll. No zone cropped off-screen horizontally.
 result: failed — opponent hand is slightly clipped; last card back and count badge are not visible at 375px. Root cause: max-w-[160px] on the per-opponent column wrapper is too narrow to fully show 5 overlapping 42px cards plus the badge.
 
+### 5. All zones visible at 375px — Plan 06 final pass (sticky header + adaptive opponent column)
+expected: All three pile columns visible. Opponent hand strip (5 cards + Badge) fully unclipped at max-w-[200px]. Sticky header (opponent strip + hamburger) stays pinned to top of viewport when board is scrolled vertically (z-20). With exactly 1 opponent the column fills available row width (flex-1 max-w-none). With 2+ opponents each column bounded to max-w-[200px]. No horizontal clipping on any zone. Desktop (sm:) behavior unchanged.
+result: [pending]
+
 ## Summary
 
-total: 4
+total: 5
 passed: 2
 issues: 2
-pending: 0
+pending: 1
 skipped: 0
 blocked: 0
 open_gaps: 3
@@ -53,13 +57,13 @@ status: resolved
 detail: Per-opponent column wrapper in BoardView bounded at max-w-[160px] sm:max-w-none overflow-x-hidden. Fixed in Plan 05, commit 315e36d.
 
 ### Gap 4: Opponent column too narrow — last card and badge clipped
-status: failed
-detail: max-w-[160px] clips the OpponentHand at 375px. Five 42px cards with -ml-3 (12px) overlap need ~162px for the strip alone; the count badge adds another ~24px. Fix: widen the column cap to max-w-[200px] or reduce MAX_VISIBLE_OPPONENT_CARDS to 4 (which fits in ~136px + badge = ~160px).
+status: pending-verification
+detail: max-w-[160px] clips the OpponentHand at 375px. Fixed in Plan 06 (commit 602e4c3): per-opponent column widened to max-w-[200px] when 2+ opponents. Awaiting final visual confirmation.
 
 ### Gap 5: Hamburger menu not fixed at top — scrolls under opponent hand area
-status: failed
-detail: At 375px the hamburger (controls collapse) menu does not stay at the top of the viewport; it appears under or behind the opponent hand area. Fix: ensure the header/controls bar has a fixed or sticky position above the board scroll area.
+status: pending-verification
+detail: At 375px the hamburger (controls collapse) menu does not stay at the top of the viewport. Fixed in Plan 06 (commit 602e4c3): header bar given sticky top-0 z-20. Awaiting final visual confirmation.
 
 ### Gap 6: Opponent area too narrow when only one opponent — should fill available width
-status: failed
-detail: When there is only one opponent the column is pinned to max-w-[160px] even though the rest of the horizontal space is empty. Fix: let the opponent column grow to fill available space up to the edge of the hamburger menu (e.g. flex-1 or a wider max-w) when there is only one opponent.
+status: pending-verification
+detail: When there is only one opponent the column is pinned to a fixed cap leaving empty space. Fixed in Plan 06 (commit 602e4c3): per-opponent column uses flex-1 max-w-none when opponentCount === 1. Awaiting final visual confirmation.
