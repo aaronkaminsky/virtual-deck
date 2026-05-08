@@ -60,7 +60,7 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 - [x] **Phase 16.1: Fix PartyKit CI Deploy** (INSERTED) — Add `partykit deploy` step to GitHub Actions workflow so server and client are always deployed together on push to main (completed 2026-05-03)
 - [x] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select (completed 2026-05-03)
 - [x] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button (completed 2026-05-04)
-- [ ] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling
+- [x] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling (completed 2026-05-08)
 - [ ] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone
 - [ ] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract
 
@@ -119,9 +119,9 @@ Plans:
 - [x] 19-01-PLAN.md — Wave 1: Playwright RED gate at 375x667 — `playwright/responsive.spec.ts` asserts no horizontal scroll
 - [x] 19-02-PLAN.md — Wave 2: Responsive size classes on `CardFace.tsx` and `CardBack.tsx` (both render paths)
 - [x] 19-03-PLAN.md — Wave 2: Responsive zone containers + BoardView root overflow (PileZone, SpreadZone, HandZone, BoardView) — flips Plan 01 gate GREEN
-- [ ] 19-04-PLAN.md — Wave 4 (gap closure): Replace PileZone text labels with lucide icon buttons; flip LAYOUT-04 in REQUIREMENTS.md
-- [ ] 19-05-PLAN.md — Wave 4 (gap closure): Cap OpponentHand at 5 visible cards; clamp opponent column wrapper width in BoardView
-- [ ] 19-06-PLAN.md — Wave 5 (gap closure): Sticky header (Gap 5) + adaptive opponent column width — fill row when 1 opponent (Gap 6), max-w-[200px] when 2+ (Gap 4) in BoardView
+- [x] 19-04-PLAN.md — Wave 4 (gap closure): Replace PileZone text labels with lucide icon buttons; flip LAYOUT-04 in REQUIREMENTS.md
+- [x] 19-05-PLAN.md — Wave 4 (gap closure): Cap OpponentHand at 5 visible cards; clamp opponent column wrapper width in BoardView
+- [x] 19-06-PLAN.md — Wave 5 (gap closure): Sticky header (Gap 5) + adaptive opponent column width — fill row when 1 opponent (Gap 6), max-w-[200px] when 2+ (Gap 4) in BoardView
 **UI hint**: yes
 
 ### Phase 20: Spread Zone Multi-Select
@@ -193,6 +193,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 1/1 | Complete    | 2026-05-03 |
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
-| 19. Responsive Layout | v1.3 | 3/5 | In Progress|  |
+| 19. Responsive Layout | v1.3 | 6/6 | Complete   | 2026-05-08 |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
