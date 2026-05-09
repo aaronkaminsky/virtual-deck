@@ -30,12 +30,12 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
     <div className="h-screen w-screen overflow-x-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
-        <div className="flex items-start gap-4 flex-1 overflow-x-auto">
+        <div className="flex items-start gap-4 flex-1 overflow-hidden">
           {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
             const player = gameState.players.find(p => p.id === id);
             const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
             return (
-              <div key={id} className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'max-w-[200px]'} sm:max-w-none overflow-x-hidden`}>
+              <div key={id} className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
                 <OpponentHand
                   playerId={id}
                   cardCount={count}
