@@ -38,14 +38,14 @@ result: partial — Gap 7 resolved (desktop shows all content without vertical s
 
 ### 7. Final visual pass — Plans 07-10 all in place (pending)
 expected: All three pile columns visible. Badge inline in name row (not on card stack). With 2 opponents each column gets ~50% of header row. Hamburger pinned to top-right of header. Header anchored to top. No horizontal clipping anywhere.
-result: [pending — run at localhost:5173 at 375x667 iPhone SE preset]
+result: passed — user confirmed: badge "(N)" inline next to name, hamburger top-right, spread zone Eye icon visible. Approved 2026-05-09.
 
 ## Summary
 
 total: 7
-passed: 3
+passed: 4
 issues: 3
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 open_gaps: 0
