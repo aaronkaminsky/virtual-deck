@@ -1,14 +1,14 @@
 ---
-status: diagnosed
+status: partial
 phase: 19-npm-audit
 source: [19-VERIFICATION.md]
 started: 2026-05-06T06:40:00Z
-updated: 2026-05-09T07:15:00Z
+updated: 2026-05-09T15:00:00Z
 ---
 
 ## Current Test
 
-Plan 07 UAT complete: Gap 5 and Gap 7 structurally fixed by BoardView layout restructure (commit 789522d). Three new gaps found during UAT — targeted gap plans being written.
+Plans 08-10 complete (code-verified). Final visual pass at 375x667 required to confirm SC2 with all ten plans in place.
 
 ## Tests
 
@@ -36,15 +36,19 @@ result: partial — Gaps 4 (max-w-[200px]) and 6 (flex-1 single opponent) approv
 expected: Header stays pinned at top on phone scroll (Gap 5). Desktop shows all 4 content regions without vertical scrollbar (Gap 7). No regressions to Gaps 1–4, 6.
 result: partial — Gap 7 resolved (desktop shows all content without vertical scroll, confirmed). Gap 5 structurally resolved (header is flex-layout anchored above scroll container, not position:sticky). Three new gaps found: Gap 8 (hamburger not top-aligned in tall header), Gap 9 (card count badge clipped on mobile), Gap 10 (opponent column pushed off-screen when play area expands). Approved for Task 1; gaps 8–10 require gap plans.
 
+### 7. Final visual pass — Plans 07-10 all in place (pending)
+expected: All three pile columns visible. Badge inline in name row (not on card stack). With 2 opponents each column gets ~50% of header row. Hamburger pinned to top-right of header. Header anchored to top. No horizontal clipping anywhere.
+result: [pending — run at localhost:5173 at 375x667 iPhone SE preset]
+
 ## Summary
 
-total: 6
+total: 7
 passed: 3
 issues: 3
-pending: 0
+pending: 1
 skipped: 0
 blocked: 0
-open_gaps: 3
+open_gaps: 0
 
 ## Gaps
 
@@ -77,13 +81,13 @@ status: resolved
 detail: Plan 07 (commit 789522d) introduced a flex-1 min-h-0 inner scroll container with sm:overflow-hidden. On desktop, center row uses flex-1 min-h-0 (proportional shrink) and mySpreadZone uses flex-shrink-0. All 4 content regions fit viewport with no vertical scrollbar. Confirmed by user UAT 2026-05-09.
 
 ### Gap 8: Hamburger button not top-aligned in tall header
-status: failed
-detail: The ControlsBar wrapper uses flex items-center gap-3 inside a header with items-center justify-between. When opponent strips are tall (card backs + spread zones), the hamburger is vertically centered in the header rather than pinned to the top-right. Fix: add self-start to the ControlsBar wrapper div so it aligns to the top of the header regardless of sibling height. Plan 19-08.
+status: resolved
+detail: Plan 19-08 (commit 5902e86) added self-start to the ControlsBar wrapper div. Hamburger is now pinned to top-right of the header regardless of how tall the opponent strips grow. Code-verified 2026-05-09.
 
 ### Gap 9: Opponent card count badge clipped on mobile
-status: failed
-detail: The count badge (orange circle) is absolutely positioned relative to the card back stack. At 375px with max-w-[200px] per-opponent columns, the badge overflows or is clipped by the column boundary. Fix: move the count inline next to the player name above the card backs in OpponentHand, removing the absolute-positioned badge. Plan 19-09.
+status: resolved
+detail: Plan 19-09 (commit 9efda66) moved card count from absolute-positioned overlay on the card stack to an inline Badge in the player name row. Count is always visible at any column width since the name row spans the full column. Code-verified 2026-05-09.
 
 ### Gap 10: Opponent column pushed off-screen when play area has many cards
-status: failed
-detail: The opponents row uses overflow-x-auto, allowing involuntary horizontal scroll. When the communal play area SpreadZone has many cards and the layout recalculates, the opponents row scrolls to expose overflow and the user cannot scroll back. Fix: remove overflow-x-auto from the opponents row (use overflow-hidden), change per-opponent columns to flex-1 min-w-0 (equal-width split) instead of fixed max-w-[200px] at mobile, ensuring both columns always fit within the viewport width. Plan 19-10.
+status: resolved
+detail: Plan 19-10 (commit 25646bf) changed opponents row from overflow-x-auto to overflow-hidden (no more involuntary scroll) and changed multi-opponent columns from max-w-[200px] to flex-1 min-w-0 (equal ~50% split for 2 opponents). Code-verified 2026-05-09. Note: code review flagged that at 3+ opponents each column may compress below card stack width — visual confirmation recommended.

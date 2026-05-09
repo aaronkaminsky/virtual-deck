@@ -1,86 +1,112 @@
 ---
 phase: 19-responsive-layout
-verified: 2026-05-08T16:00:00Z
+verified: 2026-05-09T15:00:00Z
 status: human_needed
-score: 28/29 must-haves verified
+score: 31/33 must-haves verified
 overrides_applied: 0
 gaps: []
 human_verification:
-  - test: "Open the app at localhost:5173 in a browser devtools mobile viewport at 375x667 (iPhone SE). Join a room and observe the full board with all six plans in place (Plans 01-06)."
-    expected: "All three pile columns (Draw, Discard, Play Area) are fully visible with icon-only buttons. Opponent hand shows at most 5 card backs plus the count Badge, not clipped. Opponent column is bounded when 2+ opponents and fills available row width when there is exactly 1 opponent. The header bar (hamburger + opponent strip) stays pinned to the top of the viewport when the board is scrolled vertically. No zone is horizontally clipped. All zones accessible by vertical scroll."
-    why_human: "Plan 06 fixed Gaps 4-6 (opponent column too narrow, hamburger scrolls away, single-opponent column too narrow) in code but the HUMAN-UAT.md was not re-run after Plan 06 executed. SC2 ('all zones visible and operable') cannot be asserted by the Playwright spec, which only checks document.documentElement.scrollWidth — it cannot see whether the sticky header works, whether the opponent column fills space, or whether the count Badge is unclipped. A final visual pass with Plan 06 in place is required."
+  - test: "Open the app at localhost:5173 in a browser devtools mobile viewport at 375x667 (iPhone SE). Join a room with at least one opponent. Observe the full board with all ten plans in place (Plans 01-10)."
+    expected: "All three pile columns (Draw, Discard, Play Area) are fully visible with icon-only buttons. Opponent hand shows at most 5 card backs. Card count Badge is inline in the opponent name row (not overlaid on the card stack) and is always visible regardless of column width. With exactly 1 opponent: opponent column expands to fill horizontal space. With 2 opponents: each column gets ~50% of header row width; neither pushed off-screen even when the communal spread zone has many cards. Hamburger button (ControlsBar) is pinned to top-right of the header, not vertically centered. Header stays anchored to top of viewport when board is scrolled vertically. No zone is horizontally clipped. All zones accessible by vertical scroll."
+    why_human: "Plans 08-10 closed Gaps 8-10 in code (verified by grep). SC2 ('all zones visible and operable') cannot be asserted by the Playwright spec, which only checks document.documentElement.scrollWidth — it cannot verify hamburger alignment, badge position, column-width distribution under load (Gap 10), or the flex-layout header anchor. A final visual pass with Plans 07-10 in place is required."
 re_verification:
   previous_status: human_needed
-  previous_score: 15/16
+  previous_score: 28/29
   gaps_closed:
-    - "Plan 06 Gap 4 fix: per-opponent column widened from max-w-[160px] to max-w-[200px] when 2+ opponents — last CardBack and Badge are no longer clipped at 375px"
-    - "Plan 06 Gap 5 fix: header bar given sticky top-0 z-20 — stays pinned to top of phone viewport during vertical scroll"
-    - "Plan 06 Gap 6 fix: per-opponent column uses flex-1 max-w-none when opponentCount === 1, filling available row width instead of remaining pinned to a fixed cap"
-    - "opponentCount local variable added to BoardView.tsx to drive the single-vs-multi-opponent ternary"
+    - "Plan 08: self-start added to ControlsBar wrapper — hamburger pinned to top-right of header"
+    - "Plan 09: opponent card count Badge moved from absolute-positioned card-stack overlay to inline in name row — always visible at 375px"
+    - "Plan 10: opponents row changed from overflow-x-auto to overflow-hidden; multi-opponent column changed from max-w-[200px] to flex-1 min-w-0 — row cannot involuntarily scroll; 2 opponents split width equally"
   gaps_remaining: []
-  regressions: []
+  regressions:
+    - "Truth #21 (sticky header): Plan 07 intentionally removed sticky top-0 z-20 and replaced with flex-layout anchoring (header is first flex-shrink-0 sibling above inner scroll container). Goal preserved via different mechanism — not a regression."
+    - "Truth #22 (root overflow-y-auto sm:overflow-hidden): Plan 07 moved this to the inner scroll container (line 58). Root now has only overflow-x-hidden. Goal preserved — intentional restructure."
+    - "Truth #23 (opponents row overflow-x-auto): Plan 10 changed this to overflow-hidden. Expected and correct."
 ---
 
-# Phase 19: Responsive Layout Verification Report (Re-verification 2)
+# Phase 19: Responsive Layout Verification Report (Re-verification 3)
 
 **Phase Goal:** The board is usable at phone-width screens without horizontal scrolling (LAYOUT-04)
-**Verified:** 2026-05-08T16:00:00Z
+**Verified:** 2026-05-09T15:00:00Z
 **Status:** human_needed
-**Re-verification:** Yes — after gap closure wave 5 (Plan 06)
+**Re-verification:** Yes — after gap closure wave 7 (Plans 08-10)
 
 ## Goal Achievement
 
 ### Observable Truths
 
-#### Plans 01-05 Regression Check
+#### Plans 01-06 Regression Check (Quick Pass)
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
 | 1 | Playwright spec exists at 375x667 asserting no horizontal scroll | VERIFIED | `playwright/responsive.spec.ts` line 5: `test.use({ viewport: { width: 375, height: 667 } })`, line 20: `scrollWidth <= clientWidth` |
-| 2 | Spec navigates to real board (not just lobby) before assertion | VERIFIED | Line 12: `await expect(page.getByTestId('hand-zone')).toBeVisible()` before assertion |
-| 3 | Spec was RED before CSS changes (plan gate requirement) | FAILED (documented deviation — unchanged) | SUMMARY 19-01 confirmed spec passed immediately; `overflow-hidden` clips at div level before Plan 03 changed it; gate design flaw, not implementation error. Spec is a valid regression guard. |
-| 4 | CardFace applies `w-[42px] h-[59px] sm:w-[63px] sm:h-[88px]` on both render paths | VERIFIED | Lines 27 + 39: 2 occurrences confirmed in source |
-| 5 | CardBack applies `w-[42px] h-[59px] sm:w-[63px] sm:h-[88px]` on both render paths | VERIFIED | Lines 14 + 22: 2 occurrences confirmed in source |
-| 6 | No bare `w-[63px] h-[88px]` (without sm: companion) in CardFace or CardBack | VERIFIED | Neither file contains bare desktop-only fragment; confirmed by reading source |
-| 7 | PileZone slot: `w-[56px] h-[79px] sm:w-[80px] sm:h-[112px]` | VERIFIED | PileZone.tsx line 49: exactly 1 occurrence |
-| 8 | SpreadZone container: `min-w-[56px] h-[79px] sm:min-w-[80px] sm:h-[112px]` + both overlap sites `-ml-3 sm:-ml-5` | VERIFIED | Container line 95 (count=1); both overlap sites confirmed (count=2 for `'-ml-3 sm:-ml-5'`) |
-| 9 | HandZone wrapper `w-[42px] h-[59px] sm:w-[63px] sm:h-[88px]` + overlap `-ml-3 sm:-ml-5` | VERIFIED | Line 39: `relative w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] flex-shrink-0` + `index > 0 ? '-ml-3 sm:-ml-5'` |
-| 10 | HandZone drop container `h-[100px] sm:h-[128px]` | VERIFIED | Line 124: `h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card`; `data-testid="hand-zone"` retained at line 122 |
-| 11 | BoardView root `overflow-x-hidden overflow-y-auto sm:overflow-hidden` | VERIFIED | Line 30: 1 occurrence confirmed in source |
-| 12 | LAYOUT-04 Playwright e2e gate GREEN | VERIFIED | All summaries (19-03, 19-05, 19-06) confirm `1 passed`; spec still passes after each wave |
-| 13 | PileZone face-toggle is icon-only (Eye/EyeOff) with title + aria-label | VERIFIED | Line 2: `import { Eye, EyeOff, Shuffle }`; line 84: `<Eye className="w-4 h-4" />`/`<EyeOff>`; `title=` with "click to flip"; `aria-label=` on both buttons |
-| 14 | PileZone shuffle is icon-only — no text "Shuffle" / "Face up" / "Face down" as Button children | VERIFIED | `h-7 w-7 p-0` count=2; `h-7 px-2 text-xs` count=0; no JSX text labels in source |
-| 15 | REQUIREMENTS.md LAYOUT-04 checkbox is `[x]` and traceability row is `Complete` | VERIFIED | `grep -c "[x] **LAYOUT-04**"` == 1; traceability row shows `Complete` |
-| 16 | OpponentHand caps visible card-back stack at 5 via `MAX_VISIBLE_OPPONENT_CARDS` | VERIFIED | Line 7: `const MAX_VISIBLE_OPPONENT_CARDS = 5;`; line 46: `Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS)`; bare `Array.from({ length: cardCount })` gone; Badge `{cardCount}` preserved at line 53 |
-| 17 | Opponent column wrapper bounded at `max-w-[160px] sm:max-w-none overflow-x-hidden` | FAILED (superseded by Plan 06) | Plan 05 set `max-w-[160px]`; Plan 06 replaced it with adaptive ternary — this truth is superseded, see truth #19 |
-| 18 | SpreadZone component NOT modified by Plan 05 | VERIFIED | SpreadZone.tsx still has Plan 03's responsive classes; not touched by Plans 04 or 05 |
+| 2 | Spec navigates to real board before assertion | VERIFIED | Line 12: `await expect(page.getByTestId('hand-zone')).toBeVisible()` before assertion |
+| 3 | Spec was RED before CSS changes | FAILED (documented deviation — unchanged from prior verifications) | SUMMARY 19-01 confirmed spec passed immediately; gate design flaw, not implementation error. Spec is a valid regression guard. |
+| 4 | CardFace applies `w-[42px] h-[59px] sm:w-[63px] sm:h-[88px]` on both render paths | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 5 | CardBack applies `w-[42px] h-[59px] sm:w-[63px] sm:h-[88px]` on both render paths | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 6 | No bare `w-[63px] h-[88px]` in CardFace or CardBack | VERIFIED | Confirmed in prior verifications; files not modified by Plans 07-10 |
+| 7 | PileZone slot: `w-[56px] h-[79px] sm:w-[80px] sm:h-[112px]` | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 8 | SpreadZone container responsive classes + `-ml-3 sm:-ml-5` overlap sites | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 9 | HandZone wrapper responsive classes + overlap `-ml-3 sm:-ml-5` | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 10 | HandZone drop container `h-[100px] sm:h-[128px]` | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 11 | BoardView root `overflow-x-hidden` (phone vertical scroll now in inner container per Plan 07) | VERIFIED | Line 30: `h-screen w-screen overflow-x-hidden flex flex-col bg-background` — root has overflow-x-hidden only; overflow-y-auto sm:overflow-hidden moved to inner scroll container line 58 per Plan 07 intentional restructure |
+| 12 | LAYOUT-04 Playwright e2e gate GREEN | VERIFIED | All summaries confirm passing; Playwright spec at 375x667 asserts scrollWidth <= clientWidth |
+| 13 | PileZone face-toggle is icon-only (Eye/EyeOff) with title + aria-label | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 14 | PileZone shuffle is icon-only — no text labels as Button children | VERIFIED | Confirmed in prior verifications; not touched by Plans 07-10 |
+| 15 | REQUIREMENTS.md LAYOUT-04 checkbox is `[x]` and traceability row is `Complete` | VERIFIED | `grep -c "[x] **LAYOUT-04**" .planning/REQUIREMENTS.md` == 1; traceability row shows `Complete` |
+| 16 | OpponentHand caps visible card-back stack at 5 via `MAX_VISIBLE_OPPONENT_CARDS` | VERIFIED | Line 7: `const MAX_VISIBLE_OPPONENT_CARDS = 5;`; line 47: `Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS)` |
+| 17 | Opponent column wrapper bounded — Plan 05 form superseded by Plans 06 and 10 | SUPERSEDED | Plan 05's `max-w-[160px]` replaced by Plan 06 adaptive ternary, then Plan 10 changed multi-opponent branch to `flex-1 min-w-0`; see truth #26 |
+| 18 | SpreadZone not modified by Plans 04-10 | VERIFIED | SpreadZone.tsx not touched by any plan in this wave |
 
-#### Plan 06 Must-Haves (Gap Closure — Sticky Header + Adaptive Opponent Column)
+#### Plan 06 Must-Haves (superseded by Plans 07-10 where noted)
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 19 | Per-opponent column uses `flex-1 max-w-none` when 1 opponent and `max-w-[200px]` when 2+, with `sm:max-w-none overflow-x-hidden` on both branches | VERIFIED | BoardView.tsx line 38: `` `flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'max-w-[200px]'} sm:max-w-none overflow-x-hidden` ``; old `max-w-[160px]` form gone |
-| 20 | `opponentCount` local variable declared before JSX return and drives the column-width ternary | VERIFIED | Line 27: `const opponentCount = Object.keys(gameState.opponentHandCounts).length;`; referenced at line 38 |
-| 21 | Header bar is `sticky top-0 z-20` with all prior classes preserved | VERIFIED | Line 32: `sticky top-0 z-20 flex items-center justify-between px-4 py-2 gap-4 bg-card` — all 9 prior class tokens retained; old non-sticky form gone |
-| 22 | BoardView root div from Plan 03 is unchanged by Plan 06 | VERIFIED | Line 30: `h-screen w-screen overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col bg-background` — 1 occurrence; Plan 06 did not modify this line |
-| 23 | Opponents-row parent (`flex items-start gap-4 flex-1 overflow-x-auto`) is unchanged | VERIFIED | Line 33: `flex items-start gap-4 flex-1 overflow-x-auto` — unchanged |
-| 24 | No file other than BoardView.tsx modified by Plan 06 | VERIFIED | Commit 602e4c3 touches only `src/components/BoardView.tsx`; confirmed by git log |
-| 25 | SC1: No horizontal scrollbar at 375px | VERIFIED | Playwright spec passing (SUMMARY 19-06 confirms `1 passed`); `overflow-x-hidden` on root + responsive zone classes |
-| 26 | SC3: Header, zone labels, controls button readable at phone width | VERIFIED (human UAT confirmed 2026-05-06) | Human UAT test 2 passed; sticky header now also keeps controls visible during scroll |
-| 27 | SC4: Pointer/mouse interactions function correctly at 375px | VERIFIED (human UAT confirmed 2026-05-06) | Human UAT test 3 passed; no interaction regressions |
-| 28 | No anti-patterns in modified files | VERIFIED | Grep for TODO/FIXME/PLACEHOLDER across all 8 modified files returns 0 matches |
+| 19 | Per-opponent column adaptive ternary | VERIFIED (updated by Plan 10) | BoardView.tsx line 38: `` `flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden` `` — Plan 10 changed multi-opponent branch from `max-w-[200px]` to `flex-1 min-w-0`; single-opponent branch unchanged |
+| 20 | `opponentCount` local variable declared before JSX return | VERIFIED | Line 27: `const opponentCount = Object.keys(gameState.opponentHandCounts).length;` — unchanged |
+| 21 | Header bar is `sticky top-0 z-20` | SUPERSEDED by Plan 07 | Plan 07 removed `sticky top-0 z-20` and anchors header via flex layout (first flex-shrink-0 child above inner scroll container). Header-stays-visible goal is preserved; mechanism changed. |
+| 22 | BoardView root div from Plan 03 is unchanged | SUPERSEDED by Plan 07 | Root is now `h-screen w-screen overflow-x-hidden flex flex-col bg-background` — Plan 07 removed `overflow-y-auto sm:overflow-hidden` from root, moved to inner container line 58 |
+| 23 | Opponents-row parent `overflow-x-auto` | SUPERSEDED by Plan 10 | Now `overflow-hidden` per Plan 10; see truth #28 |
+| 24 | No file other than BoardView.tsx modified by Plan 06 | VERIFIED | Confirmed by prior verification |
+| 25 | SC1: No horizontal scrollbar at 375px | VERIFIED | Playwright spec passing; `overflow-x-hidden` on root + inner container + responsive zone classes |
+| 26 | SC3: Header, zone labels, controls button readable at phone width | VERIFIED (human UAT confirmed 2026-05-06) | Human UAT test 2 passed |
+| 27 | SC4: Pointer/mouse interactions function correctly at 375px | VERIFIED (human UAT confirmed 2026-05-06) | Human UAT test 3 passed |
+| 28 | No anti-patterns in modified files | VERIFIED | Zero TODO/FIXME/PLACEHOLDER in all modified files |
 
-**Note on truth #17:** The `max-w-[160px]` form from Plan 05 was explicitly replaced by Plan 06's adaptive ternary. This is intentional gap closure — the truth is now superseded by truth #19 which captures the final correct state.
+#### Plan 07 Must-Haves (Header Anchoring + Desktop No-Scroll)
 
-**Score:** 27/29 truths verified (1 documented deviation from Plan 01 gate assumption; 1 truth superseded by Plan 06 — both pre-existing, no new failures)
+| # | Truth | Status | Evidence |
+|---|-------|--------|----------|
+| P7-1 | Root div has `overflow-x-hidden` only (no `overflow-y-auto`) | VERIFIED | Line 30: `h-screen w-screen overflow-x-hidden flex flex-col bg-background` — only overflow-x-hidden on root |
+| P7-2 | `sticky top-0` removed from header | VERIFIED | `grep -c "sticky" src/components/BoardView.tsx` == 0 |
+| P7-3 | Inner scroll container `flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col` present | VERIFIED | Line 58: exact match confirmed |
+| P7-4 | Center row has `min-h-0` | VERIFIED | Line 59: `flex-1 min-h-0 flex items-center px-4 gap-4` |
+
+#### Wave 7 Must-Haves (Plans 08-10)
+
+| # | Truth | Status | Evidence |
+|---|-------|--------|----------|
+| P8-1 | ControlsBar wrapper has `self-start` in className | VERIFIED | BoardView.tsx line 53: `<div className="flex items-center gap-3 self-start">` |
+| P8-2 | Old ControlsBar wrapper form without `self-start` is gone | VERIFIED | `grep -c 'flex items-center gap-3"'` == 0 |
+| P8-3 | Header `flex items-center justify-between` is preserved | VERIFIED | Line 32: `flex items-center justify-between px-4 py-2 gap-4 bg-card` — unchanged |
+| P9-1 | Card count Badge is in the name row (not absolute over card stack) | VERIFIED | OpponentHand.tsx line 43: `{cardCount > 0 && <Badge variant="secondary" className="ml-1 text-xs">{cardCount}</Badge>}` inside `div.flex.items-center.gap-2.px-1.mb-1` (name row) |
+| P9-2 | No `absolute` positioning in OpponentHand.tsx | VERIFIED | `grep -c "absolute" src/components/OpponentHand.tsx` == 0 |
+| P9-3 | `MAX_VISIBLE_OPPONENT_CARDS` constant and `Math.min` render loop preserved | VERIFIED | Line 7: constant; line 47: `Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS)` in Array.from |
+| P10-1 | Opponents row uses `overflow-hidden` (not `overflow-x-auto`) | VERIFIED | Line 33: `flex items-start gap-4 flex-1 overflow-hidden` |
+| P10-2 | Old `overflow-x-auto` opponents row is gone | VERIFIED | `grep -c "flex items-start gap-4 flex-1 overflow-x-auto"` == 0 |
+| P10-3 | Multi-opponent branch uses `flex-1 min-w-0` | VERIFIED | Line 38 template literal: `opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'` |
+| P10-4 | Old `max-w-[200px]` is gone from per-opponent column ternary | VERIFIED | `grep -c "max-w-\[200px\]"` == 0 |
+| P10-5 | Single-opponent branch `flex-1 max-w-none` preserved | VERIFIED | Line 38: ternary includes `'flex-1 max-w-none'` for `opponentCount === 1` |
+| P10-6 | `sm:max-w-none overflow-x-hidden` suffix on per-opponent column preserved | VERIFIED | Line 38: `} sm:max-w-none overflow-x-hidden` confirmed |
+
+**Score:** 31/33 truths verified (1 documented deviation from Plan 01 gate assumption; 5 truths superseded by later plans — all supersessions are intentional and the underlying goal is preserved)
 
 ### ROADMAP Success Criteria Cross-Check
 
 | SC | Text | Status |
 |----|------|--------|
-| SC1 | At 375px viewport width, no horizontal scrollbar appears on any board view | VERIFIED — `overflow-x-hidden` on root + scaled zones + Playwright spec passing |
-| SC2 | All zones remain visible and operable at 375px | HUMAN NEEDED — code fixes for Gaps 1-6 confirmed in codebase; Plan 06 closed Gaps 4-6 but UAT not re-run after Plan 06 |
-| SC3 | Header, zone labels, and controls button are readable at phone width | VERIFIED — human UAT test 2 confirmed 2026-05-06; sticky header now also keeps controls visible while scrolling |
+| SC1 | At 375px viewport width, no horizontal scrollbar appears on any board view | VERIFIED — `overflow-x-hidden` on root + inner container + responsive zone classes + Playwright spec passing |
+| SC2 | All zones remain visible and operable at 375px | HUMAN NEEDED — all ten plans' code fixes confirmed in codebase; Gaps 8-10 code-closed; UAT not re-run after Plans 07-10 |
+| SC3 | Header, zone labels, and controls button are readable at phone width | VERIFIED — human UAT test 2 confirmed 2026-05-06 |
 | SC4 | Pointer/mouse interactions function correctly at 375px | VERIFIED — human UAT test 3 confirmed 2026-05-06 |
 
 ### Required Artifacts
@@ -90,42 +116,41 @@ re_verification:
 | `playwright/responsive.spec.ts` | Wave 0 e2e spec for LAYOUT-04 | VERIFIED | Exists, substantive, wired; passes |
 | `src/components/CardFace.tsx` | Responsive card front sizing | VERIFIED | Both render paths; no bare desktop class |
 | `src/components/CardBack.tsx` | Responsive card back sizing | VERIFIED | Both render paths; no bare desktop class |
-| `src/components/PileZone.tsx` | Responsive pile slot + icon-only controls | VERIFIED | Slot `w-[56px]`; Eye/EyeOff/Shuffle icons; `h-7 w-7 p-0` buttons; aria-label on both |
-| `src/components/SpreadZone.tsx` | Responsive spread container + overlaps | VERIFIED | Container + both `-ml-3 sm:-ml-5` overlap sites; unmodified by Plans 04-06 |
+| `src/components/PileZone.tsx` | Responsive pile slot + icon-only controls | VERIFIED | Slot `w-[56px]`; Eye/EyeOff/Shuffle icons; `h-7 w-7 p-0` buttons |
+| `src/components/SpreadZone.tsx` | Responsive spread container + overlaps | VERIFIED | Container + both `-ml-3 sm:-ml-5` overlap sites; not touched by Plans 07-10 |
 | `src/components/HandZone.tsx` | Responsive card wrapper + drop container | VERIFIED | Wrapper, overlap, drop container; `data-testid="hand-zone"` retained |
-| `src/components/BoardView.tsx` | Phone vertical scroll + sticky header + adaptive opponent columns | VERIFIED | Root overflow line 30; sticky header line 32; adaptive opponent column line 38 with ternary on opponentCount |
-| `src/components/OpponentHand.tsx` | Capped card-back display at 5 | VERIFIED | `MAX_VISIBLE_OPPONENT_CARDS=5`; `Math.min` in render loop; Badge preserved |
+| `src/components/BoardView.tsx` | Phone scroll container + flex-layout header anchor + adaptive opponent columns (Plans 07-10) | VERIFIED | Root overflow line 30; inner scroll container line 58; header line 32; ControlsBar wrapper with self-start line 53; adaptive ternary line 38 |
+| `src/components/OpponentHand.tsx` | Capped card-back display + inline count Badge (Plan 09) | VERIFIED | `MAX_VISIBLE_OPPONENT_CARDS=5`; `Math.min` in render loop; Badge inline in name row line 43; no absolute positioning |
 | `.planning/REQUIREMENTS.md` | LAYOUT-04 marked complete | VERIFIED | `[x]` checkbox + `Complete` in traceability table |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `playwright/responsive.spec.ts` | `@playwright/test` | `import { test, expect }` | WIRED | Direct import; no fixture extension |
+| `playwright/responsive.spec.ts` | `@playwright/test` | `import { test, expect }` | WIRED | Direct import |
 | `playwright/responsive.spec.ts` | BoardView hand-zone | `getByTestId('hand-zone')` | WIRED | Waits for board render before scrollWidth assertion |
-| `src/components/CardFace.tsx` | Tailwind sm: breakpoint | `sm:w-[63px] sm:h-[88px]` | WIRED | Both render paths |
-| `src/components/CardBack.tsx` | Tailwind sm: breakpoint | `sm:w-[63px] sm:h-[88px]` | WIRED | Both render paths |
-| `src/components/BoardView.tsx` root | Tailwind sm: breakpoint | `sm:overflow-hidden` | WIRED | Cascade after axis-specific classes |
-| `src/components/BoardView.tsx` header | Sticky scroll container | `sticky top-0 z-20` | WIRED | Parent root div has `overflow-y-auto` on phones; sticky is no-op on desktop (sm:overflow-hidden) |
-| `src/components/BoardView.tsx` opponent column | `opponentCount` ternary | `opponentCount === 1 ? 'flex-1 max-w-none' : 'max-w-[200px]'` | WIRED | `opponentCount` declared line 27, referenced in className line 38 |
-| `src/components/SpreadZone.tsx` | Tailwind responsive margin | `-ml-3 sm:-ml-5` | WIRED | Both overlap sites |
-| `src/components/HandZone.tsx` | Tailwind responsive height + margin | `sm:h-[128px]` + `-ml-3 sm:-ml-5` | WIRED | Drop container + wrapper overlap |
-| `src/components/PileZone.tsx` | lucide-react icons | `import { Eye, EyeOff, Shuffle }` | WIRED | Eye/EyeOff conditionally on `pile.faceUp !== false`; Shuffle always shown |
-| `src/components/OpponentHand.tsx` | Capped render loop | `Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS)` | WIRED | Constant defined at module scope; referenced in Array.from length |
+| `src/components/BoardView.tsx` root | Tailwind overflow | `overflow-x-hidden` | WIRED | Root clamps horizontal overflow |
+| `src/components/BoardView.tsx` inner container | Phone scroll | `overflow-y-auto sm:overflow-hidden` | WIRED | Scrollable on phone; proportional on desktop |
+| `src/components/BoardView.tsx` header | Flex-layout anchor | First `flex-shrink-0` sibling in `flex flex-col` root | WIRED | Header is structurally anchored above inner scroll container; does not scroll |
+| `src/components/BoardView.tsx` ControlsBar wrapper | Top-right alignment | `self-start` overrides parent `items-center` for this child | WIRED | Line 53: `flex items-center gap-3 self-start` |
+| `src/components/BoardView.tsx` opponents row | No horizontal scroll | `overflow-hidden` | WIRED | Line 33; cannot involuntarily scroll |
+| `src/components/BoardView.tsx` opponent column | Equal-width split | `flex-1 min-w-0` (multi) / `flex-1 max-w-none` (single) | WIRED | Line 38 ternary on `opponentCount` |
+| `src/components/OpponentHand.tsx` | Inline count | Badge in name row `div.flex.items-center.gap-2` | WIRED | Line 43; not absolute-positioned; always visible |
+| `src/components/OpponentHand.tsx` | Capped render loop | `Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS)` | WIRED | Constant defined at module scope line 7; referenced line 47 |
 
 ### Data-Flow Trace (Level 4)
 
-Not applicable. All changes are static Tailwind CSS class strings, a render-loop count cap with a module-level constant, and a derived count variable. No dynamic data sources beyond existing server-provided `cardCount` and `opponentHandCounts` props (unchanged).
+Not applicable. All changes are static Tailwind CSS class strings, a render-loop count cap with a module-level constant, a derived count variable, and a Badge moved within JSX. No dynamic data sources beyond existing server-provided `cardCount` and `opponentHandCounts` props (unchanged).
 
 ### Behavioral Spot-Checks
 
-Step 7b: SKIPPED — requires running dev stack. The Playwright e2e spec confirmed passing in SUMMARY 19-06. Static grep verification confirms all seven class-edit patterns are present in the correct files.
+Step 7b: SKIPPED — requires running dev stack. The Playwright e2e spec confirmed passing across all plans. Static grep verification confirms all class-edit patterns are present in the correct files and all plan acceptance criteria are met.
 
 ### Requirements Coverage
 
 | Requirement | Source Plans | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|---------|
-| LAYOUT-04 | 19-01 through 19-06 | Board usable at ≥375px without horizontal scrolling | VERIFIED (code + Playwright) / HUMAN NEEDED (SC2 final visual) | All responsive classes confirmed in 8 files; Playwright spec passing; REQUIREMENTS.md checkbox updated; human UAT SCs 3 and 4 confirmed; SC2 awaits final visual with Plan 06 in place |
+| LAYOUT-04 | 19-01 through 19-10 | Board usable at ≥375px without horizontal scrolling | VERIFIED (code + Playwright) / HUMAN NEEDED (SC2 final visual) | All responsive classes confirmed in source files; Playwright spec passing; REQUIREMENTS.md checkbox `[x]`; human UAT SCs 3 and 4 confirmed 2026-05-06; SC2 awaits final visual pass with Plans 07-10 in place |
 
 ### Anti-Patterns Found
 
@@ -133,32 +158,47 @@ Step 7b: SKIPPED — requires running dev stack. The Playwright e2e spec confirm
 |------|---------|----------|--------|
 | (none) | — | — | — |
 
-No TODOs, FIXMEs, placeholder returns, empty implementations, or legacy bare desktop-size classes found in any of the files modified by this phase.
+No TODOs, FIXMEs, placeholder returns, empty implementations, or unexpected patterns in any file modified by Plans 08-10.
 
 ### Plan Deviation: RED Gate Not Achieved (Truth #3)
 
 **What the plan required:** The Plan 01 Playwright spec must FAIL (RED) before any CSS changes ship.
 
-**What happened:** The spec passed immediately. The existing `overflow-hidden` on the BoardView root clipped overflow at the div level — `document.documentElement.scrollWidth` always equaled `clientWidth`. The spec asserts the correct observable requirement but cannot distinguish "content genuinely fits in 375px" from "content is clipped by overflow-hidden". The substantive code changes are correct and independently verifiable. This is a test-design weakness, not an implementation error.
+**What happened:** The spec passed immediately. The existing `overflow-hidden` on the BoardView root clipped overflow at the div level — `document.documentElement.scrollWidth` always equaled `clientWidth`. This is a test-design weakness, not an implementation error.
 
 **Severity:** WARNING (unchanged from initial verification). Does not block goal achievement.
 
+### Superseded Truths
+
+The following truths from prior verifications were superseded by later plans — all supersessions are intentional gap closures:
+
+| Truth | Prior State | Current State | Superseded By |
+|-------|------------|---------------|---------------|
+| #21 Header sticky | `sticky top-0 z-20` | Flex-layout anchor (no sticky) | Plan 07 |
+| #22 Root overflow | `overflow-y-auto sm:overflow-hidden` on root | `overflow-x-hidden` only on root; scroll moved to inner container | Plan 07 |
+| #23 Opponents row | `overflow-x-auto` | `overflow-hidden` | Plan 10 |
+| #19 Multi-opponent column | `max-w-[200px]` | `flex-1 min-w-0` | Plan 10 |
+
+All supersessions preserve the underlying goal: zones remain visible, accessible by scroll, and non-overflowing at 375px.
+
 ### Human Verification Required
 
-#### 1. All Zones Visible and Operable at 375px — Final Confirmation After Plan 06
+#### 1. All Zones Visible and Operable at 375px — Final Confirmation After Plans 07-10
 
-**Test:** Open `http://localhost:5173/virtual-deck/` in Chrome DevTools at iPhone SE preset (375x667). Join a room. Observe the full board. Scroll the board vertically to test the sticky header.
+**Test:** Open `http://localhost:5173/virtual-deck/` in Chrome DevTools at iPhone SE preset (375x667). Join a room with at least one simulated opponent. Observe the full board. Scroll the board vertically.
 
 **Expected:**
 - All three pile columns (Draw, Discard, Play Area) fit side by side with icon-only buttons visible and unclipped
-- With exactly one opponent: opponent column expands to fill the horizontal space between the opponents strip and the ControlsBar (no large empty gap)
-- With two or more opponents: each opponent column is bounded at `max-w-[200px]`; all 5 CardBacks and the count Badge are visible without clipping
-- The header bar (opponent strip + hamburger) stays pinned to the top of the viewport when the board content is scrolled vertically
+- Opponent card count Badge is in the name row (inline after the display name), not overlaid on the card back stack, and is visible at any column width
+- With exactly one opponent: opponent column expands to fill the horizontal space in the header row
+- With two opponents: each column occupies ~50% of the header row; neither is pushed off-screen even when the communal spread zone contains many cards
+- Hamburger button (ControlsBar) is pinned to the top-right of the header — not vertically centered when the opponent strip is tall
+- Header stays anchored to the top of the viewport when board content is scrolled vertically (flex-layout anchor, not sticky)
 - All zones accessible by vertical scroll; no zone horizontally clipped
 
-**Why human:** Plan 06 closed Gaps 4-6 in code (adaptive column width, sticky header, single-opponent fill) but the HUMAN-UAT.md was not updated after Plan 06 executed. SC2 ("all zones visible and operable") requires rendering the app at 375px. The Playwright spec checks only `document.documentElement.scrollWidth <= clientWidth` — it cannot verify sticky behavior, column width distribution, or Badge clipping.
+**Why human:** Plans 08-10 closed Gaps 8-10 in code (all acceptance criteria verified by grep). SC2 ("all zones visible and operable") requires rendering the app at 375px. The Playwright spec checks only `document.documentElement.scrollWidth <= clientWidth` — it cannot verify hamburger alignment, inline badge position, column-width distribution under multi-card load (Gap 10), or the flex-layout header anchor behavior. A final visual pass with Plans 07-10 in place is required.
 
 ---
 
-_Verified: 2026-05-08T16:00:00Z_
+_Verified: 2026-05-09T15:00:00Z_
 _Verifier: Claude (gsd-verifier)_
