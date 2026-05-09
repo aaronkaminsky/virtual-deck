@@ -1,229 +1,141 @@
 ---
 phase: 19-npm-audit
-reviewed: 2026-05-08T12:00:00Z
+reviewed: 2026-05-09T00:00:00Z
 depth: standard
-files_reviewed: 8
+files_reviewed: 2
 files_reviewed_list:
-  - playwright/responsive.spec.ts
   - src/components/BoardView.tsx
-  - src/components/CardBack.tsx
-  - src/components/CardFace.tsx
-  - src/components/HandZone.tsx
   - src/components/OpponentHand.tsx
-  - src/components/PileZone.tsx
-  - src/components/SpreadZone.tsx
 findings:
-  critical: 2
-  warning: 5
-  info: 2
-  total: 9
+  critical: 1
+  warning: 2
+  info: 0
+  total: 3
 status: issues_found
 ---
 
-# Phase 19: Code Review Report
+# Phase 19 Wave 7: Code Review Report
 
-**Reviewed:** 2026-05-08T12:00:00Z
+**Reviewed:** 2026-05-09T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 8
+**Files Reviewed:** 2 (wave 7 gap closure changes only: plans 19-08, 19-09, 19-10)
 **Status:** issues_found
 
 ## Summary
 
-Eight files reviewed covering the Phase 19 responsive layout/UX polish work: one Playwright end-to-end test and seven React components (CardBack, CardFace, BoardView, HandZone, OpponentHand, PileZone, SpreadZone).
+Two files reviewed covering plans 19-08 (ControlsBar `self-start`), 19-09 (opponent card count Badge moved inline), and 19-10 (opponents row `overflow-hidden` + column `flex-1 min-w-0`).
 
-The responsive layout approach is structurally sound — `overflow-x-hidden` on root, `w-screen`, and responsive card sizing via Tailwind are in place. Two logic bugs exist that silently corrupt state in reorder operations and pile-face toggling. The Playwright test has an assertion that allows layout-collapse failures to pass undetected. Three additional structural warnings cover fragile coupling, an unsafe `stopPropagation`, and a visual overflow risk at system font scale.
+Plan 19-08 (`self-start` on ControlsBar wrapper) is correct and safe. Plan 19-09 (Badge moved inline, variant changed to `secondary`) is correct and safe. Plan 19-10 introduces a BLOCKER: replacing `overflow-x-auto` with `overflow-hidden` on the opponents row, combined with removing the `max-w-[200px]` cap in favor of `flex-1 min-w-0`, causes card stacks to be silently clipped when 3 or 4 players are in a game. Two additional warnings cover a mismatched flex-alignment between the ControlsBar wrapper and the opponents row, and the asymmetric single-vs-multi-opponent column class.
 
 ---
 
 ## Critical Issues
 
-### CR-01: REORDER_PILE_SPREAD action is silently rejected when spread pile contains any face-down card
+### CR-01: `overflow-hidden` on opponents row clips card stacks at 3-4 players
 
-**File:** `src/components/SpreadZone.tsx:57,75-76`
+**File:** `src/components/BoardView.tsx:33,38`
 
-**Issue:** `faceUpCards` filters pile cards to only those where `'id' in c` (i.e., not masked):
+**Issue:** The opponents row was changed from `overflow-x-auto` to `overflow-hidden` (line 33). Simultaneously, multi-opponent columns changed from `max-w-[200px]` to `flex-1 min-w-0` (line 38). Together these mean: each opponent column grows to an equal share of the available row width and can shrink below its content width with no scrollbar — the overflow is hidden.
 
-```ts
-const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
+The card stack in `OpponentHand` renders up to 5 cards at `w-[42px]` (`sm:w-[63px]`) with `-ml-3` (12px) overlap on each subsequent card. The stack's intrinsic width is:
+
+- Mobile: `42 + 4*(42-12) = 162px`
+- Desktop (sm): `63 + 4*(63-12) = 267px`
+
+With 3 opponents in a 375px-wide mobile viewport and a ~44px ControlsBar, available row width is ~331px, split three ways = ~110px per column. The 162px card stack overflows by 52px and is **silently clipped** — not scrollable, not wrapped, just cut off. On desktop with 3 opponents the clip is even larger (267px stack into ~200-240px column).
+
+This affects the primary use case of the app: 3-4 player games. The opponent card stack is the only visual indicator of how many cards opponents hold; clipping it defeats the purpose of showing it at all.
+
+```tsx
+// Line 33 — current (broken at 3-4 players):
+<div className="flex items-start gap-4 flex-1 overflow-hidden">
+
+// Line 38 — current multi-opponent class (broken):
+'flex flex-col gap-1 flex-1 min-w-0 sm:max-w-none overflow-x-hidden'
 ```
 
-When the `REORDER_PILE_SPREAD` action is dispatched, it sends only the face-up card IDs. The server handler at `party/index.ts:324` validates:
+**Fix:** Either (a) restore a minimum column width that matches the card stack, or (b) keep `overflow-x-auto` on the row so stacks remain reachable via scroll:
 
-```ts
-action.orderedCardIds.length !== spreadPile.cards.length
+Option A — minimum column width (prevents clipping, does not scroll):
+```tsx
+// Line 33: keep overflow-hidden (prevents row from adding horizontal scroll to the page)
+<div className="flex items-start gap-4 flex-1 overflow-hidden">
+
+// Line 38: add min-w-[162px] (matches mobile stack width; sm: variant for desktop)
+`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-[162px] sm:min-w-[267px]'} sm:max-w-none overflow-x-hidden`
 ```
 
-A spread pile can contain face-down cards — `FLIP_CARD` works on any pile without a region check (`party/index.ts:353`), so individual cards in a spread pile can be flipped face-down. When that happens, the server state has N cards but the client sends fewer IDs. The server rejects the action with `INVALID_REORDER` and the reorder silently fails.
+Option B — restore scrollability (allows stacks to always be reachable):
+```tsx
+// Line 33:
+<div className="flex items-start gap-4 flex-1 overflow-x-auto">
 
-Additionally, the server's masking function (`party/index.ts:71-74`) masks non-top face-down cards in ALL piles including spread piles, so the client may never even receive the full card list needed to construct a valid reorder payload.
-
-**Fix:** The `REORDER_PILE_SPREAD` action payload must include all card IDs in their new order, including face-down cards. Replace:
-
-```ts
-const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
-// ... send only faceUpCards IDs
+// Line 38: keep flex-1 min-w-0 but allow the row to scroll rather than clip
+`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`
 ```
 
-With a strategy that collects IDs from all cards, using a stable placeholder for masked cards, and reorders only the face-up positions among them. Alternatively, gate the reorder action behind a check that no masked cards exist:
-
-```ts
-const hasMaskedCards = pile.cards.some(c => !('id' in c));
-if (hasMaskedCards) return; // cannot safely reorder a pile with masked cards
-```
-
----
-
-### CR-02: `!pile.faceUp` toggle treats `undefined` as face-down, disagreeing with the display convention
-
-**File:** `src/components/PileZone.tsx:29`
-**File:** `src/components/SpreadZone.tsx:83`
-
-**Issue:** Both toggle handlers send `faceUp: !pile.faceUp`. `ClientPile.faceUp` is typed `boolean | undefined`. When `pile.faceUp === undefined`, `!undefined` evaluates to `true`, so the first click sets `faceUp: true`. But the display label at PileZone line 81 and SpreadZone line 132 uses `pile.faceUp !== false` (treating `undefined` as face-up). The label reads "Face up" but the toggle action treats `undefined` as face-down — they are using opposite truth conventions for the same field. The behavior is accidentally correct on the first click (both result in `true`) but will diverge if the server returns `pile.faceUp = undefined` after the toggle, and is confusing to read and maintain.
-
-**Fix:** Align the toggle with the display convention:
-
-```ts
-function handleToggleFace() {
-  const currentlyFaceUp = pile.faceUp !== false; // undefined → face-up (matches label)
-  sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !currentlyFaceUp });
-}
-```
-
-Apply in both `PileZone.tsx:28-30` and `SpreadZone.tsx:82-84`.
+Note: if option B is chosen, the original motivation for removing `overflow-x-auto` (scroll bar appearing on the header) should be addressed with `scrollbar-none` or equivalent utility on the row div.
 
 ---
 
 ## Warnings
 
-### WR-01: Responsive test assertion allows layout-collapse narrower than viewport to pass
+### WR-01: `self-start` on ControlsBar wrapper misaligns with `items-start` already set on the row
 
-**File:** `playwright/responsive.spec.ts:21`
+**File:** `src/components/BoardView.tsx:32,53`
 
-**Issue:** The test asserts `expect(clientWidth).toBeLessThanOrEqual(375)`. This passes if `clientWidth` is, e.g., 200 — meaning a layout that collapses narrower than the viewport (clipping content) would pass the test. The test was designed to catch horizontal overflow but does not catch the complementary failure: the layout compressing below the viewport width.
+**Issue:** The outer header flex container at line 32 already uses `items-start`:
 
-**Fix:** Add a lower-bound assertion:
+```tsx
+<div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
+```
 
-```ts
-expect(clientWidth).toBeGreaterThanOrEqual(370); // allow for browser rounding
-expect(clientWidth).toBeLessThanOrEqual(375);
-expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+Wait — the header row actually uses `items-center` (line 32), not `items-start`. The opponents inner wrapper uses `items-start` (line 33). The ControlsBar wrapper at line 53 adds `self-start` to override the `items-center` default from the header row. This is correct intent.
+
+However, `self-start` on the ControlsBar wrapper and `items-start` on the opponents inner container (`flex items-start gap-4 flex-1 overflow-hidden`) means both sub-containers are top-aligned, but through different mechanisms. The ControlsBar wrapper uses `self-start` to escape `items-center` on the parent; the opponents wrapper is inside a `flex items-start` container so it inherits top-alignment. This inconsistency is not a bug today, but if the parent header div ever changes from `items-center` back to `items-start`, `self-start` becomes redundant and the alignment of the ControlsBar relative to a variable-height opponents area may shift in unexpected ways.
+
+The actual concern: the ControlsBar hamburger button is 32px (`icon-sm`). If a single-opponent layout makes the opponents column tall (name row + card stack + spread zone), the hamburger will sit at the top of a tall column — this is the intended behavior. But in a zero-opponents game (no entries in `opponentHandCounts`), the opponents container renders empty and the ControlsBar wrapper becomes the only child of the header. `self-start` against `items-center` on an effectively single-child flex row has no effect — the ControlsBar centers vertically, which is fine. No correctness bug, but the layered alignment mechanism makes future changes fragile.
+
+**Fix:** Add a comment explaining why `self-start` is needed, and align the header parent to `items-start` consistently so `self-start` is not load-bearing:
+
+```tsx
+{/* items-start so ControlsBar pins to top when opponent stacks are tall */}
+<div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
+  {/* ... opponents row ... */}
+  <div className="flex items-center gap-3">  {/* self-start no longer needed */}
+    <ControlsBar ... />
+  </div>
+</div>
 ```
 
 ---
 
-### WR-02: `communalZone` is hardcoded to `'play'` while all other zone IDs are data-driven
+### WR-02: Single-opponent column class uses `max-w-none` while multi-opponent uses `min-w-0` — asymmetric and undocumented
 
-**File:** `src/components/BoardView.tsx:26`
+**File:** `src/components/BoardView.tsx:38`
 
 **Issue:**
 
-```ts
-const communalZone = spreadPiles.find(p => p.id === 'play');
+```tsx
+className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}
 ```
 
-`myPlayZoneId` and opponent spread IDs (`spread-${id}`) arrive from the server. The communal zone ID is hardcoded. The server already migrated this pile once (from `spread-communal` to `play` — `party/index.ts:119-127`). If the ID changes again, the communal zone silently disappears from the UI with no warning, type error, or log.
+The single-opponent branch uses `flex-1 max-w-none`. `max-w-none` removes any max-width cap and is redundant since `flex-1` without a cap already has no max-width — `max-w-none` is the Tailwind default. The multi-opponent branch uses `flex-1 min-w-0`, which is meaningfully different: it allows the column to shrink below its content width (the source of CR-01 above).
 
-**Fix:** Extract the constant to a shared location or add it to `ClientGameState`. At minimum, define a named constant co-located with the server initialization:
+The ternary communicates that there is a layout distinction between 1-opponent and 2+-opponent layouts, but both branches contain `flex-1` and the difference (`max-w-none` vs `min-w-0`) is not explained. A reader cannot tell from this code whether `max-w-none` in the single-opponent branch is intentional (to prevent some inherited max-width from applying) or vestigial (left from an earlier `max-w-[200px]` removal). The `sm:max-w-none` at the end applies in both branches and makes `max-w-none` in the single-opponent branch doubly redundant at the `sm:` breakpoint.
 
-```ts
-// Must match party/index.ts pile id "play"
-const COMMUNAL_ZONE_ID = 'play' as const;
-const communalZone = spreadPiles.find(p => p.id === COMMUNAL_ZONE_ID);
-```
-
----
-
-### WR-03: `onPointerDown stopPropagation` on outer wrapper may silently break drag initiation
-
-**File:** `src/components/HandZone.tsx:41`
-
-**Issue:** The outer wrapper of `SortableHandCard` calls `e.stopPropagation()` on every `pointerdown` event. The `useSortable` listeners are bound to the inner ref div (line 47). Stopping propagation on the outer wrapper before the event reaches dnd-kit's sensor can prevent drag activation — particularly if `PointerSensor` uses event delegation or if an `activationConstraint` depends on the event sequence. This produces no error; dragging simply stops working.
-
-**Fix:** Move the `stopPropagation` to the click handler only, since the apparent intent is to prevent selection-click from bubbling to the board:
+**Fix:** After CR-01 is resolved, clean up the ternary to make the distinction explicit:
 
 ```tsx
-<div
-  className={cn('relative w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] flex-shrink-0', ...)}
-  onClick={(e) => { e.stopPropagation(); onToggleSelect(card.id); }}
->
+// Single opponent: fill all available width
+// Multiple opponents: equal shares, each with a minimum to avoid clipping card stacks
+className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1' : 'flex-1 min-w-[162px] sm:min-w-[267px]'} overflow-x-hidden`}
 ```
+
+The `sm:max-w-none` is unnecessary in either branch and can be dropped.
 
 ---
 
-### WR-04: `OpponentHand` droppable data uses `toZone: 'opponent-hand'` with no type contract
-
-**File:** `src/components/OpponentHand.tsx:20`
-
-**Issue:** `data: { toZone: 'opponent-hand' as const, toId: playerId }` sets a zone string that is outside the `ClientAction` type union (`MOVE_CARD` accepts only `"hand" | "pile"`). This works at runtime because `BoardDragLayer.tsx:149` string-matches `'opponent-hand'` and routes to `PASS_CARD`. But there is no shared type enforcing this contract. If `BoardDragLayer` is refactored and the string match is missed, drops on opponent hands will silently misfire with no TypeScript error.
-
-**Fix:** Add a comment making the coupling explicit, or define a shared `DropZoneType` union that `BoardDragLayer` handles exhaustively:
-
-```ts
-// NOTE: 'opponent-hand' is NOT a ClientAction toZone. BoardDragLayer.tsx intercepts
-// this value and dispatches PASS_CARD. If you rename this string, update BoardDragLayer.
-data: { toZone: 'opponent-hand' as const, toId: playerId },
-```
-
----
-
-### WR-05: `CardFace` fallback suit symbol has no overflow containment — overflows fixed card bounds at large font scale
-
-**File:** `src/components/CardFace.tsx:38-58`
-
-**Issue:** The card wrapper div has a fixed size (`w-[42px] h-[59px]`) but no `overflow-hidden`. The center suit symbol uses `text-2xl` (24px). At system font-size scale > 1.5× (a common accessibility setting), the symbol renders larger than the card bounds and overflows into adjacent cards in the hand or spread zone. The rank labels (`text-xs`) at top-left and bottom-right have the same issue.
-
-**Fix:** Add `overflow-hidden` to the card wrapper:
-
-```tsx
-<div
-  className={cn(
-    'w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] relative bg-white rounded-md border border-gray-300 select-none overflow-hidden',
-    className
-  )}
->
-```
-
----
-
-## Info
-
-### IN-01: `CardBack` and `CardFace` check empty string as sentinel — type does not communicate the contract
-
-**File:** `src/components/CardBack.tsx:9`
-**File:** `src/components/CardFace.tsx:22`
-
-**Issue:** `CARD_BACK_URL` is typed as `string` and initialized to `''`. The check `if (CARD_BACK_URL)` works because empty string is falsy, but the type does not communicate that `''` means "no image configured." A contributor changing the initialization to `null` or `undefined` would get correct runtime behavior but find the type misleading.
-
-**Fix:** Type the export as `string | null` and set the no-image sentinel to `null`:
-
-```ts
-export const CARD_BACK_URL: string | null = null;
-```
-
-Then use an explicit null check: `if (CARD_BACK_URL !== null)`.
-
----
-
-### IN-02: `aria-pressed` is on the inner drag-listener div, not the outer click-target
-
-**File:** `src/components/HandZone.tsx:54`
-
-**Issue:** `aria-pressed={isSelected}` is applied to the inner div that holds `{...listeners}` and `{...attributes}` from `useSortable`. The `onClick` that toggles selection is on the outer wrapper (line 40). A screen reader encounters a pressable element (inner div) that does not handle click, while the actual click target (outer div) has no ARIA role or pressed state.
-
-**Fix:** Move `aria-pressed` and a `role="button"` to the outer wrapper:
-
-```tsx
-<div
-  className={cn('relative w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] flex-shrink-0', ...)}
-  role="button"
-  aria-pressed={isSelected}
-  onClick={() => onToggleSelect(card.id)}
-  onPointerDown={(e) => e.stopPropagation()}
->
-```
-
----
-
-_Reviewed: 2026-05-08T12:00:00Z_
+_Reviewed: 2026-05-09T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
