@@ -40,6 +40,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
       <div className="flex items-center gap-2 px-1 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
+        {cardCount > 0 && <Badge variant="secondary" className="ml-1 text-xs">{cardCount}</Badge>}
       </div>
       <div className="flex items-center gap-1">
         <div className="flex items-center">
@@ -50,7 +51,6 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
             />
           ))}
         </div>
-        {cardCount > 0 && <Badge>{cardCount}</Badge>}
         {dragIsActive && cardCount === 0 && (
           <span className="text-xs text-muted-foreground">Drop to pass</span>
         )}
