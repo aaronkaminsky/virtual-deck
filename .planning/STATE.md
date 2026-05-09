@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
 status: completed
-stopped_at: Phase 20 context gathered
-last_updated: "2026-05-09T17:40:02.241Z"
+stopped_at: Phase 20 UI-SPEC approved
+last_updated: "2026-05-09T18:10:37.562Z"
 last_activity: 2026-05-09 -- Phase 19 UAT approved, advancing to Phase 20
 progress:
   total_phases: 8
@@ -71,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-09T17:40:02.225Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-spread-zone-multi-select/20-CONTEXT.md
+Last session: 2026-05-09T18:10:37.545Z
+Stopped at: Phase 20 UI-SPEC approved
+Resume file: .planning/phases/20-spread-zone-multi-select/20-UI-SPEC.md
