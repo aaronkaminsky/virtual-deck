@@ -114,7 +114,7 @@ Plans:
   2. All zones remain visible and operable at 375px — cards are not clipped or hidden off-screen
   3. The header, zone labels, and controls button are readable at phone width
   4. Pointer/mouse interactions (drag, click) function correctly at 375px — no interaction targets become too small to hit
-**Plans**: 6 plans
+**Plans**: 10 plans
 Plans:
 - [x] 19-01-PLAN.md — Wave 1: Playwright RED gate at 375x667 — `playwright/responsive.spec.ts` asserts no horizontal scroll
 - [x] 19-02-PLAN.md — Wave 2: Responsive size classes on `CardFace.tsx` and `CardBack.tsx` (both render paths)
@@ -122,6 +122,10 @@ Plans:
 - [x] 19-04-PLAN.md — Wave 4 (gap closure): Replace PileZone text labels with lucide icon buttons; flip LAYOUT-04 in REQUIREMENTS.md
 - [x] 19-05-PLAN.md — Wave 4 (gap closure): Cap OpponentHand at 5 visible cards; clamp opponent column wrapper width in BoardView
 - [x] 19-06-PLAN.md — Wave 5 (gap closure): Sticky header (Gap 5) + adaptive opponent column width — fill row when 1 opponent (Gap 6), max-w-[200px] when 2+ (Gap 4) in BoardView
+- [x] 19-07-PLAN.md — Wave 6 (gap closure): BoardView layout restructure — anchor header via flex layout (Gap 5), fit desktop without vertical scroll (Gap 7)
+- [ ] 19-08-PLAN.md — Wave 7 (gap closure): Add `self-start` to ControlsBar wrapper — top-align hamburger in tall header (Gap 8)
+- [ ] 19-09-PLAN.md — Wave 7 (gap closure): Move opponent card count inline next to player name — remove absolute badge that clips on mobile (Gap 9)
+- [ ] 19-10-PLAN.md — Wave 7 (gap closure): Fix opponents row overflow — `overflow-hidden` + `flex-1 min-w-0` per-column so no column pushed off-screen (Gap 10)
 **UI hint**: yes
 
 ### Phase 20: Spread Zone Multi-Select
