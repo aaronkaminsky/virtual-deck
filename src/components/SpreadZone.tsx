@@ -3,6 +3,7 @@ import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove 
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Button } from '@/components/ui/button';
+import { Eye, EyeOff } from 'lucide-react';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
@@ -127,11 +128,12 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
       </div>
       <Button
         variant="ghost"
-        className="h-7 px-2 text-xs"
+        className="h-7 w-7 p-0"
         onClick={handleToggleFace}
         title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+        aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
       >
-        {pile.faceUp !== false ? 'Face up' : 'Face down'}
+        {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
       </Button>
     </div>
   );

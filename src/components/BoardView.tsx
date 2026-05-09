@@ -29,7 +29,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   return (
     <div className="h-screen w-screen overflow-x-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
-      <div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
+      <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
           {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
             const player = gameState.players.find(p => p.id === id);
