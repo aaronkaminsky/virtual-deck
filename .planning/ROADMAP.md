@@ -123,9 +123,9 @@ Plans:
 - [x] 19-05-PLAN.md — Wave 4 (gap closure): Cap OpponentHand at 5 visible cards; clamp opponent column wrapper width in BoardView
 - [x] 19-06-PLAN.md — Wave 5 (gap closure): Sticky header (Gap 5) + adaptive opponent column width — fill row when 1 opponent (Gap 6), max-w-[200px] when 2+ (Gap 4) in BoardView
 - [x] 19-07-PLAN.md — Wave 6 (gap closure): BoardView layout restructure — anchor header via flex layout (Gap 5), fit desktop without vertical scroll (Gap 7)
-- [ ] 19-08-PLAN.md — Wave 7 (gap closure): Add `self-start` to ControlsBar wrapper — top-align hamburger in tall header (Gap 8)
-- [ ] 19-09-PLAN.md — Wave 7 (gap closure): Move opponent card count inline next to player name — remove absolute badge that clips on mobile (Gap 9)
-- [ ] 19-10-PLAN.md — Wave 7 (gap closure): Fix opponents row overflow — `overflow-hidden` + `flex-1 min-w-0` per-column so no column pushed off-screen (Gap 10)
+- [x] 19-08-PLAN.md — Wave 7 (gap closure): Add `self-start` to ControlsBar wrapper — top-align hamburger in tall header (Gap 8)
+- [x] 19-09-PLAN.md — Wave 7 (gap closure): Move opponent card count inline next to player name — remove absolute badge that clips on mobile (Gap 9)
+- [x] 19-10-PLAN.md — Wave 7 (gap closure): Fix opponents row overflow — `overflow-hidden` + `flex-1 min-w-0` per-column so no column pushed off-screen (Gap 10)
 **UI hint**: yes
 
 ### Phase 20: Spread Zone Multi-Select
@@ -197,6 +197,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 16.1 Fix PartyKit CI Deploy (INSERTED) | v1.3 | 1/1 | Complete    | 2026-05-03 |
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
-| 19. Responsive Layout | v1.3 | 6/6 | Complete   | 2026-05-08 |
+| 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
 | 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
