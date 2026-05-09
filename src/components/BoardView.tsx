@@ -27,9 +27,9 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const opponentCount = Object.keys(gameState.opponentHandCounts).length;
 
   return (
-    <div className="h-screen w-screen overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col bg-background">
+    <div className="h-screen w-screen overflow-x-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 gap-4 bg-card">
+      <div className="flex items-center justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-x-auto">
           {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
             const player = gameState.players.find(p => p.id === id);
@@ -55,47 +55,49 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div className="flex-1 flex items-center px-4 gap-4">
-        {pilePiles.map((pile) => (
-          <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
-        ))}
-        {communalZone && (
-          <div className="flex-1 min-w-0">
+      <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0 flex items-center px-4 gap-4">
+          {pilePiles.map((pile) => (
+            <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
+          ))}
+          {communalZone && (
+            <div className="flex-1 min-w-0">
+              <SpreadZone
+                pile={communalZone}
+                sendAction={sendAction}
+                draggingCardId={draggingCardId}
+                className="w-full"
+              />
+            </div>
+          )}
+        </div>
+
+        {mySpreadZone && (
+          <div className="flex-shrink-0 bg-card px-4 py-2">
             <SpreadZone
-              pile={communalZone}
+              pile={mySpreadZone}
               sendAction={sendAction}
               draggingCardId={draggingCardId}
-              className="w-full"
             />
           </div>
         )}
+
+        {(() => {
+          const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
+          return (
+            <HandZone
+              cards={gameState.myHand}
+              playerId={gameState.myPlayerId}
+              displayName={myPlayer?.displayName ?? ''}
+              connected={myPlayer?.connected ?? true}
+              sendAction={sendAction}
+              draggingCardId={draggingCardId}
+              selectedIds={selectedIds}
+              onToggleSelect={onToggleSelect}
+            />
+          );
+        })()}
       </div>
-
-      {mySpreadZone && (
-        <div className="bg-card px-4 py-2">
-          <SpreadZone
-            pile={mySpreadZone}
-            sendAction={sendAction}
-            draggingCardId={draggingCardId}
-          />
-        </div>
-      )}
-
-      {(() => {
-        const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
-        return (
-          <HandZone
-            cards={gameState.myHand}
-            playerId={gameState.myPlayerId}
-            displayName={myPlayer?.displayName ?? ''}
-            connected={myPlayer?.connected ?? true}
-            sendAction={sendAction}
-            draggingCardId={draggingCardId}
-            selectedIds={selectedIds}
-            onToggleSelect={onToggleSelect}
-          />
-        );
-      })()}
     </div>
   );
 }
