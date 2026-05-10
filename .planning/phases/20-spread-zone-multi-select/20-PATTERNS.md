@@ -45,10 +45,14 @@ interface SortableHandCardProps {
   isDraggingThis: boolean;
   index: number;
   isSelected: boolean;
-  onToggleSelect: (id: string) => void;
+  onToggleSelect: (id: string) => void;  // HandZone uses 1-arg; Phase 20 widens to 3-arg — see note below
 }
 ```
-For `SortableSpreadCard`, replace `playerId` with `pileId: string` and `isDraggingThis` with `draggingCardId: string | null`. The `isSelected` and `onToggleSelect` props are added verbatim.
+For `SortableSpreadCard`, replace `playerId` with `pileId: string` and `isDraggingThis` with `draggingCardId: string | null`. The `isSelected` prop is added verbatim. The `onToggleSelect` signature is WIDENED in Phase 20 to carry zone context — use the 3-argument form shown in Plan 02 Task 1:
+```typescript
+onToggleSelect: (id: string, zone: "hand" | "pile", zoneId: string) => void
+```
+HandZone's existing 1-arg call site (`onToggleSelect(card.id)`) is also updated in Plan 03 to pass zone context (`onToggleSelect(card.id, 'hand', playerId)`).
 
 **Core selection + lift transform pattern** (HandZone.tsx lines 19–59):
 ```typescript
@@ -502,17 +506,20 @@ New test scenarios to add (same structure, new messages):
 - Pile-source `PLAY_CARD_SET` rejected when pile not found (wrong `fromId`)
 - Pile-source `PLAY_CARD_SET` with `toZone: 'hand'` sets `card.faceUp = true`
 
-Helper setup needed for pile-source tests: use `defaultGameState` plus add cards to a spread pile directly:
+Helper setup needed for pile-source tests. **AUTHORITATIVE signature from Plan 20-01 Task 2 — use this 3-argument form, not any 2-argument variant:**
 ```typescript
-function makeStateWithPileCards(pileId: string, cards: Card[]): GameState {
+function makeStateWithPileCards(playerId: string, pileId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: "player-1", connected: true, displayName: "" });
-  state.hands["player-1"] = [];
+  state.players.push({ id: playerId, connected: true, displayName: "" });
+  state.hands[playerId] = [];
+  // Personal spread zone for the player (mirrors onConnect creation)
+  state.piles.push({ id: `spread-${playerId}`, name: "Spread", cards: [], faceUp: true, region: "spread", ownerId: playerId });
   const pile = state.piles.find(p => p.id === pileId);
   if (pile) pile.cards.push(...cards);
   return state;
 }
 ```
+Arguments: `playerId` (string) — `pileId` (string) — `cards` (Card[]). The personal pile push step (`state.piles.push(...)`) is required so `spread-{playerId}` exists when `pileId` is the personal spread zone. Plan 20-01 Task 2 is the authoritative definition of this helper.
 
 ---
 
@@ -602,6 +609,7 @@ No files require invention from scratch. All patterns are direct extensions of e
 | Dispatch `PLAY_CARD_SET` with `fromId: playerId` for pile-source moves | Server does `hands[fromId]` lookup, returns HAND_NOT_FOUND | Use `dragDataRef.current.fromId` (which contains `pile.id`) for pile-source moves |
 | Apply `fromId !== senderToken` guard to pile-source moves | `fromId` is a pile ID, not a player token | Gate the guard behind `!fromZone || fromZone === 'hand'` |
 | Set `faceUp` from `destPile.faceUp` when `toZone === 'hand'` | `destPile` is undefined for hand dest | Use `card.faceUp = true` for hand destinations (matches MOVE_CARD line 275) |
+| Use the 2-argument `makeStateWithPileCards(pileId, cards)` form | Does not push the personal pile, causing lookup failures | Use the 3-argument form `makeStateWithPileCards(playerId, pileId, cards)` — see authoritative definition in Plan 20-01 Task 2 |
 
 ---
 
