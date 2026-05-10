@@ -137,7 +137,12 @@ Plans:
   2. Multiple cards in a spread zone can be selected in a single session without deselecting previous picks
   3. Pressing Escape clears the spread zone selection
   4. Dragging a selected card from a spread zone moves the entire selected set as a group to the target zone (pile, hand, or another spread zone)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 20-01-PLAN.md — Wave 1: Widen PLAY_CARD_SET type + extend server handler for pile-source and toZone:'hand'; extend tests/playCardSet.test.ts with 4 new pile-source cases (TDD)
+- [ ] 20-02-PLAN.md — Wave 1: Extend SortableSpreadCard with selection ring/lift/toggle; add interactive prop and "N selected" badge to SpreadZone
+- [ ] 20-03-PLAN.md — Wave 2: Wire selectionSource state in BoardDragLayer; thread selectionSource + interactive props in BoardView; update HandZone onToggleSelect call site
+- [ ] 20-04-PLAN.md — Wave 3: Manual smoke checkpoint — 9-case visual/interaction verification of full multi-select flow
 **UI hint**: yes
 
 ### Phase 21: Spread Zone Reorder Verification
@@ -198,5 +203,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
-| 20. Spread Zone Multi-Select | v1.3 | 0/TBD | Not started | — |
+| 20. Spread Zone Multi-Select | v1.3 | 0/4 | Not started | — |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
