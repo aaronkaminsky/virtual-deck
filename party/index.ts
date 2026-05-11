@@ -592,7 +592,15 @@ export default class GameRoom implements Party.Server {
         const sourceById = new Map(source.map(c => [c.id, c]));
         const cardsToPlay: Card[] = cardIds.map(id => sourceById.get(id)!);
 
-        // Set faceUp:
+        // Remove from source first (before mutating faceUp to keep source array clean)
+        if (!fromZone || fromZone === "hand") {
+          this.gameState.hands[fromId] = source.filter(c => !cardIdSet.has(c.id));
+        } else {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
+          srcPile.cards = srcPile.cards.filter(c => !cardIdSet.has(c.id));
+        }
+
+        // Set faceUp after removal:
         //   - toZone === 'hand': always faceUp:true (mirrors MOVE_CARD line 274–275)
         //   - toZone === 'pile': inherit pile.faceUp (existing behavior)
         if (toZone === "hand") {
@@ -600,14 +608,6 @@ export default class GameRoom implements Party.Server {
         } else {
           const destPile = this.gameState.piles.find(p => p.id === toId)!;
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
-        }
-
-        // Atomic: remove from source, append to dest
-        if (!fromZone || fromZone === "hand") {
-          this.gameState.hands[fromId] = source.filter(c => !cardIdSet.has(c.id));
-        } else {
-          const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
-          srcPile.cards = srcPile.cards.filter(c => !cardIdSet.has(c.id));
         }
         dest.push(...cardsToPlay);
         break;
