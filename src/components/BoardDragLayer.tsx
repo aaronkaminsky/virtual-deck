@@ -34,6 +34,8 @@ const customCollision: CollisionDetection = (args) => {
   return pointerWithin({ ...args, droppableContainers: pileContainers });
 };
 
+type SelectionSource = { zone: 'hand' | 'pile'; zoneId: string } | null;
+
 interface BoardDragLayerProps {
   gameState: ClientGameState;
   playerId: string;
@@ -56,18 +58,34 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = (id: string, zone: 'hand' | 'pile', zoneId: string) => {
+    const isDifferentZone = selectionSource !== null &&
+      (selectionSource.zone !== zone || selectionSource.zoneId !== zoneId);
+
+    if (isDifferentZone) {
+      setSelectionSource({ zone, zoneId });
+      setSelectedIds(new Set([id]));
+      return;
+    }
+
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
+    if (selectionSource === null) setSelectionSource({ zone, zoneId });
+    // selectionSource-on-empty-Set behavior (intentional, per RESEARCH.md Pattern 2 safe variant):
+    // When selectedIds becomes empty via deselection, selectionSource intentionally stays set to
+    // the current zone (not cleared). The badge won't show (size < 2). Clears on Escape or when
+    // user clicks in a different zone. This is the chosen approach — no stale badge visible,
+    // no risk of losing zone context on momentary zero-selection state.
   };
 
   const sensors = useSensors(
@@ -77,7 +95,10 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setSelectedIds(new Set());
+      if (e.key === 'Escape') {
+        setSelectedIds(new Set());
+        setSelectionSource(null);
+      }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -114,6 +135,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     // D-04: dragging an unselected card while others are selected clears selection
     if (!selectedIds.has(String(event.active.id))) {
       setSelectedIds(new Set());
+      setSelectionSource(null);
     }
     setActiveCard(data.card);
     setDragging(true);
@@ -126,19 +148,25 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       selectedIds.size > 1 &&
       selectedIds.has(activeId) &&
       !!event.over &&
-      overData?.toZone === 'pile';
+      (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
+      !(dragDataRef.current?.fromZone === 'pile' && dragDataRef.current?.fromId === overData?.toId);
 
     if (isMultiCardSet) {
+      const dragFromId = dragDataRef.current?.fromId ?? playerId;
       setActiveCard(null);
       setSelectedIds(new Set());
+      setSelectionSource(null);
       setDragging(false);
       dropSuccessRef.current = true;
       dragDataRef.current = null;
       sendAction({
         type: 'PLAY_CARD_SET',
         cardIds: [...selectedIds],
-        fromId: playerId,
-        toZone: 'pile',
+        fromZone: (selectionSource?.zone ?? 'hand') as 'hand' | 'pile',
+        fromId: selectionSource?.zone === 'pile'
+          ? dragFromId
+          : playerId,
+        toZone: overData!.toZone as 'pile' | 'hand',
         toId: overData!.toId,
       });
       return;
@@ -163,6 +191,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       });
     } else if (isSuccess) {
       setSelectedIds(new Set());
+      setSelectionSource(null);
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
       const toZone = overData!.toZone as 'hand' | 'pile';
@@ -252,7 +281,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} selectionSource={selectionSource} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {activeCard ? <CardOverlay card={activeCard} /> : null}

@@ -12,7 +12,7 @@ interface SortableHandCardProps {
   isDraggingThis: boolean;
   index: number;
   isSelected: boolean;
-  onToggleSelect: (id: string) => void;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
 }
 
 function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect }: SortableHandCardProps) {
@@ -37,7 +37,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
   return (
     <div
       className={cn('relative w-[42px] h-[59px] sm:w-[63px] sm:h-[88px] flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
-      onClick={() => onToggleSelect(card.id)}
+      onClick={() => onToggleSelect(card.id, 'hand', playerId)}
       onPointerDown={(e) => e.stopPropagation()}
     >
       {isDraggingThis && (
@@ -67,7 +67,7 @@ interface HandZoneProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
 }
 
 export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect }: HandZoneProps) {

@@ -16,10 +16,11 @@ interface BoardViewProps {
   draggingCardId: string | null;
   shufflingPileIds: Set<string>;
   selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, selectionSource }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -44,7 +45,12 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   sendAction={sendAction}
                 />
                 {opponentSpread && (
-                  <SpreadZone pile={opponentSpread} sendAction={sendAction} draggingCardId={draggingCardId} />
+                  <SpreadZone
+                    pile={opponentSpread}
+                    sendAction={sendAction}
+                    draggingCardId={draggingCardId}
+                    interactive={false}
+                  />
                 )}
               </div>
             );
@@ -67,6 +73,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                 sendAction={sendAction}
                 draggingCardId={draggingCardId}
                 className="w-full"
+                interactive={true}
+                selectedIds={selectedIds}
+                onToggleSelect={onToggleSelect}
+                selectionSource={selectionSource}
               />
             </div>
           )}
@@ -78,6 +88,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               pile={mySpreadZone}
               sendAction={sendAction}
               draggingCardId={draggingCardId}
+              interactive={true}
+              selectedIds={selectedIds}
+              onToggleSelect={onToggleSelect}
+              selectionSource={selectionSource}
             />
           </div>
         )}
