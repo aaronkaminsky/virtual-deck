@@ -61,7 +61,7 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 - [x] **Phase 17: Board Layout Restructure** — Reposition communal zone to physical center; fix vertical proportions; resolve dnd-kit ID collision as pre-work for multi-select (completed 2026-05-03)
 - [x] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button (completed 2026-05-04)
 - [x] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling (completed 2026-05-08)
-- [ ] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone
+- [x] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone (completed 2026-05-11)
 - [ ] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract
 
 ## Phase Details
@@ -142,7 +142,7 @@ Plans:
 - [x] 20-01-PLAN.md — Wave 1: Widen PLAY_CARD_SET type + extend server handler for pile-source and toZone:'hand'; extend tests/playCardSet.test.ts with 4 new pile-source cases (TDD)
 - [x] 20-02-PLAN.md — Wave 1: Extend SortableSpreadCard with selection ring/lift/toggle; add interactive prop and "N selected" badge to SpreadZone
 - [x] 20-03-PLAN.md — Wave 2: Wire selectionSource state in BoardDragLayer; thread selectionSource + interactive props in BoardView; update HandZone onToggleSelect call site
-- [ ] 20-04-PLAN.md — Wave 3: Manual smoke checkpoint — 9-case visual/interaction verification of full multi-select flow
+- [x] 20-04-PLAN.md — Wave 3: Manual smoke checkpoint — 9-case visual/interaction verification of full multi-select flow
 **UI hint**: yes
 
 ### Phase 21: Spread Zone Reorder Verification
@@ -203,5 +203,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 17. Board Layout Restructure | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
-| 20. Spread Zone Multi-Select | v1.3 | 3/4 | In Progress|  |
+| 20. Spread Zone Multi-Select | v1.3 | 4/4 | Complete    | 2026-05-11 |
 | 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |

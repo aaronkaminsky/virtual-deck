@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Layout & UX Polish
-status: executing
+status: ready_to_plan
 stopped_at: Phase 20 UI-SPEC approved
 last_updated: "2026-05-11T02:07:29.093Z"
 last_activity: 2026-05-11 -- Phase 20 execution started
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 19
   completed_plans: 15
-  percent: 79
+  percent: 63
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-01)
 
 ## Current Position
 
-Phase: 20 (spread-zone-multi-select) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 20
-Last activity: 2026-05-11 -- Phase 20 execution started
+Phase: 21
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-11
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -36,7 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 
 **Velocity:**
 
-- Total plans completed: 5 (v1.3)
+- Total plans completed: 9 (v1.3)
 - Average duration: —
 - Total execution time: —
 
