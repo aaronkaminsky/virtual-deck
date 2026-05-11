@@ -68,9 +68,10 @@ interface HandZoneProps {
   draggingCardId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource }: HandZoneProps) {
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
@@ -111,7 +112,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
       <div className="flex items-center gap-2 px-4 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
-        {selectedIds.size >= 2 && (
+        {selectedIds.size >= 2 && selectionSource?.zone === 'hand' && selectionSource.zoneId === playerId && (
           <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
             {selectedIds.size} selected
           </span>

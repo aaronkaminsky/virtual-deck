@@ -108,6 +108,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               draggingCardId={draggingCardId}
               selectedIds={selectedIds}
               onToggleSelect={onToggleSelect}
+              selectionSource={selectionSource}
             />
           );
         })()}
