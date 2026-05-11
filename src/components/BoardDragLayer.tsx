@@ -152,7 +152,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       !(dragDataRef.current?.fromZone === 'pile' && dragDataRef.current?.fromId === overData?.toId);
 
     if (isMultiCardSet) {
-      const dragFromId = dragDataRef.current?.fromId ?? playerId;
       setActiveCard(null);
       setSelectedIds(new Set());
       setSelectionSource(null);
@@ -164,7 +163,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         cardIds: [...selectedIds],
         fromZone: (selectionSource?.zone ?? 'hand') as 'hand' | 'pile',
         fromId: selectionSource?.zone === 'pile'
-          ? dragFromId
+          ? (selectionSource.zoneId)   // use selectionSource as canonical pile ID
           : playerId,
         toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
         toId: overData!.toId,
