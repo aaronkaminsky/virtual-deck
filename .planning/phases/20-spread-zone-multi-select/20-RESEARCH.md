@@ -565,17 +565,19 @@ const hand = this.gameState.hands[fromId];
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **PLAY_CARD_SET authorization for pile-source moves**
    - What we know: REQUIREMENTS.md notes "Personal spread zone drag-out ownership guard — SPREAD-03 authorization edge case" is deferred to Future Requirements.
    - What's unclear: Should Phase 20 implement no ownership check (any player can move from any spread zone) or a basic check (only zone owner or communal)?
    - Recommendation: Per REQUIREMENTS.md, defer the guard. Phase 20 server code should allow any connected player to play from any pile. Document the gap with a TODO comment.
+   - **RESOLVED:** Deferred. Plan 01 Task 3 implements no ownership check for pile-source moves. The UNAUTHORIZED_MOVE guard is gated behind `!fromZone || fromZone === 'hand'` so pile-source moves bypass it. A `TODO(SPREAD-03 ownership)` comment documents the deferred guard in `party/index.ts`.
 
 2. **didDragRef pattern for SortableSpreadCard**
    - What we know: CONTEXT.md code_context references `didDragRef` disambiguation from HandZone. But `HandZone` as read (lines 9–60) uses a simple `onClick` + `onPointerDown(e.stopPropagation())` without a separate `didDragRef` variable. The ref is mentioned in the UI-SPEC but is not visible in the current HandZone source.
    - What's unclear: Is `didDragRef` an additional guard in SpreadZone specifically, or does the existing `onPointerDown.stopPropagation` + dnd-kit's 8px distance threshold already handle click-vs-drag correctly?
    - Recommendation: The dnd-kit `PointerSensor` with `distance: 8` activation constraint (BoardDragLayer line 74) already ensures clicks shorter than 8px don't trigger drags. The `onPointerDown stopPropagation` prevents event bubbling to parent droppables. This is likely sufficient. Implement without `didDragRef` first; add it if click-vs-drag misfires occur in testing.
+   - **RESOLVED:** Omitting `didDragRef`. Plan 02 Task 1 implements `SortableSpreadCard` with plain `onClick` + `onPointerDown(e.stopPropagation())`, relying on the dnd-kit `PointerSensor` 8px distance threshold for click-vs-drag disambiguation. No `didDragRef` is added.
 
 ---
 
