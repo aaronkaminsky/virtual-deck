@@ -66,9 +66,13 @@ interface SpreadZoneProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   className?: string;
+  interactive?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  selectionSource?: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, selectionSource }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -108,7 +112,14 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted-foreground">{pile.name}</span>
+      <div className="flex items-center">
+        <span className="text-xs text-muted-foreground">{pile.name}</span>
+        {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
+          <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
+            {selectedIds.size} selected
+          </span>
+        )}
+      </div>
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
@@ -121,19 +132,19 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
       >
         {isEmpty ? (
           <span className="text-xs text-muted-foreground">{pile.name}</span>
-        ) : (
+        ) : interactive !== false ? (
           <SortableContext items={faceUpCards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
             <div className="flex items-center">
               {pile.cards.map((card, i) => (
-                <div
-                  key={'id' in card ? (card as Card).id : `masked-${i}`}
-                >
+                <div key={'id' in card ? (card as Card).id : `masked-${i}`}>
                   {'id' in card ? (
                     <SortableSpreadCard
                       card={card as Card}
                       pileId={pile.id}
                       index={i}
                       draggingCardId={draggingCardId}
+                      isSelected={selectedIds?.has((card as Card).id) ?? false}
+                      onToggleSelect={onToggleSelect ?? (() => {})}
                     />
                   ) : (
                     <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
@@ -144,6 +155,16 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
               ))}
             </div>
           </SortableContext>
+        ) : (
+          <div className="flex items-center">
+            {pile.cards.map((card, i) => (
+              <div key={'id' in card ? (card as Card).id : `masked-${i}`} className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
+                {'id' in card
+                  ? ((card as Card).faceUp ? <CardFace card={card as Card} /> : <CardBack />)
+                  : <CardBack />}
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <Button
