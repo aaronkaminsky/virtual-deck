@@ -13,16 +13,24 @@ interface SortableSpreadCardProps {
   pileId: string;
   index: number;
   draggingCardId: string | null;
+  isSelected: boolean;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
 }
 
-function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpreadCardProps) {
+function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect }: SortableSpreadCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'pile' as const, fromId: pileId, toZone: 'pile' as const, toId: pileId },
   });
 
+  const resolvedTransform = isSelected
+    ? 'translateY(-6px)'
+    : isDragging
+      ? undefined
+      : CSS.Transform.toString(transform);
+
   const style: React.CSSProperties = {
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transform: resolvedTransform,
     transition,
     touchAction: 'none',
     opacity: draggingCardId === card.id ? 0 : 1,
@@ -30,13 +38,25 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpr
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={cn('flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
+      className={cn('relative flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
+      onClick={() => onToggleSelect(card.id, 'pile', pileId)}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      {draggingCardId === card.id && (
+        <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
+      )}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+        )}
+        {...listeners}
+        {...attributes}
+        aria-pressed={isSelected}
+      >
+        {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      </div>
     </div>
   );
 }
