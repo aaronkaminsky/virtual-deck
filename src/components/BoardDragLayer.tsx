@@ -148,7 +148,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       selectedIds.size > 1 &&
       selectedIds.has(activeId) &&
       !!event.over &&
-      (overData?.toZone === 'pile' || overData?.toZone === 'hand' || overData?.toZone === 'opponent-hand') &&
+      (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
       !(dragDataRef.current?.fromZone === 'pile' && dragDataRef.current?.fromId === overData?.toId);
 
     if (isMultiCardSet) {
