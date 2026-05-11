@@ -1,14 +1,14 @@
 ---
-status: partial
+status: complete
 phase: 19-npm-audit
 source: [19-VERIFICATION.md]
 started: 2026-05-06T06:40:00Z
-updated: 2026-05-09T15:00:00Z
+updated: 2026-05-11T00:00:00Z
 ---
 
 ## Current Test
 
-Plans 08-10 complete (code-verified). Final visual pass at 375x667 required to confirm SC2 with all ten plans in place.
+[testing complete]
 
 ## Tests
 
@@ -40,10 +40,14 @@ result: partial — Gap 7 resolved (desktop shows all content without vertical s
 expected: All three pile columns visible. Badge inline in name row (not on card stack). With 2 opponents each column gets ~50% of header row. Hamburger pinned to top-right of header. Header anchored to top. No horizontal clipping anywhere.
 result: passed — user confirmed: badge "(N)" inline next to name, hamburger top-right, spread zone Eye icon visible. Approved 2026-05-09.
 
+### 8. Final visual pass — all 10 plans in place at 375x667
+expected: Hamburger pinned to top-right. Opponent count inline in name row. Opponent columns ~50% each with 2 opponents. All pile columns visible. No horizontal clipping.
+result: passed — user confirmed 2026-05-11.
+
 ## Summary
 
-total: 7
-passed: 4
+total: 8
+passed: 5
 issues: 3
 pending: 0
 skipped: 0
