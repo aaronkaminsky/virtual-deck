@@ -575,6 +575,15 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
+        if (toZone === "hand" && toId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot place cards in another player's hand",
+          } satisfies ServerEvent));
+          break;
+        }
+
         // Snapshot BEFORE mutation so UNDO_MOVE can revert
         takeSnapshot(this.gameState);
 
