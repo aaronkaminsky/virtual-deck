@@ -153,7 +153,12 @@ Plans:
   1. A player can drag a card within a spread zone to a new position and the order is preserved for all players
   2. Drag-reorder works correctly when one or more cards are in a selected state — reordering a non-selected card does not clear selection unexpectedly
   3. Undo reverses the last reorder operation and restores the previous card order
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 21-01-PLAN.md — Wave 0: RED scaffolds — failing Vitest tests for REORDER undo (D-07/D-08) and group-reorder splice (D-06)
+- [ ] 21-02-PLAN.md — Wave 1: Add takeSnapshot to REORDER_HAND and REORDER_PILE_SPREAD in party/index.ts — flips reorderUndo.test.ts to GREEN
+- [ ] 21-03-PLAN.md — Wave 1: Selection preservation (D-01/D-02) in BoardDragLayer + group reorder (D-03–D-06) in SpreadZone & HandZone — flips groupReorder.test.ts to GREEN
+- [ ] 21-04-PLAN.md — Wave 2: HUMAN-UAT live session pass + mark SPREAD-02 complete in REQUIREMENTS.md (D-11/D-12) — manual checkpoint
 
 ## Backlog
 
