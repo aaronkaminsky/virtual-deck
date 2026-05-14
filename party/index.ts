@@ -56,7 +56,7 @@ export function takeSnapshot(state: GameState): void {
   const snap = JSON.parse(JSON.stringify(state)) as GameState;
   snap.undoSnapshots = [];
   state.undoSnapshots.push(snap);
-  if (state.undoSnapshots.length > 20) {
+  if (state.undoSnapshots.length >= 20) {
     state.undoSnapshots.shift();
   }
 }
