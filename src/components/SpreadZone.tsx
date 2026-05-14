@@ -61,6 +61,11 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
   );
 }
 
+function SortableSentinel({ id }: { id: string }) {
+  const { setNodeRef } = useSortable({ id });
+  return <div ref={setNodeRef} style={{ width: 0, height: 0, flexShrink: 0 }} aria-hidden />;
+}
+
 interface SpreadZoneProps {
   pile: ClientPile;
   sendAction: (action: ClientAction) => void;
@@ -80,6 +85,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
 
   // Detect intra-spread card reorder
   const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
+  const sentinelId = `__sentinel-pile-${pile.id}__`;
 
   useDndMonitor({
     onDragEnd(event) {
@@ -91,7 +97,8 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
       const fromThisPile = activeData?.fromZone === 'pile' && activeData?.fromId === pile.id;
       const toThisPile =
         (overData?.fromZone === 'pile' && overData?.fromId === pile.id) ||
-        String(over.id) === `pile-${pile.id}`;
+        String(over.id) === `pile-${pile.id}` ||
+        String(over.id) === sentinelId;
 
       if (fromThisPile && toThisPile && activeData) {
         const draggedId = activeData.card.id;
@@ -103,13 +110,19 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
           const selected = faceUpCards.filter(c => selectedIds!.has(c.id));
           const remainder = faceUpCards.filter(c => !selectedIds!.has(c.id));
-          const overIdx = remainder.findIndex(c => c.id === String(over.id));
+          // Sentinel drop → force -1 so insertAt resolves to remainder.length (append).
+          const overIdx = String(over.id) === sentinelId
+            ? -1
+            : remainder.findIndex(c => c.id === String(over.id));
           const insertAt = overIdx === -1 ? remainder.length : overIdx;
           remainder.splice(insertAt, 0, ...selected);
           reordered = remainder;
         } else {
           const activeIdx = faceUpCards.findIndex(c => c.id === draggedId);
-          const overIdx = faceUpCards.findIndex(c => c.id === String(over.id));
+          // Sentinel drop → move dragged card to the last position.
+          const overIdx = String(over.id) === sentinelId
+            ? faceUpCards.length - 1
+            : faceUpCards.findIndex(c => c.id === String(over.id));
           if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
           reordered = arrayMove(faceUpCards, activeIdx, overIdx);
         }
@@ -147,7 +160,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         {isEmpty ? (
           <span className="text-xs text-muted-foreground">{pile.name}</span>
         ) : interactive !== false ? (
-          <SortableContext items={faceUpCards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+          <SortableContext items={[...faceUpCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
             <div className="flex items-center">
               {pile.cards.map((card, i) => (
                 <div key={'id' in card ? (card as Card).id : `masked-${i}`}>
@@ -167,6 +180,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
                   )}
                 </div>
               ))}
+              <SortableSentinel id={sentinelId} />
             </div>
           </SortableContext>
         ) : (

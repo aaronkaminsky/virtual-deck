@@ -59,6 +59,11 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
   );
 }
 
+function SortableSentinel({ id }: { id: string }) {
+  const { setNodeRef } = useSortable({ id });
+  return <div ref={setNodeRef} style={{ width: 0, height: 0, flexShrink: 0 }} aria-hidden />;
+}
+
 interface HandZoneProps {
   cards: Card[];
   playerId: string;
@@ -72,6 +77,7 @@ interface HandZoneProps {
 }
 
 export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource }: HandZoneProps) {
+  const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
@@ -94,7 +100,8 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
       const fromHand = activeData?.fromZone === 'hand' && activeData?.fromId === playerId;
       const toSameHand =
         (overData?.fromZone === 'hand' && overData?.fromId === playerId) ||
-        over.id === 'hand';
+        over.id === 'hand' ||
+        String(over.id) === sentinelId;
 
       if (fromHand && toSameHand && activeData) {
         const draggedId = activeData.card.id;
@@ -106,13 +113,19 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
           const selected = cards.filter(c => selectedIds.has(c.id));
           const remainder = cards.filter(c => !selectedIds.has(c.id));
-          const overIdx = remainder.findIndex(c => c.id === String(over.id));
+          // Sentinel drop → force -1 so insertAt resolves to remainder.length (append).
+          const overIdx = String(over.id) === sentinelId
+            ? -1
+            : remainder.findIndex(c => c.id === String(over.id));
           const insertAt = overIdx === -1 ? remainder.length : overIdx;
           remainder.splice(insertAt, 0, ...selected);
           reordered = remainder;
         } else {
           const activeIdx = cards.findIndex(c => c.id === draggedId);
-          const overIdx = cards.findIndex(c => c.id === String(over.id));
+          // Sentinel drop → move dragged card to the last position.
+          const overIdx = String(over.id) === sentinelId
+            ? cards.length - 1
+            : cards.findIndex(c => c.id === String(over.id));
           if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
           reordered = arrayMove(cards, activeIdx, overIdx);
         }
@@ -140,7 +153,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           isOver ? 'border-t-2 border-primary' : ''
         )}
       >
-        <SortableContext items={cards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={[...cards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
           {cards.map((card, index) => (
             <SortableHandCard
               key={card.id}
@@ -152,6 +165,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
               onToggleSelect={onToggleSelect}
             />
           ))}
+          <SortableSentinel id={sentinelId} />
         </SortableContext>
       </div>
     </div>
