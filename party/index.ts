@@ -421,6 +421,18 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "DEAL_CARDS": {
+        if (
+          !Number.isInteger(action.cardsPerPlayer) ||
+          action.cardsPerPlayer < 1 ||
+          action.cardsPerPlayer > 13
+        ) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_CARDS_PER_PLAYER",
+            message: "cardsPerPlayer must be an integer between 1 and 13",
+          } satisfies ServerEvent));
+          break;
+        }
         const dealDrawPile = this.gameState.piles.find(p => p.id === "draw");
         const connectedPlayers = this.gameState.players.filter(p => p.connected);
         const needed = action.cardsPerPlayer * connectedPlayers.length;
