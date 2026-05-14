@@ -31,7 +31,22 @@ const customCollision: CollisionDetection = (args) => {
   }
 
   // Pointer is outside all zones — pile drops only register when the pointer is inside the pile rect.
-  return pointerWithin({ ...args, droppableContainers: pileContainers });
+  const pileCollisions = pointerWithin({ ...args, droppableContainers: pileContainers });
+  if (pileCollisions.length > 0) {
+    // For intra-pile reorder only: prefer card-level closestCenter so SpreadZone.useDndMonitor
+    // receives a card ID in over.id (not 'pile-{id}') and can compute the correct insert position.
+    // Cross-zone drags (hand→pile, pile-A→pile-B) stay at pile-droppable resolution to avoid
+    // closestCenter picking hand cards or cards from the source pile as the collision target.
+    const activeData = args.active.data.current as { fromZone?: string; fromId?: string } | undefined;
+    const isIntraPileDrag = activeData?.fromZone === 'pile' &&
+      pileCollisions.some(c => String(c.id) === `pile-${activeData?.fromId}`);
+    if (isIntraPileDrag) {
+      const cardCollisions = closestCenter({ ...args, droppableContainers: cardContainers });
+      return cardCollisions.length > 0 ? cardCollisions : pileCollisions;
+    }
+    return pileCollisions;
+  }
+  return [];
 };
 
 type SelectionSource = { zone: 'hand' | 'pile'; zoneId: string } | null;
@@ -104,6 +119,25 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Clear stale selection when selected cards are no longer in their source zone
+  // (e.g. after RESET_TABLE, deal, or any server action that moves cards out of the selection zone).
+  useEffect(() => {
+    if (selectedIds.size === 0 || !selectionSource) return;
+    let sourceCardIds: Set<string>;
+    if (selectionSource.zone === 'hand') {
+      sourceCardIds = new Set(gameState.myHand.map(c => c.id));
+    } else {
+      const pile = gameState.piles.find(p => p.id === selectionSource.zoneId);
+      sourceCardIds = new Set(
+        pile ? pile.cards.filter((c): c is Card => 'id' in c).map(c => c.id) : []
+      );
+    }
+    if ([...selectedIds].some(id => !sourceCardIds.has(id))) {
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+    }
+  }, [gameState.myHand, gameState.piles, selectedIds, selectionSource]);
+
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) {
       if (import.meta.env.DEV) {
@@ -132,12 +166,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string; toId?: string } | undefined;
     if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
     dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
-    // D-01 (Phase 21): intra-zone reorder must NOT clear selection.
-    // Detection: SortableSpreadCard sets data.toId === pileId (== fromId); SortableHandCard sets fromZone === 'hand'.
-    const isIntraSpreadReorderStart = data.fromZone === 'pile' && data.fromId === data.toId;
-    const isIntraHandReorderStart = data.fromZone === 'hand';
-    // D-04 (Phase 20) + D-01 (Phase 21): only clear when NOT intra-zone reorder
-    if (!selectedIds.has(String(event.active.id)) && !isIntraSpreadReorderStart && !isIntraHandReorderStart) {
+    // D-04 + D-01: clear selection when dragging an unselected card; preserve when dragging a selected card.
+    // selectedIds.has check is sufficient for both cases — no zone-based guard needed.
+    if (!selectedIds.has(String(event.active.id))) {
       setSelectedIds(new Set());
       setSelectionSource(null);
     }
@@ -158,7 +189,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       selectedIds.has(activeId) &&
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
-      !isIntraSpreadReorder;
+      !isIntraSpreadReorder &&
+      !isIntraHandReorder;
 
     if (isMultiCardSet) {
       setActiveCard(null);
