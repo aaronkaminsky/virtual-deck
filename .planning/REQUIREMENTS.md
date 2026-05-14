@@ -16,7 +16,7 @@ Redesign the board so it reads as a shared physical space — communal zone cent
 ### Spread Zones
 
 - [x] **SPREAD-01**: Player can click to select multiple cards in a spread zone, with the same visual selection treatment as player hand card selection
-- [ ] **SPREAD-02**: Player can drag-reorder cards within a spread zone; reorder behaves correctly when multi-select state is active
+- [x] **SPREAD-02**: Player can drag-reorder cards within a spread zone; reorder behaves correctly when multi-select state is active
 - [x] **SPREAD-03**: Player can drag a selected set of cards from a spread zone to another zone (pile, hand, or another spread zone)
 - [x] **SPREAD-04**: Spread zone drag interactions are stable with no event misfires when selection state is active (dnd-kit ID collision between `SortableSpreadCard` and nested `DraggableCard` resolved)
 
@@ -43,7 +43,7 @@ Deferred to a later milestone:
 | LAYOUT-03 | Phase 18 | Complete |
 | LAYOUT-04 | Phase 19 | Complete |
 | SPREAD-01 | Phase 20 | Complete |
-| SPREAD-02 | Phase 21 | Pending |
+| SPREAD-02 | Phase 21 | Complete |
 | SPREAD-03 | Phase 20 | Complete |
 | SPREAD-04 | Phase 17 | Complete |
 
