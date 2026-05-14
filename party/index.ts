@@ -484,6 +484,10 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "RESET_TABLE": {
+        // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
+        // Undo history is cleared so no pre-reset state can be restored.
+        // INTENTIONAL: No authorization check — any connected player can reset the table.
+        // If room-owner semantics are added in the future, add an ownership guard here before mutations.
         const resetDrawPile = this.gameState.piles.find(p => p.id === "draw");
         if (!resetDrawPile) {
           break;
