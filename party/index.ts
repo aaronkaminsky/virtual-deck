@@ -306,6 +306,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
+        takeSnapshot(this.gameState);
         const cardMap = new Map(hand.map(c => [c.id, c]));
         this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
         break;
@@ -332,6 +333,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
+        takeSnapshot(this.gameState);
         const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
         spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
         break;
