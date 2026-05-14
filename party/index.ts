@@ -15,12 +15,23 @@ export function buildDeck(): Card[] {
   );
 }
 
+function unbiasedRandom(max: number): number {
+  // Rejection sampling: discard values that fall in the biased tail of the 2^32 range.
+  // For a 52-card deck the loop runs at most 2 iterations in the rare case; expected ~1.
+  const limit = 2 ** 32 - (2 ** 32 % max);
+  let value: number;
+  do {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    value = buf[0];
+  } while (value >= limit);
+  return value % max;
+}
+
 export function shuffle<T>(arr: T[]): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
-    const buf = new Uint32Array(1);
-    crypto.getRandomValues(buf);
-    const j = buf[0] % (i + 1);
+    const j = unbiasedRandom(i + 1);
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
@@ -282,9 +293,7 @@ export default class GameRoom implements Party.Server {
         if (pos === 'bottom') {
           dest.unshift(card);
         } else if (pos === 'random') {
-          const buf = new Uint32Array(1);
-          crypto.getRandomValues(buf);
-          const idx = dest.length === 0 ? 0 : buf[0] % (dest.length + 1);
+          const idx = dest.length === 0 ? 0 : unbiasedRandom(dest.length + 1);
           dest.splice(idx, 0, card);
         } else {
           dest.push(card);
