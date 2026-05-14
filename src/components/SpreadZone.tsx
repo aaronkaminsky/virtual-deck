@@ -63,7 +63,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
 
 function SortableSentinel({ id }: { id: string }) {
   const { setNodeRef } = useSortable({ id });
-  return <div ref={setNodeRef} style={{ width: 0, height: 0, flexShrink: 0 }} aria-hidden />;
+  return <div ref={setNodeRef} style={{ flex: 1, minWidth: 56, alignSelf: 'stretch', opacity: 0 }} aria-hidden />;
 }
 
 interface SpreadZoneProps {
