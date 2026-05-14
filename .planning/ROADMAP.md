@@ -209,4 +209,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
 | 20. Spread Zone Multi-Select | v1.3 | 4/4 | Complete    | 2026-05-11 |
-| 21. Spread Zone Reorder Verification | v1.3 | 5/5 | Complete   | 2026-05-14 |
+| 21. Spread Zone Reorder Verification | v1.3 | 5/5 | Complete    | 2026-05-14 |
