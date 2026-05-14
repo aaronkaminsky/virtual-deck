@@ -113,11 +113,17 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
           const selected = cards.filter(c => selectedIds.has(c.id));
           const remainder = cards.filter(c => !selectedIds.has(c.id));
-          // Sentinel drop → force -1 so insertAt resolves to remainder.length (append).
+          // Sentinel or unknown → append to end.
+          // When dragging right (delta.x > 0) the visual shows the block landing AFTER over,
+          // so insert at overIdx + 1. When dragging left, insert before (overIdx).
           const overIdx = String(over.id) === sentinelId
             ? -1
             : remainder.findIndex(c => c.id === String(over.id));
-          const insertAt = overIdx === -1 ? remainder.length : overIdx;
+          const insertAt = overIdx === -1
+            ? remainder.length
+            : event.delta.x > 0
+              ? Math.min(overIdx + 1, remainder.length)
+              : overIdx;
           remainder.splice(insertAt, 0, ...selected);
           reordered = remainder;
         } else {

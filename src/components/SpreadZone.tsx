@@ -110,11 +110,17 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
           const selected = faceUpCards.filter(c => selectedIds!.has(c.id));
           const remainder = faceUpCards.filter(c => !selectedIds!.has(c.id));
-          // Sentinel drop → force -1 so insertAt resolves to remainder.length (append).
+          // Sentinel or unknown → append to end.
+          // When dragging right (delta.x > 0) the visual shows the block landing AFTER over,
+          // so insert at overIdx + 1. When dragging left, insert before (overIdx).
           const overIdx = String(over.id) === sentinelId
             ? -1
             : remainder.findIndex(c => c.id === String(over.id));
-          const insertAt = overIdx === -1 ? remainder.length : overIdx;
+          const insertAt = overIdx === -1
+            ? remainder.length
+            : event.delta.x > 0
+              ? Math.min(overIdx + 1, remainder.length)
+              : overIdx;
           remainder.splice(insertAt, 0, ...selected);
           reordered = remainder;
         } else {
