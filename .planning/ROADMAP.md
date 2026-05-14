@@ -155,9 +155,9 @@ Plans:
   3. Undo reverses the last reorder operation and restores the previous card order
 **Plans**: 4 plans
 Plans:
-- [ ] 21-01-PLAN.md — Wave 0: RED scaffolds — failing Vitest tests for REORDER undo (D-07/D-08) and group-reorder splice (D-06)
-- [ ] 21-02-PLAN.md — Wave 1: Add takeSnapshot to REORDER_HAND and REORDER_PILE_SPREAD in party/index.ts — flips reorderUndo.test.ts to GREEN
-- [ ] 21-03-PLAN.md — Wave 1: Selection preservation (D-01/D-02) in BoardDragLayer + group reorder (D-03–D-06) in SpreadZone & HandZone — flips groupReorder.test.ts to GREEN
+- [x] 21-01-PLAN.md — Wave 0: RED scaffolds — failing Vitest tests for REORDER undo (D-07/D-08) and group-reorder splice (D-06)
+- [x] 21-02-PLAN.md — Wave 1: Add takeSnapshot to REORDER_HAND and REORDER_PILE_SPREAD in party/index.ts — flips reorderUndo.test.ts to GREEN
+- [x] 21-03-PLAN.md — Wave 1: Selection preservation (D-01/D-02) in BoardDragLayer + group reorder (D-03–D-06) in SpreadZone & HandZone — flips groupReorder.test.ts to GREEN
 - [ ] 21-04-PLAN.md — Wave 2: HUMAN-UAT live session pass + mark SPREAD-02 complete in REQUIREMENTS.md (D-11/D-12) — manual checkpoint
 
 ## Backlog
@@ -209,4 +209,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
 | 20. Spread Zone Multi-Select | v1.3 | 4/4 | Complete    | 2026-05-11 |
-| 21. Spread Zone Reorder Verification | v1.3 | 0/TBD | Not started | — |
+| 21. Spread Zone Reorder Verification | v1.3 | 3/4 | In Progress|  |
