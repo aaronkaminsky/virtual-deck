@@ -97,12 +97,26 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         over.id === 'hand';
 
       if (fromHand && toSameHand && activeData) {
-        const activeIdx = cards.findIndex(c => c.id === activeData.card.id);
-        const overIdx = cards.findIndex(c => c.id === String(over.id));
-        if (activeIdx !== -1 && overIdx !== -1 && activeIdx !== overIdx) {
-          const reordered = arrayMove(cards, activeIdx, overIdx);
-          sendAction({ type: 'REORDER_HAND', orderedCardIds: reordered.map(c => c.id) });
+        const draggedId = activeData.card.id;
+        // D-03/D-06 (Phase 21): if the dragged card is part of a multi-selection, move ALL selected cards as a block.
+        const isGroupReorder = selectedIds.size > 1 && selectedIds.has(draggedId);
+
+        let reordered: Card[];
+        if (isGroupReorder) {
+          // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
+          const selected = cards.filter(c => selectedIds.has(c.id));
+          const remainder = cards.filter(c => !selectedIds.has(c.id));
+          const overIdx = remainder.findIndex(c => c.id === String(over.id));
+          const insertAt = overIdx === -1 ? remainder.length : overIdx;
+          remainder.splice(insertAt, 0, ...selected);
+          reordered = remainder;
+        } else {
+          const activeIdx = cards.findIndex(c => c.id === draggedId);
+          const overIdx = cards.findIndex(c => c.id === String(over.id));
+          if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
+          reordered = arrayMove(cards, activeIdx, overIdx);
         }
+        sendAction({ type: 'REORDER_HAND', orderedCardIds: reordered.map(c => c.id) });
       }
     },
   });

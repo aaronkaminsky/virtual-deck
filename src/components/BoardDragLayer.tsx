@@ -129,11 +129,15 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       clearTimeout(snapBackTimerRef.current);
       snapBackTimerRef.current = null;
     }
-    const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string } | undefined;
+    const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string; toId?: string } | undefined;
     if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
     dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
-    // D-04: dragging an unselected card while others are selected clears selection
-    if (!selectedIds.has(String(event.active.id))) {
+    // D-01 (Phase 21): intra-zone reorder must NOT clear selection.
+    // Detection: SortableSpreadCard sets data.toId === pileId (== fromId); SortableHandCard sets fromZone === 'hand'.
+    const isIntraSpreadReorderStart = data.fromZone === 'pile' && data.fromId === data.toId;
+    const isIntraHandReorderStart = data.fromZone === 'hand';
+    // D-04 (Phase 20) + D-01 (Phase 21): only clear when NOT intra-zone reorder
+    if (!selectedIds.has(String(event.active.id)) && !isIntraSpreadReorderStart && !isIntraHandReorderStart) {
       setSelectedIds(new Set());
       setSelectionSource(null);
     }
@@ -144,12 +148,17 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
     const activeId = String(event.active.id);
+    // D-02 (Phase 21): compute intra-zone reorder flags ONCE, before any branch.
+    const fromZoneAtEnd = dragDataRef.current?.fromZone;
+    const fromIdAtEnd = dragDataRef.current?.fromId;
+    const isIntraSpreadReorder = fromZoneAtEnd === 'pile' && fromIdAtEnd === overData?.toId;
+    const isIntraHandReorder = fromZoneAtEnd === 'hand' && overData?.toZone === 'hand';
     const isMultiCardSet =
       selectedIds.size > 1 &&
       selectedIds.has(activeId) &&
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
-      !(dragDataRef.current?.fromZone === 'pile' && dragDataRef.current?.fromId === overData?.toId);
+      !isIntraSpreadReorder;
 
     if (isMultiCardSet) {
       setActiveCard(null);
@@ -189,8 +198,11 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         fromId,
       });
     } else if (isSuccess) {
-      setSelectedIds(new Set());
-      setSelectionSource(null);
+      // D-02 (Phase 21): preserve selection across intra-zone reorder; clear for all other successful drops.
+      if (!isIntraSpreadReorder && !isIntraHandReorder) {
+        setSelectedIds(new Set());
+        setSelectionSource(null);
+      }
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
       const toZone = overData!.toZone as 'hand' | 'pile';
@@ -216,7 +228,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           if (isSpread) {
             // GAP-06: intra-spread reorder — skip MOVE_CARD so SpreadZone's useDndMonitor
             // REORDER_PILE_SPREAD handler can fire without BoardDragLayer racing it.
-            const isIntraSpreadReorder = fromZone === 'pile' && fromId === toId;
+            // Reuse outer isIntraSpreadReorder (computed at top of handleDragEnd, D-02 Phase 21).
             if (!isIntraSpreadReorder) {
               sendAction({
                 type: 'MOVE_CARD',
