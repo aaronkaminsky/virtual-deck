@@ -111,14 +111,17 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           const selected = faceUpCards.filter(c => selectedIds!.has(c.id));
           const remainder = faceUpCards.filter(c => !selectedIds!.has(c.id));
           // Sentinel or unknown → append to end.
-          // When dragging right (delta.x > 0) the visual shows the block landing AFTER over,
-          // so insert at overIdx + 1. When dragging left, insert before (overIdx).
+          // Direction heuristic: compare the dragged card's original index with the over card's original index.
+          // Dragging rightward (originalDragIdx < originalOverIdx) → insert AFTER over; leftward → insert BEFORE.
+          // This is stable regardless of cumulative pointer displacement (unlike event.delta.x).
+          const originalDragIdx = faceUpCards.findIndex(c => c.id === draggedId);
+          const originalOverIdx = faceUpCards.findIndex(c => c.id === String(over.id));
           const overIdx = String(over.id) === sentinelId
             ? -1
             : remainder.findIndex(c => c.id === String(over.id));
           const insertAt = overIdx === -1
             ? remainder.length
-            : event.delta.x > 0
+            : originalDragIdx < originalOverIdx
               ? Math.min(overIdx + 1, remainder.length)
               : overIdx;
           remainder.splice(insertAt, 0, ...selected);
