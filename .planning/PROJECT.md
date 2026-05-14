@@ -22,12 +22,13 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-**v1.2 shipped (2026-04-29).** Milestone archived. **v1.3 in progress — Phase 17 complete (2026-05-02); Phase 16.1 complete (2026-05-03, CI partykit deploy fix).**
+**v1.3 complete (2026-05-14).** All 8 requirements verified. **Phase 21 (live session verification) complete — SPREAD-02 verified across automated + manual gates.**
 
-- ~2,646 TypeScript LOC across `src/`, `party/`, `shared/`
+- ~2,700+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (130+ tests)
+- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (165 tests)
 - Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET)
+- v1.3 additions: board layout redesign, collapsible controls panel, phone-responsive layout, spread zone multi-select, spread zone drag-reorder with group-reorder + undo + sentinel-based drop-to-end
 - Developer README at repo root covering local setup, architecture, tests, deploy
 - All 31 requirements across v1.0 + v1.1 + v1.2 satisfied and verified
 
