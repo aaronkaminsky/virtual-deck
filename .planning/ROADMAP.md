@@ -62,7 +62,7 @@ See full phase details in [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.m
 - [x] **Phase 18: Controls Collapse** — Wrap all game controls in a collapsible panel triggered by a single header button (completed 2026-05-04)
 - [x] **Phase 19: Responsive Layout** — Scale board to phone-width (≥375px) without horizontal scrolling (completed 2026-05-08)
 - [x] **Phase 20: Spread Zone Multi-Select** — Click-to-select multiple spread zone cards with the same UX as player hand; drag selected set to another zone (completed 2026-05-11)
-- [ ] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract
+- [x] **Phase 21: Spread Zone Reorder Verification** — Confirm drag-reorder coexists correctly with multi-select state and undo contract (completed 2026-05-14)
 
 ## Phase Details
 
@@ -158,7 +158,7 @@ Plans:
 - [x] 21-01-PLAN.md — Wave 0: RED scaffolds — failing Vitest tests for REORDER undo (D-07/D-08) and group-reorder splice (D-06)
 - [x] 21-02-PLAN.md — Wave 1: Add takeSnapshot to REORDER_HAND and REORDER_PILE_SPREAD in party/index.ts — flips reorderUndo.test.ts to GREEN
 - [x] 21-03-PLAN.md — Wave 1: Selection preservation (D-01/D-02) in BoardDragLayer + group reorder (D-03–D-06) in SpreadZone & HandZone — flips groupReorder.test.ts to GREEN
-- [ ] 21-04-PLAN.md — Wave 2: HUMAN-UAT live session pass + mark SPREAD-02 complete in REQUIREMENTS.md (D-11/D-12) — manual checkpoint
+- [x] 21-04-PLAN.md — Wave 2: HUMAN-UAT live session pass + mark SPREAD-02 complete in REQUIREMENTS.md (D-11/D-12) — manual checkpoint
 
 ## Backlog
 
@@ -209,4 +209,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 18. Controls Collapse | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 19. Responsive Layout | v1.3 | 10/10 | Complete   | 2026-05-09 |
 | 20. Spread Zone Multi-Select | v1.3 | 4/4 | Complete    | 2026-05-11 |
-| 21. Spread Zone Reorder Verification | v1.3 | 3/4 | In Progress|  |
+| 21. Spread Zone Reorder Verification | v1.3 | 5/5 | Complete   | 2026-05-14 |
