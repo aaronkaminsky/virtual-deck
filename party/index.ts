@@ -62,6 +62,9 @@ export function takeSnapshot(state: GameState): void {
 }
 
 export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
+  if (playerToken === null) {
+    throw new Error("viewFor requires a non-null playerToken");
+  }
   return {
     roomId: state.roomId,
     phase: state.phase,
