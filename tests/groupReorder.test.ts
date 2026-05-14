@@ -2,11 +2,14 @@ import { describe, it, expect } from "vitest";
 import type { Card } from "../src/shared/types";
 import { makeCard } from "./helpers";
 
-// RED scaffold: deliberately incorrect — returns input unchanged.
-// Plan 03 will replace this stub with the D-06 algorithm in tests AND inline the
-// same algorithm into SpreadZone.tsx and HandZone.tsx.
-function groupReorder(cards: Card[], _selectedIds: Set<string>, _overId: string): Card[] {
-  return [...cards]; // STUB — to be replaced in Plan 03
+function groupReorder(cards: Card[], selectedIds: Set<string>, overId: string): Card[] {
+  if (selectedIds.size === 0) return [...cards];
+  const selected = cards.filter(c => selectedIds.has(c.id));
+  const remainder = cards.filter(c => !selectedIds.has(c.id));
+  const overIdx = remainder.findIndex(c => c.id === overId);
+  const insertAt = overIdx === -1 ? remainder.length : overIdx;
+  remainder.splice(insertAt, 0, ...selected);
+  return remainder;
 }
 
 describe("groupReorder (D-06 splice algorithm)", () => {
