@@ -1,9 +1,9 @@
 ---
-status: in_progress
+status: complete
 phase: 21-phase-14-live-session-verification
 source: [21-CONTEXT.md, 21-RESEARCH.md, 21-VALIDATION.md]
 started: 2026-05-14T05:39:05Z
-updated: 2026-05-14T05:39:05Z
+updated: 2026-05-14T12:25:00Z
 ---
 
 ## Current Test
@@ -59,13 +59,13 @@ result: passed
 
 total: 7
 passed: 7
-issues: 1
+issues: 0
 pending: 0
 
 ## Gaps
 
 NOW FIXED: Found while testing, if I have cards selected and then Reset the table, the selection is not completely cleared. The "X selected" badge does not disappear, and if any of the selected cards are delt back into the hand they show up as selected.
 
-Still an issue: When reordering multiple cards you cannot move to the end, dropping on or after the last card puts the dropped set just before the last card.  If you drop passed the last card it should be a drop zone that puts the dragged cards at the end.
+NOW FIXED (21-05): When reordering multiple cards you cannot move to the end, dropping on or after the last card puts the dropped set just before the last card.  If you drop passed the last card it should be a drop zone that puts the dragged cards at the end.
 
 NOW FIXED: In tests #4 and #5 the unselected card was re-ordered successfully but it did not clear the prior selection.  Starting to drag an unselected card should clear the selection.
