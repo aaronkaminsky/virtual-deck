@@ -521,6 +521,18 @@ export default class GameRoom implements Party.Server {
         }
         // TODO(SPREAD-03 ownership): pile-source ownership guard deferred per REQUIREMENTS.md.
 
+        // V4b Destination Access Control: sender cannot place cards into another player's hand.
+        // Guard is placed before source resolution and takeSnapshot to prevent orphaned undo snapshots.
+        // Note: no guard on spread-${victimToken} here — spread zone ownership is deferred per REQUIREMENTS.md.
+        if (toZone === "hand" && toId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot place cards in another player's hand",
+          } satisfies ServerEvent));
+          break;
+        }
+
         // Resolve source array based on fromZone
         const source: Card[] | undefined =
           (!fromZone || fromZone === "hand")
@@ -574,15 +586,6 @@ export default class GameRoom implements Party.Server {
             type: "ERROR",
             code: "PILE_NOT_FOUND",
             message: `No pile found with id: ${toId}`,
-          } satisfies ServerEvent));
-          break;
-        }
-
-        if (toZone === "hand" && toId !== senderToken) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "UNAUTHORIZED_MOVE",
-            message: "Cannot place cards in another player's hand",
           } satisfies ServerEvent));
           break;
         }
