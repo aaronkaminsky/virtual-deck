@@ -8,6 +8,18 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
+## Current Milestone: v1.4 Table Polish
+
+**Goal:** Reduce minor annoyances in the play area through layout simplification, better pile/zone interaction, and hand management improvements.
+
+**Target features:**
+- Show Hand — toggle to flip hand face-up/down for all players
+- Select All — "select all" button on piles and spreads; use existing multi-card drag
+- Play Area Grid — grid layout option in communal spread zone
+- Layout Simplifications — no body text on empty zones; pile controls to top; personal spreads closer to table; vertical space reduction
+- Collapse Empty Spreads — hide personal zones when empty, reappear on first card drop
+- Hand Sort — cycle sort modes: original, by suit, by rank
+
 ## Current State
 
 **v1.4 shipped (2026-05-18).** All 53 requirements across v1.0–v1.4 satisfied and shipped.
