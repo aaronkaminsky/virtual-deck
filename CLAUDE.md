@@ -120,6 +120,29 @@ Use these entry points:
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
 <!-- GSD:workflow-end -->
 
+## Git Workflow
+
+**Golden rule: main is never modified locally. All changes go through feature branches and PRs.**
+
+### Branch usage
+- All work happens on a feature branch (e.g. `gsd/phase-n-slug` or `fix/description`)
+- Never commit directly to `main` — hooks will block this
+- Never `git merge` into local `main` — hooks will block this
+
+### Shipping changes
+1. Commit work on the feature branch
+2. `git push -u origin <branch>` — push the feature branch to remote
+3. `gh pr create` — open a PR; GitHub merges into `main`
+
+### Before committing
+Both must pass (enforced automatically by pre-commit hook):
+- `npm test` — unit tests (Vitest)
+- `npm run typecheck` — TypeScript check
+
+### Before opening a PR
+Must also pass manually (requires running servers):
+- `npm run test:e2e` — Playwright tests; needs `npm run dev` + `npm run dev:client` running in separate terminals
+
 
 
 <!-- GSD:profile-start -->
