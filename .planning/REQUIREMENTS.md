@@ -58,26 +58,26 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HAND-01 | TBD | Pending |
-| HAND-02 | TBD | Pending |
-| HAND-03 | TBD | Pending |
-| HAND-04 | TBD | Pending |
-| SORT-01 | TBD | Pending |
-| SELECT-01 | TBD | Pending |
-| SELECT-02 | TBD | Pending |
-| SELECT-03 | TBD | Pending |
-| GRID-01 | TBD | Pending |
-| POLISH-01 | TBD | Pending |
-| POLISH-02 | TBD | Pending |
-| POLISH-03 | TBD | Pending |
-| POLISH-04 | TBD | Pending |
-| ZONE-01 | TBD | Pending |
+| HAND-01 | Phase 22 | Pending |
+| HAND-02 | Phase 22 | Pending |
+| HAND-03 | Phase 22 | Pending |
+| HAND-04 | Phase 22 | Pending |
+| SORT-01 | Phase 23 | Pending |
+| SELECT-01 | Phase 23 | Pending |
+| SELECT-02 | Phase 23 | Pending |
+| SELECT-03 | Phase 23 | Pending |
+| GRID-01 | Phase 24 | Pending |
+| POLISH-01 | Phase 25 | Pending |
+| POLISH-02 | Phase 25 | Pending |
+| POLISH-03 | Phase 25 | Pending |
+| POLISH-04 | Phase 25 | Pending |
+| ZONE-01 | Phase 25 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠
+- Mapped to phases: 14
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-15*
-*Last updated: 2026-05-15 after initial v1.4 definition*
+*Last updated: 2026-05-15 after v1.4 roadmap creation*
