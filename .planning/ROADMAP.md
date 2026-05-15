@@ -77,7 +77,6 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 |-------|------|-------|
 | 999.3 | Play area card grid for poker-style games | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
-| 999.16 | Turn indicators — show whose turn it is | TBD |
 | 999.17 | Chips — poker/betting chip support | TBD |
 | 999.18 | Show hand — player can reveal their hand to all players | TBD |
 | 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
@@ -86,5 +85,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.23 | Sound effects — shuffle, deal, card drop/play sounds; icon toggle to mute; group near art/customization features (see 999.14) | TBD |
 | 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
-| 999.35 | Continuous multi-card drag-to-sort — when multiple adjacent cards are selected, dragging one moves all as a group to the new position; needs play-testing to validate the interaction model | TBD |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
