@@ -8,36 +8,18 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.3 Layout & UX Polish
-
-**Goal:** Redesign the board so it reads as a shared physical space — communal zone centered, controls out of the way, spread zones as interactive as the player hand, and the whole thing usable on a phone screen.
-
-**Target features:**
-- Communal zone repositioned to physical center of board
-- Board layout reorganized with better vertical proportions
-- Game controls collapsed into a dropdown/slide-out panel
-- Responsive layout: scales to phone screen (mouse-only)
-- Spread zone multi-card select (same UX as player hand)
-- Spread zone card reorder by drag
-
 ## Current State
 
-**v1.3 complete (2026-05-14).** All 8 requirements verified. **Phase 21 (live session verification) complete — SPREAD-02 verified across automated + manual gates.**
+**v1.3 shipped (2026-05-15).** All 39 requirements across v1.0–v1.3 satisfied and verified.
 
 - ~2,700+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
 - Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (165 tests)
-- Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET)
-- v1.3 additions: board layout redesign, collapsible controls panel, phone-responsive layout, spread zone multi-select, spread zone drag-reorder with group-reorder + undo + sentinel-based drop-to-end
-- Developer README at repo root covering local setup, architecture, tests, deploy
-- All 31 requirements across v1.0 + v1.1 + v1.2 satisfied and verified
+- Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET); spread zone multi-select + group-reorder + sentinel-based drop-to-end + undo
+- Board: five-band vertical layout with communal zone at visual center; collapsible controls panel; phone-responsive (≥375px)
+- CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**v1.1 delivered (2026-04-16 → 2026-04-19):**
-- Drag origin placeholder — dashed outline holds origin slot during drag; pointerWithin collision detection scopes drops to visual boundaries
-- Pile drop dialog keyboard UX — Escape cancels, Enter confirms Top, Top styled as primary
-- Player identity + presence — lobby name gate, display names on all hand zones, presence dots, localStorage persistence
-- Shuffle before deal — every deal auto-shuffles the pile first; card-fan animation synced to all players
-- Empty pile fast path — no dialog when dropping onto an empty pile (card goes directly to top)
+**Next milestone:** Planning in progress. See `/gsd-new-milestone` to define v1.4 scope.
 
 ## Requirements
 
@@ -83,14 +65,20 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Player can play 1–5 cards from hand as a set into either zone (PLAY-03) — Phase 15
 - ✓ Developer README with setup, architecture, and deploy instructions (DEV-03) — Phase 16
 
-### Active (v1.3)
+### Validated (v1.3)
 
 - ✓ Communal zone repositioned to physical center of board (LAYOUT-01) — Phase 17
 - ✓ Board layout reorganized with better vertical proportions (LAYOUT-02) — Phase 17
-- [ ] Game controls collapsed into a dropdown/slide-out panel (LAYOUT-03)
-- [ ] Responsive layout: page scales to phone-sized screens (LAYOUT-04)
-- [ ] Spread zone multi-card select matching player hand UX (SPREAD-01)
-- [ ] Spread zone card reorder by drag (SPREAD-02)
+- ✓ Game controls collapsed into a collapsible panel triggered by a single header button (LAYOUT-03) — Phase 18
+- ✓ Board usable at ≥375px phone-width without horizontal scroll (LAYOUT-04) — Phase 19
+- ✓ Click-to-select multiple spread zone cards with same ring/lift UX as player hand (SPREAD-01) — Phase 20
+- ✓ Drag-reorder within spread zone coexists with multi-select; undo reverses reorders (SPREAD-02) — Phase 21
+- ✓ Drag selected set from spread zone to pile, hand, or another spread zone (SPREAD-03) — Phase 20
+- ✓ Spread zone drag interactions stable; dnd-kit ID collision (SortableSpreadCard/DraggableCard) resolved (SPREAD-04) — Phase 17
+
+### Active (v1.4)
+
+*(No requirements defined yet — run `/gsd-new-milestone` to define v1.4 scope)*
 
 ### Out of Scope
 
@@ -135,6 +123,13 @@ Players can see the shared table and their own private hand update in real time,
 | `SpreadZone` optional `className` prop forwarded last to inner `cn(...)` | Caller-supplied utilities (e.g. `w-full`) win via tailwind-merge last-wins; all existing call sites unchanged | ✓ Validated Phase 17 |
 | Remove `DraggableCard` nesting inside `SortableSpreadCard` | Nested `useDraggable` inside `useSortable` registered duplicate dnd-kit IDs; direct `CardFace`/`CardBack` render eliminates collision | ✓ Validated Phase 17 |
 | `import.meta.env.DEV` over `process.env.NODE_ENV` in Vite projects | `process` not in scope in Vite's browser bundle; `import.meta.env.DEV` is the canonical Vite dev guard | ✓ Validated Phase 17 |
+| ControlsBar as Base-UI Popover triggered by hamburger icon | Single button clears board surface; Popover handles focus-trap, keyboard dismiss, and outside-click; no custom overlay needed | ✓ Validated Phase 18 |
+| PileZone controls as 28×28px icon-only buttons (lucide-react) | Text labels (~110px) caused overflow at 375px; icon buttons fit three pile columns at phone-width | ✓ Validated Phase 19 |
+| OpponentHand capped at 5 visible card backs + overflow count | Uncapped opponent hands push board off-screen at narrow widths; 5-card cap with badge preserves spatial honesty | ✓ Validated Phase 19 |
+| `selectionSource` zone-exclusive state (not shared with hand selection) | Spread zone and hand have separate selection contexts; mixing them caused badge off-by-one and wrong-zone drag dispatch | ✓ Validated Phase 20 |
+| `SortableSentinel` (flex: 1 droppable) appended to SpreadZone/HandZone | Zero-size sentinel had ~0.5px `closestCenter` target; flex: 1 sentinel makes drop-to-end reliably reachable | ✓ Validated Phase 21 |
+| Group reorder insert direction via `event.delta.x` | `overIdx` as unconditional insert-before misaligned with visual feedback when dragging right; delta direction check matches animation | ✓ Validated Phase 21 |
+| `takeSnapshot` added to REORDER_HAND and REORDER_PILE_SPREAD | Reorder operations were not undoable; snapshot before reorder enables undo to restore prior card order | ✓ Validated Phase 21 |
 
 ## Evolution
 
@@ -154,4 +149,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-03 — Phase 16.1 complete; PartyKit now auto-deploys on push to main alongside GitHub Pages*
+*Last updated: 2026-05-15 after v1.3 milestone — Layout & UX Polish shipped*

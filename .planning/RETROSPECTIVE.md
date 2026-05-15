@@ -154,6 +154,58 @@
 
 ---
 
+## Milestone: v1.3 — Layout & UX Polish
+
+**Shipped:** 2026-05-15
+**Phases:** 6 (16.1, 17–21) | **Plans:** 24 | **Timeline:** 12 days (2026-05-03 → 2026-05-14)
+
+### What Was Built
+
+- CI atomic deploy — single GitHub Actions job deploys Vite frontend (GitHub Pages) + PartyKit server on every push to main; PARTYKIT_TOKEN secret gates server deploy
+- Board layout redesign — five-band vertical layout (opponent zones top, communal zone center, personal spreads, player hand); all zones simultaneously visible at 1080p without scroll
+- Collapsible controls panel — all 6 game controls (copy link, deal stepper, undo, inline two-step reset) moved into a Base-UI Popover triggered by a hamburger icon; board surface uncluttered by default
+- Phone-responsive layout — board usable at ≥375px with no horizontal scroll; 10 gap-closure plans; PileZone controls as icon buttons, opponent hand capped at 5 cards, sticky header via flex layout
+- Spread zone multi-select — click-to-select with same ring/lift UX as player hand; `selectionSource` zone-exclusive state; extended PLAY_CARD_SET server contract to handle pile and hand destinations
+- Spread zone group reorder + undo — `takeSnapshot` added to REORDER_HAND/REORDER_PILE_SPREAD; selection preserved across intra-zone reorder; SortableSentinel (flex: 1) fixes drop-to-end; `delta.x` group-reorder direction aligns algorithm with animation
+
+### What Worked
+
+- **Code review before milestone close** — WR-series fixes in phases 20 and 21 caught a real off-by-one in `takeSnapshot` cap, modulo bias in shuffle, and missing authorization guards. Running `gsd-code-review` mid-milestone is worth the overhead.
+- **HUMAN-UAT.md as a structured gate** — the 7-case UAT pass for Phase 21 found the drop-to-end bug before close. A written test matrix forces coverage of non-obvious edge cases (unselected-drag, group drag to last position) that automated tests miss.
+- **Wave 0 RED scaffolds (Phase 21)** — writing failing Vitest tests before implementing reorder undo meant the implementation had a clear target and the verification was structural, not retrospective.
+- **`selectionSource` zone-scoped state** — naming the selection context by zone ID (not just "is something selected") naturally prevented cross-zone selection leakage without extra guards.
+- **SortableSentinel at flex: 1** — the zero-size sentinel approach had been tried before and failed (0.5px target). Giving it `flex: 1, minWidth: 56px, alignSelf: stretch` made it reliably droppable without visual footprint.
+
+### What Was Inefficient
+
+- **Phase 19 grew to 10 plans** — 4 were planned (responsive RED gate, card sizing, zone containers, icon buttons), 6 were gap-closure. The responsive layout problem space was systematically underestimated; a pre-phase audit of layout edge cases would have caught sticky header, opponent column width, and hamburger alignment.
+- **Two code review cycles per phase (20, 21)** — running review after execution and then a fix cycle is correct process but adds overhead. Earlier review (during plan or after Wave 1) could catch structural issues before the full phase is built.
+- **Phase 21-05 was a gap-closure plan for a UAT find** — the drop-to-end bug required an unplanned plan. UAT found it, which is correct, but a pre-UAT checklist of "obvious interaction edge cases for drag" (drag-to-end, drag-to-beginning, drag single card from group) would have surfaced this earlier.
+
+### Patterns Established
+
+- `SortableSentinel` (flex: 1, invisible droppable) appended to SortableContext — makes drop-to-end reliably reachable for `closestCenter`; no visual footprint
+- `selectionSource: { type, zoneId } | null` zone-exclusive state — prevents cross-zone selection; clears on Escape and on drag dispatch
+- Wave 0 RED scaffolds before implementation — write failing Vitest tests pinning the contract, then implement to flip GREEN
+- `takeSnapshot` placement: after all validation, before any mutation — ensures undo always has a valid pre-state
+- Group reorder insert direction via `event.delta.x` — insert AFTER `over` when dragging right, BEFORE when dragging left; matches `horizontalListSortingStrategy` animation in all cases
+
+### Key Lessons
+
+1. **Responsive layout is an iceberg.** The "make it not scroll at 375px" goal produced 10 plans. The first 3 plans (RED gate, card sizing, zone containers) got most of the way there; the next 7 closed layout edge cases. Budget 3–5× the planned scope for responsive work on an existing desktop-first UI.
+2. **The SortableSentinel zero-size failure is a known dnd-kit footgun.** Any droppable that needs to be reachable by `closestCenter` must have real dimensions. Add this to the dnd-kit checklist for any new droppable zone.
+3. **Code review after execution catches real bugs.** WR-01 through WR-04 in phases 20 and 21 were real correctness issues (off-by-one, modulo bias, missing auth guard). Code review is not overhead — it's a structural correctness gate.
+4. **UAT finds bugs that automated tests cannot.** Drop-to-end, unselected-drag clearing selection, and reset-selection persistence were all found in the HUMAN-UAT pass. These interactions require a real drag UI — no test can fully simulate the cursor physics. Keep the UAT matrix growing.
+5. **`selectionSource` state design decision had second-order benefits.** Scoping selection to a zone ID meant clearing selection on zone change was a natural result, not a special case. Good state shape eliminates whole categories of edge cases.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~12 estimated
+- Notable: Phase 19 (10 plans) and Phase 21 (5 plans + code review fix cycle) were the most expensive; both benefited from structured gap-closure plans rather than open-ended debugging
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -163,6 +215,7 @@
 | v1.0 | 8 (+2 bonus) | 21 | First milestone — baseline established |
 | v1.1 | 5 (2 pre-work + 3) | 11 | Faster cadence; pre-work phase pattern introduced |
 | v1.2 | 5 | 14 (2 planned → 6 for Phase 14) | e2e infrastructure + game depth; gap-closure plans normalized |
+| v1.3 | 6 | 24 (18 planned → 24 with gap closure) | Layout redesign + responsive; code review cycles added; HUMAN-UAT as structured gate |
 
 ### Cumulative Quality
 
@@ -171,6 +224,7 @@
 | v1.0 | 89 passing | WebSocket buffer, server-first privacy, stable player identity |
 | v1.1 | ~114 passing | pointerWithin collision, deferred connect, joinState null-gate |
 | v1.2 | 130+ unit + 8 e2e | Playwright BrowserContext isolation, spread zones as Pile records, pre-validate-all batch pattern |
+| v1.3 | 165 unit + 8 e2e | SortableSentinel drop-to-end, selectionSource zone-scoped state, Wave 0 RED scaffolds, delta.x group-reorder direction |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -178,4 +232,7 @@
 2. Run `gsd-audit-milestone` before closing — always surfaces something
 3. Type extension > parallel collections — reuse existing types with new fields when adding concepts
 4. VALIDATION.md sign-off is consistently skipped — needs to be a hard gate, not an optional step
-5. Success criteria should include edge cases, not just the happy path — Phase 14's 4 gap-closure plans all came from implied-but-unstated behavior
+5. Success criteria should include edge cases, not just the happy path — Phase 14's 4 gap-closure plans and Phase 21's drop-to-end all came from implied-but-unstated behavior
+6. Responsive layout is an iceberg — budget 3–5× planned scope when making an existing desktop-first UI responsive
+7. Code review catches structural correctness bugs that planning and testing miss — run it after every execution phase
+8. Any dnd-kit droppable detected by `closestCenter` must have real layout dimensions — zero-size sentinels have ~0.5px target surface
