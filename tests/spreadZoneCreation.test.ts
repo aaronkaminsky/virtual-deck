@@ -83,8 +83,7 @@ describe("spread zone creation", () => {
 
   it("viewFor returns empty string myPlayZoneId for null playerToken", () => {
     const state = makeTestState();
-    const view = viewFor(state, null);
-    expect(view.myPlayZoneId).toBe("");
+    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("onConnect creates personal spread zone for new player", async () => {

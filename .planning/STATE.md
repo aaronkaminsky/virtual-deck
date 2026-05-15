@@ -5,7 +5,7 @@ milestone_name: Layout & UX Polish
 status: completed
 stopped_at: Phase 21 context gathered
 last_updated: "2026-05-15T02:06:17.224Z"
-last_activity: 2026-05-15
+last_activity: 2026-05-14 - Completed quick task 260514-r8m: Fix 5 failing viewFor tests
 progress:
   total_phases: 8
   completed_phases: 6
@@ -59,6 +59,12 @@ None.
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260514-r8m | Fix 5 failing viewFor tests (null playerToken + undo cap) | 2026-05-14 | 989bafb | [260514-r8m](./quick/260514-r8m-fix-5-failing-viewfor-tests-in-tests-vie/) |
 
 ## Deferred Items
 
