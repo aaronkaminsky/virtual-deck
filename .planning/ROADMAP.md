@@ -6,6 +6,7 @@
 - ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
 - ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
 - ✅ **v1.3 Layout & UX Polish** — Phases 16.1, 17–21 (shipped 2026-05-15) — [archive](milestones/v1.3-ROADMAP.md)
+- 🔲 **v1.4 Table Polish** — Phases 22–25 (active)
 
 ## Phases
 
@@ -69,21 +70,85 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 </details>
 
+### v1.4 Table Polish (Phases 22–25)
+
+- [ ] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player
+- [ ] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group
+- [ ] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking
+- [ ] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty
+
+## Phase Details
+
+### Phase 22: Hand Reveal
+**Goal**: Players can show their hand to the table and hide it again, with the state visible to all players in real time
+**Depends on**: Phase 21 (prior state of the project)
+**Requirements**: HAND-01, HAND-02, HAND-03, HAND-04
+**Success Criteria** (what must be TRUE):
+  1. A player can click a "Show Hand" toggle and all other players immediately see their cards face-up
+  2. The same player can click the toggle again and their cards return to hidden (backs only) for other players
+  3. A player who joins or reconnects mid-session sees the correct revealed/hidden state for every already-connected player
+  4. The revealing player's own view is unchanged — they always see their own card faces
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 23: Hand Sort + Select All
+**Goal**: Players have affordances to sort their hand and bulk-select cards from any pile or spread zone for group moves
+**Depends on**: Phase 22
+**Requirements**: SORT-01, SELECT-01, SELECT-02, SELECT-03
+**Success Criteria** (what must be TRUE):
+  1. A player can click a sort control on their hand to cycle through original order, by suit, and by rank — the hand visually reorders each time
+  2. The sort order persists if the player navigates away and returns; other players see the reordered hand
+  3. A "Select All" button on a pile selects all cards in it, ready for a drag
+  4. A "Select All" button on a spread zone selects all cards in it, ready for a drag
+  5. After "Select All", the player can drag the selection to any valid drop target (pile, hand, or spread zone) and all cards move
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 24: Play Area Grid
+**Goal**: The communal spread zone organizes cards into a structured grid so players can manage a shared play area with positional meaning
+**Depends on**: Phase 23
+**Requirements**: GRID-01
+**Success Criteria** (what must be TRUE):
+  1. The communal spread zone displays cards in a 2-row grid with visible column boundaries; cards snap to column positions when dropped
+  2. Multiple cards can occupy the same cell (stacked); the stack is visually distinguishable from a single card
+  3. A player can drag a card from one cell to another cell within the grid
+  4. A player can drag a card from the grid to a pile or hand, and vice versa, using existing drag targets
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 25: Layout & Visual Polish
+**Goal**: The board is visually clean and compact — empty zones are quiet, controls are in the right place, and vertical space is used efficiently
+**Depends on**: Phase 24
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, ZONE-01
+**Success Criteria** (what must be TRUE):
+  1. Empty piles and spread zones show only their label — no body text or placeholder copy inside the zone
+  2. Pile controls (shuffle, deal, etc.) appear at the top of each pile column, inline with the pile label, not below the cards
+  3. Personal spread zones sit visually closer to the communal/draw/discard area; the gap between them is noticeably reduced
+  4. A player's personal spread zone is invisible when they have no cards in it; when they begin dragging a card, a drop target for that zone appears
+  5. The overall board is more compact — zone heights and inter-zone spacing are reduced so more of the play area is visible without scrolling
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 22. Hand Reveal | 0/? | Not started | - |
+| 23. Hand Sort + Select All | 0/? | Not started | - |
+| 24. Play Area Grid | 0/? | Not started | - |
+| 25. Layout & Visual Polish | 0/? | Not started | - |
+
 ## Backlog
 
 Promote items with `/gsd-review-backlog` when ready to plan.
 
 | Phase | Goal | Plans |
 |-------|------|-------|
-| 999.3 | Play area card grid for poker-style games | TBD |
 | 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
 | 999.17 | Chips — poker/betting chip support | TBD |
-| 999.18 | Show hand — player can reveal their hand to all players | TBD |
-| 999.19 | Drag entire piles — move all cards from one pile to another in a single gesture (e.g. sweep Play Area to Discard Pile) | TBD |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
 | 999.23 | Sound effects — shuffle, deal, card drop/play sounds; icon toggle to mute; group near art/customization features (see 999.14) | TBD |
-| 999.24 | Hand sort shortcuts — cycle through sort modes (original order, by suit, by rank); restore original order until next hand action | TBD |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 | 999.37 | Free canvas play area — communal spread zone supports arbitrary card positioning (x, y) with free overlap and drag-to-any-point; deferred from v1.4 GRID work | TBD |
