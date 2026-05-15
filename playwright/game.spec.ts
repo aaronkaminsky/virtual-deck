@@ -2,10 +2,9 @@ import { type Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 
 async function dealCards(page: Page, count = 5) {
-  await page.getByRole('button', { name: /deal/i }).click();
-  // Click the inner Deal button inside the popover (last match is the popover button)
+  await page.getByRole('button', { name: /open controls/i }).click();
   await page.locator('input[type="number"]').fill(String(count));
-  await page.getByRole('button', { name: 'Deal' }).last().click();
+  await page.getByRole('button', { name: 'Deal' }).click();
 }
 
 test.describe('virtual-deck e2e', () => {
@@ -81,11 +80,11 @@ test.describe('virtual-deck e2e', () => {
     await dealCards(p1, 5);
     await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
 
-    // Reset button is visible in playing phase
-    await expect(p1.getByRole('button', { name: /reset/i })).toBeVisible();
-    await p1.getByRole('button', { name: /reset/i }).click();
+    // Open controls to access the Reset button (inside the popover)
+    await p1.getByRole('button', { name: /open controls/i }).click();
 
-    // Confirm via the AlertDialog action button
+    // Reset table is in playing phase — first click shows confirmation, second confirms
+    await p1.getByRole('button', { name: 'Reset table' }).click();
     await p1.getByRole('button', { name: 'Reset table' }).click();
 
     // All 52 cards should return to the draw pile — Badge shows count
@@ -105,10 +104,8 @@ test.describe('virtual-deck e2e', () => {
     // (P2's page renders P1's hand as OpponentHand with cardCount badge)
     await expect(p2.getByTestId('opponent-hand')).toBeVisible();
 
-    // The Badge inside opponent-hand shows the card count (a digit) — not card IDs
-    // Badge only renders when cardCount > 0
-    const countBadge = p2.getByTestId('opponent-hand').locator('span').filter({ hasText: /^\d+$/ }).first();
-    await expect(countBadge).toHaveText(/\d+/);
+    // The opponent-hand shows the card count inline, e.g. "Player1 (5)" — not card IDs
+    await expect(p2.getByTestId('opponent-hand')).toContainText(/\(\d+\)/);
 
     // P1 should NOT see opponent-hand with their own cards
     // P1's page shows HandZone (their own hand) not OpponentHand — confirms server masking
