@@ -8,6 +8,18 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
+## Current Milestone: v1.4 Table Polish
+
+**Goal:** Reduce minor annoyances in the play area through layout simplification, better pile/zone interaction, and hand management improvements.
+
+**Target features:**
+- Show Hand — toggle to flip hand face-up/down for all players
+- Select All — "select all" button on piles and spreads; use existing multi-card drag
+- Play Area Grid — grid layout option in communal spread zone
+- Layout Simplifications — no body text on empty zones; pile controls to top; personal spreads closer to table; vertical space reduction
+- Collapse Empty Spreads — hide personal zones when empty, reappear on first card drop
+- Hand Sort — cycle sort modes: original, by suit, by rank
+
 ## Current State
 
 **v1.3 shipped (2026-05-15).** All 39 requirements across v1.0–v1.3 satisfied and verified.
@@ -19,7 +31,7 @@ Players can see the shared table and their own private hand update in real time,
 - Board: five-band vertical layout with communal zone at visual center; collapsible controls panel; phone-responsive (≥375px)
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** Planning in progress. See `/gsd-new-milestone` to define v1.4 scope.
+**Active milestone:** v1.4 Table Polish — see Current Milestone section above.
 
 ## Requirements
 
@@ -78,7 +90,7 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Active (v1.4)
 
-*(No requirements defined yet — run `/gsd-new-milestone` to define v1.4 scope)*
+*(Requirements being defined — see REQUIREMENTS.md)*
 
 ### Out of Scope
 
@@ -149,4 +161,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-15 after v1.3 milestone — Layout & UX Polish shipped*
+*Last updated: 2026-05-15 after v1.4 milestone start — Table Polish*
