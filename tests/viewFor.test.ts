@@ -66,8 +66,7 @@ describe("viewFor", () => {
 
   it("returns empty myHand for null playerToken", () => {
     const state = makeTestState();
-    const view = viewFor(state, null);
-    expect(view.myHand).toHaveLength(0);
+    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("returns empty myHand for unknown playerToken", () => {
@@ -91,8 +90,7 @@ describe("viewFor", () => {
 
   it("returns canUndo false for null playerToken", () => {
     const state = makeTestState();
-    const view = viewFor(state, null);
-    expect(view.canUndo).toBe(false);
+    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
   });
 
   // Regression: viewFor used to omit myPlayerId from ClientGameState.
@@ -108,8 +106,7 @@ describe("viewFor", () => {
 
   it("regression: myPlayerId is empty string for null playerToken", () => {
     const state = makeTestState();
-    const view = viewFor(state, null);
-    expect(view.myPlayerId).toBe("");
+    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("strips id/suit/rank from face-down pile cards except the top card", () => {
