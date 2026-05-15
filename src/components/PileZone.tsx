@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { Shuffle } from 'lucide-react';
+import { Eye, EyeOff, Shuffle } from 'lucide-react';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         ref={setNodeRef}
         data-testid={`pile-${pile.id}`}
         className={cn(
-          'w-[80px] h-[112px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary',
+          'w-[56px] h-[79px] sm:w-[80px] sm:h-[112px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary',
           isEmpty ? 'border-dashed' : '',
           isOver ? 'border-primary' : 'border-border'
         )}
@@ -76,18 +76,21 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
       <div className="flex gap-1 mt-1">
         <Button
           variant="ghost"
-          className="h-7 px-2 text-xs"
+          className="h-7 w-7 p-0"
           onClick={handleToggleFace}
           title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+          aria-label={pile.faceUp !== false ? 'Face up' : 'Face down'}
         >
-          {pile.faceUp !== false ? 'Face up' : 'Face down'}
+          {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </Button>
         <Button
           variant="ghost"
-          className="h-7 px-2 text-xs"
+          className="h-7 w-7 p-0"
           onClick={handleShuffle}
+          title="Shuffle pile"
+          aria-label="Shuffle pile"
         >
-          <Shuffle className="w-3 h-3 mr-1" /> Shuffle
+          <Shuffle className="w-4 h-4" />
         </Button>
       </div>
     </div>

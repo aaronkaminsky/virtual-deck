@@ -3,6 +3,7 @@ import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove 
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Button } from '@/components/ui/button';
+import { Eye, EyeOff } from 'lucide-react';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
@@ -12,16 +13,24 @@ interface SortableSpreadCardProps {
   pileId: string;
   index: number;
   draggingCardId: string | null;
+  isSelected: boolean;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
 }
 
-function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpreadCardProps) {
+function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect }: SortableSpreadCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'pile' as const, fromId: pileId, toZone: 'pile' as const, toId: pileId },
   });
 
+  const resolvedTransform = isSelected
+    ? 'translateY(-6px)'
+    : isDragging
+      ? undefined
+      : CSS.Transform.toString(transform);
+
   const style: React.CSSProperties = {
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transform: resolvedTransform,
     transition,
     touchAction: 'none',
     opacity: draggingCardId === card.id ? 0 : 1,
@@ -29,15 +38,32 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId }: SortableSpr
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={cn('flex-shrink-0', index > 0 ? '-ml-5' : '')}
+      className={cn('relative flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
+      onClick={() => onToggleSelect(card.id, 'pile', pileId)}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      {draggingCardId === card.id && (
+        <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
+      )}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+        )}
+        {...listeners}
+        {...attributes}
+        aria-pressed={isSelected}
+      >
+        {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+      </div>
     </div>
   );
+}
+
+function SortableSentinel({ id }: { id: string }) {
+  const { setNodeRef } = useSortable({ id });
+  return <div ref={setNodeRef} style={{ flex: 1, minWidth: 56, alignSelf: 'stretch', opacity: 0 }} aria-hidden />;
 }
 
 interface SpreadZoneProps {
@@ -45,9 +71,13 @@ interface SpreadZoneProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   className?: string;
+  interactive?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  selectionSource?: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, selectionSource }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -55,6 +85,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
 
   // Detect intra-spread card reorder
   const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
+  const sentinelId = `__sentinel-pile-${pile.id}__`;
 
   useDndMonitor({
     onDragEnd(event) {
@@ -66,15 +97,45 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
       const fromThisPile = activeData?.fromZone === 'pile' && activeData?.fromId === pile.id;
       const toThisPile =
         (overData?.fromZone === 'pile' && overData?.fromId === pile.id) ||
-        String(over.id) === `pile-${pile.id}`;
+        String(over.id) === `pile-${pile.id}` ||
+        String(over.id) === sentinelId;
 
       if (fromThisPile && toThisPile && activeData) {
-        const activeIdx = faceUpCards.findIndex(c => c.id === activeData.card.id);
-        const overIdx = faceUpCards.findIndex(c => c.id === String(over.id));
-        if (activeIdx !== -1 && overIdx !== -1 && activeIdx !== overIdx) {
-          const reordered = arrayMove(faceUpCards, activeIdx, overIdx);
-          sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id) });
+        const draggedId = activeData.card.id;
+        // D-03/D-06 (Phase 21): if the dragged card is part of a multi-selection, move ALL selected cards as a block.
+        const isGroupReorder = !!selectedIds && selectedIds.size > 1 && selectedIds.has(draggedId);
+
+        let reordered: Card[];
+        if (isGroupReorder) {
+          // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
+          const selected = faceUpCards.filter(c => selectedIds!.has(c.id));
+          const remainder = faceUpCards.filter(c => !selectedIds!.has(c.id));
+          // Sentinel or unknown → append to end.
+          // Direction heuristic: compare the dragged card's original index with the over card's original index.
+          // Dragging rightward (originalDragIdx < originalOverIdx) → insert AFTER over; leftward → insert BEFORE.
+          // This is stable regardless of cumulative pointer displacement (unlike event.delta.x).
+          const originalDragIdx = faceUpCards.findIndex(c => c.id === draggedId);
+          const originalOverIdx = faceUpCards.findIndex(c => c.id === String(over.id));
+          const overIdx = String(over.id) === sentinelId
+            ? -1
+            : remainder.findIndex(c => c.id === String(over.id));
+          const insertAt = overIdx === -1
+            ? remainder.length
+            : originalDragIdx < originalOverIdx
+              ? Math.min(overIdx + 1, remainder.length)
+              : overIdx;
+          remainder.splice(insertAt, 0, ...selected);
+          reordered = remainder;
+        } else {
+          const activeIdx = faceUpCards.findIndex(c => c.id === draggedId);
+          // Sentinel drop → move dragged card to the last position.
+          const overIdx = String(over.id) === sentinelId
+            ? faceUpCards.length - 1
+            : faceUpCards.findIndex(c => c.id === String(over.id));
+          if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
+          reordered = arrayMove(faceUpCards, activeIdx, overIdx);
         }
+        sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id) });
       }
     },
   });
@@ -87,12 +148,19 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted-foreground">{pile.name}</span>
+      <div className="flex items-center">
+        <span className="text-xs text-muted-foreground">{pile.name}</span>
+        {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
+          <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
+            {selectedIds.size} selected
+          </span>
+        )}
+      </div>
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
         className={cn(
-          'min-w-[80px] h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
+          'min-w-[56px] h-[79px] sm:min-w-[80px] sm:h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
           isEmpty ? 'border-dashed' : '',
           isOver ? 'border-primary' : 'border-border',
           className
@@ -100,38 +168,50 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className }: Spre
       >
         {isEmpty ? (
           <span className="text-xs text-muted-foreground">{pile.name}</span>
-        ) : (
-          <SortableContext items={faceUpCards.map(c => c.id)} strategy={horizontalListSortingStrategy}>
+        ) : interactive !== false ? (
+          <SortableContext items={[...faceUpCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
             <div className="flex items-center">
               {pile.cards.map((card, i) => (
-                <div
-                  key={'id' in card ? (card as Card).id : `masked-${i}`}
-                >
+                <div key={'id' in card ? (card as Card).id : `masked-${i}`}>
                   {'id' in card ? (
                     <SortableSpreadCard
                       card={card as Card}
                       pileId={pile.id}
                       index={i}
                       draggingCardId={draggingCardId}
+                      isSelected={selectedIds?.has((card as Card).id) ?? false}
+                      onToggleSelect={onToggleSelect ?? (() => {})}
                     />
                   ) : (
-                    <div className={cn('flex-shrink-0', i > 0 ? '-ml-5' : '')}>
+                    <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
                       <CardBack />
                     </div>
                   )}
                 </div>
               ))}
+              <SortableSentinel id={sentinelId} />
             </div>
           </SortableContext>
+        ) : (
+          <div className="flex items-center">
+            {pile.cards.map((card, i) => (
+              <div key={'id' in card ? (card as Card).id : `masked-${i}`} className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
+                {'id' in card
+                  ? ((card as Card).faceUp ? <CardFace card={card as Card} /> : <CardBack />)
+                  : <CardBack />}
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <Button
         variant="ghost"
-        className="h-7 px-2 text-xs"
+        className="h-7 w-7 p-0"
         onClick={handleToggleFace}
         title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+        aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
       >
-        {pile.faceUp !== false ? 'Face up' : 'Face down'}
+        {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
       </Button>
     </div>
   );

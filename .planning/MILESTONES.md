@@ -1,5 +1,31 @@
 # Milestones
 
+## v1.3 Layout & UX Polish (Shipped: 2026-05-15)
+
+**Phases completed:** 8 phases, 24 plans, 27 tasks
+
+**Key accomplishments:**
+
+- Single `npm run deploy` step inserted into `build-and-deploy` job after Vite build, binding PARTYKIT_TOKEN at step scope only for atomic server+client CI deploys on push to main
+- Pre-existing TypeScript error in BoardDragLayer.tsx
+- Before (Row 2 + Row 3):
+- 15-test logic-extraction suite locking the LAYOUT-03 Popover collapse contract (auto-close, confirmReset stale-state guard, enabled/disabled derivation) before the ControlsBar rewrite lands in plan 02
+- `src/components/ControlsBar.tsx` — full rewrite
+- 1. [Rule 1 - Bug] Import alias `test as base` caused ReferenceError
+- Edit A — `src/components/PileZone.tsx` line 49:
+- PileZone face-toggle and shuffle buttons converted from text-label (~110px wide) to 28x28px icon-only squares using Eye/EyeOff/Shuffle from lucide-react, closing Gap 1 from human UAT and fitting all three pile columns at 375px
+- One-liner:
+- Added `self-start` to ControlsBar wrapper div, pinning the hamburger button to the top-right of the header regardless of how tall the opponents strip grows
+- Opponent card count Badge moved from card-back stack row into the name header row — always visible at 375px and any narrow column width
+- Replaced overflow-x-auto with overflow-hidden and max-w-[200px] with flex-1 min-w-0 so the opponents row never scrolls horizontally and two opponents each get 50% of available width at mobile
+- SelectionSource type alias
+- Multi-card drag to opponent's hand moved only one card (badge off by one)
+- Failing Vitest scaffolds (RED gate) pinning undo behavior for REORDER_PILE_SPREAD and REORDER_HAND, plus D-06 splice algorithm contract for group reorder
+- takeSnapshot added to REORDER_HAND and REORDER_PILE_SPREAD in party/index.ts, flipping all 4 reorderUndo tests from RED to GREEN with zero regressions
+- One-liner:
+
+---
+
 ## v1.0 MVP (Shipped: 2026-04-12)
 
 **Phases completed:** 8 phases (+ 2 bonus backlog) · 21 plans · 89 tests passing
@@ -57,6 +83,7 @@ Known deferred items at close: 2 (see STATE.md Deferred Items — both are audit
 6. Developer README — local setup (two-terminal stack), architecture prose (PartyKit + viewFor + shared types), Vitest + Playwright test runners, GitHub Pages + PartyKit Cloud deploy procedure (Phase 16, DEV-03)
 
 **Tech debt noted:**
+
 - Missing VERIFICATION.md for phases 12, 13, 15 (process debt — work confirmed through UAT/SUMMARY/VALIDATION)
 - Stale VALIDATION.md draft frontmatter for phases 12, 13, 14
 - `tests/dealCards.test.ts` defines local helpers instead of importing from `tests/helpers.ts`

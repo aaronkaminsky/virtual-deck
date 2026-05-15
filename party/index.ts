@@ -15,12 +15,23 @@ export function buildDeck(): Card[] {
   );
 }
 
+function unbiasedRandom(max: number): number {
+  // Rejection sampling: discard values that fall in the biased tail of the 2^32 range.
+  // For a 52-card deck the loop runs at most 2 iterations in the rare case; expected ~1.
+  const limit = 2 ** 32 - (2 ** 32 % max);
+  let value: number;
+  do {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    value = buf[0];
+  } while (value >= limit);
+  return value % max;
+}
+
 export function shuffle<T>(arr: T[]): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
-    const buf = new Uint32Array(1);
-    crypto.getRandomValues(buf);
-    const j = buf[0] % (i + 1);
+    const j = unbiasedRandom(i + 1);
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
@@ -45,12 +56,15 @@ export function takeSnapshot(state: GameState): void {
   const snap = JSON.parse(JSON.stringify(state)) as GameState;
   snap.undoSnapshots = [];
   state.undoSnapshots.push(snap);
-  if (state.undoSnapshots.length > 20) {
+  if (state.undoSnapshots.length >= 20) {
     state.undoSnapshots.shift();
   }
 }
 
 export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
+  if (playerToken === null) {
+    throw new Error("viewFor requires a non-null playerToken");
+  }
   return {
     roomId: state.roomId,
     phase: state.phase,
@@ -69,6 +83,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       region: pile.region,
       ownerId: pile.ownerId,
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
+        if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;
         return card.faceUp || isTop ? card : { faceUp: false as const };
       }),
@@ -281,9 +296,7 @@ export default class GameRoom implements Party.Server {
         if (pos === 'bottom') {
           dest.unshift(card);
         } else if (pos === 'random') {
-          const buf = new Uint32Array(1);
-          crypto.getRandomValues(buf);
-          const idx = dest.length === 0 ? 0 : buf[0] % (dest.length + 1);
+          const idx = dest.length === 0 ? 0 : unbiasedRandom(dest.length + 1);
           dest.splice(idx, 0, card);
         } else {
           dest.push(card);
@@ -305,6 +318,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
+        takeSnapshot(this.gameState);
         const cardMap = new Map(hand.map(c => [c.id, c]));
         this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
         break;
@@ -331,6 +345,7 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
+        takeSnapshot(this.gameState);
         const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
         spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
         break;
@@ -409,6 +424,18 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "DEAL_CARDS": {
+        if (
+          !Number.isInteger(action.cardsPerPlayer) ||
+          action.cardsPerPlayer < 1 ||
+          action.cardsPerPlayer > 13
+        ) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_CARDS_PER_PLAYER",
+            message: "cardsPerPlayer must be an integer between 1 and 13",
+          } satisfies ServerEvent));
+          break;
+        }
         const dealDrawPile = this.gameState.piles.find(p => p.id === "draw");
         const connectedPlayers = this.gameState.players.filter(p => p.connected);
         const needed = action.cardsPerPlayer * connectedPlayers.length;
@@ -460,6 +487,10 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "RESET_TABLE": {
+        // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
+        // Undo history is cleared so no pre-reset state can be restored.
+        // INTENTIONAL: No authorization check — any connected player can reset the table.
+        // If room-owner semantics are added in the future, add an ownership guard here before mutations.
         const resetDrawPile = this.gameState.piles.find(p => p.id === "draw");
         if (!resetDrawPile) {
           break;
@@ -490,7 +521,7 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "PLAY_CARD_SET": {
-        const { cardIds, fromId, toZone, toId } = action;
+        const { cardIds, fromZone, fromId, toZone, toId } = action;
 
         // V1 Basic validation: cardIds must be non-empty
         if (cardIds.length === 0) {
@@ -502,39 +533,62 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
-        // V4 Access Control: sender can only play from their own hand
-        if (fromId !== senderToken) {
+        // V4 Access Control:
+        //   - hand source (default or explicit 'hand'): sender can only play their own hand
+        //   - pile source: any authenticated player may play from any pile
+        //     (personal spread zone ownership guard deferred per REQUIREMENTS.md "Future Requirements")
+        if (!fromZone || fromZone === "hand") {
+          if (fromId !== senderToken) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "UNAUTHORIZED_MOVE",
+              message: "Cannot play another player's cards",
+            } satisfies ServerEvent));
+            break;
+          }
+        }
+        // TODO(SPREAD-03 ownership): pile-source ownership guard deferred per REQUIREMENTS.md.
+
+        // V4b Destination Access Control: sender cannot place cards into another player's hand.
+        // Guard is placed before source resolution and takeSnapshot to prevent orphaned undo snapshots.
+        // Note: no guard on spread-${victimToken} here — spread zone ownership is deferred per REQUIREMENTS.md.
+        if (toZone === "hand" && toId !== senderToken) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "UNAUTHORIZED_MOVE",
-            message: "Cannot play another player's cards",
+            message: "Cannot place cards in another player's hand",
           } satisfies ServerEvent));
           break;
         }
 
-        const hand = this.gameState.hands[fromId];
-        if (hand === undefined) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "HAND_NOT_FOUND",
-            message: `No hand found for player: ${fromId}`,
-          } satisfies ServerEvent));
+        // Resolve source array based on fromZone
+        const source: Card[] | undefined =
+          (!fromZone || fromZone === "hand")
+            ? this.gameState.hands[fromId]
+            : this.gameState.piles.find(p => p.id === fromId)?.cards;
+
+        if (source === undefined) {
+          const code = (!fromZone || fromZone === "hand") ? "HAND_NOT_FOUND" : "PILE_NOT_FOUND";
+          const message = (!fromZone || fromZone === "hand")
+            ? `No hand found for player: ${fromId}`
+            : `No pile found with id: ${fromId}`;
+          sender.send(JSON.stringify({ type: "ERROR", code, message } satisfies ServerEvent));
           break;
         }
 
-        // V5 Input Validation: every cardId MUST exist in the sender's hand BEFORE any mutation
-        const handIdSet = new Set(hand.map(c => c.id));
-        const allPresent = cardIds.every(id => handIdSet.has(id));
+        // V5 Input Validation: every cardId must exist in the source BEFORE any mutation
+        const sourceIdSet = new Set(source.map(c => c.id));
+        const allPresent = cardIds.every(id => sourceIdSet.has(id));
         if (!allPresent) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "CARD_NOT_IN_SOURCE",
-            message: "One or more card IDs not found in hand",
+            message: "One or more card IDs not found in source",
           } satisfies ServerEvent));
           break;
         }
 
-        // V6 Duplicate check: cardIds must not contain duplicates (prevents card duplication)
+        // V6 Duplicate check: cardIds must not contain duplicates
         const cardIdSet = new Set(cardIds);
         if (cardIdSet.size !== cardIds.length) {
           sender.send(JSON.stringify({
@@ -545,11 +599,17 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
-        // toZone is the literal "pile" — only piles are valid set-play targets
-        const destPile = toZone === "pile"
-          ? this.gameState.piles.find(p => p.id === toId)
-          : undefined;
-        if (destPile === undefined) {
+        // Resolve destination — toZone is 'pile' or 'hand'
+        let dest: Card[] | undefined;
+        if (toZone === "pile") {
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          dest = destPile?.cards;
+        } else {
+          // toZone === "hand": auto-create the hand array if missing (mirrors MOVE_CARD line 260)
+          dest = this.gameState.hands[toId] ?? (this.gameState.hands[toId] = []);
+        }
+
+        if (dest === undefined) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "PILE_NOT_FOUND",
@@ -561,18 +621,28 @@ export default class GameRoom implements Party.Server {
         // Snapshot BEFORE mutation so UNDO_MOVE can revert
         takeSnapshot(this.gameState);
 
-        // Build cardsToPlay preserving the cardIds order (so set is appended in player-chosen order)
-        const handById = new Map(hand.map(c => [c.id, c]));
-        const cardsToPlay: Card[] = cardIds.map(id => handById.get(id)!);
+        // Build cardsToPlay preserving the cardIds order
+        const sourceById = new Map(source.map(c => [c.id, c]));
+        const cardsToPlay: Card[] = cardIds.map(id => sourceById.get(id)!);
 
-        // Set faceUp based on destination pile (spread zones are faceUp:true)
-        cardsToPlay.forEach(card => {
-          card.faceUp = destPile.faceUp === true;
-        });
+        // Remove from source first (before mutating faceUp to keep source array clean)
+        if (!fromZone || fromZone === "hand") {
+          this.gameState.hands[fromId] = source.filter(c => !cardIdSet.has(c.id));
+        } else {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
+          srcPile.cards = srcPile.cards.filter(c => !cardIdSet.has(c.id));
+        }
 
-        // Atomic: remove all from hand, append all to dest pile
-        this.gameState.hands[fromId] = hand.filter(c => !cardIdSet.has(c.id));
-        destPile.cards.push(...cardsToPlay);
+        // Set faceUp after removal:
+        //   - toZone === 'hand': always faceUp:true (mirrors MOVE_CARD line 274–275)
+        //   - toZone === 'pile': inherit pile.faceUp (existing behavior)
+        if (toZone === "hand") {
+          cardsToPlay.forEach(card => { card.faceUp = true; });
+        } else {
+          const destPile = this.gameState.piles.find(p => p.id === toId)!;
+          cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
+        }
+        dest.push(...cardsToPlay);
         break;
       }
       case "PING":

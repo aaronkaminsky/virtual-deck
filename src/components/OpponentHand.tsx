@@ -1,8 +1,9 @@
 import { useDroppable, useDndContext } from '@dnd-kit/core';
-import { Badge } from '@/components/ui/badge';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 import type { ClientAction } from '@/shared/types';
+
+const MAX_VISIBLE_OPPONENT_CARDS = 5;
 
 interface OpponentHandProps {
   playerId: string;
@@ -37,18 +38,19 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
     >
       <div className="flex items-center gap-2 px-1 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
-        <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
+        <span className="text-sm text-muted-foreground">
+          {displayName || 'Player'}{cardCount > 0 ? ` (${cardCount})` : ''}
+        </span>
       </div>
       <div className="flex items-center gap-1">
         <div className="flex items-center">
-          {Array.from({ length: cardCount }).map((_, i) => (
+          {Array.from({ length: Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS) }).map((_, i) => (
             <CardBack
               key={i}
               className={cn('w-[42px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
             />
           ))}
         </div>
-        {cardCount > 0 && <Badge>{cardCount}</Badge>}
         {dragIsActive && cardCount === 0 && (
           <span className="text-xs text-muted-foreground">Drop to pass</span>
         )}
