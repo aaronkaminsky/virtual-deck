@@ -24,10 +24,15 @@ const customCollision: CollisionDetection = (args) => {
   if (zoneCollisions.length > 0) {
     // Opponent-hand zone always wins — card is being passed to another player.
     if (String(zoneCollisions[0].id).startsWith('opponent-hand-')) return zoneCollisions;
-    // Inside the hand strip: prefer card-to-card sortable reorder over the zone itself.
-    // closestCenter returns the nearest sibling card; zone wins only when the hand is empty.
-    const cardCollisions = closestCenter({ ...args, droppableContainers: cardContainers });
-    return cardCollisions.length > 0 ? cardCollisions : zoneCollisions;
+    // Inside the hand strip: prefer card-to-card sortable reorder only for intra-hand drags.
+    // Cross-zone drags (e.g. spread→hand) must resolve to the 'hand' zone so overData.toZone
+    // is defined; closestCenter could return __sentinel-hand__ which has no toZone data.
+    const activeData = args.active.data.current as { fromZone?: string } | undefined;
+    if (activeData?.fromZone === 'hand') {
+      const cardCollisions = closestCenter({ ...args, droppableContainers: cardContainers });
+      return cardCollisions.length > 0 ? cardCollisions : zoneCollisions;
+    }
+    return zoneCollisions;
   }
 
   // Pointer is outside all zones — pile drops only register when the pointer is inside the pile rect.
