@@ -111,7 +111,21 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   3. A "Select All" button on a pile selects all cards in it, ready for a drag
   4. A "Select All" button on a spread zone selects all cards in it, ready for a drag
   5. After "Select All", the player can drag the selection to any valid drop target (pile, hand, or spread zone) and all cards move
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
+
+**Wave 1** *(parallel — no file overlap)*
+- [ ] 23-01-PLAN.md — Server-side: add `skipSnapshot?: boolean` to `REORDER_HAND` (so sort does not enter undo stack), extend reorderUndo tests, create Wave-0 scaffolds for `tests/handSort.test.ts` and `tests/selectAll.test.ts`
+- [ ] 23-03-PLAN.md — Select All UI: `handleSelectAll` in BoardDragLayer, prop threading through BoardView, Select All buttons in PileZone (top-card-only) and interactive SpreadZone (all face-up cards), passing PLAY_CARD_SET coverage in `tests/selectAll.test.ts`
+
+**Wave 2** *(blocked on Wave 1 — Plan 02 imports the extended REORDER_HAND type from Plan 01)*
+- [ ] 23-02-PLAN.md — Hand sort UI: `SortMode` cycle button in HandZone, exported `sortCards`/`buildSortDispatch`, render-time visual sort, dispatch via REORDER_HAND with `skipSnapshot: true`, passing assertions in `tests/handSort.test.ts`
+
+**Cross-cutting decisions** (resolved by planner):
+- RESEARCH.md OQ1 → `skipSnapshot?: boolean` added to `REORDER_HAND` so SORT-01 does not pollute the undo stack (REQUIREMENTS.md requirement)
+- RESEARCH.md OQ2 → render-time visual sort (no auto-redispatch useEffect); dispatch fires on click only; reconnect sees last sorted order from server
+- RESEARCH.md OQ3 → Select All on a pile selects the top card only (Pitfall 4: interior masked cards have no client-visible id; `PLAY_CARD_SET` would reject)
+- Drag-reorder while sortMode !== 'original' clears sortMode back to 'original' (drag is undoable + implies manual order intent)
+
 **UI hint**: yes
 
 ### Phase 24: Play Area Grid
@@ -144,7 +158,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
-| 23. Hand Sort + Select All | 0/? | Not started | - |
+| 23. Hand Sort + Select All | 0/3 | Planned | - |
 | 24. Play Area Grid | 0/? | Not started | - |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
