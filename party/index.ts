@@ -67,8 +67,8 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     roomId: state.roomId,
     phase: state.phase,
     players: state.players,
-    myPlayerId: playerToken,
-    myHand: state.hands[playerToken] ?? [],
+    myPlayerId: playerToken ?? "",
+    myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
     myHandRevealed: state.players.find(p => p.id === playerToken)?.handRevealed ?? false,
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
@@ -167,16 +167,6 @@ export default class GameRoom implements Party.Server {
       if (!('handRevealed' in player)) {
         (player as any).handRevealed = false;
       }
-    }
-    // Migrate state: Phase 24 — initialize gridPositions for orphaned cards in 'play' pile
-    const playPileForMigration = this.gameState.piles.find(p => p.id === 'play');
-    if (playPileForMigration && playPileForMigration.cards.length > 0 && !playPileForMigration.gridPositions) {
-      playPileForMigration.gridPositions = {};
-      playPileForMigration.cards.forEach((card, i) => {
-        const row = Math.floor(i / 7) % 2;
-        const col = i % 7;
-        playPileForMigration.gridPositions![card.id] = { row, col };
-      });
     }
   }
 
