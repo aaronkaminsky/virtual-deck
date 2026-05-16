@@ -331,7 +331,9 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState);
+        if (!action.skipSnapshot) {
+          takeSnapshot(this.gameState);
+        }
         const cardMap = new Map(hand.map(c => [c.id, c]));
         this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
         break;
