@@ -12,6 +12,7 @@ export interface Player {
   id: string;        // stable player token (= connection.id via PartySocket id param)
   connected: boolean;
   displayName: string;
+  handRevealed: boolean;
 }
 
 export interface Pile {
@@ -49,6 +50,8 @@ export interface ClientGameState {
   players: Player[];
   myPlayerId: string;
   myHand: Card[];
+  myHandRevealed: boolean;
+  opponentRevealedHands: Record<string, Card[]>;
   opponentHandCounts: Record<string, number>;
   piles: ClientPile[];
   canUndo: boolean;
@@ -65,6 +68,7 @@ export type ClientAction =
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string }
+  | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" };
