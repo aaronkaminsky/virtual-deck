@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Layout & UX Polish
-status: completed
-stopped_at: Phase 21 context gathered
-last_updated: "2026-05-15T02:06:17.224Z"
-last_activity: 2026-05-14 - Completed quick task 260514-r8m: Fix 5 failing viewFor tests
+milestone: v1.4
+milestone_name: Table Polish
+status: executing
+stopped_at: Phase 22 planned — ready to execute
+last_updated: "2026-05-16T04:47:30.099Z"
+last_activity: 2026-05-16 -- Phase 22 execution started
 progress:
   total_phases: 8
   completed_phases: 6
@@ -21,16 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-15)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Planning next milestone (v1.4)
+**Current focus:** Phase 22 — restrict-play-card-set-to-spread-region
 
 ## Current Position
 
-Phase: 21
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-05-15
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 22 (restrict-play-card-set-to-spread-region) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 22
+Last activity: 2026-05-16 -- Phase 22 execution started
 
 ## Performance Metrics
 
