@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
-import type { Card, ClientAction, Suit, Rank } from '@/shared/types';
+import { Eye, EyeOff } from 'lucide-react';
+import type { Card, ClientAction } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
@@ -241,16 +241,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
           aria-pressed={isRevealed}
         >
-          {isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-7 w-7 p-0"
-          onClick={handleSort}
-          title={SORT_TITLES[sortMode]}
-          aria-label={SORT_ARIA_LABELS[sortMode]}
-        >
-          <ArrowUpDown className={cn('w-4 h-4', sortMode !== 'original' ? 'text-primary' : 'text-muted-foreground')} />
+          {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </Button>
       </div>
       <div
