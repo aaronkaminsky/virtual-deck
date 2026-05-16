@@ -1,8 +1,7 @@
 ---
 phase: 22
 slug: restrict-play-card-set-to-spread-region
-status: approved
-reviewed_at: 2026-05-15
+status: draft
 shadcn_initialized: true
 preset: base-nova / neutral / lucide
 created: 2026-05-15
