@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: "v1.4 shipped — PR #27"
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-05-18T04:36:26.200Z"
-last_activity: 2026-05-18
+status: executing
+stopped_at: Phase 22 planned — ready to execute
+last_updated: "2026-05-16T04:47:30.099Z"
+last_activity: 2026-05-16 -- Phase 22 execution started
 progress:
   total_phases: 4
   completed_phases: 4
@@ -21,15 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-15)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 25 — play-area-layout-center-canvas
+**Current focus:** Phase 22 — restrict-play-card-set-to-spread-region
 
 ## Current Position
 
-Phase: 25 — COMPLETE
-Plan: 3 of 3
-Plans: 3 (Wave 1 — all parallel)
-Status: v1.4 shipped — PR #27
-Last activity: 2026-05-18
+Phase: 22 (restrict-play-card-set-to-spread-region) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 22
+Last activity: 2026-05-16 -- Phase 22 execution started
 
 ## Performance Metrics
 
