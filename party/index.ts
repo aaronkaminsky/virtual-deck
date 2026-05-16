@@ -71,10 +71,17 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
     players: state.players,
     myPlayerId: playerToken ?? "",
     myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
+    myHandRevealed: state.players.find(p => p.id === playerToken)?.handRevealed ?? false,
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
         .filter(([token]) => token !== playerToken)
+        .filter(([token]) => !state.players.find(p => p.id === token)?.handRevealed)
         .map(([token, cards]) => [token, cards.length])
+    ),
+    opponentRevealedHands: Object.fromEntries(
+      Object.entries(state.hands)
+        .filter(([token]) => token !== playerToken)
+        .filter(([token]) => state.players.find(p => p.id === token)?.handRevealed)
     ),
     piles: state.piles.map(pile => ({
       id: pile.id,
@@ -156,6 +163,12 @@ export default class GameRoom implements Party.Server {
         ownerId: null,
       });
     }
+    // Migrate state: Phase 22 adds handRevealed to Player
+    for (const player of this.gameState.players) {
+      if (!('handRevealed' in player)) {
+        (player as any).handRevealed = false;
+      }
+    }
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
@@ -173,7 +186,7 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true, displayName });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);
@@ -486,6 +499,17 @@ export default class GameRoom implements Party.Server {
         this.broadcastShuffleEvent(action.pileId);   // D-05, D-07: broadcast to all clients
         break;
       }
+      case "SET_HAND_REVEALED": {
+        // V4 Access Control: use senderToken (from connection state) — never trust message body for identity
+        const revealPlayer = this.gameState.players.find(p => p.id === senderToken);
+        if (revealPlayer) {
+          // V5 Input Validation: strict boolean equality — string "true", 1, or other truthy non-booleans resolve to false
+          const isRevealed = action.revealed === true;
+          revealPlayer.handRevealed = isRevealed;
+        }
+        // Intentionally no takeSnapshot() — reveal state is not undoable (consistent with RESET_TABLE)
+        break;
+      }
       case "RESET_TABLE": {
         // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
         // Undo history is cleared so no pre-reset state can be restored.
@@ -508,6 +532,10 @@ export default class GameRoom implements Party.Server {
         resetDrawPile.cards = shuffle(resetDrawPile.cards);
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
+        // D-07: clear all reveal states on reset
+        for (const player of this.gameState.players) {
+          player.handRevealed = false;
+        }
         break;
       }
       case "UNDO_MOVE": {

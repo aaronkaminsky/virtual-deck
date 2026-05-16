@@ -5,14 +5,14 @@ import { makeMockRoom, makeMockConnection, makeCard } from "./helpers";
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "" });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
   state.hands[playerId] = cards;
   return state;
 }
 
 function makeStateWithPileCards(playerId: string, pileId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "" });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
   state.hands[playerId] = [];
   // Personal spread zone for the player (mirrors onConnect creation)
   state.piles.push({ id: `spread-${playerId}`, name: "Spread", cards: [], faceUp: true, region: "spread", ownerId: playerId });
