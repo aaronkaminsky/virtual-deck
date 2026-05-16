@@ -1,7 +1,9 @@
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Eye, EyeOff } from 'lucide-react';
 import type { Card, ClientAction } from '@/shared/types';
+import { Button } from '@/components/ui/button';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
@@ -74,9 +76,11 @@ interface HandZoneProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  isRevealed: boolean;
+  onToggleReveal: () => void;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
@@ -153,13 +157,24 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             {selectedIds.size} selected
           </span>
         )}
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={onToggleReveal}
+          title={isRevealed ? 'Hide hand from opponents' : 'Show hand to opponents'}
+          aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
+          aria-pressed={isRevealed}
+        >
+          {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </Button>
       </div>
       <div
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
           'h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card',
-          isOver ? 'border-t-2 border-primary' : ''
+          isOver ? 'border-t-2 border-primary' : '',
+          isRevealed ? 'ring-1 ring-primary/50 ring-inset' : ''
         )}
       >
         <SortableContext items={[...cards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
