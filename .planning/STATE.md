@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: completed
-stopped_at: Phase 23 context gathered
-last_updated: "2026-05-16T14:40:54.281Z"
-last_activity: 2026-05-16 -- Phase 22 marked complete
+status: ready_to_execute
+stopped_at: Phase 23 planned — 3 plans in 2 waves
+last_updated: "2026-05-16T00:00:00.000Z"
+last_activity: 2026-05-16 -- Phase 23 planned (3 plans, 2 waves)
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
+  total_plans: 5
   completed_plans: 2
   percent: 25
 ---
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-15)
 
 ## Current Position
 
-Phase: 22 — COMPLETE
-Plan: 1 of 2
-Status: Phase 22 complete
-Last activity: 2026-05-16 -- Phase 22 marked complete
+Phase: 23 — Hand Sort + Select All
+Plan: 0 of 3
+Status: Ready to execute (3 plans created, 2 waves)
+Last activity: 2026-05-16 -- Phase 23 planned (3 plans, 2 waves)
 
 ## Performance Metrics
 
@@ -78,6 +78,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-16T14:40:54.267Z
-Stopped at: Phase 23 context gathered
-Resume file: .planning/phases/23-replace-hardcoded-communal-zone-id/23-CONTEXT.md
+Last session: 2026-05-16T15:18:18.706Z
+Stopped at: Phase 23 UI-SPEC approved
+Resume file: .planning/phases/23-replace-hardcoded-communal-zone-id/23-UI-SPEC.md

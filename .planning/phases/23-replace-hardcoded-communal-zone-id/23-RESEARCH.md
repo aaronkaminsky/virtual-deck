@@ -354,7 +354,7 @@ className={cn(
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does REORDER_HAND need a `skipSnapshot` field to exclude sort from undo stack?**
    - What we know: CONTEXT.md says sort "does not enter the undo stack." REORDER_HAND currently calls `takeSnapshot` unconditionally (line 334, `party/index.ts`).
