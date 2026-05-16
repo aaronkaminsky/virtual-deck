@@ -241,7 +241,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
           aria-pressed={isRevealed}
         >
-          {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </Button>
       </div>
       <div
