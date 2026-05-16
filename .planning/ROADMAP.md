@@ -72,7 +72,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 ### v1.4 Table Polish (Phases 22–25)
 
-- [ ] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player
+- [x] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
 - [ ] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group
 - [ ] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking
 - [ ] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty
@@ -91,10 +91,10 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 **Plans**: 2 plans in 2 waves
 
 **Wave 1**
-- [ ] 22-01-PLAN.md — Types, server logic, and test suite (SET_HAND_REVEALED handler, viewFor masking, migration, RESET_TABLE extension)
+- [x] 22-01-PLAN.md — Types, server logic, and test suite (SET_HAND_REVEALED handler, viewFor masking, migration, RESET_TABLE extension)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 22-02-PLAN.md — UI components (HandZone toggle button and ring, OpponentHand revealed path, BoardView prop threading)
+- [x] 22-02-PLAN.md — UI components (HandZone toggle button and ring, OpponentHand revealed path, BoardView prop threading)
 
 **Cross-cutting constraints:**
 - `handRevealed` state is owned by the server only — clients read it through `viewFor()`, never write it directly
@@ -143,7 +143,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Hand Reveal | 0/2 | Ready to execute | - |
+| 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
 | 23. Hand Sort + Select All | 0/? | Not started | - |
 | 24. Play Area Grid | 0/? | Not started | - |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
