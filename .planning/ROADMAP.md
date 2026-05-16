@@ -88,7 +88,10 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   2. The same player can click the toggle again and their cards return to hidden (backs only) for other players
   3. A player who joins or reconnects mid-session sees the correct revealed/hidden state for every already-connected player
   4. The revealing player's own view is unchanged — they always see their own card faces
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 22-01-PLAN.md — Types, server logic, and test suite (SET_HAND_REVEALED handler, viewFor masking, migration, RESET_TABLE extension)
+- [ ] 22-02-PLAN.md — UI components (HandZone toggle button and ring, OpponentHand revealed path, BoardView prop threading)
 **UI hint**: yes
 
 ### Phase 23: Hand Sort + Select All
@@ -133,7 +136,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Hand Reveal | 0/? | Not started | - |
+| 22. Hand Reveal | 0/2 | Not started | - |
 | 23. Hand Sort + Select All | 0/? | Not started | - |
 | 24. Play Area Grid | 0/? | Not started | - |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
