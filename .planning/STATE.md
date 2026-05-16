@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
 status: completed
-stopped_at: Phase 22 planned — ready to execute
-last_updated: "2026-05-16T05:52:29.498Z"
+stopped_at: Phase 23 context gathered
+last_updated: "2026-05-16T14:40:54.281Z"
 last_activity: 2026-05-16 -- Phase 22 marked complete
 progress:
   total_phases: 4
@@ -83,6 +83,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-16T03:30:00.000Z
-Stopped at: Phase 22 planned — ready to execute
-Resume file: .planning/phases/22-restrict-play-card-set-to-spread-region/22-01-PLAN.md
+Last session: 2026-05-16T14:40:54.267Z
+Stopped at: Phase 23 context gathered
+Resume file: .planning/phases/23-replace-hardcoded-communal-zone-id/23-CONTEXT.md
