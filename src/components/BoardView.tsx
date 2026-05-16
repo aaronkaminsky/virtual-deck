@@ -25,24 +25,31 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
   const communalZone = spreadPiles.find(p => p.id === 'play');
-  const opponentCount = Object.keys(gameState.opponentHandCounts).length;
+  const allOpponentIds = Array.from(new Set([
+    ...Object.keys(gameState.opponentHandCounts),
+    ...Object.keys(gameState.opponentRevealedHands),
+  ]));
+  const opponentCount = allOpponentIds.length;
 
   return (
     <div className="h-screen w-screen overflow-x-hidden flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
-          {Object.entries(gameState.opponentHandCounts).map(([id, count]) => {
+          {allOpponentIds.map((id) => {
             const player = gameState.players.find(p => p.id === id);
             const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
+            const revealedCards = gameState.opponentRevealedHands[id];
+            const cardCount = gameState.opponentHandCounts[id] ?? (revealedCards?.length ?? 0);
             return (
               <div key={id} className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
                 <OpponentHand
                   playerId={id}
-                  cardCount={count}
+                  cardCount={cardCount}
                   displayName={player?.displayName ?? ''}
                   connected={player?.connected ?? false}
                   sendAction={sendAction}
+                  revealedCards={revealedCards}
                 />
                 {opponentSpread && (
                   <SpreadZone
@@ -109,6 +116,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               selectedIds={selectedIds}
               onToggleSelect={onToggleSelect}
               selectionSource={selectionSource}
+              isRevealed={gameState.myHandRevealed}
+              onToggleReveal={() => sendAction({ type: 'SET_HAND_REVEALED', revealed: !gameState.myHandRevealed })}
             />
           );
         })()}
