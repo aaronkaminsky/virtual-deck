@@ -76,16 +76,12 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} />
           ))}
           {communalZone && (
-            <div className="shrink-0">
+            <div className="flex-1 min-w-0">
               <GridZone
                 pile={communalZone}
                 sendAction={sendAction}
                 draggingCardId={draggingCardId}
                 interactive={true}
-                selectedIds={selectedIds}
-                onToggleSelect={onToggleSelect}
-                onSelectAll={onSelectAll}
-                selectionSource={selectionSource}
               />
             </div>
           )}
