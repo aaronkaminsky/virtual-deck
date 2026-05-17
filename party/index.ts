@@ -89,6 +89,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       faceUp: pile.faceUp,
       region: pile.region,
       ownerId: pile.ownerId,
+      gridPositions: pile.gridPositions, // Phase 24: Pitfall 4 — must be explicit
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;
@@ -168,6 +169,16 @@ export default class GameRoom implements Party.Server {
       if (!('handRevealed' in player)) {
         (player as any).handRevealed = false;
       }
+    }
+    // Migrate state: Phase 24 — initialize gridPositions for orphaned cards in 'play' pile
+    const playPileForMigration = this.gameState.piles.find(p => p.id === 'play');
+    if (playPileForMigration && playPileForMigration.cards.length > 0 && !playPileForMigration.gridPositions) {
+      playPileForMigration.gridPositions = {};
+      playPileForMigration.cards.forEach((card, i) => {
+        const row = Math.floor(i / 7) % 2;
+        const col = i % 7;
+        playPileForMigration.gridPositions![card.id] = { row, col };
+      });
     }
   }
 
@@ -314,6 +325,19 @@ export default class GameRoom implements Party.Server {
         } else {
           dest.push(card);
         }
+        // Assign grid position when card enters the play grid (D-06)
+        if (toZone === 'pile') {
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          if (destPile?.id === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+            if (!destPile.gridPositions) destPile.gridPositions = {};
+            destPile.gridPositions[cardId] = { row: action.toRow, col: action.toCol };
+          }
+        }
+        // Clean up gridPositions when card leaves a pile (Pitfall 2)
+        if (fromZone === 'pile') {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId);
+          if (srcPile?.gridPositions) delete srcPile.gridPositions[cardId];
+        }
         break;
       }
       case "REORDER_HAND": {
@@ -363,6 +387,33 @@ export default class GameRoom implements Party.Server {
         takeSnapshot(this.gameState);
         const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
         spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
+        break;
+      }
+      case "MOVE_GRID_CARD": {
+        const { cardId, pileId, toRow, toCol } = action;
+        const MAX_ROWS = 2;
+        const MAX_COLS = 7;
+        if (!Number.isInteger(toRow) || toRow < 0 || toRow >= MAX_ROWS) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toRow out of range` } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isInteger(toCol) || toCol < 0 || toCol >= MAX_COLS) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toCol out of range` } satisfies ServerEvent));
+          break;
+        }
+        const gridPile = this.gameState.piles.find(p => p.id === pileId && p.region === "spread");
+        if (!gridPile) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "PILE_NOT_FOUND", message: `No spread pile found with id: ${pileId}` } satisfies ServerEvent));
+          break;
+        }
+        const cardExists = gridPile.cards.some(c => c.id === cardId);
+        if (!cardExists) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "CARD_NOT_IN_SOURCE", message: `Card ${cardId} not found in pile ${pileId}` } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        if (!gridPile.gridPositions) gridPile.gridPositions = {};
+        gridPile.gridPositions[cardId] = { row: toRow, col: toCol };
         break;
       }
       case "SET_PILE_FACE": {
@@ -527,6 +578,7 @@ export default class GameRoom implements Party.Server {
         for (const pile of this.gameState.piles) {
           if (pile.id !== "draw") {
             resetDrawPile.cards.push(...pile.cards.splice(0));
+            if (pile.gridPositions) pile.gridPositions = {};  // Pitfall 3: RESET_TABLE must clear gridPositions
           }
         }
         resetDrawPile.faceUp = false;
@@ -673,6 +725,25 @@ export default class GameRoom implements Party.Server {
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
         dest.push(...cardsToPlay);
+        // Assign grid positions when cards land in the play grid (mirrors MOVE_CARD D-06)
+        if (toZone === 'pile' && toId === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          if (destPile) {
+            if (!destPile.gridPositions) destPile.gridPositions = {};
+            for (const cId of cardIds) {
+              destPile.gridPositions[cId] = { row: action.toRow, col: action.toCol };
+            }
+          }
+        }
+        // Clean up gridPositions when cards leave a pile (Pitfall 2)
+        if (fromZone === 'pile') {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId);
+          if (srcPile?.gridPositions) {
+            for (const cId of cardIds) {
+              delete srcPile.gridPositions[cId];
+            }
+          }
+        }
         break;
       }
       case "PING":
