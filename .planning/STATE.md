@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: executing
-stopped_at: Phase 23 UI-SPEC approved
+status: ready_to_execute
+stopped_at: Phase 23 complete — 3 of 3 plans shipped
 last_updated: "2026-05-17T14:10:31.517Z"
 last_activity: 2026-05-17
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 5
+  completed_phases: 3
+  total_plans: 8
   completed_plans: 5
-  percent: 50
+  percent: 62
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-05-15)
 
 ## Current Position
 
-Phase: 23 — Hand Sort + Select All
-Plan: 1 of 3
-Status: Ready to execute
+Phase: 24 — Play Area Grid
+Plan: 0 of 0
+Status: Phase 23 complete; Phase 24 is next
 Last activity: 2026-05-17
 
 ## Performance Metrics
