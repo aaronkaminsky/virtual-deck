@@ -137,7 +137,20 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   2. Multiple cards can occupy the same cell (stacked); the stack is visually distinguishable from a single card
   3. A player can drag a card from one cell to another cell within the grid
   4. A player can drag a card from the grid to a pile or hand, and vice versa, using existing drag targets
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
+
+**Wave 1**
+- [ ] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
+
+**Wave 2** *(blocked on Wave 1 — GridZone uses types and server action from Plan 01)*
+- [ ] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
+
+**Cross-cutting decisions** (resolved by planner):
+- D-05: MOVE_GRID_CARD is a separate action from REORDER_PILE_SPREAD — personal spread zones unchanged
+- D-06: External→grid drops extend MOVE_CARD/PLAY_CARD_SET with optional toRow/toCol fields
+- Grid cell droppable data.toId is the pile ID ('play'), not the cell ID — ensures isIntraSpreadReorder in BoardDragLayer correctly suppresses MOVE_CARD for intra-grid drags
+- Grid cell IDs prefixed grid-cell- (not pile-) to land in new collision bucket using pointerWithin
+
 **UI hint**: yes
 
 ### Phase 25: Layout & Visual Polish
@@ -159,7 +172,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 |-------|----------------|--------|-----------|
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
 | 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
-| 24. Play Area Grid | 0/? | Not started | - |
+| 24. Play Area Grid | 0/2 | Not started | - |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
 ## Backlog
