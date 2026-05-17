@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: ready_to_execute
-stopped_at: Phase 23 complete — 3 of 3 plans shipped
-last_updated: "2026-05-17T14:10:31.517Z"
+status: completed
+stopped_at: Phase 24 context gathered
+last_updated: "2026-05-17T15:52:03.636Z"
 last_activity: 2026-05-17
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 8
+  completed_phases: 2
+  total_plans: 5
   completed_plans: 5
-  percent: 62
+  percent: 50
 ---
 
 # Project State
@@ -81,6 +81,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-17T14:10:31.505Z
-Stopped at: Phase 23 UI-SPEC approved
-Resume file: None
+Last session: 2026-05-17T15:52:03.622Z
+Stopped at: Phase 24 context gathered
+Resume file: .planning/phases/24-spread-pile-multi-select-and-sort/24-CONTEXT.md
