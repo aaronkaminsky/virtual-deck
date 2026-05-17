@@ -73,7 +73,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 ### v1.4 Table Polish (Phases 22–25)
 
 - [x] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
-- [ ] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group
+- [x] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group (completed 2026-05-17)
 - [ ] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking
 - [ ] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty
 
@@ -114,11 +114,11 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 **Plans**: 3 plans in 2 waves
 
 **Wave 1** *(parallel — no file overlap)*
-- [ ] 23-01-PLAN.md — Server-side: add `skipSnapshot?: boolean` to `REORDER_HAND` (so sort does not enter undo stack), extend reorderUndo tests, create Wave-0 scaffolds for `tests/handSort.test.ts` and `tests/selectAll.test.ts`
-- [ ] 23-03-PLAN.md — Select All UI: `handleSelectAll` in BoardDragLayer, prop threading through BoardView, Select All buttons in PileZone (top-card-only) and interactive SpreadZone (all face-up cards), passing PLAY_CARD_SET coverage in `tests/selectAll.test.ts`
+- [x] 23-01-PLAN.md — Server-side: add `skipSnapshot?: boolean` to `REORDER_HAND` (so sort does not enter undo stack), extend reorderUndo tests, create Wave-0 scaffolds for `tests/handSort.test.ts` and `tests/selectAll.test.ts`
+- [x] 23-03-PLAN.md — Select All UI: `handleSelectAll` in BoardDragLayer, prop threading through BoardView, Select All buttons in PileZone (top-card-only) and interactive SpreadZone (all face-up cards), passing PLAY_CARD_SET coverage in `tests/selectAll.test.ts`
 
 **Wave 2** *(blocked on Wave 1 — Plan 02 imports the extended REORDER_HAND type from Plan 01)*
-- [ ] 23-02-PLAN.md — Hand sort UI: `SortMode` cycle button in HandZone, exported `sortCards`/`buildSortDispatch`, render-time visual sort, dispatch via REORDER_HAND with `skipSnapshot: true`, passing assertions in `tests/handSort.test.ts`
+- [x] 23-02-PLAN.md — Hand sort UI: `SortMode` cycle button in HandZone, exported `sortCards`/`buildSortDispatch`, render-time visual sort, dispatch via REORDER_HAND with `skipSnapshot: true`, passing assertions in `tests/handSort.test.ts`
 
 **Cross-cutting decisions** (resolved by planner):
 - RESEARCH.md OQ1 → `skipSnapshot?: boolean` added to `REORDER_HAND` so SORT-01 does not pollute the undo stack (REQUIREMENTS.md requirement)
@@ -158,7 +158,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
-| 23. Hand Sort + Select All | 0/3 | Planned | - |
+| 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
 | 24. Play Area Grid | 0/? | Not started | - |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
