@@ -62,13 +62,12 @@ export function takeSnapshot(state: GameState): void {
 }
 
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
-  if (!playerToken) throw new Error("viewFor requires a non-null playerToken");
   return {
     roomId: state.roomId,
     phase: state.phase,
     players: state.players,
-    myPlayerId: playerToken ?? "",
-    myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
+    myPlayerId: playerToken,
+    myHand: state.hands[playerToken] ?? [],
     myHandRevealed: state.players.find(p => p.id === playerToken)?.handRevealed ?? false,
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
