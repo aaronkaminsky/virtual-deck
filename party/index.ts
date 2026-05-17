@@ -326,6 +326,16 @@ export default class GameRoom implements Party.Server {
         if (toZone === 'pile') {
           const destPile = this.gameState.piles.find(p => p.id === toId);
           if (destPile?.id === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+            const MAX_ROWS = 2;
+            const MAX_COLS = 7;
+            if (
+              !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
+              !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
+            ) {
+              sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
+                message: "toRow/toCol out of range" } satisfies ServerEvent));
+              break;
+            }
             if (!destPile.gridPositions) destPile.gridPositions = {};
             destPile.gridPositions[cardId] = { row: action.toRow, col: action.toCol };
           }
@@ -724,6 +734,16 @@ export default class GameRoom implements Party.Server {
         dest.push(...cardsToPlay);
         // Assign grid positions when cards land in the play grid (mirrors MOVE_CARD D-06)
         if (toZone === 'pile' && toId === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+          const MAX_ROWS = 2;
+          const MAX_COLS = 7;
+          if (
+            !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
+            !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
+          ) {
+            sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
+              message: "toRow/toCol out of range" } satisfies ServerEvent));
+            break;
+          }
           const destPile = this.gameState.piles.find(p => p.id === toId);
           if (destPile) {
             if (!destPile.gridPositions) destPile.gridPositions = {};
