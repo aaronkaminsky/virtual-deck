@@ -140,7 +140,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 **Plans**: 2 plans in 2 waves
 
 **Wave 1**
-- [ ] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
+- [x] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
 
 **Wave 2** *(blocked on Wave 1 — GridZone uses types and server action from Plan 01)*
 - [ ] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
@@ -172,7 +172,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 |-------|----------------|--------|-----------|
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
 | 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
-| 24. Play Area Grid | 0/2 | Not started | - |
+| 24. Play Area Grid | 1/2 | In Progress|  |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
 ## Backlog
