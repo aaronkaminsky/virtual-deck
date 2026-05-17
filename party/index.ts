@@ -61,16 +61,13 @@ export function takeSnapshot(state: GameState): void {
   }
 }
 
-export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
-  if (playerToken === null) {
-    throw new Error("viewFor requires a non-null playerToken");
-  }
+export function viewFor(state: GameState, playerToken: string): ClientGameState {
   return {
     roomId: state.roomId,
     phase: state.phase,
     players: state.players,
-    myPlayerId: playerToken ?? "",
-    myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
+    myPlayerId: playerToken,
+    myHand: state.hands[playerToken] ?? [],
     myHandRevealed: state.players.find(p => p.id === playerToken)?.handRevealed ?? false,
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
@@ -97,7 +94,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
-    myPlayZoneId: playerToken ? `spread-${playerToken}` : "",
+    myPlayZoneId: `spread-${playerToken}`,
   };
 }
 
