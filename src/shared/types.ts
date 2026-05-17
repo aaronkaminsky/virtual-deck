@@ -61,7 +61,7 @@ export interface ClientGameState {
 }
 
 export type ClientAction =
-  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
+  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random'; toRow?: number; toCol?: number }
   | { type: "REORDER_HAND"; orderedCardIds: string[]; skipSnapshot?: boolean }
   | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[] }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
@@ -69,7 +69,8 @@ export type ClientAction =
   | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
-  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string }
+  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string; toRow?: number; toCol?: number }
+  | { type: "MOVE_GRID_CARD"; cardId: string; pileId: string; toRow: number; toCol: number }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
