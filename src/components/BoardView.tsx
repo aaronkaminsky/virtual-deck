@@ -82,6 +82,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                 sendAction={sendAction}
                 draggingCardId={draggingCardId}
                 interactive={true}
+                selectedIds={selectedIds}
+                onToggleSelect={onToggleSelect}
+                onSelectAll={onSelectAll}
+                selectionSource={selectionSource}
               />
             </div>
           )}

@@ -111,6 +111,36 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} /> : topCard && <CardBack />}
         <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
       </div>
+      <div className="flex gap-1 mt-1">
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleToggleFace}
+          title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+          aria-label={pile.faceUp !== false ? 'Face up' : 'Face down'}
+        >
+          {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleShuffle}
+          title="Shuffle pile"
+          aria-label="Shuffle pile"
+        >
+          <Shuffle className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleSelectAll}
+          title="Select all cards in pile"
+          aria-label="Select all"
+          disabled={isEmpty || !topCard || !('id' in topCard)}
+        >
+          <SquareCheck className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }
