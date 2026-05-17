@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: completed
-stopped_at: Phase 24 context gathered
-last_updated: "2026-05-17T15:52:03.636Z"
+status: in_progress
+stopped_at: Phase 24 planned — ready to execute
+last_updated: "2026-05-17T00:00:00.000Z"
 last_activity: 2026-05-17
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
+  total_plans: 7
   completed_plans: 5
   percent: 50
 ---
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-15)
 ## Current Position
 
 Phase: 24 — Play Area Grid
-Plan: 0 of 0
-Status: Phase 23 complete; Phase 24 is next
+Plan: 0 of 2
+Status: Ready to execute — 2 plans in 2 waves
 Last activity: 2026-05-17
 
 ## Performance Metrics
@@ -81,6 +81,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-17T15:52:03.622Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-spread-pile-multi-select-and-sort/24-CONTEXT.md
+Last session: 2026-05-17
+Stopped at: Phase 24 planned — 2 plans ready to execute
+Resume file: .planning/phases/24-spread-pile-multi-select-and-sort/24-01-PLAN.md
