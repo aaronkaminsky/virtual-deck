@@ -74,7 +74,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 - [x] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
 - [x] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group (completed 2026-05-17)
-- [ ] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking
+- [x] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking (completed 2026-05-17)
 - [ ] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty
 
 ## Phase Details
@@ -143,7 +143,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 - [x] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
 
 **Wave 2** *(blocked on Wave 1 — GridZone uses types and server action from Plan 01)*
-- [ ] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
+- [x] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
 
 **Cross-cutting decisions** (resolved by planner):
 - D-05: MOVE_GRID_CARD is a separate action from REORDER_PILE_SPREAD — personal spread zones unchanged
@@ -172,7 +172,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 |-------|----------------|--------|-----------|
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
 | 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
-| 24. Play Area Grid | 1/2 | In Progress|  |
+| 24. Play Area Grid | 2/2 | Complete   | 2026-05-17 |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
 ## Backlog
