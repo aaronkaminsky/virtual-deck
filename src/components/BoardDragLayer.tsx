@@ -293,6 +293,16 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
                 insertPosition: 'top',
                 ...(gridOverData?.toRow !== undefined ? { toRow: gridOverData.toRow, toCol: gridOverData.toCol } : {}),
               });
+            } else if (selectedIds.size > 1 && selectionSource?.zoneId === 'play') {
+              const toRow = (event.over?.data.current as { toRow?: number })?.toRow;
+              const toCol = (event.over?.data.current as { toCol?: number })?.toCol;
+              if (toRow !== undefined && toCol !== undefined) {
+                for (const cId of selectedIds) {
+                  sendAction({ type: 'MOVE_GRID_CARD', cardId: cId, pileId: 'play', toRow, toCol });
+                }
+              }
+              setSelectedIds(new Set());
+              setSelectionSource(null);
             }
           } else {
             // Non-empty pile (non-spread): intercept and show position dialog (D-01)
