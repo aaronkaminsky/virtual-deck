@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { Eye, EyeOff, Shuffle } from 'lucide-react';
+import { Eye, EyeOff, Shuffle, SquareCheck } from 'lucide-react';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,10 @@ interface PileZoneProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   shufflingPileIds?: Set<string>;
+  onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set() }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -37,6 +38,11 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
     if (!topCard || !('id' in topCard)) return;
     if (!topCard.faceUp && !pile.faceUp) return; // no peeking at face-down cards in a face-down pile
     sendAction({ type: 'FLIP_CARD', pileId: pile.id, cardId: topCard.id });
+  }
+
+  function handleSelectAll() {
+    if (!onSelectAll || !topCard || !('id' in topCard)) return;
+    onSelectAll([(topCard as Card).id], 'pile', pile.id);
   }
 
   return (
@@ -91,6 +97,16 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
           aria-label="Shuffle pile"
         >
           <Shuffle className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleSelectAll}
+          title="Select all cards in pile"
+          aria-label="Select all"
+          disabled={isEmpty || !topCard || !('id' in topCard)}
+        >
+          <SquareCheck className="w-4 h-4" />
         </Button>
       </div>
     </div>

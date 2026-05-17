@@ -3,7 +3,7 @@ import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove 
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction } from '@/shared/types';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, SquareCheck } from 'lucide-react';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
@@ -74,10 +74,11 @@ interface SpreadZoneProps {
   interactive?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource?: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, selectionSource }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -144,6 +145,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
     sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp });
   }
 
+  function handleSelectAll() {
+    if (!onSelectAll || interactive === false || faceUpCards.length === 0) return;
+    onSelectAll(faceUpCards.map(c => c.id), 'pile', pile.id);
+  }
+
   const isEmpty = pile.cards.length === 0;
 
   return (
@@ -204,15 +210,29 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           </div>
         )}
       </div>
-      <Button
-        variant="ghost"
-        className="h-7 w-7 p-0"
-        onClick={handleToggleFace}
-        title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-        aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
-      >
-        {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-      </Button>
+      <div className="flex gap-1">
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleToggleFace}
+          title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+          aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
+        >
+          {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        </Button>
+        {interactive !== false && (
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={handleSelectAll}
+            title="Select all cards in zone"
+            aria-label="Select all"
+            disabled={faceUpCards.length === 0}
+          >
+            <SquareCheck className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

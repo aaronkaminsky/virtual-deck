@@ -17,10 +17,11 @@ interface BoardViewProps {
   shufflingPileIds: Set<string>;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, selectionSource }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -71,7 +72,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
       <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
         <div className="flex-1 min-h-0 flex items-center px-4 gap-4">
           {pilePiles.map((pile) => (
-            <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} />
+            <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} />
           ))}
           {communalZone && (
             <div className="flex-1 min-w-0">
@@ -83,6 +84,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                 interactive={true}
                 selectedIds={selectedIds}
                 onToggleSelect={onToggleSelect}
+                onSelectAll={onSelectAll}
                 selectionSource={selectionSource}
               />
             </div>
@@ -98,6 +100,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               interactive={true}
               selectedIds={selectedIds}
               onToggleSelect={onToggleSelect}
+              onSelectAll={onSelectAll}
               selectionSource={selectionSource}
             />
           </div>

@@ -108,6 +108,12 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     // no risk of losing zone context on momentary zero-selection state.
   };
 
+  const handleSelectAll = (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => {
+    if (cardIds.length === 0) return; // guard against empty-zone clicks (defense in depth)
+    setSelectedIds(new Set(cardIds));
+    setSelectionSource({ zone, zoneId });
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -329,7 +335,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} selectionSource={selectionSource} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {activeCard ? <CardOverlay card={activeCard} /> : null}
