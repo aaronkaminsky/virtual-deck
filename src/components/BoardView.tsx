@@ -3,6 +3,7 @@ import type { ClientAction, ClientGameState } from '@/shared/types';
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
+import { GridZone } from './GridZone';
 import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -76,16 +77,11 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           ))}
           {communalZone && (
             <div className="flex-1 min-w-0">
-              <SpreadZone
+              <GridZone
                 pile={communalZone}
                 sendAction={sendAction}
                 draggingCardId={draggingCardId}
-                className="w-full"
                 interactive={true}
-                selectedIds={selectedIds}
-                onToggleSelect={onToggleSelect}
-                onSelectAll={onSelectAll}
-                selectionSource={selectionSource}
               />
             </div>
           )}
