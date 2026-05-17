@@ -54,11 +54,6 @@ function GridCell({ row, col, pileId, cellCards, draggingCardId, pileIsFaceUp }:
       : undefined,
   });
 
-  function setRefs(el: HTMLElement | null) {
-    setDropRef(el);
-    if (topCard !== null) setDragRef(el);
-  }
-
   const cardStyle: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0 : 1,
@@ -139,7 +134,7 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
       <div className="flex items-center">
         <span className="text-xs text-muted-foreground">Play Area</span>
       </div>
-      <div data-testid="grid-zone-play" className="grid grid-cols-4 sm:grid-cols-7 gap-1">
+      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-1">
         {Array.from({ length: ROWS }, (_, row) =>
           Array.from({ length: COLS }, (_, col) => (
             <GridCell
