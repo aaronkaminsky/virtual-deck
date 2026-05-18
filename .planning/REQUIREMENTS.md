@@ -1,52 +1,83 @@
-# Requirements: Virtual Deck v1.3 Layout & UX Polish
+# Requirements: Virtual Deck
 
-## Milestone Goal
+**Defined:** 2026-05-15
+**Core Value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-Redesign the board so it reads as a shared physical space — communal zone centered, controls out of the way, spread zones as interactive as the player hand, and the whole thing usable on a phone screen.
+## v1.4 Requirements
 
-## v1.3 Requirements
+Requirements for v1.4 Table Polish. Each maps to roadmap phases.
 
-### Layout
+### Hand Management
 
-- [x] **LAYOUT-01**: Player can view the communal spread zone physically centered on the board, between opponent zones (top) and their own hand (bottom)
-- [x] **LAYOUT-02**: Board vertical proportions give all zones usable space without scrolling on a standard 1080p desktop viewport
-- [ ] **LAYOUT-03**: Player can access all game controls from a collapsible panel triggered by a single header button; controls are hidden by default
-- [ ] **LAYOUT-04**: Board is usable at phone-width screens (≥375px) without horizontal scrolling; pointer/mouse interaction only (no touch drag)
+- [ ] **HAND-01**: Player can toggle their hand face-up to reveal all cards to other players
+- [ ] **HAND-02**: Player can toggle their hand face-down to re-hide their cards
+- [ ] **HAND-03**: Hand revealed/hidden state is broadcast in real time to all connected players
+- [ ] **HAND-04**: Hand revealed state is persisted in server room state so reconnecting players see the correct current state
+- [ ] **SORT-01**: Player can cycle through hand sort modes: original order, by suit, by rank; sort persisted server-side via REORDER_HAND (does not enter the undo stack)
 
-### Spread Zones
+### Select All
 
-- [ ] **SPREAD-01**: Player can click to select multiple cards in a spread zone, with the same visual selection treatment as player hand card selection
-- [ ] **SPREAD-02**: Player can drag-reorder cards within a spread zone; reorder behaves correctly when multi-select state is active
-- [ ] **SPREAD-03**: Player can drag a selected set of cards from a spread zone to another zone (pile, hand, or another spread zone)
-- [x] **SPREAD-04**: Spread zone drag interactions are stable with no event misfires when selection state is active (dnd-kit ID collision between `SortableSpreadCard` and nested `DraggableCard` resolved)
+- [ ] **SELECT-01**: Player can click a "Select All" control on any pile to select all cards in it
+- [ ] **SELECT-02**: Player can click a "Select All" control on any spread zone to select all cards in it
+- [ ] **SELECT-03**: A group selected via "Select All" can be dragged to any valid drop target using existing multi-card drag
+
+### Play Area Grid
+
+- [ ] **GRID-01**: Communal spread zone displays as a 2-row fixed grid; cards snap to column positions; multiple cards can stack per cell; player can drag cards between cells
+
+### Layout & Visual Polish
+
+- [ ] **POLISH-01**: Empty piles and spread zones display no body text — label above is sufficient
+- [ ] **POLISH-02**: Pile zone controls appear at the top of each pile, inline with the label
+- [ ] **POLISH-03**: Personal spread zones are positioned closer to the communal/draw/discard area
+- [ ] **POLISH-04**: Zone heights and spacing are reduced for a more compact board
+- [ ] **ZONE-01**: Personal spread zones are hidden when empty; a drop target appears when the player begins dragging a card
 
 ## Future Requirements
 
-Deferred to a later milestone:
+Deferred to future milestones.
 
-- Touch drag-and-drop for mobile — dnd-kit pointer-event work required; deferred to dedicated milestone
-- Spread zone face-toggle sync across players — Phase 14 deferred behavior
-- Personal spread zone drag-out ownership guard — SPREAD-03 authorization edge case (personal zone cards should only be movable by the zone owner)
+### Free Canvas
 
-## Out of Scope (v1.3)
+- **CANVAS-01**: Communal spread zone supports free-canvas mode — cards have arbitrary (x, y) positions within the zone, can overlap freely, and are dragged to any point
 
-- Tech debt: hardcoded communal zone ID `"play"`, test helper consolidation, `PLAY_CARD_SET` region guard — backlog for v1.4
-- Rule enforcement, score tracking, turn indicators, chat — project-level exclusions
-- Full dnd-kit multi-drag (native extension) — using validated select-then-drag pattern instead
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Free canvas play area | Too complex for a polish milestone; tracked as CANVAS-01 for future |
+| Chips / betting | Separate feature, own milestone |
+| Password-protected rooms | Separate feature, own milestone |
+| Kick players | Separate feature, own milestone |
+| Sound effects | Separate feature, own milestone |
+| Editable zone names | Separate feature, own milestone |
+| Custom card art | Code-change only by design — no runtime configurator |
+| Rule enforcement | Core design constraint — honor system only |
 
 ## Traceability
 
-| REQ-ID | Phase | Status |
-|--------|-------|--------|
-| LAYOUT-01 | Phase 17 | Complete |
-| LAYOUT-02 | Phase 17 | Complete |
-| LAYOUT-03 | Phase 18 | Pending |
-| LAYOUT-04 | Phase 19 | Pending |
-| SPREAD-01 | Phase 20 | Pending |
-| SPREAD-02 | Phase 21 | Pending |
-| SPREAD-03 | Phase 20 | Pending |
-| SPREAD-04 | Phase 17 | Complete |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| HAND-01 | Phase 22 | Pending |
+| HAND-02 | Phase 22 | Pending |
+| HAND-03 | Phase 22 | Pending |
+| HAND-04 | Phase 22 | Pending |
+| SORT-01 | Phase 23 | Pending |
+| SELECT-01 | Phase 23 | Pending |
+| SELECT-02 | Phase 23 | Pending |
+| SELECT-03 | Phase 23 | Pending |
+| GRID-01 | Phase 24 | Pending |
+| POLISH-01 | Phase 25 | Pending |
+| POLISH-02 | Phase 25 | Pending |
+| POLISH-03 | Phase 25 | Pending |
+| POLISH-04 | Phase 25 | Pending |
+| ZONE-01 | Phase 25 | Pending |
+
+**Coverage:**
+- v1.4 requirements: 14 total
+- Mapped to phases: 14
+- Unmapped: 0 ✓
 
 ---
-*Created: 2026-05-01 — v1.3 milestone planning*
-*Updated: 2026-05-01 — phase assignments added*
+*Requirements defined: 2026-05-15*
+*Last updated: 2026-05-15 after v1.4 roadmap creation*
