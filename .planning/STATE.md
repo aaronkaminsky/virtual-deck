@@ -18,18 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-15)
+See: .planning/PROJECT.md (updated 2026-05-18)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 25 — play-area-layout-center-canvas
+**Current focus:** v1.4 complete — planning next milestone
 
 ## Current Position
 
-Phase: 25 — COMPLETE
-Plan: 3 of 3
-Plans: 3 (Wave 1 — all parallel)
-Status: v1.4 shipped — PR #27
+Milestone: v1.4 — COMPLETE (archived 2026-05-18)
+Status: v1.4 shipped — PR #27; milestone archived
 Last activity: 2026-05-18
+Next: `/gsd:new-milestone` to start v1.5
 
 ## Performance Metrics
 

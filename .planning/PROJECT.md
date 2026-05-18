@@ -8,30 +8,19 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.4 Table Polish
-
-**Goal:** Reduce minor annoyances in the play area through layout simplification, better pile/zone interaction, and hand management improvements.
-
-**Target features:**
-- Show Hand — toggle to flip hand face-up/down for all players
-- Select All — "select all" button on piles and spreads; use existing multi-card drag
-- Play Area Grid — grid layout option in communal spread zone
-- Layout Simplifications — no body text on empty zones; pile controls to top; personal spreads closer to table; vertical space reduction
-- Collapse Empty Spreads — hide personal zones when empty, reappear on first card drop
-- Hand Sort — cycle sort modes: original, by suit, by rank
-
 ## Current State
 
-**v1.3 shipped (2026-05-15).** All 39 requirements across v1.0–v1.3 satisfied and verified.
+**v1.4 shipped (2026-05-18).** All 53 requirements across v1.0–v1.4 satisfied and shipped.
 
 - ~2,700+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (165 tests)
-- Spread zones: personal zone per player + communal zone; multi-card set play (PLAY_CARD_SET); spread zone multi-select + group-reorder + sentinel-based drop-to-end + undo
-- Board: five-band vertical layout with communal zone at visual center; collapsible controls panel; phone-responsive (≥375px)
+- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (165+ tests)
+- Hand management: hand reveal toggle (Eye/EyeOff), sort by suit/rank, undo-exempt via `skipSnapshot`
+- Play area: communal 2-row grid zone with per-cell stacking + intra-grid drag; personal spread zones with Select All + group drag
+- Board: compact layout — empty zones label-only, pile controls in header row, personal spreads hidden when empty, reduced zone heights
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Active milestone:** v1.4 Table Polish — see Current Milestone section above.
+**Next milestone:** TBD — see Backlog in ROADMAP.md for candidates.
 
 ## Requirements
 
@@ -88,9 +77,26 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Drag selected set from spread zone to pile, hand, or another spread zone (SPREAD-03) — Phase 20
 - ✓ Spread zone drag interactions stable; dnd-kit ID collision (SortableSpreadCard/DraggableCard) resolved (SPREAD-04) — Phase 17
 
-### Active (v1.4)
+### Validated (v1.4)
 
-*(Requirements being defined — see REQUIREMENTS.md)*
+- ✓ Player can toggle their hand face-up to reveal all cards to other players (HAND-01) — Phase 22
+- ✓ Player can toggle their hand face-down to re-hide their cards (HAND-02) — Phase 22
+- ✓ Hand revealed/hidden state is broadcast in real time to all connected players (HAND-03) — Phase 22
+- ✓ Hand revealed state is persisted in server room state so reconnecting players see the correct current state (HAND-04) — Phase 22
+- ✓ Player can cycle through hand sort modes: original, by suit, by rank; sort does not enter undo stack (SORT-01) — Phase 23
+- ✓ Player can click "Select All" on any pile to select all cards (SELECT-01) — Phase 23
+- ✓ Player can click "Select All" on any spread zone to select all cards (SELECT-02) — Phase 23
+- ✓ A "Select All" group can be dragged to any valid drop target using existing multi-card drag (SELECT-03) — Phase 23
+- ✓ Communal spread zone displays as a 2-row fixed grid; cards snap to cell positions; stacking per cell supported; intra-grid drag works (GRID-01) — Phase 24
+- ✓ Empty piles and spread zones display no body text — label above is sufficient (POLISH-01) — Phase 25
+- ✓ Pile zone controls appear at the top of each pile, inline with the label (POLISH-02) — Phase 25
+- ✓ Personal spread zones are positioned closer to the communal/draw/discard area (POLISH-03) — Phase 25
+- ✓ Zone heights and spacing are reduced for a more compact board (POLISH-04) — Phase 25
+- ✓ Personal spread zones are hidden when empty; a drop target appears when the player begins dragging a card (ZONE-01) — Phase 25
+
+### Active (v1.5)
+
+*(Next milestone not yet defined — run `/gsd:new-milestone` to start)*
 
 ### Out of Scope
 
@@ -142,6 +148,12 @@ Players can see the shared table and their own private hand update in real time,
 | `SortableSentinel` (flex: 1 droppable) appended to SpreadZone/HandZone | Zero-size sentinel had ~0.5px `closestCenter` target; flex: 1 sentinel makes drop-to-end reliably reachable | ✓ Validated Phase 21 |
 | Group reorder insert direction via `event.delta.x` | `overIdx` as unconditional insert-before misaligned with visual feedback when dragging right; delta direction check matches animation | ✓ Validated Phase 21 |
 | `takeSnapshot` added to REORDER_HAND and REORDER_PILE_SPREAD | Reorder operations were not undoable; snapshot before reorder enables undo to restore prior card order | ✓ Validated Phase 21 |
+| `handRevealed` server-owned; viewFor masking via `opponentRevealedHands` | Prevents clients from forging revealed state; viewFor masking keeps the hand privacy invariant intact for revealed hands | ✓ Validated Phase 22 |
+| `skipSnapshot?: boolean` on REORDER_HAND | Sort is a display preference, not a game move — excluding it from undo stack matches player expectations (SORT-01 requirement) | ✓ Validated Phase 23 |
+| Select All on pile selects top card only | Interior cards are masked client-side (client has no card IDs for them); PLAY_CARD_SET would reject them | ✓ Validated Phase 23 |
+| `MOVE_GRID_CARD` as separate action from REORDER_PILE_SPREAD | Keeps personal spread zones unaffected; grid and spread are semantically distinct | ✓ Validated Phase 24 |
+| Grid cell IDs prefixed `grid-cell-`; `toId` is pile ID not cell ID | Allows pointerWithin collision to route intra-grid drags independently; ensures isIntraSpreadReorder suppresses MOVE_CARD for intra-grid drags | ✓ Validated Phase 24 |
+| SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging` | Personal zones claiming vertical space when unused was the biggest waste of board area | ✓ Validated Phase 25 |
 
 ## Evolution
 
@@ -161,4 +173,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-15 after v1.4 milestone start — Table Polish*
+*Last updated: 2026-05-18 after v1.4 milestone — Table Polish*
