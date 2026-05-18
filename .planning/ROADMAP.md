@@ -163,7 +163,13 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   3. Personal spread zones sit visually closer to the communal/draw/discard area; the gap between them is noticeably reduced
   4. A player's personal spread zone is invisible when they have no cards in it; when they begin dragging a card, a drop target for that zone appears
   5. The overall board is more compact — zone heights and inter-zone spacing are reduced so more of the play area is visible without scrolling
-**Plans**: TBD
+**Plans**: 3 plans in 1 wave
+
+**Wave 1** *(parallel — no file overlap)*
+- [ ] 25-01-PLAN.md — SpreadZone: remove empty zone body text (POLISH-01), compact height h-[64px] sm:h-[88px] (POLISH-04), collapse/reveal logic for empty personal zone (ZONE-01)
+- [ ] 25-02-PLAN.md — PileZone: restructure to header row above card with label+buttons (POLISH-02), compact height h-[64px] sm:h-[88px] (POLISH-04)
+- [ ] 25-03-PLAN.md — BoardView + GridZone: remove bg-card and reduce py on personal spread band (POLISH-03), audit and update GridCell height (POLISH-04)
+
 **UI hint**: yes
 
 ## Progress Table
@@ -173,7 +179,7 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 | 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
 | 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
 | 24. Play Area Grid | 2/2 | Complete   | 2026-05-17 |
-| 25. Layout & Visual Polish | 0/? | Not started | - |
+| 25. Layout & Visual Polish | 0/3 | Not started | - |
 
 ## Backlog
 
