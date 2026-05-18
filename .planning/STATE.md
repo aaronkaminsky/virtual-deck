@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
 status: executing
-stopped_at: Phase 25 context gathered
-last_updated: "2026-05-18T03:58:16.693Z"
-last_activity: 2026-05-17 -- Phase 24 execution started
+stopped_at: Phase 25 planned — ready to execute
+last_updated: "2026-05-18T04:30:00.000Z"
+last_activity: 2026-05-18 -- Phase 25 planned (3 plans in 1 wave)
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
+  total_plans: 10
   completed_plans: 7
   percent: 75
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-15)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 24 — spread-pile-multi-select-and-sort
+**Current focus:** Phase 25 — play-area-layout-center-canvas
 
 ## Current Position
 
-Phase: 24 (spread-pile-multi-select-and-sort) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 24
-Last activity: 2026-05-17 -- Phase 24 execution started
+Phase: 25 (play-area-layout-center-canvas) — READY TO EXECUTE
+Plans: 3 (Wave 1 — all parallel)
+Status: Planning complete — ready to execute
+Last activity: 2026-05-18 -- Phase 25 planned (3 plans in 1 wave)
 
 ## Performance Metrics
 
@@ -81,6 +81,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-18T03:58:16.672Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-play-area-layout-center-canvas/25-CONTEXT.md
+Last session: 2026-05-18T04:09:25.624Z
+Stopped at: Phase 25 UI-SPEC approved
+Resume file: .planning/phases/25-play-area-layout-center-canvas/25-UI-SPEC.md
