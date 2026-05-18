@@ -166,15 +166,19 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
         className={cn(
-          'min-w-[56px] h-[79px] sm:min-w-[80px] sm:h-[112px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
-          isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border',
+          isEmpty && interactive !== false
+            ? isOver
+              ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2'
+              : 'h-px opacity-0'
+            : cn(
+                'min-w-[56px] h-[64px] sm:min-w-[80px] sm:h-[88px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
+                isEmpty ? 'border-dashed' : '',
+                isOver ? 'border-primary' : 'border-border'
+              ),
           className
         )}
       >
-        {isEmpty ? (
-          <span className="text-xs text-muted-foreground">{pile.name}</span>
-        ) : interactive !== false ? (
+        {!isEmpty && interactive !== false ? (
           <SortableContext items={[...faceUpCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
             <div className="flex items-center">
               {pile.cards.map((card, i) => (
@@ -210,29 +214,31 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           </div>
         )}
       </div>
-      <div className="flex gap-1">
-        <Button
-          variant="ghost"
-          className="h-7 w-7 p-0"
-          onClick={handleToggleFace}
-          title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-          aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
-        >
-          {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-        </Button>
-        {interactive !== false && (
+      {(!isEmpty || interactive === false) && (
+        <div className="flex gap-1">
           <Button
             variant="ghost"
             className="h-7 w-7 p-0"
-            onClick={handleSelectAll}
-            title="Select all cards in zone"
-            aria-label="Select all"
-            disabled={faceUpCards.length === 0}
+            onClick={handleToggleFace}
+            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+            aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
           >
-            <SquareCheck className="w-4 h-4" />
+            {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-        )}
-      </div>
+          {interactive !== false && (
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={handleSelectAll}
+              title="Select all cards in zone"
+              aria-label="Select all"
+              disabled={faceUpCards.length === 0}
+            >
+              <SquareCheck className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
