@@ -1,33 +1,24 @@
 ---
 phase: 24-spread-pile-multi-select-and-sort
 verified: 2026-05-17T10:32:00Z
-status: human_needed
+re_verified: 2026-05-18
+status: passed
 score: 13/13
 overrides_applied: 0
-human_verification:
-  - test: "Confirm communal zone renders as a 2-row grid with visible column boundaries"
-    expected: "Board shows 2 rows of 7 columns (4 on mobile) instead of the previous SpreadZone scroll row; cells have visible dashed borders when empty"
-    why_human: "CSS class presence is verifiable by grep but layout correctness (visible boundaries, correct column count, no overlapping cells) requires a browser"
-  - test: "Drag a card from one grid cell to another"
-    expected: "Card moves to the new cell position; MOVE_GRID_CARD dispatched (not MOVE_CARD); the source cell shows a dashed placeholder during drag"
-    why_human: "Intra-grid drag behavior with useDndMonitor suppression of MOVE_CARD cannot be fully exercised without a running browser and WebSocket connection"
-  - test: "Drop two cards on the same cell; verify stack badge"
-    expected: "Both cards occupy the cell; the top card is visible; a badge shows '×2'"
-    why_human: "Visual badge rendering and correct top-card display require a running game session"
-  - test: "Drag a card from the grid to the draw pile"
-    expected: "Card leaves the grid and lands in the draw pile; gridPositions entry for that card is deleted"
-    why_human: "External outbound drag from grid requires live WebSocket round-trip to confirm server-side cleanup"
-  - test: "Verify Eye/EyeOff face toggle button"
-    expected: "Button is present in the Play Area header; clicking it dispatches SET_PILE_FACE and changes card face-up state"
-    why_human: "Button click behavior and visual state change require a running browser"
+known_bugs:
+  - id: BUG-GRID-MOBILE-COLS
+    description: "Grid does not collapse to 4 columns on mobile (iPhone SE emulator). grid-cols-4 breakpoint is not triggering correctly. Desktop 7-column layout renders at all widths."
+    severity: minor
+    deferred_to: backlog
 ---
 
 # Phase 24: Play Area Grid Verification Report
 
 **Phase Goal:** The communal spread zone organizes cards into a structured grid so players can manage a shared play area with positional meaning
 **Verified:** 2026-05-17T10:32:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Re-verified:** 2026-05-18
+**Status:** passed
+**Re-verification:** Yes — human browser testing completed 2026-05-18
 
 ## Goal Achievement
 
@@ -110,51 +101,24 @@ No TBD/FIXME/XXX markers found in modified files. No stub return patterns. No ha
 |------|------|---------|----------|--------|
 | None | — | — | — | — |
 
-### Human Verification Required
+### Human Verification Results
 
-The automated checks all pass. These items require a running browser + game session.
+Browser testing completed 2026-05-18 (Firefox desktop + iPhone SE emulator).
 
-#### 1. 2-Row Grid Layout
+| # | Check | Result | Notes |
+|---|-------|--------|-------|
+| 1 | 2-row grid renders with visible cell boundaries | PASS | Desktop shows 2 rows × 7 cols with dashed borders on empty cells |
+| 2 | Intra-grid drag (MOVE_GRID_CARD) | PASS | Card moves to new cell; placeholder visible during drag |
+| 3 | Stack badge | PASS | `×2` badge renders correctly when two cards occupy a cell |
+| 4 | External→grid drop | PASS | Cards from hand/pile land in correct grid cell |
+| 5 | Grid→external drag | PASS | Card leaves grid and lands in draw pile |
+| 6 | Eye/EyeOff face toggle | PASS | Button present; cards flip face-up/down correctly |
 
-**Test:** Open the game, add cards to the communal play zone, observe the layout.
-**Expected:** Communal zone renders as 2 rows of 7 columns on desktop (4 on mobile), with visible column cell boundaries; cards snap to cells when dropped.
-**Why human:** CSS layout correctness and cell boundary visibility cannot be confirmed without rendering in a browser.
-
-#### 2. Intra-Grid Drag (MOVE_GRID_CARD)
-
-**Test:** Drag a card from one cell to another within the play area grid.
-**Expected:** Card moves to the new cell; source cell shows dashed placeholder during drag; target cell highlights with `border-primary`; MOVE_GRID_CARD (not MOVE_CARD) is dispatched.
-**Why human:** Drag interaction, visual placeholder, and action routing all require live browser and WebSocket session. The useDndMonitor suppression of MOVE_CARD cannot be confirmed without real drag events.
-
-#### 3. Stack Badge
-
-**Test:** Drop two or more cards onto the same grid cell.
-**Expected:** Top card is visible; a badge shows `×N` (e.g., `×2`) positioned at bottom-right.
-**Why human:** Multi-card stacking requires live game state with two card moves.
-
-#### 4. External→Grid Drop
-
-**Test:** Drag a card from the hand or draw pile and drop it onto a specific grid cell.
-**Expected:** Card lands in the targeted cell; subsequent display shows card in that cell; server-side gridPositions matches.
-**Why human:** External drop with toRow/toCol requires live drag + WebSocket round-trip.
-
-#### 5. Grid→External Drag
-
-**Test:** Drag a card from a grid cell to the draw pile.
-**Expected:** Card leaves the grid; gridPositions entry deleted on server; draw pile gains the card.
-**Why human:** Outbound drag requires live session and server-side state confirmation.
-
-#### 6. Face Toggle Button
-
-**Test:** Locate the Eye/EyeOff button in the Play Area header; click it.
-**Expected:** Button present below the grid; clicking dispatches SET_PILE_FACE; cards flip face-up or face-down.
-**Why human:** Button visibility and click behavior require a running browser.
+**Known bug (deferred):** Grid does not collapse to 4 columns on mobile (iPhone SE emulator in Firefox). The `grid-cols-4` breakpoint is not triggering — desktop 7-column layout renders at all widths. Tracked as backlog item for a future phase.
 
 ### Gaps Summary
 
-No gaps found. All 13 must-have truths are VERIFIED. Automated checks (187 tests, typecheck, grep checks) all pass. Phase goal is achievable — the server-side and frontend wiring are complete and substantive.
-
-The 6 human verification items require a running game session; they cover visual layout, drag interactions, and real-time WebSocket behavior that cannot be exercised programmatically.
+No blocking gaps. All 13 must-have truths VERIFIED. All 6 human checks PASS. One minor known bug deferred to backlog (mobile grid column count).
 
 ---
 
