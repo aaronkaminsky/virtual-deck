@@ -88,7 +88,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
 
         {mySpreadZone && (
-          <div className="flex-shrink-0 bg-card px-4 py-2">
+          <div className="flex-shrink-0 px-4 py-1">
             <SpreadZone
               pile={mySpreadZone}
               sendAction={sendAction}
