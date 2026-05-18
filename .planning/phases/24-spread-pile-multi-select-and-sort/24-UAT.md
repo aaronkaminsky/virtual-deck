@@ -62,41 +62,51 @@ blocked: 0
 ## Gaps
 
 - truth: "Grid has fixed width based on card dimensions — does not stretch to fill horizontal space"
-  status: failed
+  status: resolved
   reason: "User reported: layout stretches with the window; distance should be set instead of stretching to fill horizontal shape"
   severity: minor
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Grid container lacked w-fit; BoardView wrapper used flex-1 forcing stretch"
+  artifacts:
+    - path: "src/components/GridZone.tsx"
+      issue: "grid container missing w-fit"
+    - path: "src/components/BoardView.tsx"
+      issue: "wrapper div used flex-1 instead of shrink-0"
   missing: []
   debug_session: ""
 
 - truth: "Grid scrolls horizontally on narrow viewports rather than overlapping or clipping"
-  status: failed
+  status: resolved
   reason: "User reported: when window is too narrow, grid overlaps instead of scrolling"
   severity: minor
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Outer flex-col wrapper lacked overflow-x-auto"
+  artifacts:
+    - path: "src/components/GridZone.tsx"
+      issue: "outer wrapper missing overflow-x-auto"
   missing: []
   debug_session: ""
 
 - truth: "Cards are centered within each grid cell"
-  status: failed
+  status: resolved
   reason: "User reported: card is top-left instead of centered within each cell"
   severity: minor
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Cell div lacked flex items-center justify-center"
+  artifacts:
+    - path: "src/components/GridZone.tsx"
+      issue: "GridCell missing centering classes"
   missing: []
   debug_session: ""
 
-- truth: "Stack count badge shows just a number (e.g. '2'), matching pile badge style — no '×' prefix"
-  status: failed
-  reason: "User reported: badge should just be the number, no 'x' in front — same style as pile badge, only for count > 1"
+- truth: "Stack count badge shows just a number (e.g. '2'), matching pile badge style — no '×' prefix; positioned on card corner not cell edge"
+  status: resolved
+  reason: "User reported: badge should just be the number, no 'x' in front; badge was also too low/right, spilling into other zones"
   severity: minor
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Badge used ×N text and was positioned on the cell div; card is smaller than cell so -bottom-2 -right-2 on cell placed badge outside card area"
+  artifacts:
+    - path: "src/components/GridZone.tsx"
+      issue: "Badge text had × prefix; Badge was child of cell div instead of card wrapper div"
   missing: []
   debug_session: ""
