@@ -1,5 +1,27 @@
 # Milestones
 
+## v1.4 Table Polish (Shipped: 2026-05-18)
+
+**Phases completed:** 4 phases (22–25) · 10 plans
+**Timeline:** 2026-05-15 → 2026-05-18 (3 days)
+**LOC:** ~2,700+ TypeScript (stable; polish milestone added features without significant net growth)
+**Files changed:** 84 files, +10,571 / -231 lines
+
+**Key accomplishments:**
+
+1. Hand Reveal — Eye/EyeOff toggle in HandZone header; `SET_HAND_REVEALED` server action with `viewFor()` masking via `opponentRevealedHands`; real-time broadcast to all players; reconnect sees correct state via `onStart()` migration guard (HAND-01–04)
+2. Hand Sort — `SortMode` cycle button (original → by suit → by rank) dispatches `REORDER_HAND` with `skipSnapshot: true` so sort never enters undo stack; render-time visual sort via pure `sortCards()` and `buildSortDispatch()` exports (SORT-01)
+3. Select All — "Select All" button on PileZone (top card) and SpreadZone (all face-up cards); `handleSelectAll` atomically replaces selection state; existing multi-card drag dispatches the group (SELECT-01–03)
+4. Play Area Grid — 2-row communal `GridZone` with per-cell `useDroppable`, `MOVE_GRID_CARD` server action, intra-grid `useDndMonitor` dispatch, stack badge for multi-card cells, and face toggle; external→grid drops via optional `toRow`/`toCol` on `MOVE_CARD`/`PLAY_CARD_SET` (GRID-01)
+5. Layout & Visual Polish — empty zones show label only; PileZone restructured to header row above card; personal spread zones hidden when empty with drag-reveal; compact zone heights 64px/88px across SpreadZone, PileZone, GridCell; personal spread band padding reduced (POLISH-01–04, ZONE-01)
+
+**Known gaps at close:**
+- 999.39: Grid mobile column count — desktop 7-column layout renders at all widths; `grid-cols-4` breakpoint not triggering on iPhone SE
+
+**Archive:** `.planning/milestones/v1.4-ROADMAP.md` · `.planning/milestones/v1.4-REQUIREMENTS.md`
+
+---
+
 ## v1.3 Layout & UX Polish (Shipped: 2026-05-15)
 
 **Phases completed:** 8 phases, 24 plans, 27 tasks

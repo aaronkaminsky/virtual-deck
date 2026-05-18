@@ -206,6 +206,54 @@
 
 ---
 
+## Milestone: v1.4 — Table Polish
+
+**Shipped:** 2026-05-18
+**Phases:** 4 (22–25) | **Plans:** 10 | **Timeline:** 3 days (2026-05-15 → 2026-05-18)
+
+### What Was Built
+
+- Hand Reveal: Eye/EyeOff toggle in HandZone header; `SET_HAND_REVEALED` server action; `opponentRevealedHands` in `viewFor()`; `onStart()` migration guard for reconnects (HAND-01–04)
+- Hand Sort: `SortMode` cycle button dispatching `REORDER_HAND` with `skipSnapshot: true`; pure `sortCards()` and `buildSortDispatch()` exports; render-time visual sort (SORT-01)
+- Select All: `handleSelectAll()` in BoardDragLayer; Select All buttons on PileZone (top card) and SpreadZone (all face-up cards); existing multi-card drag dispatches the group (SELECT-01–03)
+- Play Area Grid: `GridZone` 2-row CSS grid with per-cell `useDroppable`; `MOVE_GRID_CARD` server action; intra-grid `useDndMonitor` dispatch; stack badge; face toggle; optional `toRow`/`toCol` on external drops (GRID-01)
+- Layout Polish: empty zones label-only; PileZone header row above card; personal spreads hidden when empty with drag-reveal; compact heights 64px/88px; personal spread band padding reduced (POLISH-01–04, ZONE-01)
+
+### What Worked
+
+- **3-day completion for a 4-feature milestone** — well-defined requirements and clear wave structure kept all phases focused. No scope creep, no gap-closure plans.
+- **Render-time sort (no re-dispatch on mount)** — the decision to apply `sortCards()` at render time with dispatch only on click avoided a subtle infinite-loop trap (useEffect re-dispatch after server response). Resolved in planning before a line was written.
+- **Separate `MOVE_GRID_CARD` action** — keeping the grid action separate from `REORDER_PILE_SPREAD` meant personal spread zones were untouched and the grid could validate `toRow`/`toCol` bounds independently.
+- **Wave-0 RED scaffolds for sort and selectAll** — writing failing tests first (23-01) before the UI implementation (23-02) confirmed the API contract before it was built. Both test suites flipped GREEN with zero regressions.
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md tracking was never updated during execution** — 9 of 14 requirements showed "Pending" at milestone close despite all phases being complete. The traceability table is supposed to update per-plan via `gsd-transition`. This was either skipped or the tool wasn't called. Corrected at archive time.
+- **No milestone audit performed** — previous milestones (v1.0, v1.2, v1.3) had formal audits. v1.4 skipped it. The work is clearly complete but the process gap means no formal integration or E2E coverage check was run.
+- **Phase 24 required two code review fix cycles** — grid MOVE_GRID_CARD had bounds validation gaps and a badge clipping issue caught in the code review pass. These were fixable but would have been cleaner if caught during planning (success criteria were specific but didn't enumerate the bounds edge case).
+
+### Patterns Established
+
+- `skipSnapshot?: boolean` on REORDER_HAND — sort is a display preference, not a game action; undo-excluding sort is the correct default for any ephemeral reorder operation
+- `opponentRevealedHands: Record<string, Card[]>` as a parallel collection to `opponentHandCounts` in `viewFor()` — mutually exclusive: a player is in exactly one
+- `handleSelectAll(cardIds, zone, zoneId)` atomically replaces selection state — the `atomically replaces` pattern prevents stale partial selections from mixing zones
+- Empty personal spread zones with `isOver || isDragging` drag-reveal — hides vertical whitespace by default while preserving drop affordance during drag
+
+### Key Lessons
+
+1. **Track requirements during execution, not at close.** Correcting 9 stale "Pending" entries at archive time added unnecessary work. `gsd-transition` should mark requirements Complete as each plan lands — defer-to-close produces stale docs that need reconciliation.
+2. **skipSnapshot is a pattern, not a one-off.** Any sort, filter, or display preference that dispatches through the game action system should default to `skipSnapshot: true`. The undo stack should only capture moves that a player would want to reverse.
+3. **Render-time sort > re-dispatch on mount.** When sort order is a client preference that round-trips through the server, applying it at render time avoids the subtle infinite re-render trap of a useEffect watching `cards` and re-dispatching. Decide in planning, not after the UI is built.
+4. **Grid zones need bounds validation as part of plan scope.** `toRow`/`toCol` bounds guards were caught in code review, not planned. Any action that takes row/col coordinates should include input validation in the plan's task list.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~5 estimated
+- Notable: Fastest milestone to date at 3 days; clean wave structure with no unplanned gap-closure plans
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -216,6 +264,7 @@
 | v1.1 | 5 (2 pre-work + 3) | 11 | Faster cadence; pre-work phase pattern introduced |
 | v1.2 | 5 | 14 (2 planned → 6 for Phase 14) | e2e infrastructure + game depth; gap-closure plans normalized |
 | v1.3 | 6 | 24 (18 planned → 24 with gap closure) | Layout redesign + responsive; code review cycles added; HUMAN-UAT as structured gate |
+| v1.4 | 4 | 10 (10 planned, 0 gap-closure) | Table polish + features; fastest milestone; Wave-0 RED scaffolds paid off |
 
 ### Cumulative Quality
 
@@ -225,6 +274,7 @@
 | v1.1 | ~114 passing | pointerWithin collision, deferred connect, joinState null-gate |
 | v1.2 | 130+ unit + 8 e2e | Playwright BrowserContext isolation, spread zones as Pile records, pre-validate-all batch pattern |
 | v1.3 | 165 unit + 8 e2e | SortableSentinel drop-to-end, selectionSource zone-scoped state, Wave 0 RED scaffolds, delta.x group-reorder direction |
+| v1.4 | 165+ unit + 8 e2e | skipSnapshot for display-pref actions, render-time sort, atomic handleSelectAll, grid-cell droppable routing |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -236,3 +286,5 @@
 6. Responsive layout is an iceberg — budget 3–5× planned scope when making an existing desktop-first UI responsive
 7. Code review catches structural correctness bugs that planning and testing miss — run it after every execution phase
 8. Any dnd-kit droppable detected by `closestCenter` must have real layout dimensions — zero-size sentinels have ~0.5px target surface
+9. Track requirements during execution, not at close — stale "Pending" entries at archive time are wasted reconciliation work; `gsd-transition` should mark requirements Complete as each plan lands
+10. `skipSnapshot: true` is the correct default for any sort/filter/display-preference action that round-trips through the game action system
