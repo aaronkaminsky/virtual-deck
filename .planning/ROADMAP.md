@@ -72,9 +72,9 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 ### v1.4 Table Polish (Phases 22–25)
 
-- [ ] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player
-- [ ] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group
-- [ ] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking
+- [x] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
+- [x] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group (completed 2026-05-17)
+- [x] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking (completed 2026-05-17)
 - [ ] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty
 
 ## Phase Details
@@ -88,7 +88,17 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   2. The same player can click the toggle again and their cards return to hidden (backs only) for other players
   3. A player who joins or reconnects mid-session sees the correct revealed/hidden state for every already-connected player
   4. The revealing player's own view is unchanged — they always see their own card faces
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
+
+**Wave 1**
+- [x] 22-01-PLAN.md — Types, server logic, and test suite (SET_HAND_REVEALED handler, viewFor masking, migration, RESET_TABLE extension)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 22-02-PLAN.md — UI components (HandZone toggle button and ring, OpponentHand revealed path, BoardView prop threading)
+
+**Cross-cutting constraints:**
+- `handRevealed` state is owned by the server only — clients read it through `viewFor()`, never write it directly
+- `opponentHandCounts` and `opponentRevealedHands` are mutually exclusive in `viewFor()` — a player appears in exactly one
 **UI hint**: yes
 
 ### Phase 23: Hand Sort + Select All
@@ -101,7 +111,21 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   3. A "Select All" button on a pile selects all cards in it, ready for a drag
   4. A "Select All" button on a spread zone selects all cards in it, ready for a drag
   5. After "Select All", the player can drag the selection to any valid drop target (pile, hand, or spread zone) and all cards move
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
+
+**Wave 1** *(parallel — no file overlap)*
+- [x] 23-01-PLAN.md — Server-side: add `skipSnapshot?: boolean` to `REORDER_HAND` (so sort does not enter undo stack), extend reorderUndo tests, create Wave-0 scaffolds for `tests/handSort.test.ts` and `tests/selectAll.test.ts`
+- [x] 23-03-PLAN.md — Select All UI: `handleSelectAll` in BoardDragLayer, prop threading through BoardView, Select All buttons in PileZone (top-card-only) and interactive SpreadZone (all face-up cards), passing PLAY_CARD_SET coverage in `tests/selectAll.test.ts`
+
+**Wave 2** *(blocked on Wave 1 — Plan 02 imports the extended REORDER_HAND type from Plan 01)*
+- [x] 23-02-PLAN.md — Hand sort UI: `SortMode` cycle button in HandZone, exported `sortCards`/`buildSortDispatch`, render-time visual sort, dispatch via REORDER_HAND with `skipSnapshot: true`, passing assertions in `tests/handSort.test.ts`
+
+**Cross-cutting decisions** (resolved by planner):
+- RESEARCH.md OQ1 → `skipSnapshot?: boolean` added to `REORDER_HAND` so SORT-01 does not pollute the undo stack (REQUIREMENTS.md requirement)
+- RESEARCH.md OQ2 → render-time visual sort (no auto-redispatch useEffect); dispatch fires on click only; reconnect sees last sorted order from server
+- RESEARCH.md OQ3 → Select All on a pile selects the top card only (Pitfall 4: interior masked cards have no client-visible id; `PLAY_CARD_SET` would reject)
+- Drag-reorder while sortMode !== 'original' clears sortMode back to 'original' (drag is undoable + implies manual order intent)
+
 **UI hint**: yes
 
 ### Phase 24: Play Area Grid
@@ -113,7 +137,20 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
   2. Multiple cards can occupy the same cell (stacked); the stack is visually distinguishable from a single card
   3. A player can drag a card from one cell to another cell within the grid
   4. A player can drag a card from the grid to a pile or hand, and vice versa, using existing drag targets
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
+
+**Wave 1**
+- [x] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
+
+**Wave 2** *(blocked on Wave 1 — GridZone uses types and server action from Plan 01)*
+- [x] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
+
+**Cross-cutting decisions** (resolved by planner):
+- D-05: MOVE_GRID_CARD is a separate action from REORDER_PILE_SPREAD — personal spread zones unchanged
+- D-06: External→grid drops extend MOVE_CARD/PLAY_CARD_SET with optional toRow/toCol fields
+- Grid cell droppable data.toId is the pile ID ('play'), not the cell ID — ensures isIntraSpreadReorder in BoardDragLayer correctly suppresses MOVE_CARD for intra-grid drags
+- Grid cell IDs prefixed grid-cell- (not pile-) to land in new collision bucket using pointerWithin
+
 **UI hint**: yes
 
 ### Phase 25: Layout & Visual Polish
@@ -133,9 +170,9 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Hand Reveal | 0/? | Not started | - |
-| 23. Hand Sort + Select All | 0/? | Not started | - |
-| 24. Play Area Grid | 0/? | Not started | - |
+| 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
+| 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
+| 24. Play Area Grid | 2/2 | Complete   | 2026-05-17 |
 | 25. Layout & Visual Polish | 0/? | Not started | - |
 
 ## Backlog

@@ -1,10 +1,65 @@
+import { useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Card, ClientAction } from '@/shared/types';
+import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
+import type { Card, ClientAction, Suit, Rank } from '@/shared/types';
+import { Button } from '@/components/ui/button';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
+
+// --- Sort mode types and constants ---
+
+export type SortMode = 'original' | 'bySuit' | 'byRank';
+
+const SORT_CYCLE: SortMode[] = ['original', 'bySuit', 'byRank'];
+
+const SUIT_ORDER: Suit[] = ['spades', 'clubs', 'diamonds', 'hearts'];
+
+const RANK_ORDER: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+// --- Pure sort helpers (exported for tests) ---
+
+export function sortCards(cards: Card[], mode: 'bySuit' | 'byRank'): Card[] {
+  return [...cards].sort((a, b) => {
+    if (mode === 'bySuit') {
+      const suitDiff = SUIT_ORDER.indexOf(a.suit) - SUIT_ORDER.indexOf(b.suit);
+      if (suitDiff !== 0) return suitDiff;
+      return RANK_ORDER.indexOf(a.rank) - RANK_ORDER.indexOf(b.rank);
+    } else {
+      // byRank: rank primary, suit secondary
+      const rankDiff = RANK_ORDER.indexOf(a.rank) - RANK_ORDER.indexOf(b.rank);
+      if (rankDiff !== 0) return rankDiff;
+      return SUIT_ORDER.indexOf(a.suit) - SUIT_ORDER.indexOf(b.suit);
+    }
+  });
+}
+
+export function buildSortDispatch(cards: Card[], nextMode: SortMode): ClientAction | null {
+  if (nextMode === 'original') return null;
+  return {
+    type: 'REORDER_HAND',
+    orderedCardIds: sortCards(cards, nextMode).map(c => c.id),
+    skipSnapshot: true,
+  };
+}
+
+// --- Tooltip copy per D-06 ---
+
+const SORT_TITLES: Record<SortMode, string> = {
+  original: 'Sort: Original order — click for By Suit',
+  bySuit: 'Sort: By suit (♠ ♣ ♦ ♥) — click for By Rank',
+  byRank: 'Sort: By rank (2→A) — click for Original order',
+};
+
+const SORT_ARIA_LABELS: Record<SortMode, string> = {
+  original: 'Sort hand — current: Original order',
+  bySuit: 'Sort hand — current: By suit',
+  byRank: 'Sort hand — current: By rank',
+};
+
+// --- Sub-components ---
 
 interface SortableHandCardProps {
   card: Card;
@@ -74,14 +129,18 @@ interface HandZoneProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  isRevealed: boolean;
+  onToggleReveal: () => void;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
   });
+
+  const [sortMode, setSortMode] = useState<SortMode>('original');
 
   const { active, over } = useDndContext();
   const handCardIds = new Set(cards.map(c => c.id));
@@ -89,6 +148,20 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
     active != null &&
     over != null &&
     (over.id === 'hand' || handCardIds.has(String(over.id)));
+
+  // Render-time visual sort: applied every render when a non-original mode is active.
+  // This keeps the hand sorted visually without re-dispatching on every server update.
+  const displayedCards = sortMode === 'original' ? cards : sortCards(cards, sortMode);
+
+  function handleSort() {
+    const nextMode = SORT_CYCLE[(SORT_CYCLE.indexOf(sortMode) + 1) % SORT_CYCLE.length];
+    setSortMode(nextMode);
+    // Always derive dispatch from canonical server order (cards), not the visual order.
+    const dispatch = buildSortDispatch(cards, nextMode);
+    if (dispatch !== null) {
+      sendAction(dispatch);
+    }
+  }
 
   useDndMonitor({
     onDragEnd(event) {
@@ -111,14 +184,14 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         let reordered: Card[];
         if (isGroupReorder) {
           // D-06: (1) filter selected out, (2) find over-index in remainder, (3) splice selected at that index.
-          const selected = cards.filter(c => selectedIds.has(c.id));
-          const remainder = cards.filter(c => !selectedIds.has(c.id));
+          // Operate on displayedCards so indices match what the user sees.
+          const selected = displayedCards.filter(c => selectedIds.has(c.id));
+          const remainder = displayedCards.filter(c => !selectedIds.has(c.id));
           // Sentinel or unknown → append to end.
           // Direction heuristic: compare the dragged card's original index with the over card's original index.
           // Dragging rightward (originalDragIdx < originalOverIdx) → insert AFTER over; leftward → insert BEFORE.
-          // This is stable regardless of cumulative pointer displacement (unlike event.delta.x).
-          const originalDragIdx = cards.findIndex(c => c.id === draggedId);
-          const originalOverIdx = cards.findIndex(c => c.id === String(over.id));
+          const originalDragIdx = displayedCards.findIndex(c => c.id === draggedId);
+          const originalOverIdx = displayedCards.findIndex(c => c.id === String(over.id));
           const overIdx = String(over.id) === sentinelId
             ? -1
             : remainder.findIndex(c => c.id === String(over.id));
@@ -130,13 +203,20 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           remainder.splice(insertAt, 0, ...selected);
           reordered = remainder;
         } else {
-          const activeIdx = cards.findIndex(c => c.id === draggedId);
+          // Operate on displayedCards so drag indices match visual positions.
+          const activeIdx = displayedCards.findIndex(c => c.id === draggedId);
           // Sentinel drop → move dragged card to the last position.
           const overIdx = String(over.id) === sentinelId
-            ? cards.length - 1
-            : cards.findIndex(c => c.id === String(over.id));
+            ? displayedCards.length - 1
+            : displayedCards.findIndex(c => c.id === String(over.id));
           if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
-          reordered = arrayMove(cards, activeIdx, overIdx);
+          reordered = arrayMove(displayedCards, activeIdx, overIdx);
+        }
+        // Drag-reorder: deliberate choice to clear sortMode so the manual drag order wins.
+        // If we left sortMode active, the next render would re-apply the visual sort on top
+        // of the newly dispatched server order, making the drag appear to "undo" itself.
+        if (sortMode !== 'original') {
+          setSortMode('original');
         }
         sendAction({ type: 'REORDER_HAND', orderedCardIds: reordered.map(c => c.id) });
       }
@@ -153,17 +233,37 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             {selectedIds.size} selected
           </span>
         )}
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={onToggleReveal}
+          title={isRevealed ? 'Hide hand from opponents' : 'Show hand to opponents'}
+          aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
+          aria-pressed={isRevealed}
+        >
+          {isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={handleSort}
+          title={SORT_TITLES[sortMode]}
+          aria-label={SORT_ARIA_LABELS[sortMode]}
+        >
+          <ArrowUpDown className={cn('w-4 h-4', sortMode !== 'original' ? 'text-primary' : 'text-muted-foreground')} />
+        </Button>
       </div>
       <div
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
           'h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card',
-          isOver ? 'border-t-2 border-primary' : ''
+          isOver ? 'border-t-2 border-primary' : '',
+          isRevealed ? 'ring-1 ring-primary/50 ring-inset' : ''
         )}
       >
-        <SortableContext items={[...cards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
-          {cards.map((card, index) => (
+        <SortableContext items={[...displayedCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
+          {displayedCards.map((card, index) => (
             <SortableHandCard
               key={card.id}
               card={card}

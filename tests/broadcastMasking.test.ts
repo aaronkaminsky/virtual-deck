@@ -11,8 +11,8 @@ describe("broadcastState masking via viewFor", () => {
     const mockRoom = makeMockRoom(connections);
     const room = new GameRoom(mockRoom);
 
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
     room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-s")];
     room.gameState.hands["player-2"] = [];
 
@@ -38,8 +38,8 @@ describe("broadcastState masking via viewFor", () => {
     const mockRoom = makeMockRoom(connections);
     const room = new GameRoom(mockRoom);
 
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
     room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-s")];
     room.gameState.hands["player-2"] = [];
 

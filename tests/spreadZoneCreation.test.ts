@@ -22,7 +22,7 @@ function makeOldShapeState(): GameState {
   return {
     roomId: "test-room",
     phase: "playing",
-    players: [{ id: "alice", connected: true, displayName: "Alice" }],
+    players: [{ id: "alice", connected: true, displayName: "Alice", handRevealed: false }],
     hands: { alice: [] },
     piles: [
       // region and ownerId INTENTIONALLY absent — onStart migration must add them
@@ -38,7 +38,7 @@ function makeTestState(): GameState {
   return {
     roomId: "test-room",
     phase: "playing",
-    players: [{ id: "player-1", connected: true, displayName: "Alice" }],
+    players: [{ id: "player-1", connected: true, displayName: "Alice", handRevealed: false }],
     hands: { "player-1": [] },
     piles: [
       { id: "draw", name: "Draw", cards: [], faceUp: false, region: "pile", ownerId: null },
@@ -83,7 +83,7 @@ describe("spread zone creation", () => {
 
   it("viewFor returns empty string myPlayZoneId for null playerToken", () => {
     const state = makeTestState();
-    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
+    expect(() => viewFor(state, null as unknown as string)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("onConnect creates personal spread zone for new player", async () => {

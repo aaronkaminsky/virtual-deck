@@ -41,8 +41,8 @@ describe("RESET_TABLE handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
     room.gameState.hands["player-1"] = [makeCard("A-s", true), makeCard("K-h", true)];
     room.gameState.hands["player-2"] = [makeCard("Q-d", true)];
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
@@ -123,5 +123,15 @@ describe("RESET_TABLE handler", () => {
     await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
 
     expect(room.gameState.undoSnapshots).toEqual([]);
+  });
+
+  it("clears handRevealed for all players on RESET_TABLE (D-07)", async () => {
+    room.gameState.players.find(p => p.id === "player-1")!.handRevealed = true;
+    room.gameState.players.find(p => p.id === "player-2")!.handRevealed = true;
+
+    await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
+
+    expect(room.gameState.players.find(p => p.id === "player-1")?.handRevealed).toBe(false);
+    expect(room.gameState.players.find(p => p.id === "player-2")?.handRevealed).toBe(false);
   });
 });

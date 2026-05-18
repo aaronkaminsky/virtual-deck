@@ -11,9 +11,9 @@ function makeTestState(): GameState {
     roomId: "test-room",
     phase: "playing",
     players: [
-      { id: "player-1", connected: true, displayName: "" },
-      { id: "player-2", connected: true, displayName: "" },
-      { id: "player-3", connected: true, displayName: "" },
+      { id: "player-1", connected: true, displayName: "", handRevealed: false },
+      { id: "player-2", connected: true, displayName: "", handRevealed: false },
+      { id: "player-3", connected: true, displayName: "", handRevealed: false },
     ],
     hands: {
       "player-1": [makeCard("A-s"), makeCard("K-s")],
@@ -66,7 +66,7 @@ describe("viewFor", () => {
 
   it("returns empty myHand for null playerToken", () => {
     const state = makeTestState();
-    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
+    expect(() => viewFor(state, null as unknown as string)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("returns empty myHand for unknown playerToken", () => {
@@ -90,7 +90,7 @@ describe("viewFor", () => {
 
   it("returns canUndo false for null playerToken", () => {
     const state = makeTestState();
-    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
+    expect(() => viewFor(state, null as unknown as string)).toThrow("viewFor requires a non-null playerToken");
   });
 
   // Regression: viewFor used to omit myPlayerId from ClientGameState.
@@ -106,7 +106,7 @@ describe("viewFor", () => {
 
   it("regression: myPlayerId is empty string for null playerToken", () => {
     const state = makeTestState();
-    expect(() => viewFor(state, null)).toThrow("viewFor requires a non-null playerToken");
+    expect(() => viewFor(state, null as unknown as string)).toThrow("viewFor requires a non-null playerToken");
   });
 
   it("strips id/suit/rank from face-down pile cards except the top card", () => {

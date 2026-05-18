@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: planning
-last_updated: "2026-05-15T13:43:00.135Z"
-last_activity: 2026-05-15
+status: executing
+stopped_at: Phase 24 planned — 2 plans ready to execute
+last_updated: "2026-05-17T17:06:14.173Z"
+last_activity: 2026-05-17 -- Phase 24 execution started
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 4
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-15)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Planning next milestone (v1.4)
+**Current focus:** Phase 24 — spread-pile-multi-select-and-sort
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-15 — Milestone v1.4 started
+Phase: 24 (spread-pile-multi-select-and-sort) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 24
+Last activity: 2026-05-17 -- Phase 24 execution started
 
 ## Performance Metrics
 
@@ -62,6 +63,7 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260514-r8m | Fix 5 failing viewFor tests (null playerToken + undo cap) | 2026-05-14 | 989bafb | [260514-r8m](./quick/260514-r8m-fix-5-failing-viewfor-tests-in-tests-vie/) |
+| Phase 23 P02 | 13 | 2 tasks | 3 files |
 
 ## Deferred Items
 
@@ -77,6 +79,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-11T16:29:50.349Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-phase-14-live-session-verification/21-CONTEXT.md
+Last session: 2026-05-17
+Stopped at: Phase 24 planned — 2 plans ready to execute
+Resume file: .planning/phases/24-spread-pile-multi-select-and-sort/24-01-PLAN.md

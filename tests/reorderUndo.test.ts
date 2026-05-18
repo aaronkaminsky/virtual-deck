@@ -10,7 +10,7 @@ describe("REORDER_PILE_SPREAD undo", () => {
   beforeEach(() => {
     room = new GameRoom(makeMockRoom());
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -51,7 +51,7 @@ describe("REORDER_HAND undo", () => {
   beforeEach(() => {
     room = new GameRoom(makeMockRoom());
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "" });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -78,5 +78,34 @@ describe("REORDER_HAND undo", () => {
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
     expect(room.gameState.hands["player-1"].map(c => c.id)).toEqual(["A-s", "K-h", "Q-d"]);
+  });
+
+  it("does NOT take a snapshot when skipSnapshot is true", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h"), makeCard("Q-d")];
+
+    await room.onMessage(
+      JSON.stringify({ type: "REORDER_HAND", orderedCardIds: ["K-h", "A-s", "Q-d"], skipSnapshot: true }),
+      sender,
+    );
+
+    expect(room.gameState.hands["player-1"].map(c => c.id)).toEqual(["K-h", "A-s", "Q-d"]);
+    expect(room.gameState.undoSnapshots).toHaveLength(0);
+    expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
+  });
+
+  it("still emits INVALID_REORDER and does not snapshot when skipSnapshot is true with bad ids", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s")];
+
+    await room.onMessage(
+      JSON.stringify({ type: "REORDER_HAND", orderedCardIds: ["X-y"], skipSnapshot: true }),
+      sender,
+    );
+
+    const errorCalls = sender.send.mock.calls.map((c: string[]) => c[0]);
+    const errors = errorCalls.map((c: string) => JSON.parse(c)).filter((e: { type: string }) => e.type === "ERROR");
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_REORDER");
+    expect(room.gameState.undoSnapshots).toHaveLength(0);
+    expect(room.gameState.hands["player-1"].map((c: { id: string }) => c.id)).toEqual(["A-s"]);
   });
 });

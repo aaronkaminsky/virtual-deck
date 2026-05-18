@@ -13,7 +13,7 @@ Requirements for v1.4 Table Polish. Each maps to roadmap phases.
 - [ ] **HAND-02**: Player can toggle their hand face-down to re-hide their cards
 - [ ] **HAND-03**: Hand revealed/hidden state is broadcast in real time to all connected players
 - [ ] **HAND-04**: Hand revealed state is persisted in server room state so reconnecting players see the correct current state
-- [ ] **SORT-01**: Player can cycle through hand sort modes: original order, by suit, by rank; sort persisted server-side via REORDER_HAND (does not enter the undo stack)
+- [x] **SORT-01**: Player can cycle through hand sort modes: original order, by suit, by rank; sort persisted server-side via REORDER_HAND (does not enter the undo stack)
 
 ### Select All
 
@@ -62,7 +62,7 @@ Deferred to future milestones.
 | HAND-02 | Phase 22 | Pending |
 | HAND-03 | Phase 22 | Pending |
 | HAND-04 | Phase 22 | Pending |
-| SORT-01 | Phase 23 | Pending |
+| SORT-01 | Phase 23 | Complete |
 | SELECT-01 | Phase 23 | Pending |
 | SELECT-02 | Phase 23 | Pending |
 | SELECT-03 | Phase 23 | Pending |

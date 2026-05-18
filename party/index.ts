@@ -61,20 +61,25 @@ export function takeSnapshot(state: GameState): void {
   }
 }
 
-export function viewFor(state: GameState, playerToken: string | null): ClientGameState {
-  if (playerToken === null) {
-    throw new Error("viewFor requires a non-null playerToken");
-  }
+export function viewFor(state: GameState, playerToken: string): ClientGameState {
+  if (!playerToken) throw new Error("viewFor requires a non-null playerToken");
   return {
     roomId: state.roomId,
     phase: state.phase,
     players: state.players,
-    myPlayerId: playerToken ?? "",
-    myHand: playerToken ? (state.hands[playerToken] ?? []) : [],
+    myPlayerId: playerToken,
+    myHand: state.hands[playerToken] ?? [],
+    myHandRevealed: state.players.find(p => p.id === playerToken)?.handRevealed ?? false,
     opponentHandCounts: Object.fromEntries(
       Object.entries(state.hands)
         .filter(([token]) => token !== playerToken)
+        .filter(([token]) => !state.players.find(p => p.id === token)?.handRevealed)
         .map(([token, cards]) => [token, cards.length])
+    ),
+    opponentRevealedHands: Object.fromEntries(
+      Object.entries(state.hands)
+        .filter(([token]) => token !== playerToken)
+        .filter(([token]) => state.players.find(p => p.id === token)?.handRevealed)
     ),
     piles: state.piles.map(pile => ({
       id: pile.id,
@@ -82,6 +87,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       faceUp: pile.faceUp,
       region: pile.region,
       ownerId: pile.ownerId,
+      gridPositions: pile.gridPositions, // Phase 24: Pitfall 4 — must be explicit
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;
@@ -89,7 +95,7 @@ export function viewFor(state: GameState, playerToken: string | null): ClientGam
       }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
-    myPlayZoneId: playerToken ? `spread-${playerToken}` : "",
+    myPlayZoneId: `spread-${playerToken}`,
   };
 }
 
@@ -156,6 +162,22 @@ export default class GameRoom implements Party.Server {
         ownerId: null,
       });
     }
+    // Migrate state: Phase 22 adds handRevealed to Player
+    for (const player of this.gameState.players) {
+      if (!('handRevealed' in player)) {
+        (player as any).handRevealed = false;
+      }
+    }
+    // Migrate state: Phase 24 — initialize gridPositions for orphaned cards in 'play' pile
+    const playPileForMigration = this.gameState.piles.find(p => p.id === 'play');
+    if (playPileForMigration && playPileForMigration.cards.length > 0 && !playPileForMigration.gridPositions) {
+      playPileForMigration.gridPositions = {};
+      playPileForMigration.cards.forEach((card, i) => {
+        const row = Math.floor(i / 7) % 2;
+        const col = i % 7;
+        playPileForMigration.gridPositions![card.id] = { row, col };
+      });
+    }
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {
@@ -173,7 +195,7 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true, displayName });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);
@@ -301,6 +323,29 @@ export default class GameRoom implements Party.Server {
         } else {
           dest.push(card);
         }
+        // Assign grid position when card enters the play grid (D-06)
+        if (toZone === 'pile') {
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          if (destPile?.id === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+            const MAX_ROWS = 2;
+            const MAX_COLS = 7;
+            if (
+              !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
+              !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
+            ) {
+              sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
+                message: "toRow/toCol out of range" } satisfies ServerEvent));
+              break;
+            }
+            if (!destPile.gridPositions) destPile.gridPositions = {};
+            destPile.gridPositions[cardId] = { row: action.toRow, col: action.toCol };
+          }
+        }
+        // Clean up gridPositions when card leaves a pile (Pitfall 2)
+        if (fromZone === 'pile') {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId);
+          if (srcPile?.gridPositions) delete srcPile.gridPositions[cardId];
+        }
         break;
       }
       case "REORDER_HAND": {
@@ -318,7 +363,9 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState);
+        if (!action.skipSnapshot) {
+          takeSnapshot(this.gameState);
+        }
         const cardMap = new Map(hand.map(c => [c.id, c]));
         this.gameState.hands[senderToken] = action.orderedCardIds.map(id => cardMap.get(id)!);
         break;
@@ -348,6 +395,33 @@ export default class GameRoom implements Party.Server {
         takeSnapshot(this.gameState);
         const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
         spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
+        break;
+      }
+      case "MOVE_GRID_CARD": {
+        const { cardId, pileId, toRow, toCol } = action;
+        const MAX_ROWS = 2;
+        const MAX_COLS = 7;
+        if (!Number.isInteger(toRow) || toRow < 0 || toRow >= MAX_ROWS) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toRow out of range` } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isInteger(toCol) || toCol < 0 || toCol >= MAX_COLS) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toCol out of range` } satisfies ServerEvent));
+          break;
+        }
+        const gridPile = this.gameState.piles.find(p => p.id === pileId && p.region === "spread");
+        if (!gridPile) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "PILE_NOT_FOUND", message: `No spread pile found with id: ${pileId}` } satisfies ServerEvent));
+          break;
+        }
+        const cardExists = gridPile.cards.some(c => c.id === cardId);
+        if (!cardExists) {
+          sender.send(JSON.stringify({ type: "ERROR", code: "CARD_NOT_IN_SOURCE", message: `Card ${cardId} not found in pile ${pileId}` } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        if (!gridPile.gridPositions) gridPile.gridPositions = {};
+        gridPile.gridPositions[cardId] = { row: toRow, col: toCol };
         break;
       }
       case "SET_PILE_FACE": {
@@ -486,6 +560,17 @@ export default class GameRoom implements Party.Server {
         this.broadcastShuffleEvent(action.pileId);   // D-05, D-07: broadcast to all clients
         break;
       }
+      case "SET_HAND_REVEALED": {
+        // V4 Access Control: use senderToken (from connection state) — never trust message body for identity
+        const revealPlayer = this.gameState.players.find(p => p.id === senderToken);
+        if (revealPlayer) {
+          // V5 Input Validation: strict boolean equality — string "true", 1, or other truthy non-booleans resolve to false
+          const isRevealed = action.revealed === true;
+          revealPlayer.handRevealed = isRevealed;
+        }
+        // Intentionally no takeSnapshot() — reveal state is not undoable (consistent with RESET_TABLE)
+        break;
+      }
       case "RESET_TABLE": {
         // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
         // Undo history is cleared so no pre-reset state can be restored.
@@ -501,6 +586,7 @@ export default class GameRoom implements Party.Server {
         for (const pile of this.gameState.piles) {
           if (pile.id !== "draw") {
             resetDrawPile.cards.push(...pile.cards.splice(0));
+            if (pile.gridPositions) pile.gridPositions = {};  // Pitfall 3: RESET_TABLE must clear gridPositions
           }
         }
         resetDrawPile.faceUp = false;
@@ -508,6 +594,10 @@ export default class GameRoom implements Party.Server {
         resetDrawPile.cards = shuffle(resetDrawPile.cards);
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
+        // D-07: clear all reveal states on reset
+        for (const player of this.gameState.players) {
+          player.handRevealed = false;
+        }
         break;
       }
       case "UNDO_MOVE": {
@@ -643,6 +733,35 @@ export default class GameRoom implements Party.Server {
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
         dest.push(...cardsToPlay);
+        // Assign grid positions when cards land in the play grid (mirrors MOVE_CARD D-06)
+        if (toZone === 'pile' && toId === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
+          const MAX_ROWS = 2;
+          const MAX_COLS = 7;
+          if (
+            !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
+            !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
+          ) {
+            sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
+              message: "toRow/toCol out of range" } satisfies ServerEvent));
+            break;
+          }
+          const destPile = this.gameState.piles.find(p => p.id === toId);
+          if (destPile) {
+            if (!destPile.gridPositions) destPile.gridPositions = {};
+            for (const cId of cardIds) {
+              destPile.gridPositions[cId] = { row: action.toRow, col: action.toCol };
+            }
+          }
+        }
+        // Clean up gridPositions when cards leave a pile (Pitfall 2)
+        if (fromZone === 'pile') {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId);
+          if (srcPile?.gridPositions) {
+            for (const cId of cardIds) {
+              delete srcPile.gridPositions[cId];
+            }
+          }
+        }
         break;
       }
       case "PING":
