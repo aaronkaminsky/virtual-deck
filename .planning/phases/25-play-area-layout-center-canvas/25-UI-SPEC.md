@@ -45,7 +45,7 @@ Declared values (multiples of 4):
 Exceptions:
 - Card zone heights are not on the 8-point scale by design (card aspect ratio dictates them). Declared explicitly:
   - Mobile pile/spread card height: 64px (reduced from 79px per POLISH-04, ~19% reduction)
-  - Desktop pile/spread card height: 88px (reduced from 112px per POLISH-04, ~21% reduction)
+  - Desktop pile/spread card height: 90px (reduced from 112px per POLISH-04, ~20% reduction)
   - Mobile pile width: 56px (unchanged)
   - Desktop pile width: 80px (unchanged)
 - Slim drop-target strip height (ZONE-01): 40px mobile / 56px desktop (approximately half card height, per CONTEXT.md D-07)
@@ -115,7 +115,7 @@ Accent (`--primary`, amber) is reserved for **exactly these elements**:
 
 ### POLISH-04 — Compact zone heights
 
-- Card zone height tokens: mobile `h-[64px]` (was `h-[79px]`), desktop `sm:h-[112px]` → `sm:h-[88px]`.
+- Card zone height tokens: mobile `h-[64px]` (was `h-[79px]`), desktop `sm:h-[112px]` → `sm:h-[90px]`.
 - Applies to the `className` on the droppable `div` inside `PileZone.tsx` (line 54) and `SpreadZone.tsx` (line 169).
 - `GridZone.tsx` must be audited for matching height changes to stay proportional (executor must check its height declarations).
 - Inter-zone gap in the center flex row (`gap-4` in BoardView.tsx line 74) is unchanged — only zone heights contract.
@@ -127,7 +127,7 @@ Accent (`--primary`, amber) is reserved for **exactly these elements**:
 - **Visual:** Slim strip uses `border border-dashed border-primary rounded-lg` — same visual language as empty pile drop targets when `isOver`.
 - **Implementation note:** Zero-height collapse may cause dnd-kit proximity detection to fail. The planner must verify collision detection against a `height: 0` node and propose a fallback (e.g., `h-px opacity-0` with a larger invisible hit area) if needed.
 - **Not triggered by:** drag start (CONTEXT.md D-05/D-06 — the strip only appears on `isOver`, not during a drag in general).
-- **When zone has cards:** Normal `SpreadZone` renders at full `h-[64px] sm:h-[88px]` — collapse logic applies only when `isEmpty === true`.
+- **When zone has cards:** Normal `SpreadZone` renders at full `h-[64px] sm:h-[90px]` — collapse logic applies only when `isEmpty === true`.
 
 ---
 
