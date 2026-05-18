@@ -68,27 +68,26 @@ function GridCell({ row, col, pileId, cellCards, draggingCardId, pileIsFaceUp }:
     <div
       ref={setDropRef}
       className={cn(
-        'relative w-14 h-[79px] sm:w-20 sm:h-[112px] border rounded-md bg-secondary',
-        isOver ? 'border-primary' : 'border-border',
-        topCard === null ? 'border-dashed' : '',
-        cellCards.length > 1 ? 'z-10' : ''
+        'relative w-14 h-[79px] sm:w-20 sm:h-[112px] flex items-center justify-center',
+        isOver ? 'bg-primary/20' : 'bg-secondary'
       )}
     >
       {showPlaceholder && (
-        <div className="absolute inset-0 rounded-md border-2 border-dashed border-muted-foreground" />
+        <div className="absolute inset-0 border-2 border-dashed border-muted-foreground" />
       )}
       {showCard && topCard !== null && (
         <div
           ref={setDragRef}
           style={cardStyle}
+          className="relative"
           {...listeners}
           {...attributes}
         >
           {cardIsFaceUp ? <CardFace card={topCard} /> : <CardBack />}
+          {cellCards.length > 1 && (
+            <Badge className="absolute -bottom-2 -right-2 z-10">{cellCards.length}</Badge>
+          )}
         </div>
-      )}
-      {cellCards.length > 1 && (
-        <Badge className="absolute -bottom-2 -right-2">×{cellCards.length}</Badge>
       )}
     </div>
   );
@@ -131,11 +130,11 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 overflow-x-auto">
       <div className="flex items-center">
         <span className="text-xs text-muted-foreground">Play Area</span>
       </div>
-      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-x-0.5 gap-y-4">
+      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
         {Array.from({ length: ROWS }, (_, row) =>
           Array.from({ length: COLS }, (_, col) => (
             <GridCell
