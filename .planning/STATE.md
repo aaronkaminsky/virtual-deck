@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: completed
+status: "v1.4 shipped — PR #27"
 stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-05-18T04:32:37.309Z"
-last_activity: 2026-05-18 -- Phase 25 marked complete
+last_updated: "2026-05-18T04:36:26.200Z"
+last_activity: 2026-05-18
 progress:
   total_phases: 4
   completed_phases: 4
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-05-15)
 Phase: 25 — COMPLETE
 Plan: 3 of 3
 Plans: 3 (Wave 1 — all parallel)
-Status: Phase 25 complete
-Last activity: 2026-05-18 -- Phase 25 marked complete
+Status: v1.4 shipped — PR #27
+Last activity: 2026-05-18
 
 ## Performance Metrics
 
