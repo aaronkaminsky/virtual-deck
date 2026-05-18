@@ -70,7 +70,8 @@ function GridCell({ row, col, pileId, cellCards, draggingCardId, pileIsFaceUp }:
       className={cn(
         'relative w-14 h-[79px] sm:w-20 sm:h-[112px] border rounded-md bg-secondary',
         isOver ? 'border-primary' : 'border-border',
-        topCard === null ? 'border-dashed' : ''
+        topCard === null ? 'border-dashed' : '',
+        cellCards.length > 1 ? 'z-10' : ''
       )}
     >
       {showPlaceholder && (
@@ -134,7 +135,7 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
       <div className="flex items-center">
         <span className="text-xs text-muted-foreground">Play Area</span>
       </div>
-      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-1">
+      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-x-0.5 gap-y-4">
         {Array.from({ length: ROWS }, (_, row) =>
           Array.from({ length: COLS }, (_, col) => (
             <GridCell
