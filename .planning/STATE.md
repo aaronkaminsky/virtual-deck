@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Table Polish
-status: executing
-stopped_at: Phase 24 planned — 2 plans ready to execute
-last_updated: "2026-05-17T17:06:14.173Z"
-last_activity: 2026-05-17 -- Phase 24 execution started
+status: "v1.4 shipped — PR #27"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-05-18T04:36:26.200Z"
+last_activity: 2026-05-18
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 5
-  percent: 50
+  completed_phases: 4
+  total_plans: 10
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-15)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 24 — spread-pile-multi-select-and-sort
+**Current focus:** Phase 25 — play-area-layout-center-canvas
 
 ## Current Position
 
-Phase: 24 (spread-pile-multi-select-and-sort) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 24
-Last activity: 2026-05-17 -- Phase 24 execution started
+Phase: 25 — COMPLETE
+Plan: 3 of 3
+Plans: 3 (Wave 1 — all parallel)
+Status: v1.4 shipped — PR #27
+Last activity: 2026-05-18
 
 ## Performance Metrics
 
@@ -50,6 +51,8 @@ Last activity: 2026-05-17 -- Phase 24 execution started
 
 All decisions are logged in `.planning/PROJECT.md` Key Decisions table.
 
+- [Phase ?]: SpreadZone collapse/reveal pattern
+
 ### Pending Todos
 
 None.
@@ -64,6 +67,8 @@ None.
 |---|-------------|------|--------|-----------|
 | 260514-r8m | Fix 5 failing viewFor tests (null playerToken + undo cap) | 2026-05-14 | 989bafb | [260514-r8m](./quick/260514-r8m-fix-5-failing-viewfor-tests-in-tests-vie/) |
 | Phase 23 P02 | 13 | 2 tasks | 3 files |
+| Phase 25 P01 | 8 | 2 tasks | 1 files |
+| Phase 25 P02 | 1min | 2 tasks | 1 files |
 
 ## Deferred Items
 
@@ -79,6 +84,6 @@ Items acknowledged and deferred at milestone close on 2026-05-15:
 
 ## Session Continuity
 
-Last session: 2026-05-17
-Stopped at: Phase 24 planned — 2 plans ready to execute
-Resume file: .planning/phases/24-spread-pile-multi-select-and-sort/24-01-PLAN.md
+Last session: 2026-05-18T04:29:09.002Z
+Stopped at: Completed 25-02-PLAN.md
+Resume file: None

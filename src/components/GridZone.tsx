@@ -68,7 +68,7 @@ function GridCell({ row, col, pileId, cellCards, draggingCardId, pileIsFaceUp }:
     <div
       ref={setDropRef}
       className={cn(
-        'relative w-14 h-[79px] sm:w-20 sm:h-[112px] flex items-center justify-center',
+        'relative w-14 h-[64px] sm:w-20 sm:h-[88px] flex items-center justify-center',
         isOver ? 'bg-primary/20' : 'bg-secondary'
       )}
     >

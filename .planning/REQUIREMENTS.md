@@ -27,11 +27,11 @@ Requirements for v1.4 Table Polish. Each maps to roadmap phases.
 
 ### Layout & Visual Polish
 
-- [ ] **POLISH-01**: Empty piles and spread zones display no body text — label above is sufficient
-- [ ] **POLISH-02**: Pile zone controls appear at the top of each pile, inline with the label
+- [x] **POLISH-01**: Empty piles and spread zones display no body text — label above is sufficient
+- [x] **POLISH-02**: Pile zone controls appear at the top of each pile, inline with the label
 - [ ] **POLISH-03**: Personal spread zones are positioned closer to the communal/draw/discard area
-- [ ] **POLISH-04**: Zone heights and spacing are reduced for a more compact board
-- [ ] **ZONE-01**: Personal spread zones are hidden when empty; a drop target appears when the player begins dragging a card
+- [x] **POLISH-04**: Zone heights and spacing are reduced for a more compact board
+- [x] **ZONE-01**: Personal spread zones are hidden when empty; a drop target appears when the player begins dragging a card
 
 ## Future Requirements
 
@@ -67,11 +67,11 @@ Deferred to future milestones.
 | SELECT-02 | Phase 23 | Pending |
 | SELECT-03 | Phase 23 | Pending |
 | GRID-01 | Phase 24 | Pending |
-| POLISH-01 | Phase 25 | Pending |
-| POLISH-02 | Phase 25 | Pending |
+| POLISH-01 | Phase 25 | Complete |
+| POLISH-02 | Phase 25 | Complete |
 | POLISH-03 | Phase 25 | Pending |
-| POLISH-04 | Phase 25 | Pending |
-| ZONE-01 | Phase 25 | Pending |
+| POLISH-04 | Phase 25 | Complete |
+| ZONE-01 | Phase 25 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 14 total
