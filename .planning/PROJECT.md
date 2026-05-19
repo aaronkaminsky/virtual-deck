@@ -8,17 +8,22 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.4 Table Polish
+## Current Milestone: v1.5 Board Polish II
 
-**Goal:** Reduce minor annoyances in the play area through layout simplification, better pile/zone interaction, and hand management improvements.
+**Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
 
 **Target features:**
-- Show Hand — toggle to flip hand face-up/down for all players
-- Select All — "select all" button on piles and spreads; use existing multi-card drag
-- Play Area Grid — grid layout option in communal spread zone
-- Layout Simplifications — no body text on empty zones; pile controls to top; personal spreads closer to table; vertical space reduction
-- Collapse Empty Spreads — hide personal zones when empty, reappear on first card drop
-- Hand Sort — cycle sort modes: original, by suit, by rank
+- Dock spread zones to their hands — opponent spreads below hands in board area; personal spread flush above hand (999.46)
+- Empty spread zone faint strip — ¼-height dashed outline when empty, controls hidden until cards arrive (999.47)
+- Remove spread zone name labels — label duplicates identity already in hand headers (999.48)
+- Fix select all button — button currently has no visible effect (999.40)
+- Fix grid mobile columns — grid doesn't collapse to 4 cols on iPhone SE (999.39)
+- Hide 0-count badge on empty piles — suppress orange badge at zero (999.49)
+- Tighten pile control layout — reduce gap between buttons and pile card (999.50)
+- Remove opponent spread face-toggle — players can't flip opponent's cards (999.43)
+- Opponent hand drop-target outline only on hover — not at drag start (999.44)
+- Move grid face-toggle icon near zone label — not inside the card grid (999.45)
+- Hand sort original order semantics — decide and implement what "original" means (999.42)
 
 ## Current State
 
@@ -32,7 +37,7 @@ Players can see the shared table and their own private hand update in real time,
 - Board: compact layout — empty zones label-only, pile controls in header row, personal spreads hidden when empty, reduced zone heights
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** TBD — see Backlog in ROADMAP.md for candidates.
+**Next milestone:** v1.5 Board Polish II — started 2026-05-19
 
 ## Requirements
 
@@ -108,7 +113,17 @@ Players can see the shared table and their own private hand update in real time,
 
 ### Active (v1.5)
 
-*(Next milestone not yet defined — run `/gsd:new-milestone` to start)*
+- [ ] Dock spread zones to their hands — opponent spreads below hands; personal spread flush above hand (LAYOUT-05)
+- [ ] Empty spread zone shows faint dashed strip when empty; controls hidden until cards present (LAYOUT-06)
+- [ ] Spread zone name labels removed — identity shown in hand headers (LAYOUT-07)
+- [ ] Select all button works correctly on piles and spread zones (BUG-01)
+- [ ] Communal grid collapses to 4 columns on mobile-width viewports (BUG-02)
+- [ ] Pile count badge hidden when pile is empty; shown only when count ≥ 1 (POLISH-05)
+- [ ] Pile controls row is visually tight against the pile card below it (POLISH-06)
+- [ ] Opponent spread zone has no face-toggle control (CTRL-05)
+- [ ] Opponent hand drop-target outline appears on hover only, not on drag start (CTRL-06)
+- [ ] Grid zone face-toggle icon is positioned near the zone label, not inside the card grid (CTRL-07)
+- [ ] Hand sort "original order" mode is well-defined and functional (SORT-02)
 
 ### Out of Scope
 
@@ -185,4 +200,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-18 after v1.4 milestone — Table Polish*
+*Last updated: 2026-05-19 — v1.5 Board Polish II started*

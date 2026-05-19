@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Table Polish
-status: "v1.4 shipped — PR #27"
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-05-18T04:36:26.200Z"
-last_activity: 2026-05-18
+milestone: v1.5
+milestone_name: Board Polish II
+status: planning
+last_updated: "2026-05-19T13:30:59.092Z"
+last_activity: 2026-05-19
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 
 ## Current Position
 
-Milestone: v1.4 — COMPLETE (archived 2026-05-18)
-Status: v1.4 shipped — PR #27; milestone archived
-Last activity: 2026-05-18
-Next: `/gsd:new-milestone` to start v1.5
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-19 — Milestone v1.5 started
 
 ## Performance Metrics
 
