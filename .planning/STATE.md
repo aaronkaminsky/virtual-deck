@@ -3,8 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
 status: planning
-last_updated: "2026-05-19T00:00:00.000Z"
-last_activity: 2026-05-19
+stopped_at: Phase 26 context gathered
+last_updated: "2026-05-19T15:23:30.977Z"
+last_activity: 2026-05-19 — Roadmap created for v1.5; phases 26–30 defined
 progress:
   total_phases: 5
   completed_phases: 0
@@ -48,6 +49,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases complete)
 All decisions are logged in `.planning/PROJECT.md` Key Decisions table.
 
 Recent decisions affecting current work:
+
 - [Phase 25]: SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging`
 - [v1.5 planning]: LAYOUT-05 (dock spread zones) is highest-risk change — land last with e2e coverage; stale droppable rects and `useDndMonitor` subscription loss are the two failure modes
 - [v1.5 planning]: SORT-02 — "original order" = current server/manual order (not deal order); decision must be documented before code is written
@@ -71,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-19
-Stopped at: Roadmap created — phases 26–30 defined; ready to plan Phase 26
-Resume file: None
+Last session: 2026-05-19T15:23:30.969Z
+Stopped at: Phase 26 context gathered
+Resume file: .planning/phases/26-zero-risk-visual-polish/26-CONTEXT.md
