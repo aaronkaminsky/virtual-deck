@@ -135,13 +135,16 @@ Do not make direct repo edits outside a GSD workflow unless the user explicitly 
 3. `gh pr create` — open a PR; GitHub merges into `main`
 
 ### Before committing
-Both must pass (enforced automatically by pre-commit hook):
+Both enforced by `.git/hooks/pre-commit`:
 - `npm test` — unit tests (Vitest)
 - `npm run typecheck` — TypeScript check
 
 ### Before opening a PR
-Must also pass manually (requires running servers):
-- `npm run test:e2e` — Playwright tests; needs `npm run dev` + `npm run dev:client` running in separate terminals
+`.git/hooks/pre-push` handles this automatically:
+- **If both dev servers are running** (ports 1999 + 5173): runs `npm run test:e2e` and blocks on failure
+- **If servers are down**: prints a reminder with the exact commands to run before creating the PR
+
+To run manually: start `npm run dev` and `npm run dev:client` in separate terminals, then `npm run test:e2e`
 
 
 

@@ -116,11 +116,11 @@ test.describe('virtual-deck e2e', () => {
     const { p1, p2 } = twoPlayerRoom;
 
     // Both pages are already on the board (fixture waits for hand-zone).
-    // The communal spread zone has pile id "play" → data-testid="spread-zone-play".
+    // The communal play area has pile id "play" → data-testid="grid-zone-play" (GridZone component).
     // Each player's personal spread zone has pile id "spread-{playerId}" → data-testid="spread-zone-spread-{playerId}".
     // Therefore the prefix selector below matches PERSONAL zones only (not the communal zone).
-    await expect(p1.getByTestId('spread-zone-play')).toBeVisible();
-    await expect(p2.getByTestId('spread-zone-play')).toBeVisible();
+    await expect(p1.getByTestId('grid-zone-play')).toBeVisible();
+    await expect(p2.getByTestId('grid-zone-play')).toBeVisible();
 
     // Each page should show AT LEAST 2 personal spread zones:
     //   - the viewing player's personal zone in the spread row
@@ -129,7 +129,7 @@ test.describe('virtual-deck e2e', () => {
     await expect(p1.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
     await expect(p2.locator('[data-testid^="spread-zone-spread-"]')).not.toHaveCount(0);
 
-    // Strict: the communal zone (spread-zone-play) is asserted directly above; this block confirms personal zones also render.
+    // Strict: the communal zone (grid-zone-play) is asserted directly above; this block confirms personal zones also render.
     const p1Zones = await p1.locator('[data-testid^="spread-zone-spread-"]').count();
     const p2Zones = await p2.locator('[data-testid^="spread-zone-spread-"]').count();
     expect(p1Zones).toBeGreaterThanOrEqual(2);
@@ -177,8 +177,8 @@ test.describe('virtual-deck e2e', () => {
     await card1.click();
     await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(2);
 
-    // Drag card0 (which IS selected) to the communal spread zone
-    const communal = p1.getByTestId('spread-zone-play');
+    // Drag card0 (which IS selected) to the communal grid zone
+    const communal = p1.getByTestId('grid-zone-play');
     await expect(communal).toBeVisible();
 
     const src = await card0.boundingBox();
@@ -187,24 +187,23 @@ test.describe('virtual-deck e2e', () => {
 
     await p1.mouse.move(src.x + src.width / 2, src.y + src.height / 2);
     await p1.mouse.down();
-    // Move past the 8px threshold to activate PointerSensor
-    await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 2, { steps: 15 });
+    // Move past the 8px threshold to activate PointerSensor; use height/4 to land in row 0 (not the 1px inter-row gap at height/2)
+    await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 4, { steps: 15 });
     await p1.mouse.up();
 
     // P1: hand now has 3 cards
     await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(3);
 
-    // P1: communal zone shows 2 cards.
-    // Each card renders two nested [role="button"] divs (useSortable outer + useDraggable inner).
-    // Use :not(:has([role="button"])) to select only the innermost (leaf) role="button" per card.
+    // P1: communal grid zone shows 1 occupied cell (both cards stacked in the same cell).
+    // GridZone only renders the top card of each stack as a [role="button"] draggable element.
     const p1Cards = communal.locator('[role="button"]:not(:has([role="button"]))');
-    await expect(p1Cards).toHaveCount(2);
+    await expect(p1Cards).toHaveCount(1);
 
-    // P2: same communal zone shows 2 cards (real-time broadcast)
-    const p2Communal = p2.getByTestId('spread-zone-play');
+    // P2: same communal zone (real-time broadcast)
+    const p2Communal = p2.getByTestId('grid-zone-play');
     await expect(p2Communal).toBeVisible();
     const p2Cards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
-    await expect(p2Cards).toHaveCount(2);
+    await expect(p2Cards).toHaveCount(1);
 
     // Selection cleared on P1 after successful set play (D-05)
     await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(0);
@@ -225,7 +224,7 @@ test.describe('virtual-deck e2e', () => {
     await card1.click();
     await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(2);
 
-    const communal = p1.getByTestId('spread-zone-play');
+    const communal = p1.getByTestId('grid-zone-play');
     await expect(communal).toBeVisible();
 
     const srcPlay = await card0.boundingBox();
@@ -234,13 +233,14 @@ test.describe('virtual-deck e2e', () => {
 
     await p1.mouse.move(srcPlay.x + srcPlay.width / 2, srcPlay.y + srcPlay.height / 2);
     await p1.mouse.down();
-    await p1.mouse.move(tgtPlay.x + tgtPlay.width / 2, tgtPlay.y + tgtPlay.height / 2, { steps: 15 });
+    // Use height/4 to land in row 0 (not the 1px inter-row gap at height/2)
+    await p1.mouse.move(tgtPlay.x + tgtPlay.width / 2, tgtPlay.y + tgtPlay.height / 4, { steps: 15 });
     await p1.mouse.up();
 
-    // P1 hand now has 3 cards; communal zone has 2
+    // P1 hand now has 3 cards; communal grid has 1 occupied cell (2 stacked cards, only top is draggable)
     await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(3);
     const p1SpreadCards = communal.locator('[role="button"]:not(:has([role="button"]))');
-    await expect(p1SpreadCards).toHaveCount(2);
+    await expect(p1SpreadCards).toHaveCount(1);
 
     // Capture console warnings before dragging back
     const consoleMessages: string[] = [];
@@ -264,7 +264,7 @@ test.describe('virtual-deck e2e', () => {
     await expect(p1SpreadCards).toHaveCount(1);
 
     // P2 sees the same communal zone state (real-time broadcast)
-    const p2Communal = p2.getByTestId('spread-zone-play');
+    const p2Communal = p2.getByTestId('grid-zone-play');
     await expect(p2Communal).toBeVisible();
     const p2SpreadCards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
     await expect(p2SpreadCards).toHaveCount(1);
@@ -279,7 +279,7 @@ test.describe('virtual-deck e2e', () => {
 
     await dealCards(p1, 5);
 
-    const communal = await p1.getByTestId('spread-zone-play').boundingBox();
+    const communal = await p1.getByTestId('grid-zone-play').boundingBox();
     const hand = await p1.getByTestId('hand-zone').boundingBox();
 
     if (!communal || !hand) throw new Error('communal or hand bounding box unavailable');
@@ -305,11 +305,11 @@ test.describe('virtual-deck e2e', () => {
     // Communal zone is above hand zone
     expect(communal.y + communal.height).toBeLessThan(hand.y);
 
-    // Communal zone is meaningfully wide (fills flex-1 parent — default min-width was 80px)
+    // Communal grid is meaningfully wide (7 cols × 80px at sm breakpoint = ~566px)
     expect(communal.width).toBeGreaterThan(160);
 
     // P2 sees the same arrangement
-    const p2Communal = await p2.getByTestId('spread-zone-play').boundingBox();
+    const p2Communal = await p2.getByTestId('grid-zone-play').boundingBox();
     const p2Hand = await p2.getByTestId('hand-zone').boundingBox();
 
     if (!p2Communal || !p2Hand) throw new Error('P2 communal or hand bounding box unavailable');
@@ -327,7 +327,7 @@ test.describe('virtual-deck e2e', () => {
 
     expect(p2Communal.y).toBeLessThan(p2PersonalBox.y);
     expect(p2Communal.y + p2Communal.height).toBeLessThan(p2Hand.y);
-    expect(p2Communal.width).toBeGreaterThan(160);
+    expect(p2Communal.width).toBeGreaterThan(160); // same grid dimensions for P2
   });
 
   test('no horizontal scrollbar on board at 1280x720', async ({ twoPlayerRoom }) => {
@@ -343,7 +343,7 @@ test.describe('virtual-deck e2e', () => {
     expect(p2Overflowed).toBe(false);
   });
 
-  test('spread zone reorder: drag-reorder within communal spread zone preserves useSortable data routing', async ({ twoPlayerRoom }) => {
+  test('grid card move: drag card within communal grid zone to a new cell', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
     await dealCards(p1, 5);
@@ -351,58 +351,54 @@ test.describe('virtual-deck e2e', () => {
     const p1Hand = p1.getByTestId('hand-zone');
     await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(5);
 
-    // Select 3 cards and play them into the communal spread zone
-    const card0 = p1Hand.locator('[aria-pressed]').nth(0);
-    const card1 = p1Hand.locator('[aria-pressed]').nth(1);
-    const card2 = p1Hand.locator('[aria-pressed]').nth(2);
-    await card0.click();
-    await card1.click();
-    await card2.click();
-    await expect(p1Hand.locator('[aria-pressed="true"]')).toHaveCount(3);
-
-    const communal = p1.getByTestId('spread-zone-play');
+    // Drag one card from hand into the communal grid zone (center of grid)
+    const card0 = p1Hand.locator('[aria-pressed]').first();
+    const communal = p1.getByTestId('grid-zone-play');
     await expect(communal).toBeVisible();
 
-    const srcPlay = await card0.boundingBox();
-    const tgtPlay = await communal.boundingBox();
-    if (!srcPlay || !tgtPlay) throw new Error('bounding boxes unavailable for play drag');
+    const srcCard = await card0.boundingBox();
+    const communalBox = await communal.boundingBox();
+    if (!srcCard || !communalBox) throw new Error('bounding boxes unavailable');
 
-    await p1.mouse.move(srcPlay.x + srcPlay.width / 2, srcPlay.y + srcPlay.height / 2);
+    await p1.mouse.move(srcCard.x + srcCard.width / 2, srcCard.y + srcCard.height / 2);
     await p1.mouse.down();
-    await p1.mouse.move(tgtPlay.x + tgtPlay.width / 2, tgtPlay.y + tgtPlay.height / 2, { steps: 15 });
+    // Use height/4 to land in row 0 (not the 1px inter-row gap at height/2)
+    await p1.mouse.move(communalBox.x + communalBox.width / 2, communalBox.y + communalBox.height / 4, { steps: 15 });
     await p1.mouse.up();
 
-    // Communal zone should now have 3 cards
-    const spreadCards = communal.locator('[role="button"]:not(:has([role="button"]))');
-    await expect(spreadCards).toHaveCount(3);
+    // Hand loses one card; grid shows one occupied cell
+    await expect(p1Hand.locator('[aria-pressed]')).toHaveCount(4);
+    const gridCards = communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(gridCards).toHaveCount(1);
 
-    // Capture console warnings
+    // Capture console warnings before intra-grid drag
     const consoleMessages: string[] = [];
     p1.on('console', msg => { consoleMessages.push(msg.text()); });
 
-    // Drag card at index 0 to position of card at index 2 within spread zone
-    const firstCard = spreadCards.nth(0);
-    const thirdCard = spreadCards.nth(2);
-    await expect(firstCard).toBeVisible();
-    await expect(thirdCard).toBeVisible();
+    // Drag the card to the far-right column of the grid (MOVE_GRID_CARD)
+    const firstGridCard = gridCards.first();
+    await expect(firstGridCard).toBeVisible();
 
-    const srcFirst = await firstCard.boundingBox();
-    const tgtThird = await thirdCard.boundingBox();
-    if (!srcFirst || !tgtThird) throw new Error('bounding boxes unavailable for reorder drag');
+    const srcGrid = await firstGridCard.boundingBox();
+    if (!srcGrid) throw new Error('grid card bounding box unavailable');
 
-    await p1.mouse.move(srcFirst.x + srcFirst.width / 2, srcFirst.y + srcFirst.height / 2);
+    // Target col 6 (rightmost), row 0: use height/4 to avoid the 1px inter-row gap at height/2
+    const rightColX = communalBox.x + (communalBox.width * 13) / 14;
+    const row0CenterY = communalBox.y + communalBox.height / 4;
+
+    await p1.mouse.move(srcGrid.x + srcGrid.width / 2, srcGrid.y + srcGrid.height / 2);
     await p1.mouse.down();
-    await p1.mouse.move(tgtThird.x + tgtThird.width / 2, tgtThird.y + tgtThird.height / 2, { steps: 15 });
+    await p1.mouse.move(rightColX, row0CenterY, { steps: 15 });
     await p1.mouse.up();
 
-    // Card count unchanged after reorder (3 cards still in spread zone)
-    await expect(spreadCards).toHaveCount(3);
+    // Card count unchanged — card moved to new cell, not lost
+    await expect(gridCards).toHaveCount(1);
 
-    // P2 sees the same card count (real-time broadcast)
-    const p2Communal = p2.getByTestId('spread-zone-play');
+    // P2 sees the same state (real-time broadcast)
+    const p2Communal = p2.getByTestId('grid-zone-play');
     await expect(p2Communal).toBeVisible();
-    const p2SpreadCards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
-    await expect(p2SpreadCards).toHaveCount(3);
+    const p2GridCards = p2Communal.locator('[role="button"]:not(:has([role="button"]))');
+    await expect(p2GridCards).toHaveCount(1);
 
     // No console warnings about duplicate dnd-kit IDs
     const duplicateIdWarnings = consoleMessages.filter(msg => /duplicate id|multiple elements with the same id/i.test(msg));
