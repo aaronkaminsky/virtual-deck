@@ -109,3 +109,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.39 | Fix grid mobile column count — play area grid does not collapse to 4 columns on mobile (iPhone SE); `grid-cols-4` breakpoint not triggering; desktop 7-column layout renders at all widths | TBD |
 | 999.40 | Fix select all button — button appears to have no effect when clicked | TBD |
 | 999.41 | Spread zone visibility adjustments — opponent spread zone is always visible; personal spread zone appears on hover but the target area is too small to reliably trigger | TBD |
+| 999.42 | Hand sort "original order" mode — sort control cycles but has no way to return to the deal order; need to decide correct behavior (e.g. track original position or treat manual order as the baseline) | TBD |
