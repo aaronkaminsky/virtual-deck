@@ -87,7 +87,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 
 **Milestone Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
 
-- [x] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07) (completed 2026-05-20)
+- [ ] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07)
 - [ ] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06)
 - [ ] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02)
 - [ ] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02)
@@ -105,10 +105,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   3. Opponent spread zones display no face-toggle button
   4. The communal grid zone's face-toggle button is positioned beside the zone label, not inside the card grid
   5. Spread zones display no name label — the adjacent hand header identifies the zone
-**Plans**: 2 plans
-**Plan list**:
-- [x] 26-01-PLAN.md — PileZone badge + controls gap (POLISH-05, POLISH-06)
-- [x] 26-02-PLAN.md — SpreadZone face-toggle guard, name label removal, GridZone face-toggle relocation (CTRL-05, CTRL-07, LAYOUT-07)
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 27: Drop Target + Empty Spread Behavior
@@ -163,7 +160,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 23. Hand Sort + Select All | 3/3 | Complete | 2026-05-17 |
 | 24. Play Area Grid | 2/2 | Complete | 2026-05-17 |
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
-| 26. Zero-Risk Visual Polish | 2/2 | Complete   | 2026-05-20 |
+| 26. Zero-Risk Visual Polish | 0/TBD | Not started | - |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 0/TBD | Not started | - |
 | 29. Sort Verification | 0/TBD | Not started | - |
