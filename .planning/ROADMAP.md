@@ -111,3 +111,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.41 | Spread zone visibility adjustments — opponent spread zone is always visible; personal spread zone appears on hover but the target area is too small to reliably trigger | TBD |
 | 999.42 | Hand sort "original order" mode — sort control cycles but has no way to return to the deal order; need to decide correct behavior (e.g. track original position or treat manual order as the baseline) | TBD |
 | 999.43 | Remove face-up/down control from opponent spread zone — players should not be able to flip cards in an opponent's spread zone; remove the icon | TBD |
+| 999.44 | Opponent hand outline shows on drag start — drop-target outline for opponent's hand appears immediately when drag begins instead of only when hovering over it | TBD |
