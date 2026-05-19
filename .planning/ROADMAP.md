@@ -110,3 +110,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.40 | Fix select all button — button appears to have no effect when clicked | TBD |
 | 999.41 | Spread zone visibility adjustments — opponent spread zone is always visible; personal spread zone appears on hover but the target area is too small to reliably trigger | TBD |
 | 999.42 | Hand sort "original order" mode — sort control cycles but has no way to return to the deal order; need to decide correct behavior (e.g. track original position or treat manual order as the baseline) | TBD |
+| 999.43 | Remove face-up/down control from opponent spread zone — players should not be able to flip cards in an opponent's spread zone; remove the icon | TBD |
