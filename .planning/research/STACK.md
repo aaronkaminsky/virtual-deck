@@ -1,135 +1,255 @@
 # Technology Stack
 
 **Project:** Virtual Deck
-**Researched:** 2026-05-01 (v1.3 additions only — existing stack and v1.2 additions not re-researched)
-**Confidence note:** All findings verified against official docs, npm registry, and base-ui release notes. No [UNVERIFIED] tags — every claim below has a source.
+**Researched:** 2026-05-19 (v1.5 additions only — existing stack not re-researched)
+**Confidence note:** All findings verified against installed `node_modules` source and live component files. No [UNVERIFIED] tags.
 
 ---
 
 ## Existing Stack (validated, do not re-recommend)
 
-React 18 + Vite + TypeScript + shadcn v4 (base-nova style, `@base-ui/react` primitives) + dnd-kit/core 6.x + dnd-kit/sortable 10.x + partysocket + PartyKit + Vitest + Playwright. All installed and working. See package.json for exact versions.
+React 18.3.1 + Vite + TypeScript + shadcn v4 (base-nova style, `@base-ui/react` primitives) + `@dnd-kit/core` 6.3.1 + `@dnd-kit/sortable` 10.0.0 + partysocket + PartyKit + Vitest + Playwright. All installed and working. See `package.json` for exact versions.
 
 ---
 
-## v1.3 Scope: What's Actually New
+## v1.5 Scope: What's Actually New
 
-The four v1.3 features map to library decisions as follows:
+No new npm packages are needed for v1.5. Every v1.5 fix is a refactor of existing components using patterns and APIs already present in the codebase.
 
-| Feature | Library decision |
-|---------|-----------------|
-| Responsive layout (phone screens) | No new library — Tailwind v4 breakpoints + `h-dvh` |
-| Collapsible dropdown/slide-out panel | No new library — `@base-ui/react/drawer` (already installed at ^1.3.0, stable since v1.3.0) |
-| Drag-to-reorder cards in spread zones | No new library — `@dnd-kit/sortable` already in use in SpreadZone.tsx; extend existing pattern |
-| Multi-card select in spread zones | No new library — replicate existing HandZone select pattern into SpreadZone |
+| Requirement | Library decision |
+|-------------|-----------------|
+| Dock spread zones to hands (LAYOUT-05) | No new library — Tailwind flex layout change in `BoardView.tsx` |
+| Empty spread strip (LAYOUT-06) | No new library — `cn()` conditional class change in `SpreadZone.tsx` |
+| Remove spread zone labels (LAYOUT-07) | No new library — delete `<span>` element |
+| Fix select all (BUG-01) | No new library — bug fix in `PileZone.tsx` / `SpreadZone.tsx` |
+| Mobile grid collapse (BUG-02) | No new library — `sm:grid-cols-7` responsive prefix in `GridZone.tsx` |
+| Hide 0-count badge (POLISH-05) | No new library — conditional render guard in `PileZone.tsx` |
+| Tighten pile controls (POLISH-06) | No new library — Tailwind spacing change in `PileZone.tsx` |
+| Remove opponent spread face-toggle (CTRL-05) | No new library — remove button from `SpreadZone` when `interactive === false` |
+| Opponent hand outline on hover only (CTRL-06) | No new library — remove `dragIsActive` branch in `OpponentHand.tsx` |
+| Grid face-toggle near zone label (CTRL-07) | No new library — move JSX in `GridZone.tsx` |
+| Hand sort "original" semantics (SORT-02) | No new library — logic change in `HandZone.tsx` |
 
-**Bottom line: v1.3 requires zero new npm installs.** All needed primitives are already present in `node_modules`. The milestone is entirely a refactor/extension of existing code.
+**Bottom line: v1.5 requires zero new npm installs.**
 
 ---
 
 ## Feature-by-Feature Technical Analysis
 
-### 1. Responsive Layout (LAYOUT-04)
+### 1. CSS Layout: Flex/Grid for Docking Spread Zones (LAYOUT-05)
 
-**What's needed:** `h-screen` → `h-dvh` swap, Tailwind responsive prefixes (`sm:`, `md:`), and layout rework in `BoardView.tsx`.
+**What's needed:** Dock opponent spreads directly below `OpponentHand`; dock personal spread flush above `HandZone`. Currently all zones float as independent siblings in `BoardView`.
 
-**Why `h-dvh` not `h-screen`:** `h-screen` maps to `100vh`. On mobile browsers, `100vh` includes the address bar height even when the bar is visible, which causes the board to overflow below the fold. `h-dvh` (`100dvh`) is the dynamic viewport height unit — it reflects the actual visible area and updates as the browser UI shows/hides. Tailwind v4 includes `h-dvh` as a first-class utility (added in Tailwind 3.4, carried forward). No config change needed.
-
-**Breakpoints:** Tailwind v4 uses CSS-first config. Default breakpoints (`sm: 640px`, `md: 768px`) are available without any `@theme` additions. The existing `globals.css` does not override them, so they are already available in the project. Phone-screen targeting means writing base (unprefixed) styles for small and using `sm:` or `md:` to unlock wider layouts.
-
-**No new packages.** Pure Tailwind class changes in `BoardView.tsx` and possibly `HandZone.tsx`.
-
----
-
-### 2. Collapsible Panel for Game Controls (LAYOUT-03)
-
-**What's needed:** A panel that can open/close, triggered by a button, showing the game controls (Deal, Undo, Reset).
-
-**Use `@base-ui/react/drawer` — already installed.**
-
-The project is on `@base-ui/react ^1.3.0`. In v1.3.0 (released March 2026), the `Drawer` component graduated from preview to stable. Import: `import { Drawer } from '@base-ui/react/drawer'`. It wraps `Dialog` and adds slide-in positioning plus optional swipe gesture support. For a game controls panel that slides down from the top or in from the side, this is the correct primitive. If gesture support is not needed, `Dialog` from `@base-ui/react/dialog` also works as a positioned panel (Base UI docs: "a panel that slides in from the edge of the screen and doesn't need gesture support is a positioned Dialog").
-
-**Why not shadcn `Sheet` or `Drawer`:** The shadcn CLI's `sheet` and `drawer` components are designed for Radix UI-based projects (style: `default`). This project uses `style: "base-nova"` — shadcn generates `@base-ui/react` wrappers. The `shadcn add sheet` command may generate a Radix-based sheet incompatible with the project's base-ui pattern. Even if shadcn generates a base-ui sheet, the project already has `@base-ui/react/drawer` which is the exact same primitive. Use it directly, as `ControlsBar.tsx` already does for its popover (see: `@base-ui/react/popover` in `popover.tsx`). Keep the pattern consistent.
-
-**Why not a Popover:** The existing `Popover` in `ControlsBar.tsx` works for the deal count input but is anchored to its trigger button. A game controls panel with multiple buttons (Deal, Undo, Reset) is better served by a modal-style panel that overlays the board rather than a tooltip-style float. Use `Drawer` for clear affordance.
-
-**Implementation pattern:**
-```tsx
-import { Drawer } from '@base-ui/react/drawer';
-
-// Drawer.Root wraps the trigger and content
-// Drawer.Trigger renders the "Controls" button
-// Drawer.Portal + Drawer.Backdrop + Drawer.Popup render the panel
-// Drawer.Close inside the panel
+**Current structure in `BoardView.tsx`:**
+```
+<div class="h-screen flex flex-col">
+  <div class="flex items-start bg-card">          ← opponent row
+    <div class="flex flex-col gap-1">             ← per-opponent column — spread already here
+      <OpponentHand />
+      <SpreadZone />
+    </div>
+  </div>
+  <div class="flex-1 min-h-0 flex flex-col">      ← center area
+    <PileZone /><GridZone />                       ← pile/grid row
+    <SpreadZone (personal) />                      ← personal spread: floating in center area
+    <HandZone />
+  </div>
+</div>
 ```
 
-Style the Popup with `fixed bottom-0 inset-x-0` (or `top-0`) and CSS `data-open:animate-in data-closed:animate-out` slide transitions — same animation pattern as the existing `PopoverContent` in `popover.tsx`.
+**Opponent spread is already co-located.** It renders inside the `flex flex-col gap-1` per-opponent wrapper. Visual docking is a matter of ensuring there is no excess `gap-` or `py-` between the hand and spread in that wrapper. No structural change needed for opponents.
+
+**Personal spread needs to join the hand.** The fix is to wrap personal spread + hand into a single `flex-shrink-0 flex flex-col` container at the bottom of the center area. This prevents the spread from floating in the middle of the board when the center area has extra vertical space:
+
+```tsx
+// Replace the current separate mySpreadZone block + HandZone siblings:
+<div className="flex-shrink-0 flex flex-col gap-0">
+  {mySpreadZone && (
+    <div className="px-4 pt-1">
+      <SpreadZone ... />
+    </div>
+  )}
+  <HandZone ... />
+</div>
+```
+
+**Why not `sticky bottom-0`:** The board outer container uses `overflow-x-hidden overflow-y-auto` at mobile and `sm:overflow-hidden` at desktop. Sticky requires a scrollable ancestor. At desktop (`sm:`) the board is `h-screen` with `overflow-hidden` — there is no scroll container, so sticky has no effect. At mobile the scroll context is the center area div, not the outer screen. Using `flex-shrink-0` on the hand+spread unit (as the last child in a `flex-col`) is simpler, correct at all sizes, and consistent with the existing pattern.
+
+**Relevant Tailwind utilities:**
+
+| Utility | Effect | Use case |
+|---------|--------|----------|
+| `flex-shrink-0` | Prevents flex item from shrinking | Keeps hand+spread at full height |
+| `flex flex-col` | Stacks children vertically | Wrapping spread above hand |
+| `gap-0` | Removes gap between spread strip and hand | Flush dock |
+| `flex-1 min-h-0` | Fills remaining space, allows shrink | Center (pile+grid) row |
+| `self-end` | Aligns item to end of cross-axis | Alternative if hand is inside a `flex items-start` |
 
 ---
 
-### 3. Drag-to-Reorder Cards in Spread Zones (SPREAD-02)
+### 2. Empty Spread Zone Strip (LAYOUT-06)
 
-**What's needed:** Already implemented in `SpreadZone.tsx`. Review the code before touching it.
+**What's needed:** When the personal spread is empty, show a ¼-height dashed outline strip (always visible, not hidden) as a landing zone affordance. Controls hidden until cards arrive.
 
-`SpreadZone.tsx` already uses `SortableContext` with `horizontalListSortingStrategy`, `useSortable` on each card, and `useDndMonitor` to detect intra-pile reorders and dispatch `REORDER_PILE_SPREAD`. The drag-to-reorder infrastructure is complete.
+**Current empty behavior in `SpreadZone.tsx`:**
+```tsx
+isEmpty && interactive !== false
+  ? isOver
+    ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg ...'
+    : 'h-px opacity-0'    // ← completely hidden when empty and not hovered
+```
 
-The v1.3 work here is validation and ensuring the UX is wire-compatible with what `HandZone.tsx` does — both already use the same `arrayMove` + server action pattern. No new dnd-kit features or packages needed.
+**New pattern:**
+```tsx
+isEmpty && interactive !== false
+  ? cn(
+      'h-[22px] rounded border border-dashed border-border/40',
+      isOver && 'border-primary/60'
+    )
+  : cn(
+      'min-w-[56px] h-[64px] sm:min-w-[80px] sm:h-[88px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
+      isEmpty ? 'border-dashed' : '',
+      isOver ? 'border-primary' : 'border-border'
+    )
+```
 
-**Potential integration point for multi-select (SPREAD-01):** The `SortableSpreadCard` does not yet receive `isSelected` or `onToggleSelect` props. When multi-select is added, it must mirror the `SortableHandCard` pattern exactly: `isSelected` drives a visual indicator, `onToggleSelect` is called on click, and the drag action moves all selected cards (same "select-then-drag" pattern validated in Phase 15, see Key Decision in PROJECT.md).
+`h-[22px]` is approximately ¼ of the `sm:h-[88px]` card height (88/4 = 22). `border-border/40` produces a faint dashed line using the existing border color token at 40% opacity.
+
+Controls (`Eye`, `SquareCheck`) must be gated on `!isEmpty` — already handled by the existing `{(!isEmpty || interactive === false) && ...}` branch in `SpreadZone.tsx`. The `interactive === false` branch (opponent spreads) should not show the strip at all since opponents don't need an empty affordance.
 
 ---
 
-### 4. Multi-Card Select in Spread Zones (SPREAD-01)
+### 3. Responsive Grid Columns (BUG-02)
 
-**What's needed:** Replicate the `HandZone` selection UX into `SpreadZone`.
+**Requirement:** The communal `GridZone` uses `grid-cols-7` and overflows on iPhone SE (375px viewport width). Fix: use `grid-cols-4` at narrow widths, `grid-cols-7` at `sm:` and above.
 
-`HandZone.tsx` uses:
-- `selectedIds: Set<string>` and `onToggleSelect: (id: string) => void` as props
-- `isSelected` drives `translateY(-6px)` transform and a `ring-1` highlight on the card div
-- `onClick` on the outer wrapper calls `onToggleSelect`
-- `onPointerDown` stops propagation to prevent dnd-kit from stealing the click
-- An `aria-pressed` override after the `{...attributes}` spread (Project Key Decision: must come last to override dnd-kit's own `aria-pressed`)
+**Current code in `GridZone.tsx`:**
+```tsx
+<div className="grid grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
+```
 
-The same props and the same DOM structure need to be added to `SortableSpreadCard` and `SpreadZoneProps`. The selection state for spread zones likely needs to live in the same parent as hand selection state (currently managed in `App.tsx` or `BoardView.tsx`), or in a dedicated per-zone `useState`.
+**Fix:**
+```tsx
+<div className="grid grid-cols-4 sm:grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
+```
 
-**Why not dnd-kit multi-drag plugin:** dnd-kit's multi-drag is unfinished and not officially shipped (GitHub issue #120, open since 2021). The project already uses the select-then-drag pattern as a validated Key Decision. Do not change the approach.
+**Why `sm:` is the right breakpoint:**
+- Tailwind v4 default: `--breakpoint-sm: 40rem` = 640px (verified against `node_modules/tailwindcss/theme.css`)
+- iPhone SE viewport: 375px — below `sm:`, so gets `grid-cols-4`
+- Any desktop/tablet viewport ≥ 640px gets `grid-cols-7`
 
-**No new packages.** This is a prop threading and component extension exercise.
+**Cell sizing math:**
+- Mobile (`grid-cols-4`, `w-14` = 56px): 4 × 56 + 3px gaps ≈ 227px — fits within 375px with padding
+- Desktop (`sm:grid-cols-7`, `sm:w-20` = 80px): 7 × 80 + 6px gaps ≈ 566px — fits within 640px+
+
+The cell width classes (`w-14 h-[64px] sm:w-20 sm:h-[88px]`) in `GridCell` already have responsive sizing. No changes needed there — only the column count on the grid container changes.
+
+**No custom breakpoints needed.** Do not add anything to `@theme {}` in `globals.css`.
+
+---
+
+### 4. dnd-kit: Opponent Hand Outline on Hover Only (CTRL-06)
+
+**Requirement:** `OpponentHand` shows `border-dashed border-primary/60` whenever any drag is active (even when the pointer is far away). The requirement is to show a border only when the pointer is actually over the opponent hand drop target.
+
+**Root cause in `OpponentHand.tsx`:**
+```tsx
+const { active } = useDndContext();
+const dragIsActive = active !== null;   // true from the moment any drag starts
+
+className={cn(
+  isOver      ? 'border-2 border-primary'               // pointer over this target
+  : dragIsActive ? 'border-2 border-dashed border-primary/60'  // any drag active — this is the bug
+  : 'border-2 border-transparent'
+)}
+```
+
+**API facts (verified against `@dnd-kit/core` v6.3.1 installed source, `core.cjs.development.js` lines 2517–2540):**
+
+| Hook | Return shape | Relevant value |
+|------|-------------|----------------|
+| `useDroppable` | `{ setNodeRef, isOver }` | `isOver: boolean` — true only while pointer is inside this droppable's rect |
+| `useDndContext` | `{ active, over, activatorEvent, ... }` | `active !== null` = any drag in progress globally |
+
+`isOver` from `useDroppable` is `false` at drag start when the pointer is elsewhere. It becomes `true` only once the collision detection determines this droppable is the current drop target.
+
+**Fix — remove the `dragIsActive` branch from the border logic:**
+```tsx
+// In OpponentHand.tsx:
+// Remove: const { active } = useDndContext();
+// Remove: const dragIsActive = active !== null;
+
+className={cn(
+  'flex flex-col rounded-lg p-1 border-2',
+  isOver ? 'border-primary' : 'border-transparent',
+)}
+```
+
+**What to keep:** The `dragIsActive` import is also used for the `min-h-[44px] min-w-[80px]` size constraint and the "Drop to pass" text hint:
+```tsx
+{dragIsActive && cardCount === 0 && ...<span>Drop to pass</span>}
+```
+If the text hint is kept, retain `const { active } = useDndContext()` and `const dragIsActive = active !== null` — only remove the `dragIsActive` term from the border `cn()` call.
+
+If the hit-area size constraint (`dragIsActive && 'min-h-[44px] min-w-[80px]'`) should also be kept for discoverability, that is a separate product decision from CTRL-06. The requirement only specifies the outline border.
+
+**Why `useDndMonitor` is not the right tool here:** `useDndMonitor.onDragOver` fires on every pointer movement over a droppable and requires managing a state variable (`useState`). `isOver` from `useDroppable` is already reactive and automatically synchronized. No extra event listener needed.
+
+---
+
+### 5. Badge/Count Display (POLISH-05)
+
+**Requirement:** Hide the count badge on `PileZone` when `pile.cards.length === 0`.
+
+**Current code in `PileZone.tsx`:**
+```tsx
+<Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
+```
+
+**Fix:**
+```tsx
+{pile.cards.length > 0 && (
+  <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
+)}
+```
+
+This is the idiomatic React pattern. `GridZone.tsx` already uses the same pattern correctly for stacked-card count (`cellCards.length > 1 && <Badge>`).
+
+**Why conditional render over CSS visibility:** Hiding via `opacity-0` or `visibility: hidden` keeps the element in the DOM and accessible to screen readers, which would announce "0" as a count. Conditional render removes it from the tree entirely.
 
 ---
 
 ## What NOT to Add
 
-| Do not add | Why |
-|-----------|-----|
-| `vaul` | shadcn's Drawer uses it, but this project's base-nova style uses `@base-ui/react/drawer` instead. Adding vaul creates a second primitive library for the same use case. |
-| `@radix-ui/react-dialog` or any `@radix-ui/*` | The project explicitly chose `@base-ui/react`. Key Decision: `@base-ui/react/dialog` for pile insert dialog because Radix AlertDialog had a `disablePointerDismissal` bug. Do not introduce Radix primitives. |
-| `framer-motion` / `motion` | tw-animate-css already handles the CSS-driven `data-open/data-closed` animations consistent with shadcn base-nova. No JS animation library needed for panel slide. |
-| `react-spring`, `@use-gesture/react` | No new gesture/animation infrastructure needed. |
-| Any grid layout library (`react-grid-layout`, etc.) | Board layout is a fixed structure, not a resizable dashboard. Tailwind flex/grid is sufficient. |
-| `@dnd-kit/modifiers` (if not already present) | Modifiers are only needed for constrained drag (e.g., axis-lock). The spread zone reorder is unconstrained horizontal. Do not add unless a specific drag constraint is needed. |
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `sticky bottom-0` on `HandZone` | Board uses `overflow-hidden` at `sm:` — sticky has no scroll container parent | `flex-shrink-0` + flex ordering |
+| New drag affordance library | `isOver` from existing `useDroppable` covers all needed hover detection | `isOver` from `@dnd-kit/core` `useDroppable` |
+| `useDndMonitor` for hover state | Requires `useState` + `onDragOver` — more complex than `isOver` for same result | `isOver` from `useDroppable` |
+| Custom breakpoints in `@theme {}` | `sm:` (640px) is exactly the iPhone SE vs desktop threshold | Default `sm:` breakpoint |
+| `zustand` for badge state | Badge count is derived directly from `pile.cards.length` | Inline conditional render |
+| Any new npm package | All v1.5 changes are refactors inside existing components | Existing stack |
 
 ---
 
-## Version Compatibility Notes
+## Version Compatibility
 
-| Package | Current version | Notes |
-|---------|----------------|-------|
-| `@base-ui/react` | `^1.3.0` (installed) | Drawer stable since 1.3.0. Import from `@base-ui/react/drawer`. |
-| `@dnd-kit/core` | `^6.3.1` (installed) | No changes needed. |
-| `@dnd-kit/sortable` | `^10.0.0` (installed) | Already used in both HandZone and SpreadZone. No upgrade. |
-| `tailwindcss` | `^4.2.2` (installed) | `h-dvh` available. Default breakpoints (`sm`, `md`) available without config changes. |
+| Package | Installed Version | Notes |
+|---------|------------------|-------|
+| `@dnd-kit/core` | 6.3.1 | `useDndContext` returns `{ active, over, ... }`. `useDroppable` returns `{ setNodeRef, isOver }`. Verified against installed CJS source. |
+| `@dnd-kit/sortable` | 10.0.0 | Major version diverges from core intentionally. No API changes needed for v1.5. |
+| `tailwindcss` | 4.2.2 | v4 breakpoints defined as CSS custom properties. `--breakpoint-sm: 40rem` (640px). `sm:grid-cols-N` syntax is identical to v3 from an authoring perspective. No `tailwind.config.js` — config lives in `@theme {}` inside `globals.css`. |
+| `@tailwindcss/vite` | 4.2.2 | Vite plugin; responsive utilities compile correctly at build time. |
+| `react` | 18.3.1 | Conditional render via `count > 0 && <Badge>` is stable. |
+| `@base-ui/react` | ^1.3.0 | No changes to primitives in v1.5. |
 
 ---
 
 ## Sources
 
-- `package.json` in this repo — exact installed versions (HIGH confidence)
-- `src/components/SpreadZone.tsx`, `HandZone.tsx`, `ControlsBar.tsx` — existing implementation patterns (HIGH confidence)
-- `components.json` — confirmed `style: "base-nova"`, `@base-ui/react` is the primitive library (HIGH confidence)
-- Base UI v1.3.0 release notes: https://base-ui.com/react/overview/releases/v1-3-0 — Drawer stable (HIGH confidence)
-- Base UI Drawer docs: https://base-ui.com/react/components/drawer — Drawer vs positioned Dialog guidance (HIGH confidence)
-- Tailwind CSS height docs: https://tailwindcss.com/docs/height — `h-dvh` availability (HIGH confidence)
-- Tailwind CSS responsive design: https://tailwindcss.com/docs/responsive-design — breakpoint defaults (HIGH confidence)
-- shadcn/ui changelog: https://ui.shadcn.com/docs/changelog — base-nova style context (MEDIUM confidence)
-- dnd-kit GitHub issue #120 (multi-drag): https://github.com/clauderic/dnd-kit/issues/120 — confirmed unshipped (HIGH confidence)
+- `node_modules/@dnd-kit/core/dist/core.cjs.development.js` lines 2517–2540 — `defaultPublicContext` shape confirmed (`active: null`, `over: null`). HIGH confidence.
+- `node_modules/tailwindcss/theme.css` — `--breakpoint-sm: 40rem` confirmed. HIGH confidence.
+- `src/components/OpponentHand.tsx`, `GridZone.tsx`, `PileZone.tsx`, `SpreadZone.tsx`, `BoardView.tsx`, `HandZone.tsx`, `BoardDragLayer.tsx` — current implementation patterns. HIGH confidence.
+- `tailwindcss.com/docs/grid-template-columns` and `tailwindcss.com/docs/responsive-design` — `sm:grid-cols-N` syntax verified. HIGH confidence.
+- Context7 `/clauderic/dnd-kit` — `useDragOperation` docs (new `@dnd-kit/react` package API, not the v6 API in use). Used for cross-reference only; v6 source confirmed separately. MEDIUM confidence for new API.
+- Context7 `/websites/dndkit` — `useDroppable` return shape confirmed. MEDIUM confidence (v6 source confirmed independently).

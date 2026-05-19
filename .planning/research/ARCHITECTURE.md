@@ -1,251 +1,329 @@
 # Architecture Research
 
-**Domain:** Layout/UX polish and spread zone interactivity — v1.3 milestone
-**Researched:** 2026-05-01
+**Domain:** Layout/UX polish and interaction bug fixes — v1.5 Board Polish II milestone
+**Researched:** 2026-05-19
 **Confidence:** HIGH (based on direct codebase inspection)
 
 ---
 
-## Current Architecture (as-built, v1.2 baseline)
+## Current Architecture (as-built, v1.4 baseline)
 
 ```
 App.tsx
 └── RoomView
     ├── LobbyPanel           (pre-join screen)
-    └── BoardDragLayer       (DndContext owner, all drag logic, pile-insert dialog)
-        └── BoardView        (pure layout, flex-col with 4 sections)
+    └── BoardDragLayer       (DndContext owner, all drag/select logic, pile-insert dialog)
+        └── BoardView        (pure layout, flex-col with 5 bands)
             ├── ConnectionBanner
             ├── Header strip  (bg-card, flex row)
-            │   ├── OpponentHand × N  (each with opponentSpread SpreadZone below it)
-            │   ├── Copy-link button
-            │   └── ControlsBar  (Deal popover | Undo + Reset alert-dialog)
-            ├── Pile row      (flex-1, centered, PileZone × N)
-            ├── Spread row    (bg-card, communalZone + mySpreadZone side by side)
-            └── HandZone      (player's private hand, fixed 128px height)
+            │   ├── div × N  (one per opponent — flex-col with OpponentHand + SpreadZone stacked)
+            │   └── ControlsBar  (hamburger → Popover → game controls)
+            ├── Middle band   (flex-1, min-h-0, flex row)
+            │   ├── PileZone × N   (draw/discard/custom piles)
+            │   └── GridZone       (communal 7×2 play area — shrink-0)
+            ├── Personal spread row  (flex-shrink-0, px-4 py-1 — only if mySpreadZone exists)
+            │   └── SpreadZone (interactive, owned by local player)
+            └── HandZone      (local player private hand, fixed ~100-128px height)
 ```
 
 **State ownership:**
-- PartyKit server: all game state (piles, hands, players, phase, undo stack)
-- BoardDragLayer: `activeCard`, `pendingMove`, `selectedIds` (ephemeral drag/select state)
-- BoardView: `copied` (copy-link button flash) — trivial local state
+- PartyKit server: all game state (piles, hands, players, phase, undo stack, handRevealed)
+- `BoardDragLayer`: `activeCard`, `pendingMove`, `selectedIds`, `selectionSource`, `shufflingPileIds` (ephemeral drag/select state)
+- `HandZone`: `sortMode` (local display preference — never synced to server for 'original', syncs REORDER_HAND for byRank/bySuit)
+- `GridZone`, `SpreadZone`, `OpponentHand`: no local state — purely driven by props
 
 ---
 
-## Question 1: Communal Zone to Physical Center
+## Question 1: Docking Spread Zones to Their Hand Zones
 
-### Current layout structure
+### What "docking" means
 
-`BoardView` uses a flex-column with four top-to-bottom sections:
+Per LAYOUT-05: opponent spreads move out of the `bg-card` header into the board area (`bg-background`), positioned below each opponent's hand. Personal spread sits flush above HandZone with no visual separator between them. Vertical slack between piles/grid and the spread+hand unit grows in the middle band, not between spread and hand.
 
-1. Header strip (`bg-card`) — opponents + controls
-2. Pile row (`flex-1`) — draw/discard piles, centered
-3. Spread row (`bg-card`) — communal zone (`pile.id === 'play'`) + player's personal zone, side by side
-4. HandZone — player's private hand
+### Current opponent spread placement
 
-The communal zone currently sits at the bottom of the board alongside the personal zone. "Physical center" means moving it to the vertical midpoint — between the pile row and the player area.
+Opponent spreads are already rendered inside the header `<div>` as a second sibling below each `OpponentHand`:
 
-### Recommended approach: split the single spread row into two
+```tsx
+// BoardView.tsx lines 47-65 (current)
+<div key={id} className={`flex flex-col gap-1 ...`}>
+  <OpponentHand ... />
+  {opponentSpread && <SpreadZone ... interactive={false} />}
+</div>
+```
 
-Replace the single spread row with two separate rows:
+The problem is that this entire block lives inside the `bg-card` header strip. The fix is not a component restructure — it is a layout-band reassignment: the opponent column divs must move out of the header strip and into the middle band, sitting above the piles/grid row.
+
+### Recommended approach: add an opponent band above the middle band
+
+Replace the current two-section middle area with three sections:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  Header: opponents + controls        (bg-card)  │
+│  Header: ControlsBar only             (bg-card) │  ← header becomes controls-only
 ├─────────────────────────────────────────────────┤
-│  Pile row: Draw + Discard            (flex-1)   │
+│  Opponent band: OpponentHand + spread            │  ← NEW band (bg-background)
+│  (flex row, one column per opponent)             │
 ├─────────────────────────────────────────────────┤
-│  Communal spread zone                (bg-card)  │  ← NEW CENTER POSITION
+│  Middle: PileZones + GridZone         (flex-1)  │  ← existing, unchanged
 ├─────────────────────────────────────────────────┤
-│  Player personal spread zone(s)      (bg-card)  │
-├─────────────────────────────────────────────────┤
-│  HandZone                                       │
+│  Personal spread + HandZone                      │  ← spread above hand, no gap
 └─────────────────────────────────────────────────┘
 ```
 
-In `BoardView.tsx`, the single `<div className="flex items-start gap-4 px-4 py-2 bg-card">` that renders both `communalZone` and `mySpreadZone` becomes two separate `<div>` rows: one for `communalZone` only, one for `mySpreadZone`.
+The opponent columns (currently inside the header) move to their own `<div>` with `flex flex-row gap-4 px-4 py-2`. This div sits between the header and the middle band. The header strip is simplified to only the `ControlsBar`.
 
-**CSS approach: flexbox, not grid.** The sections have heterogeneous heights. The pile row uses `flex-1` to fill remaining space; other rows have fixed-height card content. CSS Grid's implicit row sizing would require explicit `grid-rows` accounting for the fixed card heights and would need updating whenever card dimensions change. Staying with `flex flex-col` on the outer wrapper and `flex-1` on the pile row preserves the existing approach exactly.
+### Personal spread docking
 
-**Variable player count (2–4) effect on communal zone position:** None. The communal zone's row is independent of how many players are present. Player count only affects the header strip (opponent hands and their spread zones) and the personal zone row (just `mySpreadZone` — the local player's personal zone is always one). The opponent spread zones remain in the header alongside `OpponentHand`, which is unchanged by this refactor.
+Personal spread currently sits in a `flex-shrink-0` row above HandZone, which is already structurally correct. The issue is visual: there is likely a gap or border between the spread row and the hand. To make them flush:
 
-**Communal zone width:** In its new full-row position, the communal zone should expand to fill available width. Add `w-full` to the `SpreadZone` container when rendered as the communal zone row, since `min-w-[80px]` was sized for a strip next to another element.
+- Remove the `py-1` padding on the spread row (or reduce it to `pb-0`)
+- Ensure HandZone has `pt-0` at top if it has a top margin/padding from its header row (`px-4 mb-1` on the label div)
+- The spread and hand should share a single vertical visual unit — consider wrapping them both in a single outer `<div className="flex-shrink-0 flex flex-col">` so any gap between them is a controlled inner gap, not an outer layout seam
 
-### Integration point
+### Tradeoff: component restructure vs layout-only change
 
-- **Modified:** `BoardView.tsx` — split one `<div>` into two `<div>` rows.
-- No server changes. No changes to `BoardDragLayer`.
+**Option A: Layout band reassignment (recommended)** — Move the opponent column divs out of the header strip and into a new sibling band in `BoardView.tsx`. No changes to `OpponentHand` or `SpreadZone`. The `flex flex-col gap-1` wrapper that currently pairs them is unchanged — it just moves to a different parent band.
 
----
+- Tradeoff: `BoardView.tsx` gains a fourth major layout section, but each section is simple and readable.
 
-## Question 2: Collapsing Game Controls into a Menu Panel
+**Option B: Render SpreadZone inside OpponentHand** — Pass spread data as a prop into `OpponentHand` and render it there.
 
-### Current ControlsBar
+- Avoids adding a layout band to `BoardView`.
+- Creates a semantic coupling problem: `OpponentHand` renders its own droppable zone, its own header, and now also a full `SpreadZone` with its own droppable, dnd monitors, and SortableContext. This makes `OpponentHand` a compound component responsible for two dnd registration zones.
+- Not recommended: the existing separation between `OpponentHand` (droppable for pass-card) and `SpreadZone` (droppable for pile actions) is intentional. `SpreadZone`'s `useDndMonitor` would nest inside `OpponentHand`, which adds cognitive load without benefit.
 
-`ControlsBar` renders inline in the header strip as a horizontal button group. In setup/lobby phase: a Deal `Popover`. In playing phase: Undo button + Reset `AlertDialog`.
+**Verdict: Option A.** The layout band reassignment is a pure `BoardView.tsx` change, touches zero component internals, and leaves all dnd registrations exactly as they are.
 
-### Recommended approach: wrap ControlsBar in a Popover trigger
+### Integration points
 
-The existing `Popover` component (`src/components/ui/popover.tsx`) wraps `@base-ui/react/popover`. This primitive handles portal rendering, positioning, keyboard dismiss (Escape), and focus management. No new dependencies.
-
-**Trigger placement:** A single icon button (e.g., `SlidersHorizontal` from `lucide-react`, which is already a project dependency) lives in the header strip exactly where `ControlsBar` currently is. The Popover popup opens below it and renders the current controls as a vertical flex-col panel.
-
-**Why not a floating button?** A floating button (bottom-right or similar) must be z-indexed above the dnd-kit `DragOverlay` portal. `DragOverlay` renders into `document.body` via `createPortal` in `BoardDragLayer`. Managing z-index stacking between a floating button and a dragging card overlay introduces fragility. Keeping the trigger in the header avoids this entirely.
-
-**AlertDialog inside Popover:** `ControlsBar` uses `AlertDialog` from `@base-ui/react/alert-dialog` for the Reset confirmation. When Reset is triggered from inside a Popover, the `AlertDialog` opens in its own portal with its own backdrop. This composes correctly — the backdrop covers the Popover. The Popover stays mounted behind the backdrop, which is acceptable (dismissing the alert dialog returns focus to the Popover trigger, not an unrelated element). This behavior can be verified quickly with a manual test during LAYOUT-03.
-
-**What does NOT change:** The copy-link button stays outside the Popover, as a standalone header button. It is a room-setup utility (sharing the URL before a game), not a game control. Burying it in the panel makes the most common pre-game action harder to reach.
-
-**Restructuring ControlsBar layout:** The current component renders a `flex items-center gap-2 flex-shrink-0` wrapper with buttons side by side. For the Popover panel context, change the inner layout to `flex-col gap-2`. The component's `phase`-based conditional rendering is unchanged — only the wrapper layout CSS changes.
-
-### Integration point
-
-- **Modified:** `ControlsBar.tsx` — change wrapper layout from horizontal row to `flex-col`.
-- **Modified:** `BoardView.tsx` — wrap the `<ControlsBar>` usage in a `<Popover>` with a `<PopoverTrigger>` icon button; move `<PopoverContent>` to contain `<ControlsBar>`.
-- No new shadcn components needed. No server changes.
+- **Modified:** `BoardView.tsx` — move opponent column divs from header strip to a new opponent band; simplify header to ControlsBar only; add explicit `flex-col` wrapper pairing personal spread + HandZone
+- **No changes:** `OpponentHand.tsx`, `SpreadZone.tsx`, `HandZone.tsx`, `BoardDragLayer.tsx`, server
 
 ---
 
-## Question 3: Responsive Layout Breakpoints
+## Question 2: Empty Spread Zone Visual State
+
+### What state is needed
+
+Per LAYOUT-06: when a spread zone is empty, it should show a faint ¼-height dashed strip (not collapse to `h-px opacity-0` as it currently does for the interactive local zone). Controls (Eye, SelectAll) hide until cards are present.
+
+The current code for interactive empty zones:
+
+```tsx
+// SpreadZone.tsx lines 169-178 (current)
+isEmpty && interactive !== false
+  ? isOver
+    ? 'min-w-[56px] sm:min-w-[80px] h-[40px] ... border-dashed border-primary ...'
+    : 'h-px opacity-0'   // ← collapses to invisible line
+  : cn('min-w-[56px] h-[64px] ... border flex items-center ...')
+```
+
+The new requirement is a persistent visible strip even when not being hovered, for both interactive (personal) and non-interactive (opponent) zones.
+
+### Where does "is dragging" state live?
+
+The current empty interactive zone uses `isOver` from `useDroppable` to show the enhanced drop target. For the new faint strip, we need to know "is any drag in progress?" so the strip can optionally brighten or gain a primary-colored border on hover vs remain faint at rest.
+
+Three options:
+
+**Option A: `useDndContext` in SpreadZone (recommended)** — `SpreadZone` already imports from `@dnd-kit/core` (`useDroppable`, `useDndMonitor`). Adding `useDndContext` returns `active` — non-null when a drag is in progress. This is exactly the pattern `OpponentHand` and `HandZone` use today. No new props, no component boundary changes.
+
+```tsx
+const { active } = useDndContext();
+const isDragging = active !== null;
+// strip class: isDragging && !isOver → primary/30 border; isOver → primary border; rest → muted/30 border
+```
+
+**Option B: Pass `draggingCardId` prop** — `SpreadZone` already receives `draggingCardId`. A non-null value signals dragging is active. This works but requires checking for non-null, and `draggingCardId` is null between drag start and when `setActiveCard` runs (edge case during event processing). `useDndContext` is more authoritative.
+
+**Option C: Component local state** — Not needed. The drag state is not local to the zone; it is a global DndContext value. Local state would be redundant and create a sync problem.
+
+**Verdict: Option A (`useDndContext` inside `SpreadZone`).** Zero prop changes, idiomatic for this codebase, directly mirrors the `OpponentHand` pattern.
+
+### Controls visibility
+
+Current: `(!isEmpty || interactive === false)` gates the controls row. New rule: hide controls when `isEmpty`. The `interactive === false` branch (opponent zones) currently shows a face-toggle. Per CTRL-05, that face-toggle is removed from opponent zones. So the rule simplifies to: render controls only when `!isEmpty && interactive !== false`.
+
+The controls `<div>` condition changes from `(!isEmpty || interactive === false)` to `(!isEmpty && interactive !== false)`.
+
+No state beyond `pile.cards.length` is needed for this. `isEmpty` is a pure derivation from props.
+
+### Integration point
+
+- **Modified:** `SpreadZone.tsx` — add `useDndContext()` for the `isDragging` flag; update the empty-zone CSS class logic to render a ¼-height visible strip instead of `h-px opacity-0`; fix controls visibility gate from `||` to `&&`
+
+---
+
+## Question 3: Badge Visibility Logic (POLISH-05)
+
+### Should it be CSS or conditional rendering?
+
+**Option A: CSS (hide-when-zero)** — Always render the `<Badge>` but add `invisible` or `hidden` class when count is 0.
+
+```tsx
+<Badge className={pile.cards.length === 0 ? 'invisible' : ''}>
+  {pile.cards.length}
+</Badge>
+```
+
+This keeps the badge in the DOM, preserving its layout contribution (the `-bottom-2 -right-2` absolute position is irrelevant to layout since it is absolute). But if it is `invisible`, it is still accessible to screen readers as an element with empty text — minor accessibility concern.
+
+**Option B: Conditional rendering (recommended)** — Only mount the `<Badge>` when count ≥ 1.
+
+```tsx
+{pile.cards.length > 0 && (
+  <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
+)}
+```
+
+- No layout side effects (badge is `absolute`).
+- Screen readers see no badge element when empty — correct semantic.
+- Matches the pattern used throughout the codebase for conditional zero-state UI (e.g., empty spread zone controls, opponent overflow count badge, selection count badge).
+
+**Verdict: Conditional rendering.** The badge is positioned `absolute`, so its presence or absence does not affect pile zone layout. Conditional rendering is cleaner, removes the element entirely from the DOM, and is consistent with how every other conditional piece of UI is handled in this codebase.
+
+### Integration point
+
+- **Modified:** `PileZone.tsx` — wrap the `<Badge>` in `{pile.cards.length > 0 && (...)}`
+
+---
+
+## Question 4: Hand Sort "Original Order" Semantics (SORT-02)
+
+### The problem
+
+`HandZone` stores `sortMode` locally (`useState`). When `sortMode === 'original'`, cards display in server-authoritative order (`cards` prop from `gameState.myHand`). When `sortMode === 'bySuit'` or `'byRank'`, a `displayedCards` derivation sorts them visually without touching server state.
+
+Cycling to `'original'` should restore the pre-sort arrangement. But what is "original"? Two interpretations:
+
+**Interpretation A: "Original" = server order.** The server hand array reflects deal order, then any manual drag-reorders. When the user sorts by suit then cycles back to original, they get back to server order — which is whatever order was last persisted (deal order or last manual reorder). This is the current behavior.
+
+**Interpretation B: "Original" = snapshot at the moment sort was first activated.** When the user clicks sort, capture a snapshot of the current card order. Cycling back to original restores that snapshot. This snapshot lives in client state, never on the server.
+
+### Recommended approach: Interpretation A (server order = original)
+
+The server order already correctly encodes the "last intentional arrangement" — either deal order, or the last manual drag-reorder the player performed. There is no semantic difference between "server order" and "original" from a player's perspective. The server order IS the original: it is what the player last explicitly placed cards in.
+
+A client-side snapshot (Interpretation B) introduces drift: if any card enters or leaves the hand while a sort is active (opponent passes a card, player plays a card), the snapshot is stale and the restored "original" would contain wrong cards. Server order handles this automatically.
+
+**Implementation consequence:** The current implementation (`sortMode === 'original'` shows `cards` prop directly) is already correct. SORT-02 requires documenting this semantics decision and verifying it behaves correctly — not a logic change.
+
+One real gap exists: when the user sorts by suit, then drag-reorders within the sorted view, `handleDragEnd` in `HandZone` resets `sortMode` to `'original'` (line 218-220) and sends `REORDER_HAND`. This is correct — drag-reorder is an intentional arrangement, it clears the active sort mode so the new manual order becomes the server order, and cycling back to "original" will return to it. This is the right behavior.
+
+**No new state needed.** No snapshot, no `originalCardIds` ref. Original = server order = `cards` prop.
+
+### Integration point
+
+- **Modified:** None (behavior is already correct). Phase task is documentation/validation only. If SORT-02 requires a visible label change (e.g., tooltip clarifying "Original order = last manual arrangement"), that is a string change in `SORT_TITLES` in `HandZone.tsx`.
+
+---
+
+## Question 5: Grid Face-Toggle Icon Repositioning (CTRL-07)
 
 ### Current state
 
-`BoardView` uses `h-screen w-screen overflow-hidden flex flex-col`. Fixed heights: HandZone `h-[128px]`, SpreadZone `h-[112px]`. Cards are `w-[63px] h-[88px]` with `-ml-5` fan overlap. No existing responsive breakpoints.
+`GridZone.tsx` renders the face-toggle button in a `<div className="flex gap-1">` that appears below the 7×2 grid, after the grid div. This is inside the card grid area visually.
 
-### What breaks at phone width (~375px)
+### Recommended approach: pure CSS/layout change within GridZone
 
-| Zone | Current behavior | Problem at 375px |
-|------|-----------------|-----------------|
-| Header strip | `overflow-x-auto` | Works, but tight when controls button + copy-link + 3 opponents are all present |
-| Pile row | Two piles centered | Fine — 2 × ~70px + gap fits easily |
-| Communal spread row | `min-w-[80px]`, `overflow-x-auto` | Row narrower than available width; zone appears undersized |
-| Personal spread row | Same as communal | Same |
-| HandZone | `overflow-x-auto`, `h-[128px]` | Fine — horizontal scroll handles full hand |
+Move the button to the label row (the row that currently renders "Play Area"). Change:
 
-### Recommended breakpoint strategy: single `sm:` breakpoint (640px)
+```tsx
+// Current:
+<div className="flex items-center">
+  <span className="text-xs text-muted-foreground">Play Area</span>
+</div>
+<div data-testid="grid-zone-play" className="grid grid-cols-7 ...">...</div>
+{interactive !== false && (
+  <div className="flex gap-1">
+    <Button ... /> {/* face toggle — currently below grid */}
+  </div>
+)}
+```
 
-Below `sm` (phone):
-- Header icon button labels hidden: the controls trigger shows icon only (no text label).
-- Copy-link button: icon only. Already has `aria-label="Copy room link"`. Text content `Copied!` / `Copy link` becomes `sm:inline` with a `hidden` default.
-- Communal and personal spread rows: `w-full` to fill the row.
+To:
 
-Above `sm` (tablet/desktop): current layout is fully preserved.
+```tsx
+// Recommended:
+<div className="flex items-center gap-1">
+  <span className="text-xs text-muted-foreground">Play Area</span>
+  {interactive !== false && (
+    <Button ... /> {/* face toggle — now inline with label */}
+  )}
+</div>
+<div data-testid="grid-zone-play" className="grid grid-cols-7 ...">...</div>
+{/* no controls row below */}
+```
 
-**No grid-based layout reflow.** The board stays a vertical stack at all widths. The zone order (opponent row → pile row → communal zone → personal zone → hand) is the correct physical analogy at any screen width. There is no horizontal layout variant.
+This is a pure DOM restructure within `GridZone.tsx`. No props change, no new state, no changes to `BoardView`. The button's click handler, icon, and aria attributes are unchanged.
 
-**Touch note:** PROJECT.md marks "Mobile-first layout" as Out of Scope and notes drag-and-drop UX is worse on touch. LAYOUT-04 requirement ("scales to phone-sized screens") is about visual fit, not touch interaction. No changes to the `PointerSensor` / `TouchSensor` configuration in `BoardDragLayer` are needed for this milestone.
+**Why no component restructure:** The label and the toggle are both rendered inside `GridZone`. Moving the toggle JSX from a bottom `<div>` into the label `<div>` is a cut-paste operation within one file. There is no reason to extract a new component or modify `BoardView`'s GridZone rendering.
 
 ### Integration point
 
-- **Modified:** `BoardView.tsx` — add `sm:` variants for text visibility in header.
-- **Modified:** `SpreadZone.tsx` — add `w-full` to outer container (or pass a `fullWidth` prop); this is a one-class change.
-- No server changes.
+- **Modified:** `GridZone.tsx` — move `<Button>` from standalone bottom div into the label div; remove the now-empty bottom controls `<div>`
 
 ---
 
-## Question 4: Spread Zone Multi-Select and Undo Interaction
+## Component Change Summary
 
-### SPREAD-01: Multi-select matching player hand UX
-
-`HandZone` already implements the full multi-select pattern:
-- `selectedIds: Set<string>` held in `BoardDragLayer`
-- `onToggleSelect` propagated to each `SortableHandCard`
-- Click to select, drag selected card moves the whole set (`PLAY_CARD_SET`)
-- Escape key clears selection
-- `aria-pressed` on each card
-- Visual ring (`ring-1 ring-primary/30`) + translateY lift on selected cards
-
-`SpreadZone` has none of this. Adding it requires:
-1. `selectedIds: Set<string>` and `onToggleSelect` props on `SpreadZoneProps`
-2. Click handler on each `SortableSpreadCard` (same pattern as `SortableHandCard`)
-3. Visual ring on selected cards
-4. "N selected" badge in the zone label (already present in HandZone label area)
-
-**Required server change (one field):** `PLAY_CARD_SET` in `party/index.ts` currently hardcodes that cards come from `hands[senderToken]` (line 515: `const hand = this.gameState.hands[fromId]`). The authorization check on line 506 also blocks any `fromId` that doesn't match `senderToken`. To support playing a set from the communal spread zone or the player's personal zone:
-
-- Add `fromZone?: 'hand' | 'pile'` to the `PLAY_CARD_SET` action type in `shared/types.ts`
-- In the server handler: if `fromZone === 'pile'`, source cards from `piles.find(p => p.id === fromId)?.cards` instead of `hands[fromId]`
-- Update the authorization check: for pile sources, allow any player to play from the communal zone (`pile.ownerId === null`) and restrict personal zone plays to the zone owner (`pile.ownerId === senderToken`)
-
-This is a backward-compatible addition — `fromZone` defaults to `'hand'` so all existing `PLAY_CARD_SET` dispatches (from `HandZone`) continue to work without changes.
-
-**`selectedIds` scoping:** `BoardDragLayer` holds one `selectedIds: Set<string>` for the hand. Spread zone selection must be a separate set — selecting a card in the communal zone and a card in the hand simultaneously makes no sense for a single play action.
-
-Recommended: add `spreadSelectedIds: Set<string>` as a second state in `BoardDragLayer`. Use the zone identity (hand vs spread) to determine which set is active during drag. Clear the opposite set whenever a drag starts from either zone (existing logic on line 115 already clears `selectedIds` when dragging an unselected card — extend this to also clear `spreadSelectedIds`).
-
-### SPREAD-02: Spread zone card reorder by drag
-
-This already works. `SpreadZone` uses `SortableContext` + `useSortable` per card + `useDndMonitor` to detect intra-pile reorder and dispatches `REORDER_PILE_SPREAD`. The server handles `REORDER_PILE_SPREAD` on lines 312–336 of `party/index.ts`. The communal zone (`pile.id === 'play'`) and personal zones all go through the same code path.
-
-After LAYOUT-01 moves the communal zone to its own center row, reorder continues to work without code changes. The `DndContext` in `BoardDragLayer` is global — sortable card IDs are registered regardless of DOM position. Collision detection is pointer-based, not DOM-order-based.
-
-SPREAD-02 is a verification task, not a development task.
-
-### Undo interaction with reorder
-
-`REORDER_PILE_SPREAD` does not call `takeSnapshot` (confirmed: no call in that switch branch in `party/index.ts`). `REORDER_HAND` also has no snapshot. Reorders are intentionally non-undoable — they are aesthetic/organizational changes, not game moves. This remains correct for v1.3. Undo applies only to card moves (`MOVE_CARD`, `PLAY_CARD_SET`, `FLIP_CARD`, `PASS_CARD`, `DEAL_CARDS`, `SHUFFLE_PILE`).
+| Component | Change Type | What Changes |
+|-----------|-------------|--------------|
+| `BoardView.tsx` | Modified (layout restructure) | Header becomes ControlsBar-only; opponent columns move to a new opponent band; personal spread + HandZone paired in a single flex-col unit |
+| `SpreadZone.tsx` | Modified (behavior + CSS) | Add `useDndContext` for isDragging; update empty-state CSS to ¼-height visible strip; fix controls visibility gate; remove face-toggle from `interactive=false` path |
+| `PileZone.tsx` | Modified (conditional render) | Badge wrapped in `pile.cards.length > 0` guard |
+| `GridZone.tsx` | Modified (DOM restructure) | Face-toggle button moves from bottom controls div into label div |
+| `HandZone.tsx` | Not modified (behavior correct) | SORT-02 is a validation/doc task; existing original=server-order behavior is correct |
+| `OpponentHand.tsx` | Potentially modified | Per CTRL-06: opponent hand drop-target outline must only show `isOver`, not on `dragIsActive`. Currently: `dragIsActive ? 'border-dashed border-primary/60' : 'border-transparent'`. Fix: remove the `dragIsActive` branch — border is transparent until `isOver` |
+| `BoardDragLayer.tsx` | Not modified | No state changes needed for v1.5 items |
+| `party/index.ts` | Not modified | No server changes for v1.5 items |
+| `shared/types.ts` | Not modified | No type changes for v1.5 items |
 
 ---
 
-## Component Summary: New vs Modified
+## Data Flow
 
-| Component | Status | Change |
-|-----------|--------|--------|
-| `BoardView.tsx` | Modified | Split single spread row into two rows; wrap controls in Popover; add `sm:` responsive variants |
-| `ControlsBar.tsx` | Modified | Change layout from horizontal row to `flex-col` for Popover panel rendering |
-| `SpreadZone.tsx` | Modified | Add `selectedIds` + `onToggleSelect` props; add selection visuals to `SortableSpreadCard`; add `w-full` responsive behavior |
-| `BoardDragLayer.tsx` | Modified | Add `spreadSelectedIds` state; thread selection props to SpreadZone instances; update multi-card drag dispatch to pass `fromZone: 'pile'` when source is spread |
-| `party/index.ts` | Modified | Update `PLAY_CARD_SET` handler to support `fromZone: 'pile'`; update authorization for pile-sourced set plays |
-| `shared/types.ts` | Modified | Add `fromZone?: 'hand' \| 'pile'` to `PLAY_CARD_SET` action type |
+No data flow changes in v1.5. All changes are:
 
-No new components. No new npm packages. No new shadcn components.
+1. Layout band reorganization (DOM structure only, `BoardView.tsx`)
+2. Visual state derivation from existing dnd-kit hooks (within `SpreadZone.tsx`, `OpponentHand.tsx`)
+3. Conditional rendering from existing pile data (within `PileZone.tsx`)
+4. DOM restructure within a single component (within `GridZone.tsx`)
 
----
-
-## Data Flow Changes
-
-### Multi-select from spread zone (new path)
-
-```
-User clicks card in SpreadZone
-    → onToggleSelect(cardId) → BoardDragLayer.spreadSelectedIds updated
-    → SpreadZone re-renders with selection highlight
-
-User drags selected card out of SpreadZone toward a pile drop target
-    → BoardDragLayer.handleDragStart: if dragging unselected card, clear spreadSelectedIds
-    → BoardDragLayer.handleDragEnd: isMultiCardSet checks spreadSelectedIds
-    → sendAction({
-        type: 'PLAY_CARD_SET',
-        cardIds: [...spreadSelectedIds],
-        fromZone: 'pile',
-        fromId: pile.id,
-        toZone: 'pile',
-        toId: targetPileId
-      })
-    → Server: validates source pile, removes cards, appends to dest, takeSnapshot
-    → broadcastState() → all clients update
-```
-
-### Communal zone repositioning (no data flow change)
-
-The communal zone (`pile.id === 'play'`, `region: 'spread'`) already exists in `gameState.piles`. Moving its DOM position in `BoardView` does not change pile identity, drop routing, or reorder behavior. The `customCollision` function in `BoardDragLayer` identifies droppables by ID prefix (`pile-play`), not by DOM position.
+The server-authoritative state model, `viewFor` masking, per-connection broadcast, and DndContext scope are all unchanged.
 
 ---
 
 ## Recommended Build Order
 
-1. **LAYOUT-01 + LAYOUT-02** — split the spread row in `BoardView.tsx`. Pure structural CSS. No logic changes. Validates visual concept before adding interaction. Verify existing e2e tests still pass.
+**Group 1: Zero-risk visual-only changes (any order within group)**
 
-2. **LAYOUT-03** — wrap `ControlsBar` in Popover. Isolated to `BoardView.tsx` header markup and `ControlsBar.tsx` layout. Manually verify that the `AlertDialog` (Reset) composes correctly inside the Popover popup.
+1. **POLISH-05** — `PileZone.tsx`: wrap Badge in `> 0` guard. One-line change, no logic, instantly verifiable.
+2. **CTRL-07** — `GridZone.tsx`: cut-paste face-toggle button from bottom div to label div. One-component change, no behavior change.
+3. **LAYOUT-07** — `SpreadZone.tsx`: remove the `<span>{pile.name}</span>` label. One-line deletion. No logic.
+4. **CTRL-05** — `SpreadZone.tsx`: remove face-toggle from the `interactive === false` branch. One-line conditional change. Verify opponent zones lose the icon, local zone keeps it.
 
-3. **LAYOUT-04** — add `sm:` responsive variants. Low-risk CSS additions on top of the restructured layout. No logic.
+**Group 2: Empty state visual + drop-target outline (small behavior changes)**
 
-4. **shared/types.ts + party/index.ts for SPREAD-01** — add `fromZone` to `PLAY_CARD_SET` in types and update the server handler. This is the only change that crosses the wire. Add/update unit tests before the UI lands. The change is backward-compatible — no existing dispatch breaks.
+5. **LAYOUT-06** — `SpreadZone.tsx`: add `useDndContext`, update empty-state class to visible ¼-height strip, fix controls gate. Interdependent with CTRL-05 (same file, same PR is fine).
+6. **CTRL-06** — `OpponentHand.tsx`: remove `dragIsActive` border class. Tiny change; verify that the dashed outline no longer appears on drag start.
+7. **POLISH-06** — `PileZone.tsx`: tighten gap between controls row and pile card. CSS only. Can land in same PR as POLISH-05.
 
-5. **SPREAD-01 UI** — add `spreadSelectedIds` to `BoardDragLayer`, thread `selectedIds` + `onToggleSelect` to `SpreadZone`, add selection visuals to `SortableSpreadCard`.
+**Group 3: Layout restructure (highest complexity, broadest DOM change)**
 
-6. **SPREAD-02 verification** — confirm intra-zone drag reorder works for the communal zone in its new center-row position. No code changes expected.
+8. **LAYOUT-05** — `BoardView.tsx`: move opponent columns from header to new opponent band; dock personal spread above HandZone. This is the largest structural change. Land it last so e2e tests catch any dnd-kit collision regressions from the DOM move.
 
-**Rationale:** Layout changes are visually reviewable in isolation and carry no server risk. The server change for `PLAY_CARD_SET` is the only cross-layer dependency and should be tested server-side before the UI builds on it.
+**Group 4: Bug fixes (independent, can land anytime after Group 1)**
+
+9. **BUG-01** — Fix Select All button (requires investigation; likely a stale `onSelectAll` prop or guard condition in `SpreadZone.handleSelectAll` or `PileZone.handleSelectAll`)
+10. **BUG-02** — Fix grid mobile columns (`grid-cols-7` missing responsive breakpoint; add `grid-cols-4 sm:grid-cols-7` in `GridZone.tsx`)
+
+**Rationale for ordering:**
+
+- Groups 1 and 2 have no dependencies on each other — they touch different files and different behavior paths.
+- Group 3 (LAYOUT-05) is a pure DOM restructure with no logic changes, but it shifts multiple component trees in `BoardView`. Running it last ensures the e2e drag tests catch any regression from the DOM reorganization before merge.
+- Bug fixes are independent and can be validated by existing e2e tests.
 
 ---
 
@@ -253,56 +331,49 @@ The communal zone (`pile.id === 'play'`, `region: 'spread'`) already exists in `
 
 | Concern | Detail |
 |---------|--------|
-| `DndContext` boundary | `BoardDragLayer` owns the single `DndContext`. All zones — including the communal zone in its new row position — are children of this context. No new context needed. |
-| `customCollision` function | Filters droppables by ID prefix: `hand`, `opponent-hand-`, `pile-`. The communal zone droppable is `pile-play`. Moving it in the DOM has no effect on collision detection. |
-| shadcn/ui primitives in use | `Popover` (`@base-ui/react/popover`) is already in the project. The controls collapse uses the existing component. No new shadcn components needed. |
-| `REORDER_PILE_SPREAD` action | Already complete in server and client. Works for all spread piles. No change. |
-| Undo stack | `PLAY_CARD_SET` calls `takeSnapshot`. Multi-card plays from spread zones will be undoable. Reorders remain non-undoable (consistent with `REORDER_HAND`). |
-| `viewFor` masking | Communal zone cards are already visible to all players (`region: 'spread'`, `faceUp: true` by default). No masking changes. |
-| Per-connection broadcast | `broadcastState` uses `viewFor` per connection. No change needed. |
+| `DndContext` boundary | `BoardDragLayer` owns the single `DndContext`. Moving opponent columns from the header band to a new band in `BoardView` does not affect this — all zones remain children of `DndContext`. Collision detection is pointer-based, not DOM-position-based. |
+| `customCollision` in `BoardDragLayer` | Identifies droppables by ID prefix (`hand`, `opponent-hand-`, `pile-`, `grid-cell-`). Moving opponent column divs in the DOM does not change droppable IDs. No change needed. |
+| `SpreadZone` droppable IDs | The droppable ID is `pile-${pile.id}`. Moving the component to a new DOM band in `BoardView` does not change the droppable ID. All existing drag routing continues unchanged. |
+| `useDndMonitor` in `SpreadZone` | Global to the `DndContext` scope. DOM position of the SpreadZone component is irrelevant to monitor registration. |
+| Selection state (`selectedIds`, `selectionSource`) | Lives in `BoardDragLayer`. Not touched by any v1.5 change. |
+| Undo stack | No v1.5 change modifies server actions. No undo stack impact. |
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Separate DndContext for communal zone
+### Moving OpponentHand's droppable into SpreadZone
 
-**What it looks like:** Creating a second `DndContext` scoped to the communal spread row.
-**Why it's wrong:** dnd-kit does not support dragging between separate `DndContext` instances. Cards would not be draggable between the communal zone and the hand or piles.
-**Do this instead:** All zones remain children of the single `DndContext` in `BoardDragLayer`.
+**What it looks like:** Combining the opponent hand droppable and spread zone droppable into one component to simplify the layout band.
+**Why it's wrong:** They have different droppable IDs, different collision handlers, and different semantic roles (pass-card vs pile operations). Merging them would require custom collision logic to disambiguate drops inside the combined component.
+**Do this instead:** Keep them as separate components stacked in a single column div. The column div is the only new thing; both components are unchanged.
 
-### Storing selection state in server GameState
+### Storing "original hand order" snapshot in a ref
 
-**What it looks like:** Adding `selectedCardIds` to `GameState` to broadcast selection to other players.
-**Why it's wrong:** Selection is ephemeral pointer state, not a game event. Broadcasting it causes unnecessary undo snapshots, server round-trips for every click, and race conditions between fast clicks.
-**Do this instead:** Keep all selection state in `BoardDragLayer` React state, local to each client.
+**What it looks like:** `const originalOrderRef = useRef(cards.map(c => c.id))` captured on first render or on sort activation, used to restore when cycling back to 'original'.
+**Why it's wrong:** If any card enters or leaves the hand while a sort is active (deal, pass, play), the snapshot is stale — restoring it references IDs that no longer exist or omits new cards. Server order handles this automatically.
+**Do this instead:** Let `sortMode === 'original'` render `cards` prop directly. Server order IS original order.
 
-### CSS Grid for board layout
+### CSS `visibility: hidden` on zero-count badge
 
-**What it looks like:** Converting `BoardView`'s outer container to `display: grid` for zone proportions.
-**Why it's wrong:** The pile row needs `flex-1` to fill remaining viewport height. Other rows have fixed card-height constraints. CSS Grid's implicit row track sizing fights with `flex-1` semantics and requires explicit `grid-rows` values that encode card dimensions.
-**Do this instead:** Stay with `flex flex-col` on the outer container with `flex-1` on the pile row.
+**What it looks like:** `<Badge className={count === 0 ? 'invisible' : ''}>` to hide the badge while preserving layout.
+**Why it's wrong:** The badge is `absolute`-positioned so it does not contribute to layout; hiding it while keeping it in the DOM serves no purpose and leaves an accessible but semantically empty element.
+**Do this instead:** Conditional rendering (`count > 0 && <Badge>`).
 
-### Moving copy-link into the controls panel
+### Adding a second DndContext for the opponent band
 
-**What it looks like:** Placing the "Copy link" button inside the Popover panel alongside Deal/Undo/Reset.
-**Why it's wrong:** Copy link is used before the game starts to share the URL with other players. It belongs at top-level header accessibility, not inside a menu that requires two clicks to reach.
-**Do this instead:** Keep the copy-link button as a standalone icon button in the header, outside the Popover.
-
-### Single `selectedIds` set covering both hand and spread zones
-
-**What it looks like:** Reusing `BoardDragLayer.selectedIds` for spread zone card selection.
-**Why it's wrong:** A user could have cards selected in their hand and cards selected in the spread zone simultaneously with no clear semantics for what dragging one of them should do.
-**Do this instead:** Separate `selectedIds` (hand) and `spreadSelectedIds` (spread zone) state in `BoardDragLayer`. Clear the opposite set when a drag starts from either zone.
+**What it looks like:** Wrapping the new opponent band in its own `DndContext` for isolation.
+**Why it's wrong:** dnd-kit does not support cross-context drags. Cards would not be draggable from the opponent band to the hand or piles.
+**Do this instead:** Opponent columns remain children of the single DndContext in `BoardDragLayer`.
 
 ---
 
 ## Sources
 
-- Direct codebase inspection: `src/components/BoardView.tsx`, `src/components/SpreadZone.tsx`, `src/components/HandZone.tsx`, `src/components/BoardDragLayer.tsx`, `src/components/ControlsBar.tsx`, `src/components/ui/popover.tsx`, `src/components/ui/alert-dialog.tsx`, `party/index.ts`, `src/shared/types.ts`, `src/globals.css`
-- `package.json` — confirmed `@base-ui/react ^1.3.0`, `@dnd-kit/core ^6.3.1`, `@dnd-kit/sortable ^10.0.0`, `lucide-react ^1.7.0`, Tailwind 4.x
-- `.planning/PROJECT.md` — v1.3 requirements LAYOUT-01 through LAYOUT-04, SPREAD-01, SPREAD-02; Key Decisions log
+- Direct codebase inspection: `src/components/BoardView.tsx`, `src/components/SpreadZone.tsx`, `src/components/HandZone.tsx`, `src/components/OpponentHand.tsx`, `src/components/PileZone.tsx`, `src/components/GridZone.tsx`, `src/components/BoardDragLayer.tsx`, `src/shared/types.ts`
+- `.planning/PROJECT.md` — v1.5 requirements LAYOUT-05 through LAYOUT-07, POLISH-05/06, CTRL-05 through CTRL-07, SORT-02, BUG-01/02
+- `.planning/research/ARCHITECTURE.md` (v1.3) — prior layout decisions, DndContext boundary decisions
 
 ---
-*Architecture research for: v1.3 Layout & UX Polish — Virtual Deck*
-*Researched: 2026-05-01*
+*Architecture research for: v1.5 Board Polish II — Virtual Deck*
+*Researched: 2026-05-19*
