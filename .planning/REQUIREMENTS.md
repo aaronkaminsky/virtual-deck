@@ -1,0 +1,77 @@
+# Requirements: Virtual Deck
+
+**Defined:** 2026-05-19
+**Core Value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
+
+## v1.5 Requirements
+
+### Layout / Structure
+
+- [ ] **LAYOUT-05**: Opponent spread zones appear directly below the opponent hand they belong to, in the board area (not in the header band)
+- [ ] **LAYOUT-06**: A personal spread zone that is empty shows a ¼-height faint dashed outline; controls are hidden when empty and reappear once cards are present
+- [ ] **LAYOUT-07**: Spread zones display no name label — identity is conveyed by the adjacent hand header row
+
+### Controls
+
+- [ ] **CTRL-05**: Opponent spread zones have no face-up/down toggle control — players cannot flip cards in an opponent's spread zone
+- [ ] **CTRL-06**: The drop-target outline on an opponent's hand zone appears only when a dragged card is hovering over it, not at drag start
+- [ ] **CTRL-07**: The face-up/down toggle for the communal grid zone is positioned near the zone label, not inside the card grid
+
+### Polish
+
+- [ ] **POLISH-05**: Pile count badge is hidden when the pile is empty (count = 0); badge appears only when count ≥ 1
+- [ ] **POLISH-06**: The pile controls row (face, shuffle, select-all buttons) sits visually tight against the pile card below it
+
+### Bug Fixes
+
+- [ ] **BUG-01**: The Select All button works correctly on piles and spread zones — clicking it selects the expected cards
+- [ ] **BUG-02**: The communal grid zone displays 4 columns at mobile widths (< 640px) and 7 columns at desktop widths
+
+### Sort
+
+- [ ] **SORT-02**: Hand sort cycling through "original order" has defined semantics (current server/manual order); behavior after drag-reorder then sort toggle is verified with tests
+
+## Future Requirements
+
+Deferred to future milestones.
+
+### New Features
+
+- **CHIP-01**: Poker/betting chip support — track, move, and bet chips at the table
+- **ROOM-05**: Password-protected rooms — host sets a password at creation; incorrect password denied at join
+- **ROOM-06**: Kick players — host can remove a player from the room
+- **CANVAS-01**: Free canvas communal zone — cards have arbitrary (x, y) positions and can overlap freely
+- **UX-04**: Last-move highlight — subtle visual indicator on recently moved cards/zones; fades after a few seconds
+- **SFX-01**: Sound effects — shuffle, deal, drop sounds with mute toggle
+- **ZONE-02**: Editable zone names — players can rename spread zones and piles inline
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Rule enforcement | Core design constraint — honor system only |
+| Score tracking | Honor system |
+| In-app chat | Players use voice/video separately |
+| Accounts / auth | Room link is the only access control |
+| Card art configurator UI | Code-change only by design |
+| Mobile-first layout | Drag-and-drop UX significantly worse on touch |
+| Server-side grid position remapping on mobile | CSS-only column collapse accepted; card coordinates remain in 7-col space |
+
+## Traceability
+
+| Requirement | Phase | Status | Outcome |
+|-------------|-------|--------|---------|
+| LAYOUT-05 | — | Pending | |
+| LAYOUT-06 | — | Pending | |
+| LAYOUT-07 | — | Pending | |
+| CTRL-05 | — | Pending | |
+| CTRL-06 | — | Pending | |
+| CTRL-07 | — | Pending | |
+| POLISH-05 | — | Pending | |
+| POLISH-06 | — | Pending | |
+| BUG-01 | — | Pending | |
+| BUG-02 | — | Pending | |
+| SORT-02 | — | Pending | |
+
+---
+*Requirements defined: 2026-05-19*
