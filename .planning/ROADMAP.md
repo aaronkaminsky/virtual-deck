@@ -7,6 +7,7 @@
 - ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
 - ✅ **v1.3 Layout & UX Polish** — Phases 16.1, 17–21 (shipped 2026-05-15) — [archive](milestones/v1.3-ROADMAP.md)
 - ✅ **v1.4 Table Polish** — Phases 22–25 (shipped 2026-05-18) — [archive](milestones/v1.4-ROADMAP.md)
+- **v1.5 Board Polish II** — Phases 26–30 (in progress)
 
 ## Phases
 
@@ -82,14 +83,88 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 
 </details>
 
+### v1.5 Board Polish II (In Progress)
+
+**Milestone Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
+
+- [ ] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07)
+- [ ] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06)
+- [ ] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02)
+- [ ] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02)
+- [ ] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05)
+
+## Phase Details
+
+### Phase 26: Zero-Risk Visual Polish
+**Goal**: Visual noise is eliminated and controls are correctly scoped with no behavior changes
+**Depends on**: Phase 25
+**Requirements**: POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07
+**Success Criteria** (what must be TRUE):
+  1. Pile count badge does not appear when a pile is empty; badge is visible only when count is 1 or more
+  2. The pile controls row sits visually flush against the pile card below it with no gap
+  3. Opponent spread zones display no face-toggle button
+  4. The communal grid zone's face-toggle button is positioned beside the zone label, not inside the card grid
+  5. Spread zones display no name label — the adjacent hand header identifies the zone
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 27: Drop Target + Empty Spread Behavior
+**Goal**: Drop target feedback is accurate (hover-only) and empty spread zones have a discoverable but unobtrusive visual presence
+**Depends on**: Phase 26
+**Requirements**: CTRL-06, LAYOUT-06
+**Success Criteria** (what must be TRUE):
+  1. Dragging a card does not highlight the opponent's hand zone; the outline appears only when the dragged card is physically hovered over that zone
+  2. An empty personal spread zone shows a faint dashed strip approximately one quarter of normal height
+  3. Face-toggle and select-all controls are not visible on an empty spread zone; they reappear once at least one card is present
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 28: Bug Fixes
+**Goal**: Select All works correctly and the communal grid collapses to 4 columns at mobile widths
+**Depends on**: Phase 27
+**Requirements**: BUG-01, BUG-02
+**Success Criteria** (what must be TRUE):
+  1. Clicking "Select All" on a pile selects the expected card(s); clicking it on a spread zone selects all cards in that zone
+  2. The communal grid zone displays 4 columns at viewport widths below 640px (iPhone SE and similar)
+  3. The communal grid zone displays 7 columns at desktop viewport widths
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 29: Sort Verification
+**Goal**: Hand sort "original order" has defined semantics and the behavior after drag-reorder followed by sort cycling is verified with tests
+**Depends on**: Phase 28
+**Requirements**: SORT-02
+**Success Criteria** (what must be TRUE):
+  1. "Original order" in the sort cycle is explicitly defined (documented decision: current server/manual order, not deal order)
+  2. After a player drag-reorders their hand then cycles back to "original," the hand reflects the order it was in after the last manual reorder
+  3. Unit tests cover the sort-cycle-to-original behavior after drag-reorder
+**Plans**: TBD
+
+### Phase 30: Layout Restructure — Dock Spread Zones
+**Goal**: Spread zones are spatially anchored to their owner hands — opponent spreads appear directly below each opponent hand; the personal spread appears flush above the local player's hand
+**Depends on**: Phase 29
+**Requirements**: LAYOUT-05
+**Success Criteria** (what must be TRUE):
+  1. Each opponent's spread zone renders immediately below that opponent's hand in the board area, not in the header band
+  2. The personal spread zone renders flush above the local player's hand with no visible separator
+  3. Extra vertical space on tall screens grows between the piles/grid area and the spread zones, not between spread zones and their hands
+  4. Drag-and-drop to and from spread zones works correctly after the DOM restructure (e2e verified)
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress Table
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 22. Hand Reveal | 2/2 | Complete   | 2026-05-16 |
-| 23. Hand Sort + Select All | 3/3 | Complete   | 2026-05-17 |
-| 24. Play Area Grid | 2/2 | Complete   | 2026-05-17 |
-| 25. Layout & Visual Polish | 3/3 | Complete   | 2026-05-18 |
+| 22. Hand Reveal | 2/2 | Complete | 2026-05-16 |
+| 23. Hand Sort + Select All | 3/3 | Complete | 2026-05-17 |
+| 24. Play Area Grid | 2/2 | Complete | 2026-05-17 |
+| 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
+| 26. Zero-Risk Visual Polish | 0/TBD | Not started | - |
+| 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
+| 28. Bug Fixes | 0/TBD | Not started | - |
+| 29. Sort Verification | 0/TBD | Not started | - |
+| 30. Layout Restructure — Dock Spread Zones | 0/TBD | Not started | - |
 
 ## Backlog
 
@@ -106,15 +181,3 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 | 999.37 | Free canvas play area — communal spread zone supports arbitrary card positioning (x, y) with free overlap and drag-to-any-point; deferred from v1.4 GRID work | TBD |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action | TBD |
-| 999.39 | Fix grid mobile column count — play area grid does not collapse to 4 columns on mobile (iPhone SE); `grid-cols-4` breakpoint not triggering; desktop 7-column layout renders at all widths | TBD |
-| 999.40 | Fix select all button — button appears to have no effect when clicked | TBD |
-| 999.41 | Spread zone visibility adjustments — superseded by 999.47 (empty state treatment) and 999.46 (layout docking) | TBD |
-| 999.42 | Hand sort "original order" mode — sort control cycles but has no way to return to the deal order; need to decide correct behavior (e.g. track original position or treat manual order as the baseline) | TBD |
-| 999.43 | Remove face-up/down control from opponent spread zone — players should not be able to flip cards in an opponent's spread zone; remove the icon | TBD |
-| 999.44 | Opponent hand outline shows on drag start — drop-target outline for opponent's hand appears immediately when drag begins instead of only when hovering over it | TBD |
-| 999.45 | Move play area face-up/down icon to top near label — should sit near the zone label like the drop zone treatment, not inside the card grid | TBD |
-| 999.46 | Spread zones dock to their hands — opponent spread zones move out of the bg-card top bar into the board area (bg-background), flush below the opponent hand; personal spread zone sits flush above the hand with no visual separator; extra vertical space on tall screens grows between the piles/grid and the spread zones, not between the spread zones and their hands | TBD |
-| 999.47 | Empty spread zone — narrow faint strip instead of collapse or full box — when empty, both personal and opponent spread zones show a ~¼-height faint dashed outline; controls (eye, select-all) hidden when empty and reappear once cards are present; supersedes 999.41 | TBD |
-| 999.48 | Remove spread zone name labels — the pile.name label above each spread zone repeats identity already shown in the OpponentHand header (opponents) or the HandZone controls row (local player); removing it eliminates the duplication | TBD |
-| 999.49 | Hide 0-count badge on empty piles — suppress the orange count badge on draw/discard pile zones when count is 0; badge only appears when count ≥ 1 | TBD |
-| 999.50 | Tighten pile control layout — reduce gap between the face/shuffle/select-all icon buttons above each pile zone and bring the controls row closer to the pile card; cleaner visual grouping between a pile and its controls | TBD |

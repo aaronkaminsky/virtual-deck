@@ -61,17 +61,17 @@ Deferred to future milestones.
 
 | Requirement | Phase | Status | Outcome |
 |-------------|-------|--------|---------|
-| LAYOUT-05 | — | Pending | |
-| LAYOUT-06 | — | Pending | |
-| LAYOUT-07 | — | Pending | |
-| CTRL-05 | — | Pending | |
-| CTRL-06 | — | Pending | |
-| CTRL-07 | — | Pending | |
-| POLISH-05 | — | Pending | |
-| POLISH-06 | — | Pending | |
-| BUG-01 | — | Pending | |
-| BUG-02 | — | Pending | |
-| SORT-02 | — | Pending | |
+| LAYOUT-05 | Phase 30 | Pending | |
+| LAYOUT-06 | Phase 27 | Pending | |
+| LAYOUT-07 | Phase 26 | Pending | |
+| CTRL-05 | Phase 26 | Pending | |
+| CTRL-06 | Phase 27 | Pending | |
+| CTRL-07 | Phase 26 | Pending | |
+| POLISH-05 | Phase 26 | Pending | |
+| POLISH-06 | Phase 26 | Pending | |
+| BUG-01 | Phase 28 | Pending | |
+| BUG-02 | Phase 28 | Pending | |
+| SORT-02 | Phase 29 | Pending | |
 
 ---
 *Requirements defined: 2026-05-19*
