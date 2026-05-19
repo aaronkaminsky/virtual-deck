@@ -6,7 +6,7 @@
 - ✅ **v1.1 Social Identity + UX Polish** — Phases 999.10, 999.11, 9–11 (shipped 2026-04-19) — [archive](milestones/v1.1-ROADMAP.md)
 - ✅ **v1.2 Dev Infrastructure & Game Depth** — Phases 12–16 (shipped 2026-04-29) — [archive](milestones/v1.2-ROADMAP.md)
 - ✅ **v1.3 Layout & UX Polish** — Phases 16.1, 17–21 (shipped 2026-05-15) — [archive](milestones/v1.3-ROADMAP.md)
-- 🔲 **v1.4 Table Polish** — Phases 22–25 (active)
+- ✅ **v1.4 Table Polish** — Phases 22–25 (shipped 2026-05-18) — [archive](milestones/v1.4-ROADMAP.md)
 
 ## Phases
 
@@ -70,107 +70,17 @@ See full phase details in [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.m
 
 </details>
 
-### v1.4 Table Polish (Phases 22–25)
+<details>
+<summary>✅ v1.4 Table Polish (Phases 22–25) — SHIPPED 2026-05-18</summary>
 
-- [x] **Phase 22: Hand Reveal** — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
-- [x] **Phase 23: Hand Sort + Select All** — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group (completed 2026-05-17)
-- [x] **Phase 24: Play Area Grid** — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking (completed 2026-05-17)
-- [x] **Phase 25: Layout & Visual Polish** — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty (completed 2026-05-18)
+- [x] Phase 22: Hand Reveal — Players can toggle their hand face-up/down in real time; server persists reveal state per player (completed 2026-05-16)
+- [x] Phase 23: Hand Sort + Select All — Players can cycle sort modes on their hand; players can select all cards in any pile or spread zone and drag them as a group (completed 2026-05-17)
+- [x] Phase 24: Play Area Grid — Communal spread zone displays as a 2-row fixed grid with column snapping and per-cell stacking (completed 2026-05-17)
+- [x] Phase 25: Layout & Visual Polish — Empty zones are clean and compact; pile controls move to top; personal spread zones collapse when empty (completed 2026-05-18)
 
-## Phase Details
+See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md).
 
-### Phase 22: Hand Reveal
-**Goal**: Players can show their hand to the table and hide it again, with the state visible to all players in real time
-**Depends on**: Phase 21 (prior state of the project)
-**Requirements**: HAND-01, HAND-02, HAND-03, HAND-04
-**Success Criteria** (what must be TRUE):
-  1. A player can click a "Show Hand" toggle and all other players immediately see their cards face-up
-  2. The same player can click the toggle again and their cards return to hidden (backs only) for other players
-  3. A player who joins or reconnects mid-session sees the correct revealed/hidden state for every already-connected player
-  4. The revealing player's own view is unchanged — they always see their own card faces
-**Plans**: 2 plans in 2 waves
-
-**Wave 1**
-- [x] 22-01-PLAN.md — Types, server logic, and test suite (SET_HAND_REVEALED handler, viewFor masking, migration, RESET_TABLE extension)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-- [x] 22-02-PLAN.md — UI components (HandZone toggle button and ring, OpponentHand revealed path, BoardView prop threading)
-
-**Cross-cutting constraints:**
-- `handRevealed` state is owned by the server only — clients read it through `viewFor()`, never write it directly
-- `opponentHandCounts` and `opponentRevealedHands` are mutually exclusive in `viewFor()` — a player appears in exactly one
-**UI hint**: yes
-
-### Phase 23: Hand Sort + Select All
-**Goal**: Players have affordances to sort their hand and bulk-select cards from any pile or spread zone for group moves
-**Depends on**: Phase 22
-**Requirements**: SORT-01, SELECT-01, SELECT-02, SELECT-03
-**Success Criteria** (what must be TRUE):
-  1. A player can click a sort control on their hand to cycle through original order, by suit, and by rank — the hand visually reorders each time
-  2. The sort order persists if the player navigates away and returns; other players see the reordered hand
-  3. A "Select All" button on a pile selects all cards in it, ready for a drag
-  4. A "Select All" button on a spread zone selects all cards in it, ready for a drag
-  5. After "Select All", the player can drag the selection to any valid drop target (pile, hand, or spread zone) and all cards move
-**Plans**: 3 plans in 2 waves
-
-**Wave 1** *(parallel — no file overlap)*
-- [x] 23-01-PLAN.md — Server-side: add `skipSnapshot?: boolean` to `REORDER_HAND` (so sort does not enter undo stack), extend reorderUndo tests, create Wave-0 scaffolds for `tests/handSort.test.ts` and `tests/selectAll.test.ts`
-- [x] 23-03-PLAN.md — Select All UI: `handleSelectAll` in BoardDragLayer, prop threading through BoardView, Select All buttons in PileZone (top-card-only) and interactive SpreadZone (all face-up cards), passing PLAY_CARD_SET coverage in `tests/selectAll.test.ts`
-
-**Wave 2** *(blocked on Wave 1 — Plan 02 imports the extended REORDER_HAND type from Plan 01)*
-- [x] 23-02-PLAN.md — Hand sort UI: `SortMode` cycle button in HandZone, exported `sortCards`/`buildSortDispatch`, render-time visual sort, dispatch via REORDER_HAND with `skipSnapshot: true`, passing assertions in `tests/handSort.test.ts`
-
-**Cross-cutting decisions** (resolved by planner):
-- RESEARCH.md OQ1 → `skipSnapshot?: boolean` added to `REORDER_HAND` so SORT-01 does not pollute the undo stack (REQUIREMENTS.md requirement)
-- RESEARCH.md OQ2 → render-time visual sort (no auto-redispatch useEffect); dispatch fires on click only; reconnect sees last sorted order from server
-- RESEARCH.md OQ3 → Select All on a pile selects the top card only (Pitfall 4: interior masked cards have no client-visible id; `PLAY_CARD_SET` would reject)
-- Drag-reorder while sortMode !== 'original' clears sortMode back to 'original' (drag is undoable + implies manual order intent)
-
-**UI hint**: yes
-
-### Phase 24: Play Area Grid
-**Goal**: The communal spread zone organizes cards into a structured grid so players can manage a shared play area with positional meaning
-**Depends on**: Phase 23
-**Requirements**: GRID-01
-**Success Criteria** (what must be TRUE):
-  1. The communal spread zone displays cards in a 2-row grid with visible column boundaries; cards snap to column positions when dropped
-  2. Multiple cards can occupy the same cell (stacked); the stack is visually distinguishable from a single card
-  3. A player can drag a card from one cell to another cell within the grid
-  4. A player can drag a card from the grid to a pile or hand, and vice versa, using existing drag targets
-**Plans**: 2 plans in 2 waves
-
-**Wave 1**
-- [x] 24-01-PLAN.md — Types + server foundation: gridPositions on Pile/ClientPile, MOVE_GRID_CARD action, server handler with input validation, gridPositions cleanup in MOVE_CARD/PLAY_CARD_SET/RESET_TABLE, viewFor threading, onStart migration, 7-test gridMove suite
-
-**Wave 2** *(blocked on Wave 1 — GridZone uses types and server action from Plan 01)*
-- [x] 24-02-PLAN.md — GridZone frontend component: 2-row CSS grid, per-cell useDroppable, useDndMonitor intra-grid detection, stack badge, face toggle; BoardDragLayer collision extension + toRow/toCol in handleDragEnd; BoardView swap
-
-**Cross-cutting decisions** (resolved by planner):
-- D-05: MOVE_GRID_CARD is a separate action from REORDER_PILE_SPREAD — personal spread zones unchanged
-- D-06: External→grid drops extend MOVE_CARD/PLAY_CARD_SET with optional toRow/toCol fields
-- Grid cell droppable data.toId is the pile ID ('play'), not the cell ID — ensures isIntraSpreadReorder in BoardDragLayer correctly suppresses MOVE_CARD for intra-grid drags
-- Grid cell IDs prefixed grid-cell- (not pile-) to land in new collision bucket using pointerWithin
-
-**UI hint**: yes
-
-### Phase 25: Layout & Visual Polish
-**Goal**: The board is visually clean and compact — empty zones are quiet, controls are in the right place, and vertical space is used efficiently
-**Depends on**: Phase 24
-**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, ZONE-01
-**Success Criteria** (what must be TRUE):
-  1. Empty piles and spread zones show only their label — no body text or placeholder copy inside the zone
-  2. Pile controls (shuffle, deal, etc.) appear at the top of each pile column, inline with the pile label, not below the cards
-  3. Personal spread zones sit visually closer to the communal/draw/discard area; the gap between them is noticeably reduced
-  4. A player's personal spread zone is invisible when they have no cards in it; when they begin dragging a card, a drop target for that zone appears
-  5. The overall board is more compact — zone heights and inter-zone spacing are reduced so more of the play area is visible without scrolling
-**Plans**: 3 plans in 1 wave
-
-**Wave 1** *(parallel — no file overlap)*
-- [x] 25-01-PLAN.md — SpreadZone: remove empty zone body text (POLISH-01), compact height h-[64px] sm:h-[88px] (POLISH-04), collapse/reveal logic for empty personal zone (ZONE-01)
-- [x] 25-02-PLAN.md — PileZone: restructure to header row above card with label+buttons (POLISH-02), compact height h-[64px] sm:h-[88px] (POLISH-04)
-- [x] 25-03-PLAN.md — BoardView + GridZone: remove bg-card and reduce py on personal spread band (POLISH-03), audit and update GridCell height (POLISH-04)
-
-**UI hint**: yes
+</details>
 
 ## Progress Table
 
@@ -196,3 +106,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 | 999.37 | Free canvas play area — communal spread zone supports arbitrary card positioning (x, y) with free overlap and drag-to-any-point; deferred from v1.4 GRID work | TBD |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action | TBD |
+| 999.39 | Fix grid mobile column count — play area grid does not collapse to 4 columns on mobile (iPhone SE); `grid-cols-4` breakpoint not triggering; desktop 7-column layout renders at all widths | TBD |
