@@ -213,25 +213,29 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
       </div>
       {interactive !== false && !isEmpty && (
         <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onClick={handleToggleFace}
-            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-            aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
-          >
-            {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onClick={handleSelectAll}
-            title="Select all cards in zone"
-            aria-label="Select all"
-            disabled={faceUpCards.length === 0}
-          >
-            <SquareCheck className="w-4 h-4" />
-          </Button>
+          {interactive !== false && (
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={handleToggleFace}
+              title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+              aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
+            >
+              {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+          )}
+          {interactive !== false && (
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={handleSelectAll}
+              title="Select all cards in zone"
+              aria-label="Select all"
+              disabled={faceUpCards.length === 0}
+            >
+              <SquareCheck className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       )}
     </div>
