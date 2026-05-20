@@ -46,7 +46,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       <div className="flex justify-between items-center">
         <span className="text-xs text-muted-foreground hidden sm:inline">{pile.name}</span>
         <div className="flex gap-1">
@@ -109,7 +109,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
         )}
         {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} /> : topCard && <CardBack />}
-        <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>
+        {!isEmpty && <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>}
       </div>
     </div>
   );
