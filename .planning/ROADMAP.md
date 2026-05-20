@@ -163,7 +163,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 23. Hand Sort + Select All | 3/3 | Complete | 2026-05-17 |
 | 24. Play Area Grid | 2/2 | Complete | 2026-05-17 |
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
-| 26. Zero-Risk Visual Polish | 0/2 | Not started | - |
+| 26. Zero-Risk Visual Polish | 0/2 | Planned | - |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 0/TBD | Not started | - |
 | 29. Sort Verification | 0/TBD | Not started | - |
