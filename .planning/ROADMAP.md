@@ -119,7 +119,9 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   1. Dragging a card does not highlight the opponent's hand zone; the outline appears only when the dragged card is physically hovered over that zone
   2. An empty personal spread zone shows a faint dashed strip approximately one quarter of normal height
   3. Face-toggle and select-all controls are not visible on an empty spread zone; they reappear once at least one card is present
-**Plans**: TBD
+**Plans**: 1 plan
+**Plan list**:
+- [ ] 27-01-PLAN.md — Hover-only OpponentHand drop-target outline (CTRL-06) and faint dashed strip for empty SpreadZone (LAYOUT-06)
 **UI hint**: yes
 
 ### Phase 28: Bug Fixes
