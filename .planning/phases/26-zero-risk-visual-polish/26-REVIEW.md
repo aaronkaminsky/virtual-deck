@@ -15,8 +15,7 @@ findings:
   warning: 2
   info: 3
   total: 5
-  fixed: 2
-status: fixed
+status: issues_found
 ---
 
 # Phase 26: Code Review Report
@@ -38,7 +37,7 @@ No security issues. No data-loss risks.
 
 ## Warnings
 
-### WR-01: SpreadZone renders empty `<div>` for empty opponent zones `[FIXED]`
+### WR-01: SpreadZone renders empty `<div>` for empty opponent zones
 
 **File:** `src/components/SpreadZone.tsx:214`
 
@@ -74,7 +73,7 @@ This eliminates the redundant per-button guards and the phantom-div condition in
 
 ---
 
-### WR-02: gridZoneFaceToggle.test.ts tests a predicate that contradicts the real component `[FIXED]`
+### WR-02: gridZoneFaceToggle.test.ts tests a predicate that contradicts the real component
 
 **File:** `tests/gridZoneFaceToggle.test.ts:43-60`
 
