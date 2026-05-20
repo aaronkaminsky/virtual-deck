@@ -166,7 +166,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           isEmpty && interactive !== false
             ? isOver
               ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2'
-              : 'h-px opacity-0'
+              : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
             : cn(
                 'min-w-[56px] h-[64px] sm:min-w-[80px] sm:h-[88px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
                 isEmpty ? 'border-dashed' : '',

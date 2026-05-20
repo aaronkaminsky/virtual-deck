@@ -30,12 +30,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
       data-testid="opponent-hand"
       className={cn(
         'flex flex-col rounded-lg p-1',
-        isOver
-          ? 'border-2 border-primary'
-          : dragIsActive
-            ? 'border-2 border-dashed border-primary/60'
-            : 'border-2 border-transparent',
-        dragIsActive && 'min-h-[44px] min-w-[80px]'
+        isOver ? 'border-2 border-primary' : 'border-2 border-transparent'
       )}
     >
       <div className="flex items-center gap-2 px-1 mb-1">

@@ -88,7 +88,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 **Milestone Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
 
 - [x] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07) (completed 2026-05-20)
-- [ ] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06)
+- [x] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06) (completed 2026-05-20)
 - [ ] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02)
 - [ ] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02)
 - [ ] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05)
