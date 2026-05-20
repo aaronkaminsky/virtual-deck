@@ -1,40 +1,42 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Table Polish
-status: "v1.4 shipped — PR #27"
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-05-18T04:36:26.200Z"
-last_activity: 2026-05-18
+milestone: v1.5
+milestone_name: Board Polish II
+status: completed
+stopped_at: Phase 26 planned — ready to execute
+last_updated: "2026-05-20T03:43:30.402Z"
+last_activity: 2026-05-20 -- Phase 26 marked complete
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 20
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-18)
+See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.4 complete — planning next milestone
+**Current focus:** Phase 26 — zero-risk-visual-polish
 
 ## Current Position
 
-Milestone: v1.4 — COMPLETE (archived 2026-05-18)
-Status: v1.4 shipped — PR #27; milestone archived
-Last activity: 2026-05-18
-Next: `/gsd:new-milestone` to start v1.5
+Phase: 26 — COMPLETE
+Plan: 1 of 2
+Status: Phase 26 complete
+Last activity: 2026-05-20 -- Phase 26 marked complete
+
+Progress: [░░░░░░░░░░] 0% (0/5 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 14 (v1.3)
+- Total plans completed: 10 (v1.4)
 - Average duration: —
 - Total execution time: —
 
@@ -42,15 +44,15 @@ Next: `/gsd:new-milestone` to start v1.5
 
 ## Accumulated Context
 
-### Roadmap Evolution
-
-- Phase 16.1 inserted after Phase 16: Fix PartyKit CI deploy — add partykit deploy step to GitHub Actions so server and client stay in sync on every push to main (URGENT)
-
 ### Decisions
 
 All decisions are logged in `.planning/PROJECT.md` Key Decisions table.
 
-- [Phase ?]: SpreadZone collapse/reveal pattern
+Recent decisions affecting current work:
+
+- [Phase 25]: SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging`
+- [v1.5 planning]: LAYOUT-05 (dock spread zones) is highest-risk change — land last with e2e coverage; stale droppable rects and `useDndMonitor` subscription loss are the two failure modes
+- [v1.5 planning]: SORT-02 — "original order" = current server/manual order (not deal order); decision must be documented before code is written
 
 ### Pending Todos
 
@@ -58,31 +60,19 @@ None.
 
 ### Blockers/Concerns
 
-None.
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260514-r8m | Fix 5 failing viewFor tests (null playerToken + undo cap) | 2026-05-14 | 989bafb | [260514-r8m](./quick/260514-r8m-fix-5-failing-viewfor-tests-in-tests-vie/) |
-| Phase 23 P02 | 13 | 2 tasks | 3 files |
-| Phase 25 P01 | 8 | 2 tasks | 1 files |
-| Phase 25 P02 | 1min | 2 tasks | 1 files |
+- [Phase 29]: SORT-02 requires an explicit decision on "original order" semantics before implementation. Tentative: current server/manual order (sort-cycle reset), not deal order. Confirm at plan time.
+- [Phase 30]: LAYOUT-05 requires full Playwright e2e run post-merge to catch stale droppable rects. Keep `key` props stable (keyed by `spread.id`). Consider `MeasuringStrategy.Always` if drag coords drift.
 
 ## Deferred Items
-
-Items acknowledged and deferred at milestone close on 2026-05-15:
 
 | Category | Item | Status |
 |----------|------|--------|
 | uat_gap | Phase 18: 18-HUMAN-UAT.md | resolved — 0 pending scenarios |
-| uat_gap | Phase 999.10: 999.10-UAT.md | passed — 0 pending scenarios |
-| verification_gap | Phase 16.1: 16.1-VERIFICATION.md | human_needed — live CI run required; no static gaps |
-| verification_gap | Phase 20: 20-VERIFICATION.md | human_needed — live smoke test required; no automated gaps |
-| todo | 2026-05-03-fix-decision-coverage-gate-parenthetical-pattern-matching.md | pending — GSD tool bug, not a project issue |
+| verification_gap | Phase 16.1: 16.1-VERIFICATION.md | human_needed — live CI run required |
+| verification_gap | Phase 20: 20-VERIFICATION.md | human_needed — live smoke test required |
 
 ## Session Continuity
 
-Last session: 2026-05-18T04:29:09.002Z
-Stopped at: Completed 25-02-PLAN.md
-Resume file: None
+Last session: 2026-05-20T03:05:39.393Z
+Stopped at: Phase 26 planned — ready to execute
+Resume file: .planning/phases/26-zero-risk-visual-polish/26-01-PLAN.md

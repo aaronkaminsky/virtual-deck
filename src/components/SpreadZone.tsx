@@ -154,14 +154,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center">
-        <span className="text-xs text-muted-foreground">{pile.name}</span>
-        {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
-          <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
-            {selectedIds.size} selected
-          </span>
-        )}
-      </div>
+      {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
+        <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
+          {selectedIds.size} selected
+        </span>
+      )}
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
@@ -214,7 +211,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           </div>
         )}
       </div>
-      {(!isEmpty || interactive === false) && (
+      {interactive !== false && !isEmpty && (
         <div className="flex gap-1">
           <Button
             variant="ghost"
@@ -225,18 +222,16 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           >
             {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-          {interactive !== false && (
-            <Button
-              variant="ghost"
-              className="h-7 w-7 p-0"
-              onClick={handleSelectAll}
-              title="Select all cards in zone"
-              aria-label="Select all"
-              disabled={faceUpCards.length === 0}
-            >
-              <SquareCheck className="w-4 h-4" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={handleSelectAll}
+            title="Select all cards in zone"
+            aria-label="Select all"
+            disabled={faceUpCards.length === 0}
+          >
+            <SquareCheck className="w-4 h-4" />
+          </Button>
         </div>
       )}
     </div>

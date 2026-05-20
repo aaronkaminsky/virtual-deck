@@ -1,10 +1,17 @@
-# Pitfalls Research — Virtual Deck v1.3
+# Pitfalls Research — Virtual Deck v1.5
 
-**Domain:** Real-time multiplayer card table — adding layout/UX polish and spread zone interactivity to existing dnd-kit + shadcn + PartyKit app
-**Researched:** 2026-05-01
-**Confidence:** HIGH for dnd-kit mechanics (derived from codebase + official docs); HIGH for CSS pitfalls (standard behavior); MEDIUM for shadcn controls panel z-index (implementation-specific)
+**Domain:** Real-time multiplayer card table — layout restructuring and UX polish sprint on existing dnd-kit + shadcn + PartyKit app
+**Researched:** 2026-05-19
+**Confidence:** HIGH for dnd-kit mechanics (derived from live codebase inspection + official docs + GitHub issues); HIGH for CSS stacking context behavior (MDN authoritative); MEDIUM for multiplayer "original order" edge cases (PartyKit-specific reasoning from architecture, not direct dnd-kit docs)
 
-**Context:** SUBSEQUENT MILESTONE — pitfalls specific to v1.3 additions. Assumes v1.2 state: SpreadZone uses `useSortable` + `useDraggable` nested in the same card element; `BoardDragLayer` owns a single `DndContext` with custom `customCollision`; `BoardView` uses `h-screen flex-col overflow-hidden`.
+**Context:** SUBSEQUENT MILESTONE — pitfalls specific to v1.5 changes. v1.4 state assumed:
+- `BoardDragLayer` owns the single `DndContext` with `customCollision` (pointerWithin + closestCenter hybrid)
+- `DragOverlay` renders via `createPortal` into `document.body` — so the overlay itself is NOT clipped by any container
+- `OpponentHand` uses `useDndContext()` to read `active` and shows a dashed border during `dragIsActive`
+- `HandZone` uses local `useState` for `sortMode`; sort does NOT enter the undo stack (`skipSnapshot: true`)
+- `SpreadZone` is hidden when empty for the local player; revealed via `isOver || draggingCardId` at drag start
+- `GridZone` renders a hardcoded `COLS=7` grid with `grid-cols-7`
+- `PileZone` always renders a `<Badge>` with the raw count — including zero
 
 ---
 
@@ -12,188 +19,179 @@
 
 ---
 
-### Pitfall 1: `useSortable` + `useDraggable` on the Same Card Element Register Duplicate IDs
+### Pitfall 1: DOM Restructure Breaks dnd-kit Droppable Rect Measurements
 
-**What goes wrong:** `SortableSpreadCard` in `SpreadZone.tsx` wraps a `DraggableCard` child that calls `useDraggable(card.id)`. The outer `useSortable(card.id)` is also an abstraction over `useDraggable`. Both hooks register the same `card.id` into dnd-kit's internal draggable registry. This produces duplicate ID warnings in development and causes unpredictable drag behavior in production: pointer events may fire on the wrong registration, the DragOverlay may not pick up the correct source rect, and `onDragEnd` receives stale `active.data`.
+**What goes wrong:**
+Moving `SpreadZone` from its current position (inside the `flex-1` scroll area below the grid) to dock it alongside `OpponentHand` (in the top header `flex` row) changes the DOM ancestry of every droppable node inside it. dnd-kit caches droppable bounding rects at drag-start via `ResizeObserver` and re-measures on changes. After a DOM parent restructure, stale measurements can persist for one or more frames — causing collision detection to register a hit against the old coordinates while the element is visually at new coordinates.
 
-This is the current state of the spread zone cards and it already works because the inner `DraggableCard` ref is subordinate — but it becomes a reliability problem the moment spread zone multi-select is added. When a selected card's drag triggers, dnd-kit resolves which registration "wins" and the answer is not guaranteed to be the outer sortable registration.
+The risk is highest for the **personal spread zone** (`mySpreadZone`) because its position shifts from `bottom of board` to `above HandZone`, a large vertical offset. If collision detection fires against the old rect, a card dropped on the hand strip may appear to land in the spread zone.
 
-**Why it happens:** `useSortable` internally calls `useDraggable` with the same `id`. A nested `useDraggable` call for the same `id` in a child component creates a second entry in the context's draggable registry under an identical key.
+**Why it happens:**
+dnd-kit's `ResizeObserver` watches the droppable node itself for size changes, not position changes. Moving the node to a new parent changes its page position without triggering a ResizeObserver callback. The next measurement happens on the next drag-start, so the first drag after the DOM restructure uses a potentially stale rect.
 
 **Prevention:**
-- When adding spread zone multi-select, do NOT add another `useDraggable` call. The outer `useSortable` wrapper is the canonical drag source. Strip `DraggableCard` out of `SortableSpreadCard` entirely and render card content directly so there is exactly one draggable registration per card.
-- The flip handler currently lives in `DraggableCard`. Move it to `SortableSpreadCard` before adding selection logic so the component refactor happens as a coherent unit.
-- Verify with React DevTools that no two dnd-kit hooks share the same `id` string when a spread card renders.
+- After restructuring the DOM, verify collision detection by running Playwright: drag from hand to pile, drag from pile to hand, drag across the spread zone. Test specifically that dropping on the hand strip does NOT trigger a spread zone drop.
+- If stale rect problems appear, pass `measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}` to `DndContext`. This forces measurement before drag start at the cost of minor background perf. Given the small element count (2-4 players × a few zones), the cost is negligible.
+- Keep `setNodeRef` on the same DOM element before and after restructure — do not temporarily remove and re-attach. React reconciliation is fine; unmounting the component entirely for one render cycle would force dnd-kit to deregister and re-register the droppable, which in practice works but causes a flash where the droppable is unknown.
 
-**Warning signs:** Console warning `"Encountered two children with the same key"` or `"Encountered duplicate id"` in the dnd-kit context; drag overlay visually snapping to wrong position on drag start.
+**Warning signs:**
+Cards visually land in the correct zone but the action dispatched points to a different `toId`. Log `event.over?.id` in `handleDragEnd` during development to catch this before it reaches users.
 
-**Phase to address:** Layout restructure phase (before SPREAD-01/02 implementation). This is latent today but becomes a hard blocker when multi-select selection ring must interact with drag start.
+**Phase to address:** 999.46 (Dock spread zones to hands) — add explicit e2e coverage for cross-zone drops immediately after the layout restructure.
 
 ---
 
-### Pitfall 2: Collision Detection Breaks When Spread Zone Cards Are Both Sortable Targets and Droppable "Pile" Targets
+### Pitfall 2: New CSS `transform` or `overflow:hidden` on a Wrapper Creates a Stacking Context That Clips the Drag Overlay... Except It Doesn't — But It Will Clip Non-Overlay Cards
 
-**What goes wrong:** The existing `customCollision` function in `BoardDragLayer.tsx` partitions droppable containers into three buckets: zone IDs (`hand`, `opponent-hand-*`), pile IDs (`pile-*`), and card IDs (everything else). A spread card registered as a sortable item has a card ID. An external card dragged from hand toward the spread zone can collide with a spread card ID via `closestCenter` and produce a card-to-card `over` result — but `BoardDragLayer.handleDragEnd` treats that card ID as a hand sortable target, not a pile drop. The move never fires.
+**What goes wrong:**
+The `DragOverlay` renders via `createPortal` into `document.body` and is never clipped by application containers — that part is safe and is the correct existing pattern. The risk is the **source card placeholder** and **sortable transform animations** on cards that remain in the spread zone during a drag.
 
-This is not hypothetical — the existing `isHandMissed` / `isHandReorder` guard in `handleDragEnd` was added specifically because hand cards and the hand zone droppable compete. The same competition exists between spread zone cards and the spread zone droppable (`pile-{id}`), and is currently handled by the `isIntraSpreadReorder` guard. Adding multi-select introduces new drag origins (selected cards from another zone) that don't have `fromZone === "pile"`, breaking the guard condition.
+If the new "dock spread zones to hands" layout wraps opponent spread zones in a container with `overflow-x: hidden` or `overflow: hidden` (likely needed to prevent horizontal spillover at mobile widths), the sortable transform animation for intra-spread drags will be clipped at the container boundary. Cards being reordered animate via CSS `transform: translateX(...)`. If the containing element has `overflow: hidden`, a card animating past the container edge is clipped mid-animation.
 
-**Why it happens:** The collision algorithm does not know that a card currently rendering inside a spread zone is semantically a "pile drop" target, not a "hand reorder" target. The routing logic in `handleDragEnd` is fragile: it uses `fromZone` to distinguish reorders from zone moves, but multi-select drag origins can come from `hand` targeting a `pile`, and the `over` target may resolve to a card ID inside that pile.
+Additionally: any new parent element in the restructured layout that applies `transform`, `will-change: transform`, `filter`, or `opacity < 1` on the wrapper **creates a new stacking context**. Child z-index values are then scoped to that context and cannot escape it. This matters for `SortableSpreadCard` selection rings (`ring-1 ring-primary/30`) and card-stack depth ordering.
+
+**Why it happens:**
+CSS stacking contexts are created implicitly by `transform`, `opacity < 1`, `filter`, `will-change`, `isolation: isolate`, and `contain`. These are easy to introduce accidentally when adding Tailwind utilities for the new layout (e.g., `motion-safe:transition-transform` on a wrapper, or a shadow utility that uses CSS `filter`).
 
 **Prevention:**
-- Add `toZone: 'pile'` and `toId: pileId` to the `data` object of each `useSortable` card in `SpreadZone.tsx`. This ensures `overData?.toZone` is always `'pile'` for spread card collisions, eliminating the ambiguity.
-- Update `customCollision` to explicitly prefer `pile-*` droppables when the pointer is over a spread zone's bounding rect, regardless of which card is hit by `closestCenter`. This mirrors the existing preference for `hand` zone over hand card IDs.
-- Write a unit test before implementing multi-select that asserts: dragging a hand card onto a spread zone card fires `MOVE_CARD` with `toZone: 'pile'`.
+- Audit every new wrapper added during the layout restructure. If it uses `overflow-x: hidden`, ensure the spread zone cards do not animate horizontally past the container boundary during intra-spread reorder.
+- Prefer `overflow-x: clip` over `overflow-x: hidden` when you need to prevent scrollbar appearance without clipping positioned/transformed descendants — `clip` does not create a stacking context.
+- Do NOT add `transform`, `will-change: transform`, `filter`, or `opacity` to the new wrapper that contains `SpreadZone`. Use `isolate` explicitly (Tailwind: `isolate`) only if you need stacking control.
+- Test drag animation inside opponent spread zones by dragging a card to nearly the edge of its container at 375px viewport.
 
-**Warning signs:** Cards dragged from hand to a non-empty spread zone do nothing (no server action sent). Intra-spread reorder stops working after multi-select is added.
+**Warning signs:**
+Card animation visually clips mid-slide at a container edge. Selection ring appears below the card rather than above it.
 
-**Phase to address:** Collision detection audit phase — must precede SPREAD-01 (multi-select) and SPREAD-02 (drag reorder) implementation.
+**Phase to address:** 999.46 (Dock spread zones) and 999.47 (Empty spread zone strip) — any layout wrapper added in these phases.
 
 ---
 
-### Pitfall 3: `useDndMonitor` in `SpreadZone` and `onDragEnd` in `BoardDragLayer` Both Handle the Same Drag Event — Race Condition on Reorder
+### Pitfall 3: `dragIsActive` Pattern in `OpponentHand` Shows Outline at Drag Start, Not on Hover — And the Fix Can Break Drop Registration
 
-**What goes wrong:** `SpreadZone.useDndMonitor.onDragEnd` fires for intra-spread reorders; `BoardDragLayer.handleDragEnd` fires for all drags. Both fire for the same `dragEnd` event. The current `isIntraSpreadReorder` guard in `BoardDragLayer` prevents `MOVE_CARD` from racing `REORDER_PILE_SPREAD` — but this guard checks `fromZone === 'pile' && fromId === toId`. When multi-select is added, a selected card from the spread zone may have `fromZone: 'pile'` but the drag is carrying a set (selected IDs include cards from `hand`), so the guard may misfire and send both `PLAY_CARD_SET` (or `MOVE_CARD`) AND `REORDER_PILE_SPREAD` for the same gesture.
+**What goes wrong:**
+`OpponentHand` currently reads `const { active } = useDndContext()` and sets `dragIsActive = active !== null`. This causes the dashed border to appear on ALL opponent hands the moment ANY card is picked up — even when dragging within the player's own hand. Requirement 999.44 is to show the outline only on hover (pointer inside the droppable rect).
 
-**Why it happens:** `useDndMonitor` subscribers are called in registration order with no built-in mechanism to signal "I handled this event, stop propagating." Both handlers receive the same event object. Guard conditions must be mutually exclusive or one handler must check a shared ref.
+The naive fix is to check `isOver` from `useDroppable` instead of `dragIsActive`. This is correct for the visual, but there is a subtle trap: `isOver` only becomes true when the pointer actually enters the droppable rect. If you also make the droppable conditionally disabled (e.g., `disabled: !dragIsActive`) to skip collision detection when no drag is active, `isOver` will never become true when dragging from outside. More critically: **making the droppable `disabled` while a drag is in flight deregisters the droppable from collision detection** — a card dragged slowly into the opponent hand zone may register no drop target.
+
+A second trap: if you replace the `dragIsActive && 'min-h-[44px] min-w-[80px]'` conditional (which expands the hit target during drag) with only `isOver`-driven expansion, the opponent hand may be too small a hit target to register `isOver` in the first place. This is a bootstrap problem: the target needs to be big enough to receive a hover, but it only expands when it's hovered.
 
 **Prevention:**
-- Before implementing SPREAD-01, audit every `useDndMonitor` and `onDragEnd` handler and document which drag origins and destinations each one owns. Draw an explicit decision table: `(fromZone, toZone, isMultiSelect, isIntraReorder) → handler`.
-- For multi-select: set a `wasMultiSelectDragRef` in `handleDragStart` when `selectedIds.size > 1`. Both `BoardDragLayer.handleDragEnd` and `SpreadZone.useDndMonitor.onDragEnd` can check this ref and bail out of their respective code paths when appropriate.
-- The existing `dropSuccessRef` pattern (a shared `useRef` visible to all closures in the same component) is the correct pattern — extend it rather than adding new parallel state.
+- Keep `dragIsActive` (from `useDndContext`) for the **hit-target expansion** (`min-h` / `min-w` classes). This ensures the droppable rect is large enough to receive a collision.
+- Use `isOver` from `useDroppable` only for the **visual styling** (border color/style). Do not use `isOver` to control whether the droppable is registered.
+- The correct pattern is:
+  ```tsx
+  const { active } = useDndContext();
+  const dragIsActive = active !== null;
+  const { setNodeRef, isOver } = useDroppable({ id: `opponent-hand-${playerId}`, ... });
+  // visual: isOver → solid border; no drag → transparent; drag but not over → no border
+  className={cn(
+    'border-2',
+    isOver ? 'border-primary' : 'border-transparent',
+    dragIsActive && 'min-h-[44px] min-w-[80px]'
+  )}
+  ```
+  This eliminates the dashed border at drag-start while preserving hit target expansion and drop registration.
+- Do not add `disabled` prop to `useDroppable` based on drag state — the droppable should always be registered during a drag.
 
-**Warning signs:** A single drag from a spread zone fires two server actions. `REORDER_PILE_SPREAD` fires on a cross-zone drop. State appears to bounce or flash after a drop.
+**Warning signs:**
+After the fix, attempt to pass a card to an opponent: if the card snaps back instead of landing in the opponent hand, the droppable was disabled or too small. Run the Playwright e2e suite — `opponent-hand` drop coverage exists in the test fixture.
 
-**Phase to address:** SPREAD-01 (multi-select on spread zones) — add the decision table as a spec artifact before writing any code.
+**Phase to address:** 999.44 (Opponent hand outline on hover only).
 
 ---
 
-### Pitfall 4: Selection State Conflict When Both Hand and Spread Zone Have Independent `selectedIds`
+### Pitfall 4: `grid-cols-7` Is Hardcoded and Will Not Collapse on Mobile Without a Breakpoint Override
 
-**What goes wrong:** The current `selectedIds: Set<string>` lives in `BoardDragLayer` and serves hand multi-select. If spread zone multi-select is added by giving each `SpreadZone` its own selection state (the obvious first approach), two independent selection sets exist simultaneously. A user selects 2 cards in hand, then clicks a spread zone card — the hand selection should clear but doesn't because the spread zone's local `useState` has no visibility into the hand's selection.
+**What goes wrong:**
+`GridZone` uses `grid grid-cols-7` with no responsive modifier. On iPhone SE (375px), each cell is `w-14` (56px), making the grid 7 × 56px = 392px + gap, which overflows the 375px viewport. Requirement 999.39 is to collapse to 4 columns on mobile.
 
-Worse: if both selections are active and the user drags, `handleDragStart` in `BoardDragLayer` checks `selectedIds.has(activeId)` to decide whether to clear selection. If `activeId` is from the spread zone but `selectedIds` only tracks hand cards, the check passes incorrectly and hand selection is preserved through a spread drag.
+The naive fix of `grid-cols-4 sm:grid-cols-7` works visually, but introduces a secondary pitfall: cards already placed at columns 5, 6, or 7 will render outside the 4-column grid on mobile. Their `gridPositions` still reference `col: 4`, `col: 5`, `col: 6`. Tailwind's CSS grid auto-placement will wrap them into new rows, but the `buildCellMap` function uses `gridPositions` keyed by `row,col` — so cards at `col > 3` will appear in the wrong row visually, even though their server position is correct.
 
-**Why it happens:** The natural refactor is to add selection state to `SpreadZone`. But selection is a cross-zone concern: only one zone should have active selection at any time.
+**Why it happens:**
+Tailwind responsive utilities are purely CSS (no JS). `grid-cols-4 sm:grid-cols-7` changes the rendered column count, but the game state still encodes positions using the 7-column coordinate system. There is no client-side mapping from 7-col to 4-col positions.
 
 **Prevention:**
-- Lift all selection state into `BoardDragLayer` as a single `selectedIds: Set<string>` (already the correct location). Add a `selectionZone: 'hand' | 'pile' | null` field alongside it to track which zone owns the current selection.
-- When a card in any zone is clicked for selection, `onToggleSelect` clears `selectionZone` and `selectedIds` for the previous zone before adding to the new one.
-- Pass `selectedIds` and `onToggleSelect` down to `SpreadZone` with the same interface already used by `HandZone` — no structural change to `BoardDragLayer`, only prop drilling.
-- `handleDragStart` already clears selection when an unselected card is dragged (`D-04` guard). Extend this guard to check `selectionZone` so a spread drag always clears hand selection and vice versa.
+- The `COLS` constant in `GridZone.tsx` controls both grid rendering and cell position logic. A mobile-responsive grid needs either:
+  1. **CSS-only visual collapse** — accept that cards at col ≥ 4 reflow onto row 2 on mobile, which is visually tolerable for a 2-row grid since they stay on the board.
+  2. **JS-driven column count** — derive `COLS` from `window.innerWidth` via a hook. This is more correct but adds complexity.
+- For v1.5, the CSS-only approach is sufficient: use `grid-cols-4 sm:grid-cols-7` and verify that the 2-row grid at 4 columns (8 cells) still shows all 14 cells worth of content acceptably. The existing `overflow-x-auto` on the grid container provides a fallback.
+- Do NOT dynamically construct the class string as `grid-cols-${cols}` — Tailwind's build scanner requires complete class names in source. `grid-cols-4` and `grid-cols-7` must appear as literal strings.
 
-**Warning signs:** Keyboard `Escape` clears hand selection but spread selection persists. Selected count badge shows wrong number. Dragging a spread card while hand cards are selected causes both to animate.
+**Warning signs:**
+Cards disappear on mobile (purged class), or `grid-cols-${someVar}` produces no CSS in the production build. Check the built CSS for `.grid-cols-4` and `.grid-cols-7`.
 
-**Phase to address:** SPREAD-01 — selection state architecture must be decided before any visual selection ring is added to SpreadZone.
+**Phase to address:** 999.39 (Fix grid mobile columns).
 
 ---
 
-### Pitfall 5: `REORDER_PILE_SPREAD` Is Not Covered by Undo — Server Snapshot Timing
+### Pitfall 5: Badge Conditional `{pile.cards.length}` — Off-By-One When Length Transitions Through Zero
 
-**What goes wrong:** The existing undo system takes a `GameState` snapshot before each mutating action and pushes it onto `undoSnapshots`. `REORDER_PILE_SPREAD` is a mutation that changes pile card order but currently does not take a snapshot before mutating. A user reorders cards in a spread zone, then hits undo — the undo reverts the last card *move*, not the reorder, because the reorder never pushed a snapshot.
+**What goes wrong:**
+`PileZone` currently always renders `<Badge>{pile.cards.length}</Badge>`. Requirement 999.49 is to hide the badge when the pile is empty. The fix appears trivial: `{pile.cards.length > 0 && <Badge>{pile.cards.length}</Badge>}`.
 
-If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD` fire in sequence (e.g., play a set, then immediately reorder), undo pops to pre-PLAY_CARD_SET state, but the reorder that happened in between is silently lost.
+The risk is during rapid state transitions: when a card is drawn (length goes from 1 to 0), the server broadcasts a state update. The React render with the new `gameState` removes the badge. During the 50–150ms round-trip before the new state arrives, the client still shows the old state (length = 1). This is correct. The problem is the reverse: when a card is added to an empty pile (length goes from 0 to 1), the badge re-appears. If the badge appearance is animated (e.g., `animate-in fade-in`), a flickering 0-badge can appear for one render frame if the `gameState` briefly delivers `cards.length === 0` after a reset followed by immediate server-push.
 
-**Why it happens:** `REORDER_PILE_SPREAD` was added as an order-maintenance operation rather than a meaningful game action, so it was not wired into the undo stack. As the spread zone becomes more interactive (multi-select, reorder-by-drag), the line between "order maintenance" and "meaningful action" blurs.
+In multiplayer, the server sends `STATE_UPDATE` after every action. If two actions fire in rapid succession (e.g., deal cards + immediate server-side state reconciliation), a client may receive an intermediate state where `cards.length === 0` between two valid states. A zero-badge flash is possible.
 
 **Prevention:**
-- Decide the undo contract for spread zone reorders before v1.3 ships: either (a) reorders are always undo-able (take snapshot before `REORDER_PILE_SPREAD`), or (b) reorders are explicitly excluded from undo (document this and ensure undo skips to the previous non-reorder snapshot).
-- Option (a) is simpler. Option (b) requires the server to tag snapshots by action type.
-- Whichever is chosen, add a unit test: reorder spread zone, undo, assert order reverts (or stays, if option b).
+- The conditional `pile.cards.length > 0 && <Badge>...</Badge>` is correct and sufficient. Do not add animation to the badge's appear/disappear — it amplifies the flash window.
+- Keep `Badge` purely count-driven. Do not derive visibility from animation state or local component state.
+- Do NOT cache `pile.cards.length` in local `useState` — stale state on rapid updates is worse than a momentary visual flash.
+- The stale-state risk for this specific change is LOW — the badge render depends only on `pile.cards.length` which comes directly from `gameState.piles`, the single authoritative source. There are no local state copies to go stale.
 
-**Warning signs:** Undo after a spread reorder reverts a different action than the user expects. Multiple undos are required to reach pre-interaction state.
+**Warning signs:**
+Orange badge visible at count zero during Playwright e2e tests that reset the table.
 
-**Phase to address:** SPREAD-02 (drag reorder on spread zones) — before implementation, decide the undo contract and add the snapshot call if needed.
+**Phase to address:** 999.49 (Hide zero-count badge on empty piles).
 
 ---
 
-## Moderate Pitfalls
+### Pitfall 6: "Original Order" Is Undefined in a Multiplayer Context — Each Player Gets a Different Original
+
+**What goes wrong:**
+`HandZone` stores `sortMode` in local `useState`. When `sortMode === 'original'`, the display order is the raw `cards` array from `gameState.myHand`. "Original" is therefore implicitly the server's current hand order, which is the order cards were dealt or most recently manually reordered by REORDER_HAND dispatch.
+
+The problem: `sortMode` is purely local client state. When Player A sorts by suit, sorts by rank, then clicks "original", they expect to see the order they had before sorting. But the server state already has the by-rank order because sorting dispatches `REORDER_HAND` (with `skipSnapshot: true`). When "original" is clicked, `buildSortDispatch` returns `null`, meaning no action is dispatched — the display just shows `cards` (the server's current order), which IS the by-rank order the player just applied. "Original" therefore means "current server order", not "deal order".
+
+In multiplayer, if Player A deals 5 cards and gets [A♠, 3♥, 7♦, K♣, 2♠], sorts by rank to [2♠, 3♥, 7♦, A♠, K♣], then clicks "original" — they see [2♠, 3♥, 7♦, A♠, K♣] because the server was updated. The deal order is irretrievably lost.
+
+Requirement 999.42 asks to define and implement what "original" means. There are two valid interpretations:
+
+1. **"Original" = deal order** — requires storing a snapshot of the hand at deal time (not currently tracked anywhere)
+2. **"Original" = sort-cycle reset** — the sort button becomes a three-state toggle that simply clears `bySuit`/`byRank` and reverts to current server order. "Original" is a UI label for "unsorted" not "deal order".
+
+**Prevention:**
+- Choose interpretation 2 (sort-cycle reset) unless the feature requirement explicitly says deal order. Interpretation 1 requires a new `originalHandOrder` field on `ClientGameState` (or local storage snapshot), a server change to capture it at deal time, and reconnection handling.
+- If implementing interpretation 1: store `originalOrder` in a `useRef` (not `useState`) that is set once when the hand is first received and never updated on REORDER_HAND. This avoids the stale closure problem and doesn't trigger re-renders. The `useRef` must be reset if the hand is fully replaced (e.g., after RESET_TABLE).
+- Do NOT store original order in a `useState` that participates in effects — a RESET_TABLE followed by a new deal will cause a state update that re-initializes the ref before the UI settles.
+- CRITICAL multiplayer edge case: Player B passing cards to Player A changes `myHand` mid-session. If `originalOrder` is stored as the deal-time snapshot, passed cards are not in the original order at all. The safest behavior is to append passed cards to the end of the original-order display list.
+
+**Warning signs:**
+After RESET_TABLE + redeal, the "original" sort shows the pre-reset hand order (stale ref). After a card is passed in, the sort crashes or shows undefined card IDs.
+
+**Phase to address:** 999.42 (Hand sort original order). Requires an explicit decision before implementation begins — the semantics must be decided, not just coded.
 
 ---
 
-### Pitfall 6: `overflow-hidden` on Board Layout Regions Clips the Drag Overlay
+### Pitfall 7: `useDndMonitor` in `SpreadZone` Still Fires After DOM Relocation
 
-**What goes wrong:** The current `BoardView` wraps the entire board in `h-screen overflow-hidden flex flex-col`. When a card is dragged, the `DragOverlay` is rendered into `document.body` via `createPortal` — this already escapes the `overflow-hidden` boundary. However, during layout restructuring, intermediate wrappers may be added with `overflow: hidden` or `overflow: clip` that create new stacking contexts. The DragOverlay is `position: fixed`, but `position: fixed` is relative to the nearest ancestor with a `transform`, `perspective`, `filter`, or `will-change` property — not necessarily `document.body`. A CSS `transform` on any ancestor (common in responsive animations) breaks the DragOverlay's viewport-relative positioning.
+**What goes wrong:**
+`SpreadZone` uses `useDndMonitor({ onDragEnd })` to intercept intra-spread reorders. This hook subscribes to the nearest `DndContext` ancestor. After docking spread zones to hands (phase 999.46), the `SpreadZone` for opponents will move from the lower board area into the top header section of `BoardView`. The `DndContext` is on `BoardDragLayer`, which is the common ancestor of both old and new positions — so `useDndMonitor` will continue to fire correctly.
 
-**Prevention:**
-- Do not apply `transform`, `filter`, `perspective`, or `will-change` to any element that is an ancestor of both the `DndContext` and the `DragOverlay` portal target.
-- The DragOverlay is already portaled to `document.body` (line 257 of `BoardDragLayer.tsx`). Ensure the portal target (`document.body`) has no `transform` applied by reset CSS or theme overrides.
-- When adding the controls slide-out panel (LAYOUT-03), use `position: fixed` + `z-index` for the panel itself rather than CSS transitions on parent layout containers, to avoid creating stacking contexts that interfere.
-- After each layout refactor step, manually verify drag works: drag a card from the bottom hand zone to the top opponent zone. If the overlay trails behind the pointer, a stacking context has broken the fixed positioning.
+The risk is when the `SpreadZone` is temporarily unmounted and remounted during the DOM restructure. If the component remounts, `useDndMonitor` re-subscribes, but any drag that was already in flight at the moment of remount may not deliver its `onDragEnd` to the new subscription. Cards being dragged during a hot-reload or during a React StrictMode double-render that unmounts/remounts components can silently swallow the reorder.
 
-**Warning signs:** Drag overlay appears offset from the pointer. Overlay visually clips at a container boundary during drag. Overlay renders at a wrong `z-index` relative to a newly added panel.
-
-**Phase to address:** LAYOUT-01/02 (board layout restructure) — verify drag overlay after each layout change, not just at the end.
-
----
-
-### Pitfall 7: `100vh` / `h-screen` Cuts Off Content on Mobile Safari
-
-**What goes wrong:** The board currently uses `h-screen` (which compiles to `height: 100vh`). On iOS Safari and Chrome for Android, `100vh` is calculated based on the maximum viewport height (browser chrome fully hidden). When the address bar is visible, `100vh` overflows the actual visible area — the bottom edge of the hand zone scrolls partially behind the browser's navigation bar. On smaller phones (375px wide), this is significant enough to make the hand inaccessible without scrolling.
-
-**Why it happens:** Mobile browsers reserve space for navigation UI that is not reflected in `100vh`. The `dvh` (dynamic viewport height) unit was introduced to fix this, but support varies. Tailwind 3.x does not include `dvh` utility classes by default; Tailwind 4.x may.
+**Why it happens:**
+`useDndMonitor` calls `useEffect` under the hood to subscribe/unsubscribe. If the component unmounts and remounts mid-drag, the old subscription is torn down and the new subscription is not yet established when `onDragEnd` fires.
 
 **Prevention:**
-- Replace `h-screen` on the root board container with `min-h-[100dvh]` or a CSS custom property fallback: `height: calc(var(--vh, 1vh) * 100)`. Set `--vh` via a one-time `window.innerHeight` measurement in a `useEffect` on mount.
-- Test at 375px × 667px (iPhone SE viewport) with browser chrome visible, not just in Playwright's default headless viewport.
-- The `overflow-hidden` on the root container must remain to prevent scroll — do not remove it as a "fix" for the clipping issue.
-- Note: `dvh` causes a brief layout shift when the browser bar retracts. For a game board this is acceptable; for animations it is not. Use `svh` (small viewport height — always includes browser chrome) if layout stability is more important than exact fit.
+- During the DOM restructure, ensure the `key` prop on `SpreadZone` instances in `BoardView` does not change when the layout changes. React uses `key` to decide whether to unmount + remount vs. reconcile in place. If the `key` stays stable, the component is not remounted — it simply moves in the DOM, which is fine.
+- Specifically: the opponent spread zones are keyed by `opponentSpread.id` (inferred from `id` in `BoardView.tsx`). Keep that key stable.
+- Do NOT add a new `key` that includes position information (e.g., `key={`spread-${id}-top`}`) — this forces unmount/remount on position change.
 
-**Warning signs:** Hand zone cards are partially obscured on a real phone. Board has extra dead space at the bottom in desktop browsers. Scrollbar appears on the body element.
+**Warning signs:**
+After restructuring the DOM, a drag-to-reorder within an opponent's spread zone completes visually but does not dispatch `REORDER_PILE_SPREAD`. Check server logs or add a `console.log` in `onDragEnd` during development.
 
-**Phase to address:** LAYOUT-04 (responsive layout) — add a real-device test checkpoint, not just a Playwright screenshot at desktop viewport.
-
----
-
-### Pitfall 8: Spread Zone `overflow-x: auto` Clips Selected Card Lift Animation
-
-**What goes wrong:** The spread zone container has `overflow-x-auto` to handle many cards horizontally. When multi-select is added, selected cards lift vertically with `transform: translateY(-6px)` (mirroring hand selection behavior). The `overflow-x: auto` on the parent creates an overflow context for the x-axis. When the y-axis overflow is not explicitly set to `visible`, browsers implicitly compute it as `auto` — clipping the vertical lift animation at the container boundary.
-
-**Why it happens:** CSS spec: if `overflow-x` is `auto|scroll|hidden`, `overflow-y` cannot remain `visible`; it is computed as `auto`. This means the `-6px` lift gets clipped at the container top edge.
-
-**Prevention:**
-- When adding the selection lift to SpreadZone, increase the spread zone container's top padding or height slightly to accommodate the lift range (e.g., `pt-2` to give 8px headroom above cards).
-- Do not try to set `overflow-y: visible` alongside `overflow-x: auto` — browsers ignore `visible` in that combination.
-- Alternatively, skip the translateY lift for spread zone selection and use a different visual (outline ring only, or bottom border highlight) to avoid the overflow conflict entirely.
-
-**Warning signs:** Selected spread zone card appears partially cut off at the top. Card lifts on hover but snaps back when the mouse stops.
-
-**Phase to address:** SPREAD-01 (spread zone multi-select) — establish the selection visual before wiring up selection state.
-
----
-
-### Pitfall 9: Controls Panel (`shadcn/Sheet` or Custom Slide-Out) Creates a New Stacking Context That Competes With the DragOverlay
-
-**What goes wrong:** The v1.3 controls panel (LAYOUT-03) collapses the ControlsBar into a slide-out drawer or sheet. shadcn's `Sheet` component renders via a Radix portal at `z-index: 50` with a backdrop at `z-index: 49`. dnd-kit's DragOverlay, portaled to `document.body`, has no explicit `z-index` — it renders at the browser's stacking order for position-fixed elements, which may be below `z-index: 50`. Result: a card being dragged across the screen while the controls panel is open (or animating open) can visually render behind the panel.
-
-**Why it happens:** No coordinated `z-index` budget between shadcn's overlay components and dnd-kit's DragOverlay.
-
-**Prevention:**
-- Add `style={{ zIndex: 100 }}` to the `DragOverlay` component in `BoardDragLayer.tsx`. This guarantees the drag overlay always appears above shadcn modals and sheets.
-- Define a `z-index` budget in `globals.css` using CSS custom properties: `--z-overlay: 50` for sheets/dialogs, `--z-drag: 100` for the drag overlay.
-- If using shadcn `Sheet`, ensure the sheet is not open during an active drag (disable the trigger button while `activeCard !== null`).
-- Test by: opening the controls panel, starting a drag, and verifying the drag overlay renders above the panel.
-
-**Warning signs:** Dragged card disappears behind a panel that opens during drag. Panel animation briefly shows over the dragged card.
-
-**Phase to address:** LAYOUT-03 (controls panel) — establish `z-index` budget at the start of this phase.
-
----
-
-### Pitfall 10: Adding `selectedIds` to `SpreadZone` Breaks Existing Playwright e2e Tests That Simulate Clicks on Spread Zone Cards
-
-**What goes wrong:** The Playwright `mouse.move/down/move/up (steps:15)` pattern is used to simulate drags in e2e tests. Spread zone cards are also clickable (for flip). When selection is added, a single click on a spread zone card selects it instead of flipping it. Existing e2e tests that click a spread zone card to flip it will now select it instead — breaking those tests without changing any production logic.
-
-**Why it happens:** The flip-click vs. select-click behavior on spread zone cards needs to be explicitly disambiguated. Hand cards currently use a `onPointerDown stopPropagation` + `onClick` combination where click = select and a separate flip mechanism exists. Spread zone cards currently use `DraggableCard`'s `onFlip` which fires on click after `didDragRef.current` check.
-
-**Prevention:**
-- Before implementing SPREAD-01, define the interaction model: is a single click on a spread zone card a flip, a selection, or does it depend on whether a modifier key is held?
-- The consistent model is: single click = select (matching hand), context-menu or button = flip. This is a UX change from v1.2 where single click = flip.
-- Update existing e2e tests for spread zone flip before writing new selection tests. This makes the regression explicit.
-- Add a `data-testid` to the flip button if flip moves to a button affordance, so tests can target it unambiguously.
-
-**Warning signs:** e2e test clicking spread zone card to flip produces a selected (not flipped) card. Test starts passing for the wrong reason.
-
-**Phase to address:** SPREAD-01 — write the updated e2e test expectation in the phase plan's success criteria before implementation.
+**Phase to address:** 999.46 (Dock spread zones to hands).
 
 ---
 
@@ -201,12 +199,10 @@ If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD`
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Keep `DraggableCard` nested inside `SortableSpreadCard` | No refactor needed now | Duplicate useDraggable ID registration; breaks when multi-select is added | Never in v1.3 — must fix before SPREAD-01 |
-| Add `selectedIds` state locally to `SpreadZone` | Simple, co-located | Cross-zone selection conflict; hand selection doesn't clear when spread is clicked | Never — lift to `BoardDragLayer` |
-| Skip undo support for `REORDER_PILE_SPREAD` | No server change needed | User confusion: undo after reorder reverts wrong action | Acceptable only if explicitly documented in LAYOUT/SPREAD phase notes |
-| Use `100vh` / `h-screen` for responsive layout | No change from v1.2 | Bottom content clipped on iOS Safari; hand inaccessible | Never for LAYOUT-04 |
-| Use fixed `z-index` numbers in component style props | Quick fix | Fragile; z-index values diverge across components | Acceptable temporarily if documented in the z-index budget comment |
-| Hardcoded `pile.id === 'play'` to find communal zone | Works today | Breaks if pile ID changes; noted as fragile in v1.2 milestones | Acceptable for v1.3; fix when pile IDs become configurable |
+| Hardcoded `COLS=7` in GridZone | No dynamic column logic needed | Cannot adapt grid size without code change; mobile fix requires breakpoint workaround | Acceptable for v1.5; if grid becomes configurable per-room, this needs to be data-driven |
+| `sortMode` in local `useState` (not server state) | Zero round-trip; no server changes | "Original" is not the deal order; different devices for same player would show different sort | Acceptable — sort mode is a display preference, per the v1.4 decision to use `skipSnapshot` |
+| `dragIsActive` derived from `useDndContext().active` on every droppable | Simple boolean, no extra context | Causes all droppable-containing components to re-render on every drag-start | Acceptable for 2–4 player board; problematic if number of droppables grows into dozens |
+| Empty spread zone visibility driven by `isDragging` (server-propagated via `draggingCardId`) | Single source of truth for drag state | One render lag between drag start and zone reveal; `draggingCardId` is `activeCard?.id` in `BoardDragLayer` | Acceptable; no user-visible lag at 60fps |
 
 ---
 
@@ -214,12 +210,11 @@ If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD`
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| dnd-kit `useSortable` + `useDraggable` | Nest `useDraggable` child inside `useSortable` wrapper with same `id` | Render card content directly inside `useSortable`; no nested `useDraggable` call |
-| dnd-kit `useDndMonitor` + `DndContext.onDragEnd` | Assume only one handler fires per event | Both fire; use shared refs (`dropSuccessRef`, `dragDataRef`) to coordinate; document ownership in a decision table |
-| dnd-kit `DragOverlay` + shadcn `Sheet`/`Dialog` | Leave `DragOverlay` at default z-index | Add explicit `zIndex: 100` to `DragOverlay`; establish budget in globals.css |
-| CSS `overflow-x: auto` + vertical selection lift | Use `translateY` on selected cards in an `overflow-x: auto` container | Add top padding to the container to accommodate the lift height |
-| `REORDER_PILE_SPREAD` + undo stack | Skip snapshot for "cosmetic" reorder | Decide undo contract explicitly; add snapshot if reorders are user-visible actions |
-| PartyKit broadcast + client-optimistic reorder | Client reorders `faceUpCards` array locally, then server broadcast arrives with different order | Do not apply client-side optimistic reorder; trust server broadcast; add `bufferRef` during drag (already in place via `isDraggingRef`) |
+| dnd-kit `useDroppable` + conditional rendering | Conditionally rendering the droppable container unmounts/remounts the hook, causing a flash where the zone is unregistered | Always keep the droppable rendered; control visibility with CSS (`opacity-0`, `h-0`) not conditional render |
+| dnd-kit `customCollision` + new droppable ID prefixes | Adding a new zone type without adding its prefix filter to `customCollision` causes it to fall into the wrong priority bucket | When adding a new droppable ID scheme, update all five filter predicates in `BoardDragLayer.customCollision` |
+| Tailwind + dynamic class strings | Building class names at runtime with string concatenation (`'grid-cols-' + n`) causes Tailwind to purge the class | Write complete literal class names; use a lookup object or ternary |
+| PartyKit + `skipSnapshot: true` | Sending `REORDER_HAND` with `skipSnapshot` means undo cannot recover a sort — but it also means a sort cannot accidentally consume the single available undo step | Correct and intentional; never remove `skipSnapshot` from sort dispatches |
+| React `useRef` for original hand order | Reading `ref.current` in render (not in a callback) causes stale values in StrictMode's double-render | Use `useRef` only for values read in event handlers and effects, not in render JSX |
 
 ---
 
@@ -227,34 +222,22 @@ If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD`
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Re-rendering all `SpreadZone` instances on every selection state change | Selection click causes 100ms+ freeze with 4 players each with full spread zones | Memoize `SpreadZone` with `React.memo`; pass only the relevant `selectedIds` subset per zone | With 4 players × 13 cards per spread zone |
-| `arrayMove` called in `useDndMonitor.onDragEnd` on every render | Stale closure captures old `faceUpCards` value; reorder sends wrong order | Ensure `faceUpCards` is derived from `pile.cards` inside the monitor callback, not captured at render time | Every drag end where card order matters |
-| `customCollision` partitioning all droppable containers on every pointer move | Lag during drag with many spread zone cards | The custom collision is O(n) over droppable containers; n = cards in spread zones + pile zones. With 52 cards in spread zones this is ~60 containers — acceptable. Only becomes a problem if spread zones can hold the full deck. | Not a current concern at 2–4 players with typical hand sizes |
-
----
-
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Selection ring visible during drag (selected cards lift and show ring while being dragged) | Visual noise; feels like bug | Hide selection ring (`opacity: 0` or `ring-0`) while `draggingCardId` matches a selected card |
-| Two spread zones adjacent — user selects card in one zone, tries to select card in other zone | Selection clears unexpectedly because zones are different piles | Make the clear-on-zone-change behavior explicit via a visible UI transition (briefly flash the cleared selection) |
-| Controls panel opens on the same tap/click that triggers a card action | Mobile: user taps card, panel opens | Ensure controls panel trigger is spatially separated from card interaction areas; `pointer-events: none` during active drag |
-| Card reorder drag in spread zone looks identical to drag-out to another zone | Users don't know if they're reordering or moving | Use a visual cue during drag: when pointer is within spread zone bounds, show a reorder cursor or drop indicator between cards |
-| Responsive layout collapses spread zones to a very narrow strip on 375px | Spread zone cards overlap so much they're unreadable | Set a minimum card visibility width; allow horizontal scroll within spread zone rather than compressing card widths |
+| `useDndContext()` in every droppable component | All components re-render on drag start and drag end; noticeable lag on older hardware | Minimize components that call `useDndContext`; for the opponent hand border fix, keep the call in `OpponentHand` only | Observable at ~20+ droppable components; current board has ~8–12, safely under threshold |
+| `MeasuringStrategy.Always` on `DndContext` | Measures all droppable rects on every frame; unnecessary for a small board | Use default strategy; only upgrade to `Always` if stale rect bugs are confirmed | Fine for any size board with <50 droppables |
+| Tailwind JIT content scan misses dynamic classes | Missing styles in production build | All class names must be literal strings in TSX/TS files | Happens on first production deployment; caught by visual regression |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Spread zone multi-select:** Often missing — verify that selecting a card in spread zone clears any active hand selection (and vice versa).
-- [ ] **Drag overlay z-index:** Often missing — verify drag overlay renders above a newly added controls panel/sheet. Test with the panel open during a drag.
-- [ ] **Mobile layout:** Often missing — verify at 375px width with browser chrome visible (not headless). Bottom hand zone must be fully accessible.
-- [ ] **Undo after spread reorder:** Often missing — verify that undo behavior after a spread reorder is predictable and documented. Either always reverts the reorder, or always skips it.
-- [ ] **Spread zone `overflow-x: auto` with selection lift:** Often missing — verify that the vertical translateY lift is not clipped by the horizontal scroll container.
-- [ ] **`DraggableCard` removed from `SortableSpreadCard`:** Often missing — verify there is no `useDraggable` call for a spread card ID that is also registered via `useSortable`.
-- [ ] **e2e tests updated for spread zone click interaction change:** Often missing — if single-click behavior on spread zone cards changes from flip to select, the existing e2e test for flip must be updated before new selection tests are added.
-- [ ] **Selection state clears on drag start from spread zone:** Often missing — verify dragging an unselected spread zone card clears hand selection (existing `D-04` guard in `handleDragStart`).
+- [ ] **Opponent hand outline (999.44):** Verify the dashed border does NOT appear when dragging within your own hand (i.e., `dragIsActive` from `useDndContext` is removed from the border styling and replaced with `isOver` only)
+- [ ] **Spread zone dock (999.46):** After restructuring the DOM, verify all existing Playwright drag e2e tests still pass — specifically cross-zone drags that land in zones whose position changed
+- [ ] **Empty spread zone strip (999.47):** Verify the strip is not a drop target for the wrong zone — the `useDroppable` ID must still be `pile-${pile.id}`, not a new ID
+- [ ] **Grid mobile columns (999.39):** Verify `grid-cols-4` AND `grid-cols-7` appear as literal strings in the built CSS — check `dist/assets/*.css` after `npm run build`
+- [ ] **Badge at zero (999.49):** Verify RESET_TABLE followed by immediate redeal does not show a zero-count badge flash — test in both single-browser and Playwright two-context fixture
+- [ ] **Hand sort "original" (999.42):** Confirm decision is documented in the phase plan before any code is written. The implementation strategy differs significantly between "deal order" and "sort-cycle reset" interpretations.
+- [ ] **Spread zone name labels removed (999.48):** Removing the `<span>` that shows `pile.name` also removes the space that previously held the "N selected" badge in `SpreadZone.tsx` line 159. Verify the selected-count badge has a new rendering location or is re-parented to the controls row.
+- [ ] **Remove opponent spread face-toggle (999.43):** The `handleToggleFace` Button in `SpreadZone` is guarded by `(!isEmpty || interactive === false)` — the condition currently renders the toggle even for `interactive === false`. The toggle itself is outside the `interactive !== false &&` guard in the existing code. Verify the face-toggle is correctly suppressed when `interactive === false`.
 
 ---
 
@@ -262,12 +245,11 @@ If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD`
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Duplicate useDraggable ID collision | MEDIUM | Remove nested `DraggableCard` from `SortableSpreadCard`, move flip handler up, retest all spread zone interactions |
-| Collision detection routes spread card drag to wrong handler | MEDIUM | Add `toZone/toId` to useSortable card data; update `handleDragEnd` guard conditions; add unit test for the broken case |
-| Selection state conflict across zones | LOW | Move `selectedIds` and `selectionZone` to `BoardDragLayer`; thread props down to `SpreadZone` — matches existing `HandZone` prop interface |
-| DragOverlay z-index under controls panel | LOW | Add `style={{ zIndex: 100 }}` to `DragOverlay` |
-| Mobile viewport height cuts off hand zone | LOW | Replace `h-screen` with `dvh` fallback; add `--vh` JS measurement |
-| Undo stack inconsistency after reorder | HIGH | Requires server-side change (snapshot before `REORDER_PILE_SPREAD`); add unit test; flush live game rooms |
+| Stale droppable rect after DOM restructure | LOW | Add `measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}` to `DndContext` in `BoardDragLayer`; re-run e2e suite to confirm |
+| Overflow-hidden clips sortable animation | MEDIUM | Replace `overflow-x: hidden` with `overflow-x: clip` on the wrapper; if `clip` not supported (it is in all evergreen browsers), set `overflow: hidden` on a non-ancestor wrapper by restructuring the layout |
+| `useDndMonitor` subscription lost on remount | LOW | Fix the `key` prop on the affected `SpreadZone` to not change on layout restructure; confirm with a `console.log` in `onDragEnd` |
+| Dynamic Tailwind class purged in production | LOW | Add the class to `safelist` in `tailwind.config` or rewrite as a literal ternary |
+| "Original order" semantics shipped without decision | HIGH | Requires a server-side field (`originalHandOrder` on `ClientGameState`) or a breaking change to the undo/sort architecture; this is a rewrite if discovered post-ship |
 
 ---
 
@@ -275,30 +257,33 @@ If spread zone multi-select is added and `PLAY_CARD_SET` + `REORDER_PILE_SPREAD`
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Duplicate useDraggable ID (Pitfall 1) | Layout restructure phase (before SPREAD-01) | No dnd-kit duplicate ID warnings in console; single drag registration per card |
-| Collision detection routing breaks (Pitfall 2) | Collision audit before SPREAD-01 | Unit test: hand card dragged onto non-empty spread zone fires MOVE_CARD with toZone:pile |
-| useDndMonitor + handleDragEnd race (Pitfall 3) | SPREAD-01 design — decision table | No double-dispatch in Playwright e2e; verify with server action log |
-| Cross-zone selection conflict (Pitfall 4) | SPREAD-01 — lift selection state before selection ring | Playwright: select hand card, click spread zone card, verify hand selection clears |
-| REORDER_PILE_SPREAD undo gap (Pitfall 5) | SPREAD-02 — decide undo contract first | Unit test: reorder spread, undo, assert order |
-| DragOverlay clipped by overflow/stacking context (Pitfall 6) | LAYOUT-01/02 — verify drag after each layout change | Manual drag from hand to opponent zone after each layout phase |
-| 100vh cuts off mobile content (Pitfall 7) | LAYOUT-04 — first task | Manual test at 375px with browser chrome visible |
-| Spread zone overflow clips selection lift (Pitfall 8) | SPREAD-01 — selection visual before state wiring | Visual check: select card in a spread zone with 10+ cards; lift is not clipped |
-| Controls panel z-index beats DragOverlay (Pitfall 9) | LAYOUT-03 — z-index budget as first task | Open controls panel, drag a card, overlay must appear above panel |
-| Existing e2e tests break on click behavior change (Pitfall 10) | SPREAD-01 — update e2e spec before new tests | `npm run test:e2e` passes with zero new failures before SPREAD-01 feature lands |
+| Stale droppable rects after DOM restructure | 999.46 (Dock spread zones) | Run full Playwright e2e suite; manually drag from every zone to every other zone |
+| CSS stacking context / overflow-hidden clips cards | 999.46, 999.47 | Visual inspection at 375px; drag card to near edge of spread zone container |
+| `dragIsActive` vs `isOver` in OpponentHand | 999.44 (Opponent hand outline) | Playwright: drag within own hand, verify NO opponent hand border appears |
+| `grid-cols-7` hardcoded, no mobile collapse | 999.39 (Fix grid mobile columns) | Check built CSS for `grid-cols-4`; Playwright viewport resize test |
+| Badge renders at zero | 999.49 (Hide zero-count badge) | Playwright RESET_TABLE test; verify no badge visible after reset |
+| "Original order" semantics undefined | 999.42 (Hand sort original order) | Decision must precede PR; verify in phase plan before implementation |
+| `useDndMonitor` subscription lost on remount | 999.46 (Dock spread zones) | Drag intra-spread reorder after layout restructure; check server receives `REORDER_PILE_SPREAD` |
+| Dynamic Tailwind class purged | 999.39 | `npm run build` → inspect `dist/assets/*.css` for `grid-cols-4` |
+| Opponent spread face-toggle still visible | 999.43 (Remove face-toggle) | Render opponent spread zone with `interactive=false`; assert no Eye/EyeOff button in DOM |
+| Spread name label removal breaks selected-count badge position | 999.48 (Remove spread zone labels) | Select 3+ cards in spread zone; assert badge renders and is legible |
 
 ---
 
 ## Sources
 
-- Codebase: `src/components/SpreadZone.tsx`, `src/components/BoardDragLayer.tsx`, `src/components/HandZone.tsx`, `src/components/DraggableCard.tsx`, `src/components/BoardView.tsx` (v1.2 state, read 2026-05-01)
-- `.planning/RETROSPECTIVE.md` — v1.2 retrospective; Phase 14 gap-closure pattern; 6 unplanned plans from implied-but-unstated behaviors
-- `.planning/PROJECT.md` — v1.3 requirements and key decisions log
-- dnd-kit docs (via WebSearch): duplicate ID collision for `useSortable`+`useDraggable` is official documented behavior; `useSortable` is an abstraction over `useDraggable` and `useDroppable`
-- dnd-kit collision detection docs: custom collision composition pattern; `pointerWithin` for visual-boundary drops
-- CSS spec behavior: `overflow-x: auto` + `overflow-y: visible` computed as `overflow-y: auto` (clips vertical children)
-- CSS stacking context: `position: fixed` is relative to nearest ancestor with `transform`/`filter`/`will-change` — breaks `DragOverlay` if transforms are on layout ancestors
-- Mobile viewport units: `100vh` overflows visible area on iOS Safari; `dvh` is the correct replacement with browser support caveats
+- dnd-kit official docs: https://docs.dndkit.com/api-documentation/context-provider — `MeasuringStrategy`, `useDndContext`
+- dnd-kit GitHub issue #389: Unnecessary re-renders on drag — https://github.com/clauderic/dnd-kit/issues/389
+- dnd-kit GitHub issue #1071: Re-rendering all draggable items on drag start — https://github.com/clauderic/dnd-kit/issues/1071
+- dnd-kit GitHub issue #859: `useDraggable` with `overflow-y: auto` — https://github.com/clauderic/dnd-kit/issues/859
+- dnd-kit GitHub issue #1098: Can't drag outside container — https://github.com/clauderic/dnd-kit/issues/1098
+- dnd-kit GitHub PR #379: `MeasuringConfiguration` refactor — https://github.com/clauderic/dnd-kit/pull/379
+- MDN: Stacking context — https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Positioned_layout/Stacking_context
+- MDN: `overflow-x: clip` — creates no stacking context; https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
+- Tailwind dynamic classes: https://tailkits.com/blog/tailwind-dynamic-classes/
+- React docs: Updating arrays in state — https://react.dev/learn/updating-arrays-in-state
+- Live codebase inspection: `src/components/OpponentHand.tsx`, `HandZone.tsx`, `SpreadZone.tsx`, `GridZone.tsx`, `PileZone.tsx`, `BoardDragLayer.tsx`, `BoardView.tsx` (all read directly for this research)
 
 ---
-*Pitfalls research for: Virtual Deck v1.3 — Layout/UX Polish and Spread Zone Interactivity*
-*Researched: 2026-05-01*
+*Pitfalls research for: Virtual Deck v1.5 — layout/UX polish sprint*
+*Researched: 2026-05-19*
