@@ -154,14 +154,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center">
-        <span className="text-xs text-muted-foreground">{pile.name}</span>
-        {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
-          <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
-            {selectedIds.size} selected
-          </span>
-        )}
-      </div>
+      {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
+        <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
+          {selectedIds.size} selected
+        </span>
+      )}
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
@@ -216,15 +213,17 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
       </div>
       {(!isEmpty || interactive === false) && (
         <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onClick={handleToggleFace}
-            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-            aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
-          >
-            {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
+          {interactive !== false && (
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={handleToggleFace}
+              title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+              aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
+            >
+              {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+          )}
           {interactive !== false && (
             <Button
               variant="ghost"

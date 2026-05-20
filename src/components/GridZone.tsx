@@ -131,8 +131,19 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
 
   return (
     <div className="flex flex-col gap-1 overflow-x-auto">
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">Play Area</span>
+        {interactive !== false && (
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={handleToggleFace}
+            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+            aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
+          >
+            {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+        )}
       </div>
       <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
         {Array.from({ length: ROWS }, (_, row) =>
@@ -150,19 +161,6 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
           ))
         )}
       </div>
-      {interactive !== false && (
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            className="h-7 w-7 p-0"
-            onClick={handleToggleFace}
-            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-            aria-label={pile.faceUp !== false ? 'Cards land face-up' : 'Cards land face-down'}
-          >
-            {pile.faceUp !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
