@@ -105,7 +105,10 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   3. Opponent spread zones display no face-toggle button
   4. The communal grid zone's face-toggle button is positioned beside the zone label, not inside the card grid
   5. Spread zones display no name label — the adjacent hand header identifies the zone
-**Plans**: TBD
+**Plans**: 2 plans
+**Plan list**:
+- [ ] 26-01-PLAN.md — PileZone badge + controls gap (POLISH-05, POLISH-06)
+- [ ] 26-02-PLAN.md — SpreadZone face-toggle guard, name label removal, GridZone face-toggle relocation (CTRL-05, CTRL-07, LAYOUT-07)
 **UI hint**: yes
 
 ### Phase 27: Drop Target + Empty Spread Behavior
@@ -160,7 +163,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 23. Hand Sort + Select All | 3/3 | Complete | 2026-05-17 |
 | 24. Play Area Grid | 2/2 | Complete | 2026-05-17 |
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
-| 26. Zero-Risk Visual Polish | 0/TBD | Not started | - |
+| 26. Zero-Risk Visual Polish | 0/2 | Not started | - |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 0/TBD | Not started | - |
 | 29. Sort Verification | 0/TBD | Not started | - |
