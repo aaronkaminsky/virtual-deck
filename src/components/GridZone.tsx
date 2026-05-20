@@ -131,7 +131,7 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
 
   return (
     <div className="flex flex-col gap-1 overflow-x-auto">
-      <div className={cn("flex items-center", interactive !== false && "justify-between")}>
+      <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">Play Area</span>
         {interactive !== false && (
           <Button
