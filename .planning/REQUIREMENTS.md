@@ -29,7 +29,7 @@
 
 ### Sort
 
-- [ ] **SORT-02**: Hand sort cycling through "original order" has defined semantics (current server/manual order); behavior after drag-reorder then sort toggle is verified with tests
+- [x] **SORT-02**: Hand sort cycling through "original order" has defined semantics (current server/manual order); behavior after drag-reorder then sort toggle is verified with tests
 
 ## Future Requirements
 
@@ -71,7 +71,7 @@ Deferred to future milestones.
 | POLISH-06 | Phase 26 | Pending | |
 | BUG-01 | Phase 28 | Complete | |
 | BUG-02 | Phase 28 | Complete | |
-| SORT-02 | Phase 29 | Pending | |
+| SORT-02 | Phase 29 | Complete | |
 
 ---
 *Requirements defined: 2026-05-19*
