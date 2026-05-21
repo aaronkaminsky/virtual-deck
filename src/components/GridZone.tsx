@@ -145,7 +145,7 @@ export function GridZone({ pile, sendAction, draggingCardId, interactive }: Grid
           </Button>
         )}
       </div>
-      <div data-testid="grid-zone-play" className="grid grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
+      <div data-testid="grid-zone-play" className="grid grid-cols-4 sm:grid-cols-7 gap-px bg-border rounded-md overflow-hidden w-fit">
         {Array.from({ length: ROWS }, (_, row) =>
           Array.from({ length: COLS }, (_, col) => (
             <GridCell
