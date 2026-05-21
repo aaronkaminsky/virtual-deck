@@ -274,6 +274,62 @@ test.describe('virtual-deck e2e', () => {
     expect(duplicateIdWarnings).toHaveLength(0);
   });
 
+  test('spread zone dock: drag from hand to docked spread lands and stays in board area', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+
+    await dealCards(p1, 5);
+
+    const handZone = p1.getByTestId('hand-zone');
+    await expect(handZone.locator('[aria-pressed]')).toHaveCount(5);
+
+    // Collect console messages BEFORE the drag to catch duplicate-ID dnd-kit warnings
+    const consoleMessages: string[] = [];
+    p1.on('console', msg => { consoleMessages.push(msg.text()); });
+
+    // Identify P1's personal spread zone: the one with the greatest y (lowest on screen)
+    // In a 2-player room, P1's page shows P2's opponent spread (near top of board area)
+    // and P1's own personal spread (below the piles row, above hand). Pick the max-y one.
+    const ownSpreadBoxes = await p1.evaluate(() => {
+      const els = Array.from(document.querySelectorAll('[data-testid^="spread-zone-spread-"]'));
+      return els.map(el => {
+        const rect = el.getBoundingClientRect();
+        return { testId: el.getAttribute('data-testid') as string, y: rect.y, height: rect.height };
+      });
+    });
+    const ownSpread = ownSpreadBoxes.reduce((max, b) => b.y > max.y ? b : max, ownSpreadBoxes[0]);
+    const ownSpreadEl = p1.getByTestId(ownSpread.testId);
+
+    // Drag card 0 from hand to P1's personal spread zone
+    const firstCard = handZone.locator('[aria-pressed]').nth(0);
+    await expect(firstCard).toBeVisible();
+
+    const src = await firstCard.boundingBox();
+    const tgt = await ownSpreadEl.boundingBox();
+    if (!src || !tgt) throw new Error('bounding boxes unavailable for spread dock drag');
+
+    await p1.mouse.move(src.x + src.width / 2, src.y + src.height / 2);
+    await p1.mouse.down();
+    await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 2, { steps: 15 });
+    await p1.mouse.up();
+
+    // Behavioral assertions: hand loses one card, spread gains at least one
+    await expect(handZone.locator('[aria-pressed]')).toHaveCount(4);
+    await expect(ownSpreadEl.locator('[role="button"]')).not.toHaveCount(0);
+
+    // Structural assertion: personal spread zone is below the bg-card header band
+    // (proves DOM was restructured — spread is in the board area, not the header)
+    const headerBox = await p1.locator('.bg-card').first().boundingBox();
+    const spreadBox = await ownSpreadEl.boundingBox();
+    if (!headerBox || !spreadBox) throw new Error('bounding boxes unavailable for structural assertion');
+    expect(spreadBox.y).toBeGreaterThan(headerBox.y + headerBox.height);
+
+    // Console-warning scrub: no duplicate-id dnd-kit warnings (useDndMonitor subscription-loss guard, D-08)
+    const duplicateIdWarnings = consoleMessages.filter(msg =>
+      /duplicate id|multiple elements with the same id/i.test(msg)
+    );
+    expect(duplicateIdWarnings).toHaveLength(0);
+  });
+
   test('communal zone position: rendered in center row band, not bottom bar', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
