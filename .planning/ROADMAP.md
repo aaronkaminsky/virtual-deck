@@ -91,7 +91,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 - [x] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06) (completed 2026-05-20)
 - [x] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02) (completed 2026-05-21)
 - [x] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02) (completed 2026-05-21)
-- [ ] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05)
+- [x] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05) (completed 2026-05-21)
 
 ## Phase Details
 
@@ -159,7 +159,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 **Plans**: 2 plans
 **Plan list**:
 - [x] 30-01-PLAN.md — Add MeasuringStrategy.Always + restructure BoardView to dock opponent spreads in board area (LAYOUT-05)
-- [ ] 30-02-PLAN.md — Playwright e2e drag test against post-restructure layout with duplicate-id guard (LAYOUT-05)
+- [x] 30-02-PLAN.md — Playwright e2e drag test against post-restructure layout with duplicate-id guard (LAYOUT-05)
 **UI hint**: yes
 
 ## Progress Table
@@ -174,7 +174,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 2/2 | Complete   | 2026-05-21 |
 | 29. Sort Verification | 1/1 | Complete   | 2026-05-21 |
-| 30. Layout Restructure — Dock Spread Zones | 1/2 | In Progress|  |
+| 30. Layout Restructure — Dock Spread Zones | 2/2 | Complete   | 2026-05-21 |
 
 ## Backlog
 
