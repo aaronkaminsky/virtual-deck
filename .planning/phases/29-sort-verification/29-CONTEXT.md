@@ -25,7 +25,7 @@ Define "original order" semantics for the hand sort feature; change sort from se
 ### "Original order" semantics
 
 - **D-04:** "Original order" = **current server/manual order** — the order the server currently holds for the player's hand. This is set by drag-reorder (REORDER_HAND without skipSnapshot) and never changed by sort button clicks.
-- **D-05:** Sort mode is purely a client-side visual overlay. After reconnect, sort mode resets to 'original' (the server order). This is acceptable — sort is a session-local display preference, not a game state.
+- **D-05** [informational]: Sort mode is purely a client-side visual overlay. After reconnect, sort mode resets to 'original' (the server order). This is acceptable — sort is a session-local display preference, not a game state.
 
 ### Drag in sorted mode
 
@@ -35,7 +35,7 @@ Define "original order" semantics for the hand sort feature; change sort from se
 
 - **D-07:** `tests/handSort.test.ts` is updated: the `buildSortDispatch` test block is removed. A new test is added verifying that `sortCards` does not mutate the input array (confirming the render-time invariant — the source `cards` array is preserved as the "original order").
 - **D-08:** No new test files. All SORT-02 test coverage lives in `tests/handSort.test.ts`.
-- **D-09:** The existing REORDER_HAND handler tests in `tests/reorderUndo.test.ts` already verify that drag-reorder updates server state. Those tests are not changed.
+- **D-09** [informational]: The existing REORDER_HAND handler tests in `tests/reorderUndo.test.ts` already verify that drag-reorder updates server state. Those tests are not changed.
 
 ### Claude's Discretion
 
