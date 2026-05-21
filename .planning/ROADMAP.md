@@ -167,7 +167,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
 | 26. Zero-Risk Visual Polish | 2/2 | Complete   | 2026-05-20 |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
-| 28. Bug Fixes | 0/TBD | Not started | - |
+| 28. Bug Fixes | 1/2 | In Progress|  |
 | 29. Sort Verification | 0/TBD | Not started | - |
 | 30. Layout Restructure — Dock Spread Zones | 0/TBD | Not started | - |
 
