@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState } from '@/shared/types';
@@ -370,6 +370,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
         <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} />
         {createPortal(
