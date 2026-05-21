@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
-status: verifying
-stopped_at: Phase 29 context gathered
-last_updated: "2026-05-21T17:16:35.468Z"
+status: complete
+stopped_at: Phase 29 complete
+last_updated: "2026-05-21T19:20:00.000Z"
 last_activity: 2026-05-21
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 6
   completed_plans: 6
-  percent: 80
+  percent: 100
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 28 — bug-fixes (COMPLETE)
+**Current focus:** Phase 29 — sort-verification (COMPLETE)
 
 ## Current Position
 
-Phase: 28 — COMPLETE
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Phase: 29 — COMPLETE
+Plan: 1 of 1
+Status: Phase complete — ready to ship
 Last activity: 2026-05-21
 
 Progress: [██████████] 100%
@@ -62,7 +62,7 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 29]: SORT-02 requires an explicit decision on "original order" semantics before implementation. Tentative: current server/manual order (sort-cycle reset), not deal order. Confirm at plan time.
+- [Phase 29]: SORT-02 implemented — sort is render-time only; "original order" = current server/manual order (D-04). buildSortDispatch removed; handleSort reduced to setSortMode(nextMode). Non-mutation test added to handSort.test.ts locking the invariant.
 - [Phase 30]: LAYOUT-05 requires full Playwright e2e run post-merge to catch stale droppable rects. Keep `key` props stable (keyed by `spread.id`). Consider `MeasuringStrategy.Always` if drag coords drift.
 
 ## Deferred Items
@@ -75,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-21T17:16:35.455Z
-Stopped at: Phase 29 context gathered
+Last session: 2026-05-21T19:20:00.000Z
+Stopped at: Phase 29 complete — branch gsd/phase-29-sort-verification ready to ship
 Resume file: None
