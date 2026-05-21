@@ -42,8 +42,10 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   }
 
   function handleSelectAll() {
-    if (!onSelectAll || !topCard || !('id' in topCard)) return;
-    onSelectAll([(topCard as Card).id], 'pile', pile.id);
+    if (!onSelectAll || isEmpty) return;
+    const allIds = pile.cards.filter(c => 'id' in c).map(c => (c as Card).id);
+    if (allIds.length === 0) return;
+    onSelectAll(allIds, 'pile', pile.id);
   }
 
   return (
