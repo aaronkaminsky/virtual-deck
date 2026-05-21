@@ -90,7 +90,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 - [x] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07) (completed 2026-05-20)
 - [x] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06) (completed 2026-05-20)
 - [x] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02) (completed 2026-05-21)
-- [ ] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02)
+- [x] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02) (completed 2026-05-21)
 - [ ] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05)
 
 ## Phase Details
@@ -143,7 +143,9 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   1. "Original order" in the sort cycle is explicitly defined (documented decision: current server/manual order, not deal order)
   2. After a player drag-reorders their hand then cycles back to "original," the hand reflects the order it was in after the last manual reorder
   3. Unit tests cover the sort-cycle-to-original behavior after drag-reorder
-**Plans**: TBD
+**Plans**: 1 plan
+**Plan list**:
+- [x] 29-01-PLAN.md — Render-time-only hand sort + non-mutation test (SORT-02)
 
 ### Phase 30: Layout Restructure — Dock Spread Zones
 **Goal**: Spread zones are spatially anchored to their owner hands — opponent spreads appear directly below each opponent hand; the personal spread appears flush above the local player's hand
@@ -168,7 +170,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 26. Zero-Risk Visual Polish | 2/2 | Complete   | 2026-05-20 |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 2/2 | Complete   | 2026-05-21 |
-| 29. Sort Verification | 0/TBD | Not started | - |
+| 29. Sort Verification | 1/1 | Complete   | 2026-05-21 |
 | 30. Layout Restructure — Dock Spread Zones | 0/TBD | Not started | - |
 
 ## Backlog

@@ -1,9 +1,9 @@
-// Tests for sortCards and buildSortDispatch pure functions exported from HandZone.
+// Tests for sortCards pure function exported from HandZone.
 // These helpers implement the hand sort feature (SORT-01, D-01..D-03).
 
 import { describe, it, expect } from "vitest";
 import type { Card, Suit, Rank } from "../src/shared/types";
-import { sortCards, buildSortDispatch } from "../src/components/HandZone";
+import { sortCards } from "../src/components/HandZone";
 
 // Local factory — makeCard in helpers hardcodes suit/rank; we need real values for sort tests.
 function mkCard(id: string, suit: Suit, rank: Rank): Card {
@@ -45,24 +45,19 @@ describe("sortCards pure function", () => {
     expect(result.map(c => c.id)).toEqual(["2-s", "2-h", "K-d", "A-s", "A-c", "A-h"]);
   });
 
-  it("Sort click dispatches REORDER_HAND with skipSnapshot: true and sorted ids", () => {
-    const cards: Card[] = [
+  it("does not mutate the input array (original order is preserved as server/manual order per D-04)", () => {
+    const input: Card[] = [
       mkCard("A-h", "hearts", "A"),
       mkCard("2-s", "spades", "2"),
       mkCard("K-c", "clubs", "K"),
+      mkCard("5-d", "diamonds", "5"),
     ];
 
-    const dispatch = buildSortDispatch(cards, "bySuit");
+    const originalIds = input.map(c => c.id);
 
-    expect(dispatch).not.toBeNull();
-    expect(dispatch!.type).toBe("REORDER_HAND");
-    expect((dispatch as { skipSnapshot: boolean }).skipSnapshot).toBe(true);
-    expect((dispatch as { orderedCardIds: string[] }).orderedCardIds).toEqual(
-      sortCards(cards, "bySuit").map(c => c.id)
-    );
+    sortCards(input, "bySuit");
+    sortCards(input, "byRank");
 
-    // Cycling back to 'original' must return null (no dispatch)
-    const nullDispatch = buildSortDispatch(cards, "original");
-    expect(nullDispatch).toBeNull();
+    expect(input.map(c => c.id)).toEqual(originalIds);
   });
 });
