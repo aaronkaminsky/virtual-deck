@@ -156,7 +156,10 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   2. The personal spread zone renders flush above the local player's hand with no visible separator
   3. Extra vertical space on tall screens grows between the piles/grid area and the spread zones, not between spread zones and their hands
   4. Drag-and-drop to and from spread zones works correctly after the DOM restructure (e2e verified)
-**Plans**: TBD
+**Plans**: 2 plans
+**Plan list**:
+- [ ] 30-01-PLAN.md — Add MeasuringStrategy.Always + restructure BoardView to dock opponent spreads in board area (LAYOUT-05)
+- [ ] 30-02-PLAN.md — Playwright e2e drag test against post-restructure layout with duplicate-id guard (LAYOUT-05)
 **UI hint**: yes
 
 ## Progress Table
@@ -171,7 +174,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
 | 28. Bug Fixes | 2/2 | Complete   | 2026-05-21 |
 | 29. Sort Verification | 1/1 | Complete   | 2026-05-21 |
-| 30. Layout Restructure — Dock Spread Zones | 0/TBD | Not started | - |
+| 30. Layout Restructure — Dock Spread Zones | 0/2 | Not started | - |
 
 ## Backlog
 

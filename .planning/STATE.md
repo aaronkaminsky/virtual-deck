@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
-status: complete
-stopped_at: Phase 29 complete
-last_updated: "2026-05-21T19:20:00.000Z"
-last_activity: 2026-05-21
+status: executing
+stopped_at: Phase 30 UI-SPEC approved
+last_updated: "2026-05-21T21:15:27.246Z"
+last_activity: 2026-05-21 -- Phase 30 planning complete
 progress:
   total_phases: 5
-  completed_phases: 5
-  total_plans: 6
+  completed_phases: 4
+  total_plans: 8
   completed_plans: 6
-  percent: 100
+  percent: 75
 ---
 
 # Project State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 Phase: 29 — COMPLETE
 Plan: 1 of 1
-Status: Phase complete — ready to ship
-Last activity: 2026-05-21
+Status: Ready to execute
+Last activity: 2026-05-21 -- Phase 30 planning complete
 
 Progress: [██████████] 100%
 
@@ -75,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-21T19:20:00.000Z
-Stopped at: Phase 29 complete — branch gsd/phase-29-sort-verification ready to ship
-Resume file: None
+Last session: 2026-05-21T20:56:33.361Z
+Stopped at: Phase 30 UI-SPEC approved
+Resume file: .planning/phases/30-layout-restructure-dock-spread-zones/30-UI-SPEC.md
