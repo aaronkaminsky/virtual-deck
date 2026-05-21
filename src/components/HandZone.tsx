@@ -36,15 +36,6 @@ export function sortCards(cards: Card[], mode: 'bySuit' | 'byRank'): Card[] {
   });
 }
 
-export function buildSortDispatch(cards: Card[], nextMode: SortMode): ClientAction | null {
-  if (nextMode === 'original') return null;
-  return {
-    type: 'REORDER_HAND',
-    orderedCardIds: sortCards(cards, nextMode).map(c => c.id),
-    skipSnapshot: true,
-  };
-}
-
 // --- Tooltip copy per D-06 ---
 
 const SORT_TITLES: Record<SortMode, string> = {
@@ -155,12 +146,8 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
 
   function handleSort() {
     const nextMode = SORT_CYCLE[(SORT_CYCLE.indexOf(sortMode) + 1) % SORT_CYCLE.length];
+    // Sort is render-time only (D-01) — displayedCards recomputes on next render.
     setSortMode(nextMode);
-    // Always derive dispatch from canonical server order (cards), not the visual order.
-    const dispatch = buildSortDispatch(cards, nextMode);
-    if (dispatch !== null) {
-      sendAction(dispatch);
-    }
   }
 
   useDndMonitor({
