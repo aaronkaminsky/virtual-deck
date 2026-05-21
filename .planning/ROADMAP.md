@@ -88,8 +88,8 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 **Milestone Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
 
 - [x] **Phase 26: Zero-Risk Visual Polish** — Remove labels, suppress controls, fix badge and pile spacing (POLISH-05, POLISH-06, CTRL-05, CTRL-07, LAYOUT-07) (completed 2026-05-20)
-- [ ] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06)
-- [ ] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02)
+- [x] **Phase 27: Drop Target + Empty Spread Behavior** — Hover-only opponent hand outline; empty spread faint strip with deferred controls (CTRL-06, LAYOUT-06) (completed 2026-05-20)
+- [x] **Phase 28: Bug Fixes** — Fix select all regression and grid mobile column count (BUG-01, BUG-02) (completed 2026-05-21)
 - [ ] **Phase 29: Sort Verification** — Define "original order" semantics; verify behavior after drag-reorder + sort cycle (SORT-02)
 - [ ] **Phase 30: Layout Restructure — Dock Spread Zones** — Opponent spreads below their hands in board area; personal spread flush above hand; full e2e drag coverage (LAYOUT-05)
 
@@ -119,7 +119,9 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
   1. Dragging a card does not highlight the opponent's hand zone; the outline appears only when the dragged card is physically hovered over that zone
   2. An empty personal spread zone shows a faint dashed strip approximately one quarter of normal height
   3. Face-toggle and select-all controls are not visible on an empty spread zone; they reappear once at least one card is present
-**Plans**: TBD
+**Plans**: 1 plan
+**Plan list**:
+- [ ] 27-01-PLAN.md — Hover-only OpponentHand drop-target outline (CTRL-06) and faint dashed strip for empty SpreadZone (LAYOUT-06)
 **UI hint**: yes
 
 ### Phase 28: Bug Fixes
@@ -165,7 +167,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
 | 26. Zero-Risk Visual Polish | 2/2 | Complete   | 2026-05-20 |
 | 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
-| 28. Bug Fixes | 0/TBD | Not started | - |
+| 28. Bug Fixes | 2/2 | Complete   | 2026-05-21 |
 | 29. Sort Verification | 0/TBD | Not started | - |
 | 30. Layout Restructure — Dock Spread Zones | 0/TBD | Not started | - |
 
@@ -184,3 +186,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
 | 999.37 | Free canvas play area — communal spread zone supports arbitrary card positioning (x, y) with free overlap and drag-to-any-point; deferred from v1.4 GRID work | TBD |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action | TBD |
+| 999.51 | Reset button should enable whenever any game state has changed (cards moved, flipped, shuffled, etc.), not only after a deal action | TBD |

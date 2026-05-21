@@ -12,10 +12,11 @@ interface PileZoneProps {
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   shufflingPileIds?: Set<string>;
-  onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
+  onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
+  selectedIds?: Set<string>;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -41,8 +42,11 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   }
 
   function handleSelectAll() {
-    if (!onSelectAll || !topCard || !('id' in topCard)) return;
-    onSelectAll([(topCard as Card).id], 'pile', pile.id);
+    if (!onSelectAll || isEmpty) return;
+    const allIds = pile.cards.filter(c => 'id' in c).map(c => (c as Card).id);
+    if (allIds.length === 0) return;
+    const hasMaskedCards = pile.cards.some(c => !('id' in c));
+    onSelectAll(allIds, 'pile', pile.id, hasMaskedCards);
   }
 
   return (
@@ -108,7 +112,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         {isDraggingTopCard && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
         )}
-        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} /> : topCard && <CardBack />}
+        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} isSelected={selectedIds?.has((topCard as Card).id) ?? false} /> : topCard && <CardBack />}
         {!isEmpty && <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>}
       </div>
     </div>

@@ -21,3 +21,17 @@ test.describe('Phase 19 responsive layout', () => {
     expect(clientWidth).toBeLessThanOrEqual(375);
   });
 });
+
+test.describe('Phase 28 BUG-02 mobile grid columns', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('BUG-02: grid renders 4 columns at 375px viewport', async ({ page }) => {
+    const roomCode = nanoid(8);
+    await page.goto(`/?room=${roomCode}`);
+    await page.getByPlaceholder('Your name').fill('MobileTest');
+    await page.getByRole('button', { name: 'Join Game' }).click();
+    await expect(page.getByTestId('hand-zone')).toBeVisible();
+
+    await expect(page.locator('[data-testid="grid-zone-play"]')).toHaveClass(/grid-cols-4/);
+  });
+});

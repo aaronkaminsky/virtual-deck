@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
-status: completed
-stopped_at: Phase 26 planned — ready to execute
-last_updated: "2026-05-20T03:43:30.402Z"
-last_activity: 2026-05-20 -- Phase 26 marked complete
+status: shipped
+stopped_at: Phase 26-28 shipped — PR #35
+last_updated: "2026-05-21T00:00:00.000Z"
+last_activity: 2026-05-21
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 20
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
+  percent: 60
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 26 — zero-risk-visual-polish
+**Current focus:** Phase 28 — bug-fixes (COMPLETE)
 
 ## Current Position
 
-Phase: 26 — COMPLETE
-Plan: 1 of 2
-Status: Phase 26 complete
-Last activity: 2026-05-20 -- Phase 26 marked complete
+Phase: 28 — COMPLETE
+Plan: 2 of 2
+Status: All plans executed; ready for verification
+Last activity: 2026-05-21 — Phase 28 execution complete (BUG-01 + BUG-02 shipped)
 
-Progress: [░░░░░░░░░░] 0% (0/5 phases complete)
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,8 @@ Recent decisions affecting current work:
 - [Phase 25]: SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging`
 - [v1.5 planning]: LAYOUT-05 (dock spread zones) is highest-risk change — land last with e2e coverage; stale droppable rects and `useDndMonitor` subscription loss are the two failure modes
 - [v1.5 planning]: SORT-02 — "original order" = current server/manual order (not deal order); decision must be documented before code is written
+- [Phase ?]: CSS-only BUG-02 fix: grid-cols-4 sm:grid-cols-7 collapses communal grid at mobile viewports without server-side remapping
+- [Phase 28]: Ring applied to DraggableCard root div for pile top-card selection feedback (BUG-01) — Matches SpreadZone isSelected ring pattern; selectedIds threaded through BoardView into PileZone and DraggableCard
 
 ### Pending Todos
 
@@ -73,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-20T03:05:39.393Z
-Stopped at: Phase 26 planned — ready to execute
-Resume file: .planning/phases/26-zero-risk-visual-polish/26-01-PLAN.md
+Last session: 2026-05-21T02:38:03.088Z
+Stopped at: Completed 28-01-PLAN.md
+Resume file: None

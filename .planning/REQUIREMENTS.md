@@ -24,8 +24,8 @@
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: The Select All button works correctly on piles and spread zones — clicking it selects the expected cards
-- [ ] **BUG-02**: The communal grid zone displays 4 columns at mobile widths (< 640px) and 7 columns at desktop widths
+- [x] **BUG-01**: The Select All button works correctly on piles and spread zones — clicking it selects the expected cards
+- [x] **BUG-02**: The communal grid zone displays 4 columns at mobile widths (< 640px) and 7 columns at desktop widths
 
 ### Sort
 
@@ -69,8 +69,8 @@ Deferred to future milestones.
 | CTRL-07 | Phase 26 | Pending | |
 | POLISH-05 | Phase 26 | Pending | |
 | POLISH-06 | Phase 26 | Pending | |
-| BUG-01 | Phase 28 | Pending | |
-| BUG-02 | Phase 28 | Pending | |
+| BUG-01 | Phase 28 | Complete | |
+| BUG-02 | Phase 28 | Complete | |
 | SORT-02 | Phase 29 | Pending | |
 
 ---

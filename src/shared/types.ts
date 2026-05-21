@@ -70,6 +70,7 @@ export type ClientAction =
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string; toRow?: number; toCol?: number }
+  | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
   | { type: "MOVE_GRID_CARD"; cardId: string; pileId: string; toRow: number; toCol: number }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "RESET_TABLE" }
