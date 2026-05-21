@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
 status: verifying
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-05-21T02:34:43.160Z"
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-05-21T02:38:03.142Z"
 last_activity: 2026-05-21
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 5
-  completed_plans: 4
-  percent: 40
+  completed_plans: 5
+  percent: 60
 ---
 
 # Project State
@@ -30,7 +30,7 @@ Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-05-21
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Recent decisions affecting current work:
 - [v1.5 planning]: LAYOUT-05 (dock spread zones) is highest-risk change — land last with e2e coverage; stale droppable rects and `useDndMonitor` subscription loss are the two failure modes
 - [v1.5 planning]: SORT-02 — "original order" = current server/manual order (not deal order); decision must be documented before code is written
 - [Phase ?]: CSS-only BUG-02 fix: grid-cols-4 sm:grid-cols-7 collapses communal grid at mobile viewports without server-side remapping
+- [Phase 28]: Ring applied to DraggableCard root div for pile top-card selection feedback (BUG-01) — Matches SpreadZone isSelected ring pattern; selectedIds threaded through BoardView into PileZone and DraggableCard
 
 ### Pending Todos
 
@@ -72,9 +73,10 @@ None.
 | verification_gap | Phase 16.1: 16.1-VERIFICATION.md | human_needed — live CI run required |
 | verification_gap | Phase 20: 20-VERIFICATION.md | human_needed — live smoke test required |
 | Phase 28-bug-fixes P02 | 2min | 2 tasks | 2 files |
+| Phase 28-bug-fixes P01 | 5min | 4 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-05-21T02:34:43.068Z
-Stopped at: Completed 28-02-PLAN.md
+Last session: 2026-05-21T02:38:03.088Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
