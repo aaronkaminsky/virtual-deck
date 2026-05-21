@@ -4,8 +4,8 @@ milestone: v1.5
 milestone_name: Board Polish II
 status: executing
 stopped_at: Phase 30 UI-SPEC approved
-last_updated: "2026-05-21T21:15:27.246Z"
-last_activity: 2026-05-21 -- Phase 30 planning complete
+last_updated: "2026-05-21T21:20:25.472Z"
+last_activity: 2026-05-21 -- Phase 30 execution started
 progress:
   total_phases: 5
   completed_phases: 4
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 29 — sort-verification (COMPLETE)
+**Current focus:** Phase 30 — layout-restructure-dock-spread-zones
 
 ## Current Position
 
-Phase: 29 — COMPLETE
-Plan: 1 of 1
-Status: Ready to execute
-Last activity: 2026-05-21 -- Phase 30 planning complete
+Phase: 30 (layout-restructure-dock-spread-zones) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 30
+Last activity: 2026-05-21 -- Phase 30 execution started
 
 Progress: [██████████] 100%
 
