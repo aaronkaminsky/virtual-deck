@@ -61,7 +61,7 @@ const customCollision: CollisionDetection = (args) => {
   return [];
 };
 
-type SelectionSource = { zone: 'hand' | 'pile'; zoneId: string } | null;
+type SelectionSource = { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean } | null;
 
 interface BoardDragLayerProps {
   gameState: ClientGameState;
@@ -115,10 +115,16 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     // no risk of losing zone context on momentary zero-selection state.
   };
 
-  const handleSelectAll = (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => {
+  const handleSelectAll = (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => {
     if (cardIds.length === 0) return; // guard against empty-zone clicks (defense in depth)
+    // Toggle: clicking Select All on the already-selected zone clears the selection
+    if (selectionSource?.zone === zone && selectionSource?.zoneId === zoneId) {
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+      return;
+    }
     setSelectedIds(new Set(cardIds));
-    setSelectionSource({ zone, zoneId });
+    setSelectionSource({ zone, zoneId, hasMaskedCards });
   };
 
   const sensors = useSensors(
@@ -203,7 +209,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     const isIntraSpreadReorder = fromZoneAtEnd === 'pile' && fromIdAtEnd === overData?.toId;
     const isIntraHandReorder = fromZoneAtEnd === 'hand' && overData?.toZone === 'hand';
     const isMultiCardSet =
-      selectedIds.size > 1 &&
+      (selectedIds.size > 1 || selectionSource?.hasMaskedCards === true) &&
       selectedIds.has(activeId) &&
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
@@ -217,18 +223,27 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setDragging(false);
       dropSuccessRef.current = true;
       dragDataRef.current = null;
-      const gridOverDataMulti = event.over?.data.current as { toRow?: number; toCol?: number } | undefined;
-      sendAction({
-        type: 'PLAY_CARD_SET',
-        cardIds: [...selectedIds],
-        fromZone: (selectionSource?.zone ?? 'hand') as 'hand' | 'pile',
-        fromId: selectionSource?.zone === 'pile'
-          ? (selectionSource.zoneId)   // use selectionSource as canonical pile ID
-          : playerId,
-        toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
-        toId: overData!.toId,
-        ...(gridOverDataMulti?.toRow !== undefined ? { toRow: gridOverDataMulti.toRow, toCol: gridOverDataMulti.toCol } : {}),
-      });
+      if (selectionSource?.hasMaskedCards) {
+        // Face-down pile: client doesn't have all card IDs — server moves the whole pile
+        sendAction({
+          type: 'MOVE_ALL_PILE_CARDS',
+          fromId: selectionSource.zoneId,
+          toId: overData!.toId,
+        });
+      } else {
+        const gridOverDataMulti = event.over?.data.current as { toRow?: number; toCol?: number } | undefined;
+        sendAction({
+          type: 'PLAY_CARD_SET',
+          cardIds: [...selectedIds],
+          fromZone: (selectionSource?.zone ?? 'hand') as 'hand' | 'pile',
+          fromId: selectionSource?.zone === 'pile'
+            ? (selectionSource.zoneId)   // use selectionSource as canonical pile ID
+            : playerId,
+          toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
+          toId: overData!.toId,
+          ...(gridOverDataMulti?.toRow !== undefined ? { toRow: gridOverDataMulti.toRow, toCol: gridOverDataMulti.toCol } : {}),
+        });
+      }
       return;
     }
 

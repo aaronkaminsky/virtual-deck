@@ -764,6 +764,26 @@ export default class GameRoom implements Party.Server {
         }
         break;
       }
+      case "MOVE_ALL_PILE_CARDS": {
+        const { fromId, toId } = action;
+        const srcPile = this.gameState.piles.find(p => p.id === fromId);
+        const destPile = this.gameState.piles.find(p => p.id === toId);
+        if (!srcPile || !destPile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `Pile not found: ${!srcPile ? fromId : toId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (srcPile.cards.length === 0) break; // nothing to move
+        takeSnapshot(this.gameState);
+        const moving = srcPile.cards.splice(0); // remove all cards
+        moving.forEach(card => { card.faceUp = destPile.faceUp === true; });
+        destPile.cards.push(...moving);
+        if (srcPile.gridPositions) srcPile.gridPositions = {};
+        break;
+      }
       case "PING":
         break;
     }
