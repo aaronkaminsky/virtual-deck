@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
-status: verifying
-stopped_at: Completed 28-01-PLAN.md
-last_updated: "2026-05-21T02:38:03.142Z"
+status: shipped
+stopped_at: Phase 26-28 shipped — PR #35
+last_updated: "2026-05-21T00:00:00.000Z"
 last_activity: 2026-05-21
 progress:
   total_phases: 5
