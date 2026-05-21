@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 26 — zero-risk-visual-polish
+**Current focus:** Phase 28 — bug-fixes (COMPLETE)
 
 ## Current Position
 
-Phase: 27 — COMPLETE
-Plan: 1 of 1
-Status: Phase complete — ready for verification
-Last activity: 2026-05-21
+Phase: 28 — COMPLETE
+Plan: 2 of 2
+Status: All plans executed; ready for verification
+Last activity: 2026-05-21 — Phase 28 execution complete (BUG-01 + BUG-02 shipped)
 
 Progress: [██████████] 100%
 
@@ -72,8 +72,6 @@ None.
 | uat_gap | Phase 18: 18-HUMAN-UAT.md | resolved — 0 pending scenarios |
 | verification_gap | Phase 16.1: 16.1-VERIFICATION.md | human_needed — live CI run required |
 | verification_gap | Phase 20: 20-VERIFICATION.md | human_needed — live smoke test required |
-| Phase 28-bug-fixes P02 | 2min | 2 tasks | 2 files |
-| Phase 28-bug-fixes P01 | 5min | 4 tasks | 4 files |
 
 ## Session Continuity
 
