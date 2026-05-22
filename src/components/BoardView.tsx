@@ -40,11 +40,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
           {allOpponentIds.map((id) => {
             const player = gameState.players.find(p => p.id === id);
-            const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
             const revealedCards = gameState.opponentRevealedHands[id];
             const cardCount = gameState.opponentHandCounts[id] ?? (revealedCards?.length ?? 0);
             return (
-              <div key={id} className={`flex flex-col gap-1 ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
+              <div key={id} className={`flex flex-col ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
                 <OpponentHand
                   playerId={id}
                   cardCount={cardCount}
@@ -53,14 +52,6 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   sendAction={sendAction}
                   revealedCards={revealedCards}
                 />
-                {opponentSpread && (
-                  <SpreadZone
-                    pile={opponentSpread}
-                    sendAction={sendAction}
-                    draggingCardId={draggingCardId}
-                    interactive={false}
-                  />
-                )}
               </div>
             );
           })}
@@ -71,6 +62,27 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
       </div>
 
       <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
+        <div className="flex items-start gap-4 px-4 flex-shrink-0">
+          <div className="flex items-start gap-4 flex-1 overflow-hidden">
+            {allOpponentIds.map((id) => {
+              const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
+              return (
+                <div key={id} className={`flex flex-col ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
+                  {opponentSpread && (
+                    <SpreadZone
+                      pile={opponentSpread}
+                      sendAction={sendAction}
+                      draggingCardId={draggingCardId}
+                      interactive={false}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="w-7 self-start shrink-0 pointer-events-none" aria-hidden="true" />
+        </div>
+
         <div className="flex-1 min-h-0 flex items-center px-4 gap-4">
           {pilePiles.map((pile) => (
             <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
