@@ -69,6 +69,18 @@ Reconstructed from PLAN.md + SUMMARY.md (State B — no prior VALIDATION.md). Al
 
 ---
 
+## Validation Audit 2026-05-22 (re-audit)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+Re-audit (State A): 226/226 tests green, `tsc --noEmit` clean. Both tasks COVERED — T-29-01 verified via static grep (buildSortDispatch absent, single REORDER_HAND in drag handler); T-29-02 verified via explicit non-mutation it-block.
+
+---
+
 ## Validation Sign-Off
 
 - [x] All tasks have `<automated>` verify or Wave 0 dependencies
