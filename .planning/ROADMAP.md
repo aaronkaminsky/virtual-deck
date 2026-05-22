@@ -171,7 +171,7 @@ See full phase details in [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.m
 | 24. Play Area Grid | 2/2 | Complete | 2026-05-17 |
 | 25. Layout & Visual Polish | 3/3 | Complete | 2026-05-18 |
 | 26. Zero-Risk Visual Polish | 2/2 | Complete   | 2026-05-20 |
-| 27. Drop Target + Empty Spread Behavior | 0/TBD | Not started | - |
+| 27. Drop Target + Empty Spread Behavior | 1/1 | Complete | 2026-05-22 |
 | 28. Bug Fixes | 2/2 | Complete   | 2026-05-21 |
 | 29. Sort Verification | 1/1 | Complete   | 2026-05-21 |
 | 30. Layout Restructure — Dock Spread Zones | 2/2 | Complete   | 2026-05-21 |
@@ -194,3 +194,4 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.51 | Reset button should enable whenever any game state has changed (cards moved, flipped, shuffled, etc.), not only after a deal action | TBD |
 | 999.52 | Mobile play area not horizontally scrollable — at 375px the communal grid zone overflows the viewport without a scroll mechanism; board content is clipped | TBD |
 | 999.53 | Mobile layout: play area overlaps spread zone vertically at narrow viewports; needs a layout strategy for small screens — options include capping the grid at 4×2 cells, shrinking card dimensions to fit, or collapsing zones into a stacked/tabbed layout | TBD |
+| 999.54 | Opponent spread zone empty resting state — when an opponent's spread zone is empty it stays full-size; should collapse to the same faint dashed strip as the player's spread zone (LAYOUT-06 applied to opponent zones) | TBD |
