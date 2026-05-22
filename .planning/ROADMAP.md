@@ -192,3 +192,5 @@ Promote items with `/gsd-review-backlog` when ready to plan.
 | 999.37 | Free canvas play area — communal spread zone supports arbitrary card positioning (x, y) with free overlap and drag-to-any-point; deferred from v1.4 GRID work | TBD |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action | TBD |
 | 999.51 | Reset button should enable whenever any game state has changed (cards moved, flipped, shuffled, etc.), not only after a deal action | TBD |
+| 999.52 | Mobile play area not horizontally scrollable — at 375px the communal grid zone overflows the viewport without a scroll mechanism; board content is clipped | TBD |
+| 999.53 | Mobile layout: play area overlaps spread zone vertically at narrow viewports; needs a layout strategy for small screens — options include capping the grid at 4×2 cells, shrinking card dimensions to fit, or collapsing zones into a stacked/tabbed layout | TBD |
