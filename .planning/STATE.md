@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Board Polish II
-status: complete
-stopped_at: Phase 30 verified — human visual checks pending
-last_updated: "2026-05-22T07:20:00Z"
-last_activity: 2026-05-22 -- Phase 30 verified (human_needed: visual alignment checks)
+status: Awaiting next milestone
+stopped_at: Phase 30 verified (human_needed)
+last_updated: "2026-05-23T02:46:19.811Z"
+last_activity: 2026-05-23 — Milestone v1.5 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -25,12 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 30 (layout-restructure-dock-spread-zones) — COMPLETE (human_needed: visual alignment + tall-viewport space distribution)
-Plan: 2 of 2
-Status: All phases complete; v1.5 milestone done
-Last activity: 2026-05-22 -- Phase 30 verified
-
-Progress: [██████████] 100%
+Phase: Milestone v1.5 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-23 — Milestone v1.5 completed and archived
 
 ## Performance Metrics
 
@@ -67,15 +65,24 @@ None. Phase 30 LAYOUT-05 implemented and e2e verified. Two human visual checks r
 
 ## Deferred Items
 
+Items acknowledged and deferred at milestone close on 2026-05-23:
+
 | Category | Item | Status |
 |----------|------|--------|
 | uat_gap | Phase 18: 18-HUMAN-UAT.md | resolved — 0 pending scenarios |
 | verification_gap | Phase 16.1: 16.1-VERIFICATION.md | human_needed — live CI run required |
 | verification_gap | Phase 20: 20-VERIFICATION.md | human_needed — live smoke test required |
+| verification_gap | Phase 28: 28-VERIFICATION.md | human_needed — visual: select ring + mobile grid columns |
 | verification_gap | Phase 30: 30-VERIFICATION.md | human_needed — visual column alignment + tall-viewport space distribution |
+| quick_task | fix-5-failing-viewFor-tests | missing — deferred to next milestone |
+| todo | fix-decision-coverage-gate-parenthetical-pattern-matching | planning-internal — deferred |
 
 ## Session Continuity
 
 Last session: 2026-05-22T07:20:00Z
 Stopped at: Phase 30 verified (human_needed)
 Resume file: .planning/phases/30-layout-restructure-dock-spread-zones/30-VERIFICATION.md
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
