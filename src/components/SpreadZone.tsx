@@ -163,7 +163,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
         className={cn(
-          isEmpty && interactive !== false
+          isEmpty
             ? isOver
               ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2'
               : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'

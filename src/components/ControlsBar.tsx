@@ -25,7 +25,7 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
 
   const dealDisabled = gameState.phase !== 'setup' && gameState.phase !== 'lobby';
   const undoDisabled = !gameState.canUndo;
-  const resetDisabled = gameState.phase !== 'playing';
+  const resetDisabled = !gameState.canUndo;
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) setConfirmReset(false);
