@@ -3,7 +3,6 @@ import type { ClientAction, ClientGameState } from '@/shared/types';
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
-import { GridZone } from './GridZone';
 import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -26,7 +25,6 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
-  const communalZone = undefined; // Phase 31: communal grid removed; Plan 02 restructures this band
   const allOpponentIds = Array.from(new Set([
     ...Object.keys(gameState.opponentHandCounts),
     ...Object.keys(gameState.opponentRevealedHands),
@@ -83,20 +81,13 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           <div className="w-7 self-start shrink-0 pointer-events-none" aria-hidden="true" />
         </div>
 
-        <div className="flex-1 min-h-0 flex items-center px-4 gap-4">
-          {pilePiles.map((pile) => (
-            <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
-          ))}
-          {communalZone && (
-            <div className="shrink-0">
-              <GridZone
-                pile={communalZone}
-                sendAction={sendAction}
-                draggingCardId={draggingCardId}
-                interactive={true}
-              />
-            </div>
-          )}
+        <div className="flex-1 min-h-0 flex items-start">
+          <div className="flex-shrink-0 flex flex-col gap-2 py-2 px-2 border-r border-border">
+            {pilePiles.map((pile) => (
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
+            ))}
+          </div>
+          <div className="flex-1 min-w-0 overflow-hidden bg-background self-stretch" data-testid="canvas-shell" />
         </div>
 
         {mySpreadZone && (
