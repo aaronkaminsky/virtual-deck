@@ -8,36 +8,21 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
 
-## Current Milestone: v1.5 Board Polish II
-
-**Goal:** Eliminate remaining layout awkwardness and interaction bugs — tighter visual hierarchy, correct empty states, and cleaner controls throughout.
-
-**Target features:**
-- Dock spread zones to their hands — opponent spreads below hands in board area; personal spread flush above hand (999.46)
-- Empty spread zone faint strip — ¼-height dashed outline when empty, controls hidden until cards arrive (999.47)
-- Remove spread zone name labels — label duplicates identity already in hand headers (999.48)
-- Fix select all button — button currently has no visible effect (999.40)
-- Fix grid mobile columns — grid doesn't collapse to 4 cols on iPhone SE (999.39)
-- Hide 0-count badge on empty piles — suppress orange badge at zero (999.49)
-- Tighten pile control layout — reduce gap between buttons and pile card (999.50)
-- Remove opponent spread face-toggle — players can't flip opponent's cards (999.43)
-- Opponent hand drop-target outline only on hover — not at drag start (999.44)
-- Move grid face-toggle icon near zone label — not inside the card grid (999.45)
-- Hand sort original order semantics — decide and implement what "original" means (999.42)
-
 ## Current State
 
-**v1.4 shipped (2026-05-18).** All 53 requirements across v1.0–v1.4 satisfied and shipped.
+**v1.5 shipped (2026-05-23).** All 64 requirements across v1.0–v1.5 satisfied and shipped.
 
-- ~2,700+ TypeScript LOC across `src/`, `party/`, `shared/`
+- ~3,000+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- Full Playwright e2e infrastructure (8 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (165+ tests)
-- Hand management: hand reveal toggle (Eye/EyeOff), sort by suit/rank, undo-exempt via `skipSnapshot`
-- Play area: communal 2-row grid zone with per-cell stacking + intra-grid drag; personal spread zones with Select All + group drag
-- Board: compact layout — empty zones label-only, pile controls in header row, personal spreads hidden when empty, reduced zone heights
+- Full Playwright e2e infrastructure (15 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (170+ tests)
+- Layout: opponent spreads docked below their owner hands in board area; personal spread flush above player hand; MeasuringStrategy.Always eliminates stale droppable rect drift
+- Zones: empty personal spread shows faint dashed strip (¼ height); no zone name labels; opponent spreads have no face-toggle control; hover-only drop-target outline on opponent hand
+- Piles: count badge hidden at 0; controls row tight against pile card; Select All works correctly on piles and spread zones
+- Mobile: communal grid collapses from 7 to 4 columns at < 640px viewport
+- Hand sort: "original order" = current server/manual order; render-time-only visual overlay (no undo stack mutation)
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** v1.5 Board Polish II — started 2026-05-19
+**Next milestone:** planning in progress
 
 ## Requirements
 
@@ -111,19 +96,21 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Zone heights and spacing are reduced for a more compact board (POLISH-04) — Phase 25
 - ✓ Personal spread zones are hidden when empty; a drop target appears when the player begins dragging a card (ZONE-01) — Phase 25
 
-### Active (v1.5)
+### Validated (v1.5)
 
-- [ ] Dock spread zones to their hands — opponent spreads below hands; personal spread flush above hand (LAYOUT-05)
-- [ ] Empty spread zone shows faint dashed strip when empty; controls hidden until cards present (LAYOUT-06)
-- [ ] Spread zone name labels removed — identity shown in hand headers (LAYOUT-07)
-- [ ] Select all button works correctly on piles and spread zones (BUG-01)
-- [ ] Communal grid collapses to 4 columns on mobile-width viewports (BUG-02)
-- [ ] Pile count badge hidden when pile is empty; shown only when count ≥ 1 (POLISH-05)
-- [ ] Pile controls row is visually tight against the pile card below it (POLISH-06)
-- [ ] Opponent spread zone has no face-toggle control (CTRL-05)
-- [ ] Opponent hand drop-target outline appears on hover only, not on drag start (CTRL-06)
-- [ ] Grid zone face-toggle icon is positioned near the zone label, not inside the card grid (CTRL-07)
-- [ ] Hand sort "original order" mode is well-defined and functional (SORT-02)
+- ✓ Opponent spread zones appear directly below their owner hands in the board area (LAYOUT-05) — Phase 30
+- ✓ Empty personal spread zone shows ¼-height faint dashed strip; controls hidden until cards present (LAYOUT-06) — Phase 27
+- ✓ Spread zone name labels removed — identity conveyed by adjacent hand header (LAYOUT-07) — Phase 26
+- ✓ Select all button works correctly on piles and spread zones — ring feedback on selected pile top card (BUG-01) — Phase 28
+- ✓ Communal grid collapses to 4 columns at < 640px viewport (BUG-02) — Phase 28
+- ✓ Pile count badge hidden when pile is empty; shown only when count ≥ 1 (POLISH-05) — Phase 26
+- ✓ Pile controls row sits visually tight against the pile card below it (POLISH-06) — Phase 26
+- ✓ Opponent spread zone has no face-toggle control (CTRL-05) — Phase 26
+- ✓ Opponent hand drop-target outline appears on hover only, not on drag start (CTRL-06) — Phase 27
+- ✓ Grid zone face-toggle icon positioned near the zone label, not inside the card grid (CTRL-07) — Phase 26
+- ✓ Hand sort "original order" = current server/manual order; render-time-only; locked with non-mutation invariant test (SORT-02) — Phase 29
+
+### Active
 
 ### Out of Scope
 
@@ -181,6 +168,10 @@ Players can see the shared table and their own private hand update in real time,
 | `MOVE_GRID_CARD` as separate action from REORDER_PILE_SPREAD | Keeps personal spread zones unaffected; grid and spread are semantically distinct | ✓ Validated Phase 24 |
 | Grid cell IDs prefixed `grid-cell-`; `toId` is pile ID not cell ID | Allows pointerWithin collision to route intra-grid drags independently; ensures isIntraSpreadReorder suppresses MOVE_CARD for intra-grid drags | ✓ Validated Phase 24 |
 | SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging` | Personal zones claiming vertical space when unused was the biggest waste of board area | ✓ Validated Phase 25 |
+| SORT-02 "original order" = server/manual order (not deal order); implemented as render-time visual overlay; `buildSortDispatch` and `sendAction` removed from sort path | Sort is display-only — mutating server state for a visual preference would pollute undo stack and cause sync issues | ✓ Validated Phase 29 |
+| `MeasuringStrategy.Always` on DndContext after DOM restructure | After moving opponent spreads out of header band, dnd-kit cached stale droppable rects; Always re-measures every frame | ✓ Validated Phase 30 |
+| Opponent spreads in a `flex-shrink-0` board area row with `w-7` spacer for column alignment | Docking spreads below their hands required matching the hand column width; spacer equals the controls-bar width so spreads align under hand cards | ✓ Validated Phase 30 |
+| Hover-only OpponentHand drop-target via `isOver` (not `isDragging`) | Outline was firing at drag start because `isDragging` is true globally; `isOver` scopes the highlight to the specific droppable being hovered | ✓ Validated Phase 27 |
 
 ## Evolution
 
@@ -200,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 — v1.5 Board Polish II started*
+*Last updated: 2026-05-23 after v1.5 milestone*

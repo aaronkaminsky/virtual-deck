@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.5 Board Polish II (Shipped: 2026-05-23)
+
+**Phases completed:** 5 phases, 8 plans, 14 tasks
+
+**Key accomplishments:**
+
+- PileZone badge conditionally rendered on `!isEmpty` eliminating the "0" badge, and outer wrapper gap tightened from gap-1 (4px) to gap-0.5 (2px)
+- CTRL-06 — OpponentHand hover-only drop-target (Task 1)
+- Thread selectedIds through BoardView into PileZone and DraggableCard, adding ring-1 ring-primary/30 ring feedback to selected pile top cards (BUG-01 fix)
+- Communal grid zone collapses from 7 to 4 columns at mobile viewports using Tailwind's sm: breakpoint, with a Playwright regression test at 375px
+- Hand sort converted to render-time-only visual overlay by deleting buildSortDispatch and stripping sendAction from handleSort, with non-mutation invariant test added to lock the D-04 original-order contract
+- Opponent spreads moved from bg-card header band into a flex-shrink-0 board area row with column alignment via w-7 spacer, plus MeasuringStrategy.Always on DndContext
+- Playwright e2e test for hand-to-personal-spread drag in post-restructure layout, with structural DOM assertion and useDndMonitor subscription-loss regression guard
+
+---
+
 ## v1.4 Table Polish (Shipped: 2026-05-18)
 
 **Phases completed:** 4 phases (22–25) · 10 plans
@@ -16,6 +32,7 @@
 5. Layout & Visual Polish — empty zones show label only; PileZone restructured to header row above card; personal spread zones hidden when empty with drag-reveal; compact zone heights 64px/88px across SpreadZone, PileZone, GridCell; personal spread band padding reduced (POLISH-01–04, ZONE-01)
 
 **Known gaps at close:**
+
 - 999.39: Grid mobile column count — desktop 7-column layout renders at all widths; `grid-cols-4` breakpoint not triggering on iPhone SE
 
 **Archive:** `.planning/milestones/v1.4-ROADMAP.md` · `.planning/milestones/v1.4-REQUIREMENTS.md`
