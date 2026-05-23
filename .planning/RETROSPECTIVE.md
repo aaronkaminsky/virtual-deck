@@ -254,6 +254,55 @@
 
 ---
 
+## Milestone: v1.5 — Board Polish II
+
+**Shipped:** 2026-05-23
+**Phases:** 5 (26–30) | **Plans:** 8 | **Timeline:** 4 days (2026-05-18 → 2026-05-22)
+
+### What Was Built
+
+- Zero-risk visual polish — pile count badge hidden at 0; controls row gap tightened; opponent spread face-toggle removed; zone name labels stripped; grid face-toggle moved beside label (Phase 26)
+- Hover-only drop-target on opponent hand — `isOver` guard scopes the outline to actual hover, not drag-start; empty personal spread shows ¼-height faint dashed strip with deferred controls (Phase 27)
+- Bug fixes — `selectedIds` threaded through BoardView → PileZone → DraggableCard for ring feedback on pile top-card selection; communal grid uses `sm:grid-cols-7 grid-cols-4` Tailwind breakpoint (Phase 28)
+- Sort semantics defined — "original order" = current server/manual order (not deal order); `buildSortDispatch` and `sendAction` deleted from sort path; render-time-only overlay; non-mutation invariant test locks D-04 contract (Phase 29)
+- Spread zones docked to hands — opponent spreads moved from `bg-card` header band into a `flex-shrink-0` board area row; `w-7` spacer aligns spread columns under hand cards; `MeasuringStrategy.Always` on `DndContext` eliminates stale droppable rect drift (Phase 30)
+
+### What Worked
+
+- **Smallest milestone to date** — 4 days, 8 plans, 0 gap-closure plans, 0 code review fix cycles. Clear success criteria and well-scoped phases kept everything on track.
+- **MeasuringStrategy.Always pre-identified** — the risk of stale droppable rects after a DOM restructure was identified in Phase 30 planning (CONTEXT.md) before implementation. Having the mitigation ready meant zero drag regression during Phase 30 execution.
+- **Secure phase for Phase 30** — running `gsd-secure-phase` after the layout restructure confirmed that no new attack surface was introduced (0 open threats). The security review is fast for UI-only phases and provides a clean audit trail.
+- **Verification files for phases 27 and 29** — the `gsd-secure-phase` workflow produced SECURITY.md; pairing it with VERIFICATION.md gave each phase a clear "done" artifact even for non-feature phases.
+- **Hover vs isDragging distinction** — `isOver` (not `isDragging`) for the opponent hand drop-target was identified in the plan, not discovered during debugging. The subtle global vs scoped distinction was written into the task description.
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md tracking again not updated during execution** — 8 of 11 v1.5 requirements showed "Pending" at milestone close despite all phases being complete. Same pattern as v1.4. The traceability table is not getting updated during execution. Corrected at archive time.
+- **v1.5-MILESTONE-AUDIT.md corrupted** — a 15GB audit file was created by a runaway process, requiring manual deletion before milestone close. Root cause unknown; safe to proceed since audit-open covered the same checks.
+- **LAYOUT-06 partial delivery** — the requirement specified personal spread zones only; opponent spread zone empty state (999.54) was deferred to backlog. The requirement was technically satisfied as written but the user expectation included both. This distinction should be captured more precisely in requirement wording.
+
+### Patterns Established
+
+- `MeasuringStrategy.Always` on `DndContext` after any significant DOM restructure — required any time spread or droppable zone geometry changes
+- `w-{N}` spacer for column-alignment docking — matching the controls-bar width with a spacer div aligns a docked zone's content under a sibling column without CSS grid
+- `isOver` (not `isDragging`) for per-zone drop-target styling — `isDragging` is global state; `isOver` from `useDroppable` is scoped to the specific droppable element
+- Render-time-only sort with no server dispatch — `sortCards()` applied at render, no REORDER_HAND dispatch on sort-mode change; D-04 non-mutation invariant test prevents regression
+
+### Key Lessons
+
+1. **Small, focused milestones have zero gap-closure cost.** v1.5 was 8 plans with 0 extras — the requirements were concrete, the phases were well-scoped, and implementation matched the plan. Compare to v1.3 (18 planned → 24 after gap closure). Specificity in success criteria is the difference.
+2. **MeasuringStrategy.Always should be the default for projects with dynamic layout.** Any feature that restructures the DOM while dnd-kit is mounted will cause stale rect issues. The fix is a one-liner — just add it to the project template.
+3. **Track requirements at execution time, not archive time.** This is the third milestone in a row where the traceability table needed retroactive correction. The pattern is consistent enough to be a system problem: `gsd-transition` or the executor needs to mark requirements complete when each plan lands.
+4. **The `isOver` vs `isDragging` distinction is a recurring dnd-kit gotcha.** Two phases (17, 27) both had cases where the wrong state variable was used for drop-target styling. Add it to the dnd-kit checklist.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~6 estimated
+- Notable: Fastest plan-per-day rate across all milestones; tight scope with no scope creep is the primary driver
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -265,6 +314,7 @@
 | v1.2 | 5 | 14 (2 planned → 6 for Phase 14) | e2e infrastructure + game depth; gap-closure plans normalized |
 | v1.3 | 6 | 24 (18 planned → 24 with gap closure) | Layout redesign + responsive; code review cycles added; HUMAN-UAT as structured gate |
 | v1.4 | 4 | 10 (10 planned, 0 gap-closure) | Table polish + features; fastest milestone; Wave-0 RED scaffolds paid off |
+| v1.5 | 5 | 8 (8 planned, 0 gap-closure) | Board Polish II; tightest scope; DOM restructure + MeasuringStrategy.Always |
 
 ### Cumulative Quality
 
@@ -275,6 +325,7 @@
 | v1.2 | 130+ unit + 8 e2e | Playwright BrowserContext isolation, spread zones as Pile records, pre-validate-all batch pattern |
 | v1.3 | 165 unit + 8 e2e | SortableSentinel drop-to-end, selectionSource zone-scoped state, Wave 0 RED scaffolds, delta.x group-reorder direction |
 | v1.4 | 165+ unit + 8 e2e | skipSnapshot for display-pref actions, render-time sort, atomic handleSelectAll, grid-cell droppable routing |
+| v1.5 | 170+ unit + 15 e2e | MeasuringStrategy.Always for DOM restructure, w-7 spacer docking, isOver vs isDragging drop-target scoping, render-time-only sort no-mutation invariant |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -288,3 +339,5 @@
 8. Any dnd-kit droppable detected by `closestCenter` must have real layout dimensions — zero-size sentinels have ~0.5px target surface
 9. Track requirements during execution, not at close — stale "Pending" entries at archive time are wasted reconciliation work; `gsd-transition` should mark requirements Complete as each plan lands
 10. `skipSnapshot: true` is the correct default for any sort/filter/display-preference action that round-trips through the game action system
+11. `MeasuringStrategy.Always` should be the default on `DndContext` in any project with dynamic layout — one-line fix, eliminates an entire class of stale-rect drag bugs
+12. Track requirements at execution time — correcting stale "Pending" entries at archive time is wasted work and has occurred in v1.3, v1.4, and v1.5; make `gsd-transition` or the executor mark requirements complete when each plan lands
