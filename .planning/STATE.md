@@ -1,40 +1,44 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.5
-milestone_name: Board Polish II
-status: Awaiting next milestone
-stopped_at: Phase 30 verified (human_needed)
-last_updated: "2026-05-23T02:46:19.811Z"
-last_activity: 2026-05-23 — Completed quick task 260522-t4p: 999.51 reset button + 999.54 opponent spread zone empty state
+milestone: v1.6
+milestone_name: Free Canvas Play Area
+status: planning
+last_updated: "2026-05-23"
+last_activity: 2026-05-23
 progress:
   total_phases: 5
-  completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-19)
+See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.5 milestone complete — all 5 phases done
+**Current focus:** v1.6 — Free Canvas Play Area — roadmap created, ready to plan Phase 31
 
 ## Current Position
 
-Phase: Milestone v1.5 complete
+Phase: 31 (not started)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-23 — Milestone v1.5 completed and archived
+Status: Roadmap complete — ready for phase planning
+Last activity: 2026-05-23 — Roadmap created for v1.6
+
+```
+[          ] 0% complete
+Phase 31 of 35 (0/5 phases done)
+```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 10 (v1.4)
+- Total plans completed: 10 (v1.4), 8 (v1.5)
 - Average duration: —
 - Total execution time: —
 
@@ -48,12 +52,12 @@ All decisions are logged in `.planning/PROJECT.md` Key Decisions table.
 
 Recent decisions affecting current work:
 
-- [Phase 25]: SpreadZone hidden when empty with drag-reveal via `isOver`/`isDragging`
-- [v1.5 planning]: LAYOUT-05 (dock spread zones) is highest-risk change — land last with e2e coverage; stale droppable rects and `useDndMonitor` subscription loss are the two failure modes
-- [v1.5 planning]: SORT-02 — "original order" = current server/manual order (not deal order); decision must be documented before code is written
-- [Phase ?]: CSS-only BUG-02 fix: grid-cols-4 sm:grid-cols-7 collapses communal grid at mobile viewports without server-side remapping
-- [Phase 28]: Ring applied to DraggableCard root div for pile top-card selection feedback (BUG-01) — Matches SpreadZone isSelected ring pattern; selectedIds threaded through BoardView into PileZone and DraggableCard
-- [Phase 30]: MeasuringStrategy.Always added to DndContext — eliminates stale droppable rect drift after DOM restructure. Opponent spreads docked in flex-shrink-0 board area row; header band now shows hands only. All 15 e2e tests pass.
+- [v1.6 spike 999.37]: Canvas cards use `useDraggable` (not `useSortable`) — no sort order, just absolute position per card
+- [v1.6 spike 999.37]: Stack shadow tracked via `dragDelta` ref (not state) to avoid per-pointermove re-renders; only setState for the boolean shadow trigger
+- [v1.6 spike 999.37]: Mobile edge-pan uses hold-to-scroll arrow buttons; one-finger drag must not conflict
+- [v1.6 roadmap]: Phase 31 (Migration) lands first — remove grid, establish sidebar+canvas shell before any canvas feature work
+- [v1.6 roadmap]: Phase 32 bundles CANVAS-01–04 + NOLOSS-01 — server x/y/z model and no-card-loss are inseparable; both need to be correct before overlap and multi-select land
+- [Phase 30]: MeasuringStrategy.Always added to DndContext — eliminates stale droppable rect drift after DOM restructure
 
 ### Pending Todos
 
@@ -61,7 +65,7 @@ None.
 
 ### Blockers/Concerns
 
-None. Phase 30 LAYOUT-05 implemented and e2e verified. Two human visual checks remain (opponent spread column alignment, tall-viewport space distribution) — no code defect suspected.
+None.
 
 ### Quick Tasks Completed
 
@@ -71,7 +75,7 @@ None. Phase 30 LAYOUT-05 implemented and e2e verified. Two human visual checks r
 
 ## Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-05-23:
+Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v1.5):
 
 | Category | Item | Status |
 |----------|------|--------|
@@ -85,10 +89,10 @@ Items acknowledged and deferred at milestone close on 2026-05-23:
 
 ## Session Continuity
 
-Last session: 2026-05-22T07:20:00Z
-Stopped at: Phase 30 verified (human_needed)
-Resume file: .planning/phases/30-layout-restructure-dock-spread-zones/30-VERIFICATION.md
+Last session: 2026-05-23
+Stopped at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan Phase 31: `/gsd:plan-phase 31`
