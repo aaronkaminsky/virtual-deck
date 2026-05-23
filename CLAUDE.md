@@ -50,43 +50,49 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 | nanoid | 5.x | Generate short room codes and player IDs | nanoid's default alphabet produces URL-safe IDs. Use for room code generation on the PartyKit server. v5 dropped CJS support and uses pure ESM; confirmed working in Cloudflare Workers. |
 | zustand | 4.x [UNVERIFIED] | Local client-side UI state (drag preview, selected card, etc.) | Lightweight, no boilerplate. Use for ephemeral UI state that does not need to sync over the wire — not for game state (that lives on PartyKit). Do not put game state in zustand; it should flow from server messages. |
 | immer | 10.x [UNVERIFIED] | Immutable state updates inside zustand and PartyKit | Prevents accidental mutation of shared game state objects. Makes hand-masking logic easier to reason about. |
-## Alternatives Considered
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| Drag-and-drop | @dnd-kit/core | react-beautiful-dnd | Archived by Atlassian, no longer maintained. |
-| Drag-and-drop | @dnd-kit/core | HTML5 native drag API | Poor z-index behavior, no touch support, difficult to customize card ghost rendering. |
-| Real-time | PartyKit | Supabase Realtime | Database-write latency unsuitable for card drags. No per-connection state masking without custom functions. |
-| Real-time | PartyKit | Liveblocks | More suited to collaborative document editing; pricing model doesn't fit hobby use. |
-| Real-time | PartyKit | raw Cloudflare Durable Objects | PartyKit is a DX wrapper around Durable Objects — same primitives, less boilerplate. No reason to drop down unless PartyKit becomes a constraint. |
-| Frontend framework | React | Vanilla JS | PROJECT.md notes "React or Vanilla JS." React wins because shared type-safe components (Card, Pile) are worth the overhead at this feature count. Vanilla JS is viable but would require manual DOM diffing for real-time updates. |
-| Frontend framework | React | Svelte / SolidJS | Not worth the ecosystem risk for a small project. Less community tooling for drag-and-drop and WebSocket integration. |
-| Build tool | Vite | Create React App | CRA is deprecated. Do not use. |
-| Client state | zustand | Redux | Redux is overengineered for a project where global state is primarily owned by the PartyKit server. |
-| Room IDs | nanoid | uuid | uuid v4 IDs are 36 chars; nanoid default is 21 chars. Both work. nanoid is shorter and URL-friendlier for room codes. |
-## Installation
-# Scaffold Vite + React + TypeScript
-# Runtime dependencies
-# Dev dependencies
-## Version Validation Checklist
-| Claim | Source to Check | Risk if Wrong |
-|-------|----------------|---------------|
-| React 18.x is current stable | https://react.dev | React 19 may be stable; breaking changes in concurrent features |
-| @dnd-kit/core 6.x / @dnd-kit/sortable 10.x are current | https://github.com/clauderic/dnd-kit | These packages version independently — verified against package.json |
-| PartyKit server API (onConnect, onMessage, onBeforeConnect hooks) | https://docs.partykit.io | PartyKit is pre-1.0 and API has changed in the past |
-| `partysocket` is still the correct client package | https://docs.partykit.io | May have been renamed or merged |
-| Vite 5.x GitHub Pages deploy workflow | https://vitejs.dev/guide/static-deploy | `base` config path for GH Pages is version-sensitive |
-| crypto.getRandomValues in Cloudflare Workers | https://developers.cloudflare.com/workers/runtime-apis/web-crypto/ | If not available, need a fallback; LOW risk, Web Crypto is part of WinterCG |
-## Sources
-- Training data (cutoff Aug 2025) — all version claims LOW confidence
-- PROJECT.md and project-brainstorm.md (this repo) — stack decisions HIGH confidence, pre-decided by user
-- PartyKit documentation should be checked at https://docs.partykit.io before implementation
-- dnd-kit repo at https://github.com/clauderic/dnd-kit for current version and API
 <!-- GSD:stack-end -->
 
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+### dnd-kit
+
+- **`MeasuringStrategy.Always`** on `DndContext` whenever the DOM is restructured while dnd-kit is mounted — prevents stale droppable rect drift. One-liner; always add it for any layout that changes dynamically.
+- **`isOver` not `isDragging`** for per-zone drop-target styling. `isDragging` is global state; `isOver` from `useDroppable` is scoped to the specific droppable. Using the wrong one has burned two separate phases (17, 27).
+- **`SortableSentinel`** appended to `SortableContext`: an invisible `flex: 1, minWidth: 56px, alignSelf: stretch` droppable at the end of each sortable list. Required for reliable drop-to-end with `closestCenter` — zero-size elements have ~0.5px target surface and are unreachable.
+- **`pointerWithin` collision detection** on `DndContext` when drop zones should match their visible rect, not their DOM container.
+- **`aria-pressed` after `{...attributes}` spread** in dnd-kit draggable components — dnd-kit's attributes include their own `aria-pressed`; explicit override must come last.
+- **Group reorder direction via `event.delta.x`** — insert AFTER `over` when dragging right, BEFORE when dragging left; matches `horizontalListSortingStrategy` animation.
+- **`mouse.move/down/move/up (steps:15)`** for dnd-kit Playwright drags. `dragAndDrop()` fires HTML5 drag events which dnd-kit ignores.
+
+### State & WebSocket
+
+- **`isDraggingRef = useRef(false)`** (not `useState`) in `usePartySocket` — preserves live value inside the WebSocket message closure.
+- **WebSocket state buffer (`bufferRef`)** during active drag — buffer incoming server updates, flush on `dragEnd`. Without this, any server update during a drag causes visual snap-back.
+- **`enabled` flag for deferred WebSocket connect** — `usePartySocket({ enabled: joinState !== null })` gates connection on pre-join data. No race conditions on name/identity.
+- **`joinState` null-check as single render gate** — `if (!joinState) return <LobbyView />` eliminates partial renders before connection state is resolved.
+- **`selectionSource: { type, zoneId } | null`** for zone-exclusive selection state — prevents cross-zone selection leakage; clearing on zone change is a natural result, not a special case.
+
+### Game Actions & Server
+
+- **`skipSnapshot: true`** on any sort, filter, or display-preference action that round-trips through the game action system. The undo stack should only capture moves a player would want to reverse.
+- **`takeSnapshot` placement**: after all validation, before any mutation — ensures undo always has a valid pre-state.
+- **Pre-validate-all for batch actions**: validate every item before taking the undo snapshot or mutating anything. Atomicity is trivial when no mutation has occurred yet.
+- **Type extension > parallel collections**: add fields to existing types (e.g. `Pile.region`) rather than introducing new collection types. All existing handlers, viewFor masking, and undo logic work unchanged.
+- **Render-time sort, no server dispatch**: apply `sortCards()` at render time; never dispatch a reorder on sort-mode change. Avoids the infinite re-render trap of a `useEffect` watching `cards` and re-dispatching.
+- **`isIntraSpreadReorder` guard in `BoardDragLayer`**: prevents `MOVE_CARD` from firing for same-pile reorders; lets `SpreadZone`'s `useDndMonitor` handle `REORDER_PILE_SPREAD` uncontested.
+
+### Testing
+
+- **Two `BrowserContext`s per Playwright test** for multiplayer scenarios — two Pages in one context share localStorage and therefore share the player token (both join as the same player). Always use two `BrowserContext`s for independent player sessions.
+- **Wave 0 RED scaffolds before implementation** — write failing Vitest tests pinning the contract, then implement to flip GREEN.
+
+### Process
+
+- **Track requirements at execution time** via `gsd-transition`, not at milestone close. Stale "Pending" entries have required retroactive correction in v1.3, v1.4, and v1.5.
+- **Run `gsd-code-review` after every execution phase** — WR-series fixes in multiple phases caught real correctness bugs (off-by-one, modulo bias, missing auth guard) that planning and tests missed.
+- **VALIDATION.md sign-off is consistently skipped** — complete it before phase transition, not as a separate cleanup pass.
+- **Responsive layout is an iceberg** — budget 3–5× planned scope when making an existing desktop-first UI responsive.
 <!-- GSD:conventions-end -->
 
 ## Dev Commands
@@ -104,7 +110,13 @@ To run the full local stack: `npm run dev` in one terminal, `npm run dev:client`
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
-Architecture not yet mapped. Follow existing patterns found in the codebase.
+**Server:** `server.ts` runs on PartyKit (Cloudflare Workers). One room instance per URL slug; state is in-memory per room. All game mutations arrive as typed action messages and the server is authoritative. `viewFor(connectionId)` masks card face values before each broadcast — players receive only their own hand cards; opponents see only counts (or full cards if revealed).
+
+**Client:** Vite + React SPA. `usePartySocket` is the single bridge between server and UI; all game state flows from server broadcasts into React state. No game state in zustand or local component state — zustand is for ephemeral UI only (drag preview, selection). Player identity is a stable token in localStorage + `?player=` URL param, preserved across reconnects and page reloads.
+
+**Zones:** All card containers are typed as `Pile`. Spread zones add `region: "spread"` and `ownerId` fields; grid zones add `region: "grid"` with row/col metadata. This keeps all existing handlers (MOVE_CARD, UNDO_MOVE, RESET_TABLE, viewFor) working without parallel dispatch paths.
+
+**Shared types:** `src/shared/` contains types imported by both client and server, eliminating client/server sync bugs.
 <!-- GSD:architecture-end -->
 
 <!-- GSD:workflow-start source:GSD defaults -->
