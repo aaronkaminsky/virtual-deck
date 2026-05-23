@@ -117,7 +117,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
   3. The remaining horizontal space to the right of the sidebar is the free canvas area (may be empty shell at this phase)
   4. Reset table moves all canvas cards to the draw pile (canvas clears on reset)
 **Plans**: 3 plans
-- [ ] 31-01-PLAN.md — Server + types + test-suite atomic migration (delete grid surface from party/index.ts, src/shared/types.ts; realign existing tests; add tests/gridRemoval.test.ts regression guard)
+- [x] 31-01-PLAN.md — Server + types + test-suite atomic migration (delete grid surface from party/index.ts, src/shared/types.ts; realign existing tests; add tests/gridRemoval.test.ts regression guard)
 - [ ] 31-02-PLAN.md — Delete GridZone.tsx; finalize BoardDragLayer.tsx cleanup; restructure BoardView.tsx middle band into sidebar+canvas; update Playwright spec
 - [ ] 31-03-PLAN.md — Human visual verification of sidebar+canvas layout at 1280x720 and 375x667 + reset-table behavior
 **UI hint**: yes
@@ -173,7 +173,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 31. Migration | 0/3 | Not started | - |
+| 31. Migration | 1/3 | In Progress|  |
 | 32. Canvas Core | 0/? | Not started | - |
 | 33. Overlap & Visibility | 0/? | Not started | - |
 | 34. Multi-Card Group Drop | 0/? | Not started | - |
