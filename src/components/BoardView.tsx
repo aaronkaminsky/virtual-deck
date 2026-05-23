@@ -26,7 +26,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
-  const communalZone = spreadPiles.find(p => p.id === 'play');
+  const communalZone = undefined; // Phase 31: communal grid removed; Plan 02 restructures this band
   const allOpponentIds = Array.from(new Set([
     ...Object.keys(gameState.opponentHandCounts),
     ...Object.keys(gameState.opponentRevealedHands),

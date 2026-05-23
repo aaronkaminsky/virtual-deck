@@ -102,15 +102,15 @@ describe("MOVE_CARD handler", () => {
       fromZone: "pile",
       fromId: "discard",
       toZone: "pile",
-      toId: "play",
+      toId: "draw",
     });
     await room.onMessage(msg, sender);
 
     const discard = room.gameState.piles.find(p => p.id === "discard")!;
-    const play = room.gameState.piles.find(p => p.id === "play")!;
+    const draw = room.gameState.piles.find(p => p.id === "draw")!;
     expect(discard.cards).toHaveLength(0);
-    expect(play.cards).toHaveLength(1);
-    expect(play.cards[0].id).toBe("Q-d");
+    // draw has 52 (initial deck) + 1 moved card
+    expect(draw.cards.some(c => c.id === "Q-d")).toBe(true);
   });
 
   it("sends CARD_NOT_IN_SOURCE when cardId not found in source", async () => {
@@ -122,7 +122,7 @@ describe("MOVE_CARD handler", () => {
       fromZone: "pile",
       fromId: "discard",
       toZone: "pile",
-      toId: "play",
+      toId: "discard",
     });
     await room.onMessage(msg, sender);
 
@@ -141,7 +141,7 @@ describe("MOVE_CARD handler", () => {
       fromZone: "pile",
       fromId: "nonexistent-pile",
       toZone: "pile",
-      toId: "play",
+      toId: "discard",
     });
     await room.onMessage(msg, sender);
 
@@ -267,32 +267,6 @@ describe("MOVE_CARD handler", () => {
     expect(errors).toHaveLength(0);
     expect(room.gameState.hands["player-1"]).toHaveLength(0);
     expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(1);
-  });
-
-  it("moves card from draw pile to spread zone (SC-3)", async () => {
-    room.gameState = makeStateWithPlayerAndCards("player-1", []);
-    // Clear the full deck so only our test card is in the draw pile
-    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
-    drawPile.cards = [makeCard("A-s")];
-    // defaultGameState (used by makeStateWithPlayerAndCards) seeds 'play' as the communal spread zone (GAP-04)
-
-    const msg = JSON.stringify({
-      type: "MOVE_CARD",
-      cardId: "A-s",
-      fromZone: "pile",
-      fromId: "draw",
-      toZone: "pile",
-      toId: "play",
-      insertPosition: "top",
-    });
-    await room.onMessage(msg, sender);
-
-    const communal = room.gameState.piles.find(p => p.id === "play")!;
-    expect(communal).toBeDefined();
-    expect(communal.cards).toHaveLength(1);
-    expect(communal.cards[0].id).toBe("A-s");
-    const draw = room.gameState.piles.find(p => p.id === "draw")!;
-    expect(draw.cards).toHaveLength(0);
   });
 
   it("hand->pile move updates opponentHandCounts via viewFor", async () => {

@@ -49,30 +49,18 @@ function makeTestState(): GameState {
 }
 
 describe("spread zone creation", () => {
-  it("defaultGameState play pile has region spread and acts as communal zone", () => {
-    const state = defaultGameState("room-id");
-    const playPile = state.piles.find(p => p.id === "play");
-    expect(playPile).toBeDefined();
-    expect(playPile?.region).toBe("spread");
-    expect(playPile?.ownerId).toBeNull();
-    expect(playPile?.faceUp).toBe(true);
-    expect(playPile?.cards).toHaveLength(0);
-    // spread-communal must no longer exist
-    const communal = state.piles.find(p => p.id === "spread-communal");
-    expect(communal).toBeUndefined();
-  });
-
-  it("defaultGameState existing piles have region pile and ownerId null", () => {
+  it("defaultGameState seeded piles have region pile and ownerId null (draw and discard only)", () => {
     const state = defaultGameState("room-id");
     const draw = state.piles.find(p => p.id === "draw");
     const discard = state.piles.find(p => p.id === "discard");
-    const play = state.piles.find(p => p.id === "play");
     expect(draw?.region).toBe("pile");
     expect(draw?.ownerId).toBeNull();
     expect(discard?.region).toBe("pile");
     expect(discard?.ownerId).toBeNull();
-    expect(play?.region).toBe("spread"); // was "pile" — GAP-04: play is now the communal spread zone
-    expect(play?.ownerId).toBeNull();
+    // No 'play' pile after Phase 31 migration
+    expect(state.piles.find(p => p.id === "play")).toBeUndefined();
+    // No legacy communal pile
+    expect(state.piles.find(p => p.id === "spread-communal")).toBeUndefined();
   });
 
   it("viewFor returns myPlayZoneId equal to spread-{playerToken} for a connected player", () => {
@@ -135,21 +123,4 @@ describe("spread zone creation", () => {
     }
   });
 
-  it("onStart migration converts play pile to region spread and removes spread-communal", async () => {
-    const mockRoom = makeMockRoom([], {
-      storage: {
-        get: vi.fn().mockResolvedValue(makeOldShapeState()),
-        put: vi.fn().mockResolvedValue(undefined),
-      } as any,
-    });
-    const room = new GameRoom(mockRoom);
-    await room.onStart();
-
-    const playPile = room.gameState.piles.find(p => p.id === "play");
-    expect(playPile).toBeDefined();
-    expect(playPile?.region).toBe("spread");
-
-    const communal = room.gameState.piles.find(p => p.id === "spread-communal");
-    expect(communal).toBeUndefined();
-  });
 });

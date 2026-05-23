@@ -62,44 +62,44 @@ describe("Select All — server-observable behavior via PLAY_CARD_SET", () => {
     const cardA = makeCard("A-s");
     const cardK = makeCard("K-h");
     const cardQ = makeCard("Q-d");
-    room.gameState = makeStateWithPileCards("player-1", "play", [cardA, cardK, cardQ]);
+    room.gameState = makeStateWithPileCards("player-1", "spread-player-1", [cardA, cardK, cardQ]);
 
     await room.onMessage(JSON.stringify({
       type: "PLAY_CARD_SET",
       cardIds: ["A-s", "K-h", "Q-d"],
       fromZone: "pile",
-      fromId: "play",
+      fromId: "spread-player-1",
       toZone: "pile",
-      toId: "spread-player-1",
+      toId: "discard",
     }), sender);
 
-    const playPile = room.gameState.piles.find(p => p.id === "play")!;
-    expect(playPile.cards).toHaveLength(0);
+    const sourcePile = room.gameState.piles.find(p => p.id === "spread-player-1")!;
+    expect(sourcePile.cards).toHaveLength(0);
 
-    const spreadPile = room.gameState.piles.find(p => p.id === "spread-player-1")!;
-    expect(spreadPile.cards.map(c => c.id)).toEqual(["A-s", "K-h", "Q-d"]);
+    const discardPile = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discardPile.cards.map(c => c.id)).toEqual(["A-s", "K-h", "Q-d"]);
   });
 
   it("SELECT-03: PLAY_CARD_SET with multi-card source produces an atomic move that all-present validation accepts", async () => {
     const card1 = makeCard("A-s");
     const card2 = makeCard("K-h");
     const card3 = makeCard("Q-d");
-    room.gameState = makeStateWithPileCards("player-1", "play", [card1, card2, card3]);
+    room.gameState = makeStateWithPileCards("player-1", "spread-player-1", [card1, card2, card3]);
 
     await room.onMessage(JSON.stringify({
       type: "PLAY_CARD_SET",
       cardIds: ["A-s", "Q-d"],
       fromZone: "pile",
-      fromId: "play",
+      fromId: "spread-player-1",
       toZone: "pile",
-      toId: "spread-player-1",
+      toId: "discard",
     }), sender);
 
-    const playPile = room.gameState.piles.find(p => p.id === "play")!;
-    expect(playPile.cards.map(c => c.id)).toEqual(["K-h"]);
+    const sourcePile = room.gameState.piles.find(p => p.id === "spread-player-1")!;
+    expect(sourcePile.cards.map(c => c.id)).toEqual(["K-h"]);
 
-    const spreadPile = room.gameState.piles.find(p => p.id === "spread-player-1")!;
-    expect(spreadPile.cards.map(c => c.id)).toEqual(["A-s", "Q-d"]);
+    const discardPile = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discardPile.cards.map(c => c.id)).toEqual(["A-s", "Q-d"]);
 
     expect(sender.send).not.toHaveBeenCalledWith(expect.stringContaining("CARD_NOT_IN_SOURCE"));
   });
