@@ -61,34 +61,32 @@ Items acknowledged but deferred beyond v1.6.
 
 ## Traceability
 
-Populated by roadmapper after roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CANVAS-01 | — | Pending |
-| CANVAS-02 | — | Pending |
-| CANVAS-03 | — | Pending |
-| CANVAS-04 | — | Pending |
-| NOLOSS-01 | — | Pending |
-| OVERLAP-01 | — | Pending |
-| OVERLAP-02 | — | Pending |
-| OVERLAP-03 | — | Pending |
-| MULTI-01 | — | Pending |
-| MULTI-02 | — | Pending |
-| MULTI-03 | — | Pending |
-| MULTI-04 | — | Pending |
-| MOBILE-01 | — | Pending |
-| MOBILE-02 | — | Pending |
-| MOBILE-03 | — | Pending |
-| MIGRATE-01 | — | Pending |
-| MIGRATE-02 | — | Pending |
-| MIGRATE-03 | — | Pending |
+| CANVAS-01 | Phase 32 | Pending |
+| CANVAS-02 | Phase 32 | Pending |
+| CANVAS-03 | Phase 32 | Pending |
+| CANVAS-04 | Phase 32 | Pending |
+| NOLOSS-01 | Phase 32 | Pending |
+| OVERLAP-01 | Phase 33 | Pending |
+| OVERLAP-02 | Phase 33 | Pending |
+| OVERLAP-03 | Phase 33 | Pending |
+| MULTI-01 | Phase 34 | Pending |
+| MULTI-02 | Phase 34 | Pending |
+| MULTI-03 | Phase 34 | Pending |
+| MULTI-04 | Phase 34 | Pending |
+| MOBILE-01 | Phase 35 | Pending |
+| MOBILE-02 | Phase 35 | Pending |
+| MOBILE-03 | Phase 35 | Pending |
+| MIGRATE-01 | Phase 31 | Pending |
+| MIGRATE-02 | Phase 31 | Pending |
+| MIGRATE-03 | Phase 31 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 18 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 18 ⚠
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-23*
-*Last updated: 2026-05-23 — initial definition for milestone v1.6*
+*Last updated: 2026-05-23 — traceability populated after roadmap creation*
