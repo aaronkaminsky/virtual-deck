@@ -15,31 +15,45 @@ describe("REORDER_PILE_SPREAD undo", () => {
   });
 
   it("takes a snapshot before mutating the spread pile", async () => {
-    const playPile = room.gameState.piles.find(p => p.id === "play")!;
-    playPile.cards.push(makeCard("A-s"), makeCard("K-h"), makeCard("Q-d"));
+    // Seed a personal spread zone for player-1
+    room.gameState.piles.push({
+      id: "spread-player-1",
+      name: "Spread",
+      cards: [makeCard("A-s"), makeCard("K-h"), makeCard("Q-d")],
+      faceUp: true,
+      region: "spread",
+      ownerId: "player-1",
+    });
 
     await room.onMessage(
-      JSON.stringify({ type: "REORDER_PILE_SPREAD", pileId: "play", orderedCardIds: ["K-h", "A-s", "Q-d"] }),
+      JSON.stringify({ type: "REORDER_PILE_SPREAD", pileId: "spread-player-1", orderedCardIds: ["K-h", "A-s", "Q-d"] }),
       sender,
     );
 
-    expect(room.gameState.piles.find(p => p.id === "play")!.cards.map(c => c.id))
+    expect(room.gameState.piles.find(p => p.id === "spread-player-1")!.cards.map(c => c.id))
       .toEqual(["K-h", "A-s", "Q-d"]);
     expect(room.gameState.undoSnapshots).toHaveLength(1);
     expect(viewFor(room.gameState, "player-1").canUndo).toBe(true);
   });
 
   it("UNDO_MOVE restores the previous spread pile order", async () => {
-    const playPile = room.gameState.piles.find(p => p.id === "play")!;
-    playPile.cards.push(makeCard("A-s"), makeCard("K-h"), makeCard("Q-d"));
+    // Seed a personal spread zone for player-1
+    room.gameState.piles.push({
+      id: "spread-player-1",
+      name: "Spread",
+      cards: [makeCard("A-s"), makeCard("K-h"), makeCard("Q-d")],
+      faceUp: true,
+      region: "spread",
+      ownerId: "player-1",
+    });
 
     await room.onMessage(
-      JSON.stringify({ type: "REORDER_PILE_SPREAD", pileId: "play", orderedCardIds: ["K-h", "A-s", "Q-d"] }),
+      JSON.stringify({ type: "REORDER_PILE_SPREAD", pileId: "spread-player-1", orderedCardIds: ["K-h", "A-s", "Q-d"] }),
       sender,
     );
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
 
-    expect(room.gameState.piles.find(p => p.id === "play")!.cards.map(c => c.id))
+    expect(room.gameState.piles.find(p => p.id === "spread-player-1")!.cards.map(c => c.id))
       .toEqual(["A-s", "K-h", "Q-d"]);
   });
 });

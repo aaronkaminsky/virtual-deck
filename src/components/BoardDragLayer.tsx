@@ -15,11 +15,8 @@ const customCollision: CollisionDetection = (args) => {
   const pileContainers = args.droppableContainers.filter(
     (c) => String(c.id).startsWith('pile-')
   );
-  const gridCellContainers = args.droppableContainers.filter(
-    (c) => String(c.id).startsWith('grid-cell-')
-  );
   const cardContainers = args.droppableContainers.filter(
-    (c) => String(c.id) !== 'hand' && !String(c.id).startsWith('opponent-hand-') && !String(c.id).startsWith('pile-') && !String(c.id).startsWith('grid-cell-')
+    (c) => String(c.id) !== 'hand' && !String(c.id).startsWith('opponent-hand-') && !String(c.id).startsWith('pile-')
   );
 
   const zoneCollisions = pointerWithin({ ...args, droppableContainers: zoneContainers });
@@ -37,10 +34,6 @@ const customCollision: CollisionDetection = (args) => {
     }
     return zoneCollisions;
   }
-
-  // Grid cell droppables (play area) — checked before pile bucket (T-24-06: prefix 'grid-cell-' never starts with 'pile-')
-  const gridCollisions = pointerWithin({ ...args, droppableContainers: gridCellContainers });
-  if (gridCollisions.length > 0) return gridCollisions;
 
   // Pointer is outside all zones — pile drops only register when the pointer is inside the pile rect.
   const pileCollisions = pointerWithin({ ...args, droppableContainers: pileContainers });
@@ -231,7 +224,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           toId: overData!.toId,
         });
       } else {
-        const gridOverDataMulti = event.over?.data.current as { toRow?: number; toCol?: number } | undefined;
         sendAction({
           type: 'PLAY_CARD_SET',
           cardIds: [...selectedIds],
@@ -241,7 +233,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
             : playerId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
-          ...(gridOverDataMulti?.toRow !== undefined ? { toRow: gridOverDataMulti.toRow, toCol: gridOverDataMulti.toCol } : {}),
         });
       }
       return;
@@ -297,7 +288,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
             // REORDER_PILE_SPREAD handler can fire without BoardDragLayer racing it.
             // Reuse outer isIntraSpreadReorder (computed at top of handleDragEnd, D-02 Phase 21).
             if (!isIntraSpreadReorder) {
-              const gridOverData = event.over?.data.current as { toRow?: number; toCol?: number } | undefined;
               sendAction({
                 type: 'MOVE_CARD',
                 cardId: card.id,
@@ -306,18 +296,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
                 toZone,
                 toId,
                 insertPosition: 'top',
-                ...(gridOverData?.toRow !== undefined ? { toRow: gridOverData.toRow, toCol: gridOverData.toCol } : {}),
               });
-            } else if (selectedIds.size > 1 && selectionSource?.zoneId === 'play') {
-              const toRow = (event.over?.data.current as { toRow?: number })?.toRow;
-              const toCol = (event.over?.data.current as { toCol?: number })?.toCol;
-              if (toRow !== undefined && toCol !== undefined) {
-                for (const cId of selectedIds) {
-                  sendAction({ type: 'MOVE_GRID_CARD', cardId: cId, pileId: 'play', toRow, toCol });
-                }
-              }
-              setSelectedIds(new Set());
-              setSelectionSource(null);
             }
           } else {
             // Non-empty pile (non-spread): intercept and show position dialog (D-01)

@@ -68,23 +68,13 @@ describe("defaultGameState", () => {
     expect(state.phase).toBe("lobby");
   });
 
-  it("has 3 piles with ids draw, discard, and play", () => {
+  it("has 2 piles with ids draw and discard (Phase 31: communal grid removed)", () => {
     const state = defaultGameState("test-room");
-    expect(state.piles).toHaveLength(3);
+    expect(state.piles).toHaveLength(2);
     const ids = state.piles.map(p => p.id);
     expect(ids).toContain("draw");
     expect(ids).toContain("discard");
-    expect(ids).toContain("play");
-    const play = state.piles.find(p => p.id === "play");
-    expect(play?.region).toBe("spread");
-  });
-
-  it("play pile has name Play Area and 0 cards", () => {
-    const state = defaultGameState("test-room");
-    const play = state.piles.find(p => p.id === "play");
-    expect(play).toBeDefined();
-    expect(play!.name).toBe("Play Area");
-    expect(play!.cards).toHaveLength(0);
+    expect(ids).not.toContain("play");
   });
 
   it("initializes undoSnapshots as empty array", () => {
