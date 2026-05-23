@@ -5,7 +5,7 @@ milestone_name: Board Polish II
 status: Awaiting next milestone
 stopped_at: Phase 30 verified (human_needed)
 last_updated: "2026-05-23T02:46:19.811Z"
-last_activity: 2026-05-23 — Milestone v1.5 completed and archived
+last_activity: 2026-05-23 — Completed quick task 260522-t4p: 999.51 reset button + 999.54 opponent spread zone empty state
 progress:
   total_phases: 5
   completed_phases: 5
@@ -62,6 +62,12 @@ None.
 ### Blockers/Concerns
 
 None. Phase 30 LAYOUT-05 implemented and e2e verified. Two human visual checks remain (opponent spread column alignment, tall-viewport space distribution) — no code defect suspected.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260522-t4p | Fix 999.51 reset button enable on any game state change and 999.54 opponent spread zone empty resting state collapse | 2026-05-23 | b51718c | [260522-t4p-fix-999-51-reset-button-enable-on-any-ga](./quick/260522-t4p-fix-999-51-reset-button-enable-on-any-ga/) |
 
 ## Deferred Items
 
