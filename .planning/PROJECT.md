@@ -22,7 +22,21 @@ Players can see the shared table and their own private hand update in real time,
 - Hand sort: "original order" = current server/manual order; render-time-only visual overlay (no undo stack mutation)
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** planning in progress
+**Next milestone:** v1.6 — Free Canvas Play Area (planning in progress)
+
+## Current Milestone: v1.6 Free Canvas Play Area
+
+**Goal:** Replace the fixed communal grid with a free-form canvas where each card has an absolute (x, y, z) position and can be placed and overlapped anywhere — with a no-card-loss guarantee.
+
+**Target features:**
+- Free canvas: cards positioned absolutely with x/y/z; drop anchors card at pointer position; cancel reverts to pre-drag position
+- No-card-loss invariant: a card dragged out of the canvas is either over a valid drop zone (hand, pile, personal spread) or the drop is cancelled and the card returns to its canvas position
+- Overlap hit-testing: pointer-events target the topmost visible card; ~50% drag opacity reveals card below for drop decisions
+- Multi-card group drop: selected cards land maintaining relative positions, z-order preserved above all existing cards
+- Mobile edge-pan: hold-to-scroll arrow buttons replace scrollbar panning (no conflict with one-finger card drag)
+- Stack shadow: visual layering indicator when >50% of a lower card is covered
+
+**Backlog items resolved:** 999.37 (free canvas, spike validated), 999.52 (mobile grid overflow, obsoleted), 999.53 (mobile layout overlap, obsoleted)
 
 ## Requirements
 
@@ -191,4 +205,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 after v1.5 milestone*
+*Last updated: 2026-05-23 — milestone v1.6 started*
