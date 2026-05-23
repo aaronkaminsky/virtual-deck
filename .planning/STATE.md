@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
 status: executing
-stopped_at: Phase 31 UI-SPEC approved
-last_updated: "2026-05-23T22:43:36.134Z"
-last_activity: 2026-05-23 -- Phase 31 planning complete
+stopped_at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
+last_updated: "2026-05-23T22:46:03.591Z"
+last_activity: 2026-05-23 -- Phase 31 execution started
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 3
+  total_plans: 0
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.6 — Free Canvas Play Area — roadmap created, ready to plan Phase 31
+**Current focus:** Phase 31 — migration
 
 ## Current Position
 
-Phase: 31 (not started)
-Plan: —
-Status: Ready to execute
-Last activity: 2026-05-23 -- Phase 31 planning complete
+Phase: 31 (migration) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 31
+Last activity: 2026-05-23 -- Phase 31 execution started
 
 ```
 [          ] 0% complete
@@ -90,9 +90,9 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 
 ## Session Continuity
 
-Last session: 2026-05-23T22:28:50.453Z
-Stopped at: Phase 31 UI-SPEC approved
-Resume file: .planning/phases/31-migration/31-UI-SPEC.md
+Last session: 2026-05-23
+Stopped at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
