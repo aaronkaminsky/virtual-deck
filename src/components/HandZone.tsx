@@ -134,11 +134,10 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
   const [sortMode, setSortMode] = useState<SortMode>('original');
 
   const { active, over } = useDndContext();
-  const handCardIds = new Set(cards.map(c => c.id));
   const isOver =
     active != null &&
     over != null &&
-    (over.id === 'hand' || handCardIds.has(String(over.id)));
+    over.id === 'hand';
 
   // Render-time visual sort: applied every render when a non-original mode is active.
   // This keeps the hand sorted visually without re-dispatching on every server update.
