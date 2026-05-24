@@ -99,7 +99,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 
 ### v1.6 Free Canvas Play Area
 
-- [ ] **Phase 31: Migration** — Remove communal grid; establish fixed left sidebar with draw/discard piles and free canvas play area shell
+- [x] **Phase 31: Migration** — Remove communal grid; establish fixed left sidebar with draw/discard piles and free canvas play area shell (completed 2026-05-24)
 - [ ] **Phase 32: Canvas Core** — Server x/y/z model, drag-to-position on canvas, cancel-reverts, z-ordering on drop, no-card-loss guarantee
 - [ ] **Phase 33: Overlap & Visibility** — Topmost-card pointer events, drag opacity, stack shadow indicator
 - [ ] **Phase 34: Multi-Card Group Drop** — Canvas click-to-select, group drop with relative offsets, z-order above existing, all-or-nothing bounds rule
@@ -173,7 +173,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 31. Migration | 5/6 | In Progress|  |
+| 31. Migration | 8/8 | Complete   | 2026-05-24 |
 | 32. Canvas Core | 0/? | Not started | - |
 | 33. Overlap & Visibility | 0/? | Not started | - |
 | 34. Multi-Card Group Drop | 0/? | Not started | - |
