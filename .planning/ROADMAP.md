@@ -132,7 +132,10 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
   3. Cancelling a drag (Escape or drop outside canvas and outside any valid zone) returns the card to its original canvas position — no card disappears
   4. A card dropped from the canvas into a hand, pile, or personal spread zone moves there correctly (card-loss guard does not block valid drops)
   5. The server stores (x, y, z) per canvas card; a card dropped onto the canvas receives z = max existing z + 1 (topmost)
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 32-01-PLAN.md — Server + types + tests: CanvasCard model, PLACE_ON_CANVAS handler, MOVE_CARD canvas source, RESET_TABLE canvas sweep, viewFor broadcast, onStart migration, tests/canvasCards.test.ts
+- [ ] 32-02-PLAN.md — Client: CanvasZone + CanvasDraggableCard components; BoardView wiring; BoardDragLayer customCollision canvas fallback, handleDragEnd canvas branch, PendingMove canvas extension, DragOverlay opacity/scale
+- [ ] 32-03-PLAN.md — Human visual verification (16-item checklist, desktop + mobile, two-player real-time sync)
 **UI hint**: yes
 
 ### Phase 33: Overlap & Visibility
@@ -174,7 +177,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 31. Migration | 8/8 | Complete    | 2026-05-24 |
-| 32. Canvas Core | 0/? | Not started | - |
+| 32. Canvas Core | 0/3 | Not started | - |
 | 33. Overlap & Visibility | 0/? | Not started | - |
 | 34. Multi-Card Group Drop | 0/? | Not started | - |
 | 35. Mobile | 0/? | Not started | - |
