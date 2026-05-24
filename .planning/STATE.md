@@ -73,6 +73,7 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260522-t4p | Fix 999.51 reset button enable on any game state change and 999.54 opponent spread zone empty resting state collapse | 2026-05-23 | b51718c | [260522-t4p-fix-999-51-reset-button-enable-on-any-ga](./quick/260522-t4p-fix-999-51-reset-button-enable-on-any-ga/) |
+| 260523-t9o | Fix PileZone empty-state collapse and add board min-height | 2026-05-24 | 00582fb | [260523-t9o-fix-pilezone-empty-state-collapse-and-ad](./quick/260523-t9o-fix-pilezone-empty-state-collapse-and-ad/) |
 
 ## Deferred Items
 
@@ -90,8 +91,8 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 
 ## Session Continuity
 
-Last session: 2026-05-23
-Stopped at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
+Last session: 2026-05-24
+Stopped at: Quick task 260523-t9o complete — PileZone min-h fixed, board min-height added
 Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
