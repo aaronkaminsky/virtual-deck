@@ -1,37 +1,45 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-09T17:22:09.111Z",
-  "phase": "19",
-  "phase_name": "Responsive Layout",
-  "phase_dir": ".planning/phases/19-npm-audit",
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
+  "timestamp": "2026-05-24T03:44:05.055Z",
+  "phase": "31",
+  "phase_name": "migration",
+  "phase_dir": ".planning/phases/31-migration",
+  "plan": 8,
+  "task": 1,
+  "total_tasks": 1,
   "status": "paused",
   "completed_tasks": [
-    {"id": 1, "name": "Wave 7 plans 08-10 executed", "status": "done", "commit": "38814e2"},
-    {"id": 2, "name": "Code review (wave 7)", "status": "done", "commit": "a290491"},
-    {"id": 3, "name": "Verification (human_needed)", "status": "done", "commit": "d64daef"},
-    {"id": 4, "name": "UAT gap fixes — badge, header, spread icons", "status": "done", "commit": "1ef88bc"}
+    {"id": "31-04", "name": "Sidebar self-stretch + SpreadZone py-2 (GAP-02, GAP-03)", "status": "done", "commit": "4f97b11"},
+    {"id": "31-05", "name": "Hand zone isOver tightened to over.id==='hand' (GAP-01)", "status": "done", "commit": "28e3fed"},
+    {"id": "31-06", "name": "Human verification — partial approval, 2 gaps found", "status": "done", "commit": "7584c57"},
+    {"id": "31-07", "name": "Intrinsic sizing on SpreadZone + PileZone (GAP-04)", "status": "done", "commit": "e27b09b"},
+    {"id": "31-08", "name": "min-w-[320px] board shell, removed overflow-x-hidden (GAP-05)", "status": "done", "commit": "a33172b"}
   ],
   "remaining_tasks": [
-    {"id": 5, "name": "User re-tests at 375x667 after hard refresh", "status": "not_started"},
-    {"id": 6, "name": "If approved: mark Phase 19 complete, advance to Phase 20", "status": "not_started"}
+    {"id": "human-reverify", "name": "Visual re-verify GAP-04 and GAP-05", "status": "not_started"},
+    {"id": "code-review", "name": "gsd-code-review 31", "status": "not_started"},
+    {"id": "verify-phase", "name": "Verifier agent", "status": "not_started"},
+    {"id": "phase-complete", "name": "Mark phase 31 complete", "status": "not_started"}
   ],
   "blockers": [],
   "human_actions_pending": [
     {
-      "action": "Hard refresh browser at localhost:5173/virtual-deck/, test at 375x667 iPhone SE viewport",
-      "context": "3 UAT fixes committed (1ef88bc): badge now inline text in name, header items-start, spread zone icons. Need visual confirmation before marking Phase 19 complete.",
+      "action": "Visually verify GAP-04: symmetric py-2 breathing room above/below cards in PileZone and SpreadZone",
+      "context": "Intrinsic sizing applied — fixed heights removed so py-2 now shows",
       "blocking": true
+    },
+    {
+      "action": "Visually verify GAP-05: narrow browser <320px causes horizontal scroll not overlap",
+      "context": "overflow-x-hidden removed, min-w-[320px] added to board root",
+      "blocking": false
     }
   ],
   "decisions": [
-    {"decision": "Card count displayed as inline text '(N)' in name span", "rationale": "Badge component appeared in wrong position visually; inline text is unambiguous", "phase": "19"},
-    {"decision": "Header changed from items-center to items-start", "rationale": "self-start on ControlsBar wrapper did not reliably override items-center when header was tall due to spread zones", "phase": "19"},
-    {"decision": "SpreadZone Face up/down → Eye/EyeOff icons", "rationale": "Consistent with PileZone; reduces horizontal space usage", "phase": "19"}
+    {"decision": "Intrinsic sizing for card slots", "rationale": "Operator chose over fixed-height increase", "phase": "31"},
+    {"decision": "Hard min-width 320px", "rationale": "Operator chose over overflow-auto container", "phase": "31"},
+    {"decision": "Fix A for GAP-01 (remove handCardIds fallback)", "rationale": "Sole early-activation vector confirmed by static analysis", "phase": "31"}
   ],
   "uncommitted_files": [],
-  "next_action": "Ask user to hard refresh browser and re-test at 375x667. If approved, run /gsd-next to mark Phase 19 complete and advance to Phase 20.",
-  "context_notes": "Phase 19 has all 10 plans complete. Verifier status is human_needed (SC2 visual pass required). 3 UAT gaps fixed in last commit. Phase 20 (Spread Zone Multi-Select) is next."
+  "next_action": "Start local stack. Visually verify GAP-04 and GAP-05. If approved, run /gsd:execute-phase 31.",
+  "context_notes": "All 5 gap plans (31-04 through 31-08) committed. execute-phase paused at post-wave-5, waiting for human re-verification before code review and verifier."
 }
