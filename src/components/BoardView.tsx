@@ -82,7 +82,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
 
         <div className="flex-1 min-h-0 flex items-start">
-          <div className="flex-shrink-0 flex flex-col gap-2 py-2 px-2 border-r border-border">
+          <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
             {pilePiles.map((pile) => (
               <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
             ))}
