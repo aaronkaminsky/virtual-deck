@@ -32,7 +32,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const opponentCount = allOpponentIds.length;
 
   return (
-    <div className="h-screen w-screen min-w-[320px] flex flex-col bg-background">
+    <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
