@@ -88,7 +88,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         ref={setNodeRef}
         data-testid={`pile-${pile.id}`}
         className={cn(
-          'w-[56px] sm:w-[80px] min-h-[64px] sm:min-h-[88px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
+          'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
           isEmpty ? 'border-dashed' : '',
           isOver ? 'border-primary' : 'border-border'
         )}
