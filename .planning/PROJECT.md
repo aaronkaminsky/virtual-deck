@@ -12,14 +12,16 @@ Players can see the shared table and their own private hand update in real time,
 
 **v1.5 shipped (2026-05-23).** All 64 requirements across v1.0–v1.5 satisfied and shipped.
 
+**v1.6 in progress — Phase 31 (Migration) complete (2026-05-24).** Communal grid removed; sidebar + free canvas shell in place.
+
 - ~3,000+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- Full Playwright e2e infrastructure (15 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (170+ tests)
-- Layout: opponent spreads docked below their owner hands in board area; personal spread flush above player hand; MeasuringStrategy.Always eliminates stale droppable rect drift
-- Zones: empty personal spread shows faint dashed strip (¼ height); no zone name labels; opponent spreads have no face-toggle control; hover-only drop-target outline on opponent hand
+- Full Playwright e2e infrastructure (15 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (212 tests)
+- Layout: fixed left sidebar (draw + discard piles); free canvas shell to the right; opponent spreads docked below owner hands
+- Zones: empty personal spread shows faint dashed strip (¼ height); no zone name labels; opponent spreads have no face-toggle control; hover-only drop-target outline on opponent hand; PileZone/SpreadZone slots use intrinsic sizing with py-2 breathing room
 - Piles: count badge hidden at 0; controls row tight against pile card; Select All works correctly on piles and spread zones
-- Mobile: communal grid collapses from 7 to 4 columns at < 640px viewport
 - Hand sort: "original order" = current server/manual order; render-time-only visual overlay (no undo stack mutation)
+- Board: min-w-[320px] prevents zone overlap at narrow viewports; min-h-[480px] board floor
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
 **Next milestone:** v1.6 — Free Canvas Play Area (planning in progress)
@@ -124,6 +126,12 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Grid zone face-toggle icon positioned near the zone label, not inside the card grid (CTRL-07) — Phase 26
 - ✓ Hand sort "original order" = current server/manual order; render-time-only; locked with non-mutation invariant test (SORT-02) — Phase 29
 
+### Validated (v1.6, Phase 31)
+
+- ✓ Communal grid zone fully removed; GRID-01 region code deleted (MIGRATE-01) — Phase 31
+- ✓ Draw and discard piles in fixed left sidebar, vertically stacked, with free canvas area to the right (MIGRATE-02) — Phase 31
+- ✓ Reset table moves all canvas cards to draw pile; canvas clears on reset (MIGRATE-03) — Phase 31
+
 ### Active
 
 ### Out of Scope
@@ -205,4 +213,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 — milestone v1.6 started*
+*Last updated: 2026-05-24 — Phase 31 (migration) complete; sidebar+canvas shell in place*
