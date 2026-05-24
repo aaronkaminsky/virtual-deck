@@ -173,7 +173,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 31. Migration | 8/8 | Complete   | 2026-05-24 |
+| 31. Migration | 8/8 | Complete    | 2026-05-24 |
 | 32. Canvas Core | 0/? | Not started | - |
 | 33. Overlap & Visibility | 0/? | Not started | - |
 | 34. Multi-Card Group Drop | 0/? | Not started | - |

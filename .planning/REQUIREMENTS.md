@@ -38,9 +38,9 @@
 
 ### Migration
 
-- [ ] **MIGRATE-01**: Communal grid (region: "grid") is fully replaced by the free canvas; no dual-mode fallback
-- [ ] **MIGRATE-02**: Draw and discard piles live in a fixed left sidebar, vertically stacked (draw pile above discard); the free canvas occupies the remaining horizontal space to the right
-- [ ] **MIGRATE-03**: Reset table moves all canvas cards to the draw pile
+- [x] **MIGRATE-01**: Communal grid (region: "grid") is fully replaced by the free canvas; no dual-mode fallback
+- [x] **MIGRATE-02**: Draw and discard piles live in a fixed left sidebar, vertically stacked (draw pile above discard); the free canvas occupies the remaining horizontal space to the right
+- [x] **MIGRATE-03**: Reset table moves all canvas cards to the draw pile
 
 ## Future Requirements
 
@@ -78,9 +78,9 @@ Items acknowledged but deferred beyond v1.6.
 | MOBILE-01 | Phase 35 | Pending |
 | MOBILE-02 | Phase 35 | Pending |
 | MOBILE-03 | Phase 35 | Pending |
-| MIGRATE-01 | Phase 31 | Pending |
-| MIGRATE-02 | Phase 31 | Pending |
-| MIGRATE-03 | Phase 31 | Pending |
+| MIGRATE-01 | Phase 31 | Complete |
+| MIGRATE-02 | Phase 31 | Complete |
+| MIGRATE-03 | Phase 31 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 18 total

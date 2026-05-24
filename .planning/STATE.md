@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
-status: executing
-stopped_at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
-last_updated: "2026-05-24T03:05:50.409Z"
+status: ready_to_plan
+stopped_at: Phase 31 complete (8/8) — ready to discuss Phase 32
+last_updated: 2026-05-24T13:41:49.717Z
 last_activity: 2026-05-24 -- Phase 31 execution started
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 6
-  completed_plans: 3
-  percent: 0
+  completed_phases: 1
+  total_plans: 8
+  completed_plans: 14
+  percent: 20
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 31 — migration
+**Current focus:** Phase 32 — canvas core
 
 ## Current Position
 
-Phase: 31 (migration) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 31
-Last activity: 2026-05-24 -- Phase 31 execution started
+Phase: 32
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-24
 
 ```
 [          ] 0% complete
@@ -39,7 +39,7 @@ Phase 31 of 35 (0/5 phases done)
 
 **Velocity:**
 
-- Total plans completed: 10 (v1.4), 8 (v1.5)
+- Total plans completed: 18 (v1.4), 8 (v1.5)
 - Average duration: —
 - Total execution time: —
 
