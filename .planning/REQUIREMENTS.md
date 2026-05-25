@@ -8,8 +8,8 @@
 
 ### Canvas Core
 
-- [ ] **CANVAS-01**: Player can drag a card to any position on the communal canvas; card anchors at the drop point
-- [ ] **CANVAS-02**: Cancelling a drag returns the card to its pre-drag canvas position
+- [x] **CANVAS-01**: Player can drag a card to any position on the communal canvas; card anchors at the drop point
+- [x] **CANVAS-02**: Cancelling a drag returns the card to its pre-drag canvas position
 - [x] **CANVAS-03**: Each canvas card stores (x, y, z) in server state; z determines render order (higher z renders on top)
 - [x] **CANVAS-04**: Dropping a card onto the canvas makes it topmost (z = max + 1)
 
@@ -63,8 +63,8 @@ Items acknowledged but deferred beyond v1.6.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CANVAS-01 | Phase 32 | Pending |
-| CANVAS-02 | Phase 32 | Pending |
+| CANVAS-01 | Phase 32 | Complete |
+| CANVAS-02 | Phase 32 | Complete |
 | CANVAS-03 | Phase 32 | Complete |
 | CANVAS-04 | Phase 32 | Complete |
 | NOLOSS-01 | Phase 32 | Complete |
