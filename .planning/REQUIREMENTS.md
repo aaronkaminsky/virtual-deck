@@ -19,9 +19,9 @@
 
 ### Overlap & Visibility
 
-- [ ] **OVERLAP-01**: Clicking or dragging targets the highest-z card at any (x, y) point on the canvas; cards beneath are not interactive
-- [ ] **OVERLAP-02**: Dragged card renders at ~50% opacity so cards beneath are visible for drop decisions
-- [ ] **OVERLAP-03**: Box-shadow layering indicator appears when a card covers >50% of a card below; shadow tracking uses a ref (not state) to avoid per-pointermove re-renders
+- [x] **OVERLAP-01**: Clicking or dragging targets the highest-z card at any (x, y) point on the canvas; cards beneath are not interactive
+- [x] **OVERLAP-02**: Dragged card renders at ~50% opacity so cards beneath are visible for drop decisions
+- [x] **OVERLAP-03**: Box-shadow layering indicator appears when a card covers >50% of a card below; shadow tracking uses a ref (not state) to avoid per-pointermove re-renders
 
 ### Multi-Card Group Drop
 
@@ -68,9 +68,9 @@ Items acknowledged but deferred beyond v1.6.
 | CANVAS-03 | Phase 32 | Complete |
 | CANVAS-04 | Phase 32 | Complete |
 | NOLOSS-01 | Phase 32 | Complete |
-| OVERLAP-01 | Phase 33 | Pending |
-| OVERLAP-02 | Phase 33 | Pending |
-| OVERLAP-03 | Phase 33 | Pending |
+| OVERLAP-01 | Phase 33 | Complete |
+| OVERLAP-02 | Phase 33 | Complete |
+| OVERLAP-03 | Phase 33 | Complete |
 | MULTI-01 | Phase 34 | Pending |
 | MULTI-02 | Phase 34 | Pending |
 | MULTI-03 | Phase 34 | Pending |
