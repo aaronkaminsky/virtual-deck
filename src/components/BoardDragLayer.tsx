@@ -202,9 +202,30 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     }
     setActiveCard(data.card);
     setDragging(true);
+    // Capture canvas-card origin for drag-time shadow check (D-05, D-06, RESEARCH Pitfall 1)
+    if (data.fromZone === 'canvas') {
+      const existing = gameState.canvasCards.find(cc => cc.card.id === dragDataRef.current!.card.id);
+      setActiveDragOrigin(existing ? { x: existing.x, y: existing.y } : null);
+    } else {
+      setActiveDragOrigin(null);
+    }
+    dragDeltaRef.current = { x: 0, y: 0 };
+  }
+
+  function handleDragMove(event: DragMoveEvent) {
+    if (dragDataRef.current?.fromZone !== 'canvas') return;
+    if (activeDragOrigin === null) return;
+    dragDeltaRef.current = { x: event.delta.x, y: event.delta.y };
+    const draggedPos = { x: activeDragOrigin.x + event.delta.x, y: activeDragOrigin.y + event.delta.y };
+    const nowCovers = gameState.canvasCards.some(
+      other => other.card.id !== activeCard?.id && coversMajority(draggedPos, other)
+    );
+    if (nowCovers !== dragCoversSomeCard) setDragCoversSomeCard(nowCovers);
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    setDragCoversSomeCard(false);
+    setActiveDragOrigin(null);
     // CANVAS BRANCH: drop on canvas → dispatch PLACE_ON_CANVAS (D-08, D-15)
     if (event.over?.id === 'canvas' && dragDataRef.current) {
       const { card, fromZone, fromId } = dragDataRef.current;
@@ -401,6 +422,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dropSuccessRef.current = false;
     setDragging(false);
     dragDataRef.current = null;
+    setDragCoversSomeCard(false);
+    setActiveDragOrigin(null);
     snapBackTimerRef.current = setTimeout(() => {
       setActiveCard(null);
       snapBackTimerRef.current = null;
@@ -413,6 +436,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         sensors={sensors}
         collisionDetection={customCollision}
         onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
@@ -422,7 +446,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
             {activeCard ? (
-              <div style={{ opacity: 0.5, transform: 'scale(1.05)' }}>
+              <div style={{ opacity: 0.5, transform: 'scale(1.05)', boxShadow: dragCoversSomeCard ? STACK_SHADOW : undefined, borderRadius: dragCoversSomeCard ? 6 : undefined }}>
                 <CardOverlay card={activeCard} />
               </div>
             ) : null}
