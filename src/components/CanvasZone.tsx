@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { ClientCanvasCard } from '@/shared/types';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { cn } from '@/lib/utils';
+import { coversMajority } from '@/lib/canvas-utils';
 
 interface CanvasZoneProps {
   canvasCards: ClientCanvasCard[];
@@ -20,6 +21,17 @@ export function CanvasZone({ canvasCards, draggingCardId, canvasRef }: CanvasZon
     (canvasRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   };
 
+  // D-04: static shadow — set of card IDs that cover >50% of a lower-z card at rest
+  const coveringIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const card of canvasCards) {
+      if (canvasCards.some(other => other.z < card.z && coversMajority(card, other))) {
+        ids.add(card.card.id);
+      }
+    }
+    return ids;
+  }, [canvasCards]);
+
   return (
     <div
       ref={setRefs}
@@ -35,6 +47,7 @@ export function CanvasZone({ canvasCards, draggingCardId, canvasRef }: CanvasZon
           key={cc.card.id}
           canvasCard={cc}
           isDraggingActive={draggingCardId === cc.card.id}
+          coversAnother={coveringIds.has(cc.card.id)}
         />
       ))}
     </div>
