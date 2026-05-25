@@ -21,11 +21,15 @@ export function CanvasDraggableCard({ canvasCard, coversAnother }: CanvasDraggab
   const didDragRef = useRef(false);
   const prevIsDragging = useRef(false);
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     if (prevIsDragging.current && !isDragging) {
-      setTimeout(() => { didDragRef.current = false; }, 300);
+      timerId = setTimeout(() => { didDragRef.current = false; }, 300);
     }
     if (isDragging) didDragRef.current = true;
     prevIsDragging.current = isDragging;
+    return () => {
+      if (timerId !== null) clearTimeout(timerId);
+    };
   }, [isDragging]);
 
   function handleClick() {
