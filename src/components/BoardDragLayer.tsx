@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
-import type { CollisionDetection, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
+import { coversMajority, STACK_SHADOW } from '@/lib/canvas-utils';
 
 const customCollision: CollisionDetection = (args) => {
   const zoneContainers = args.droppableContainers.filter(
@@ -82,6 +83,9 @@ type PendingMove = {
 
 export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [activeDragOrigin, setActiveDragOrigin] = useState<{ x: number; y: number } | null>(null);
+  const [dragCoversSomeCard, setDragCoversSomeCard] = useState(false);
+  const dragDeltaRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
