@@ -56,7 +56,6 @@ Exceptions:
 | Body | 14px | 400 | 1.5 | Selection count badge, control labels |
 | Label | 12px | 400 | 1.4 | Muted hints, `text-xs` helper text |
 | Heading | 20px | 600 | 1.2 | Zone labels (existing, not added in this phase) |
-| Display | 28px | 700 | 1.1 | Not used in this phase |
 
 Note: This phase adds no net-new text-heavy UI. Typography contract is inherited from existing board conventions.
 
