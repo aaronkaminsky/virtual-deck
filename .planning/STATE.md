@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
 status: executing
-stopped_at: Phase 32 UI-SPEC approved
-last_updated: "2026-05-24T16:46:18.820Z"
-last_activity: 2026-05-24 -- Phase 32 planning complete
+stopped_at: Completed 32-01-PLAN.md
+last_updated: "2026-05-25T02:37:54.215Z"
+last_activity: 2026-05-25
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 20
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 32 — canvas core
+**Current focus:** Phase 32 — canvas-core
 
 ## Current Position
 
-Phase: 32
-Plan: Not started
+Phase: 32 (canvas-core) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-24 -- Phase 32 planning complete
+Last activity: 2026-05-25
 
 ```
 [          ] 0% complete
@@ -59,6 +59,8 @@ Recent decisions affecting current work:
 - [v1.6 roadmap]: Phase 31 (Migration) lands first — remove grid, establish sidebar+canvas shell before any canvas feature work
 - [v1.6 roadmap]: Phase 32 bundles CANVAS-01–04 + NOLOSS-01 — server x/y/z model and no-card-loss are inseparable; both need to be correct before overlap and multi-select land
 - [Phase 30]: MeasuringStrategy.Always added to DndContext — eliminates stale droppable rect drift after DOM restructure
+- [Phase ?]: D-01: canvasCards: CanvasCard[] as top-level GameState field, not a Pile extension — canvas cards have absolute position not ordered index
+- [Phase ?]: D-11: MOVE_CARD fromZone widened to include canvas for canvas→pile drops; toZone remains hand|pile only
 
 ### Pending Todos
 
@@ -74,6 +76,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 260522-t4p | Fix 999.51 reset button enable on any game state change and 999.54 opponent spread zone empty resting state collapse | 2026-05-23 | b51718c | [260522-t4p-fix-999-51-reset-button-enable-on-any-ga](./quick/260522-t4p-fix-999-51-reset-button-enable-on-any-ga/) |
 | 260523-t9o | Fix PileZone empty-state collapse and add board min-height | 2026-05-24 | 00582fb | [260523-t9o-fix-pilezone-empty-state-collapse-and-ad](./quick/260523-t9o-fix-pilezone-empty-state-collapse-and-ad/) |
+| Phase 32-canvas-core P01 | 11 | 2 tasks | 7 files |
 
 ## Deferred Items
 
@@ -91,9 +94,9 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 
 ## Session Continuity
 
-Last session: 2026-05-24T15:55:56.710Z
-Stopped at: Phase 32 UI-SPEC approved
-Resume file: .planning/phases/32-canvas-core/32-UI-SPEC.md
+Last session: 2026-05-25T02:37:54.205Z
+Stopped at: Completed 32-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
