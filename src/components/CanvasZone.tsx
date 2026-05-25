@@ -7,11 +7,10 @@ import { coversMajority } from '@/lib/canvas-utils';
 
 interface CanvasZoneProps {
   canvasCards: ClientCanvasCard[];
-  draggingCardId: string | null;
   canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function CanvasZone({ canvasCards, draggingCardId, canvasRef }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -46,7 +45,6 @@ export function CanvasZone({ canvasCards, draggingCardId, canvasRef }: CanvasZon
         <CanvasDraggableCard
           key={cc.card.id}
           canvasCard={cc}
-          isDraggingActive={draggingCardId === cc.card.id}
           coversAnother={coveringIds.has(cc.card.id)}
         />
       ))}

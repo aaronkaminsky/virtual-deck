@@ -8,7 +8,6 @@ import { STACK_SHADOW } from '@/lib/canvas-utils';
 
 interface CanvasDraggableCardProps {
   canvasCard: ClientCanvasCard;
-  isDraggingActive?: boolean; // currently unused — held for Phase 33 layered effects
   coversAnother?: boolean;
 }
 
