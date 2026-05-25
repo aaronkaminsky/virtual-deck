@@ -4,8 +4,8 @@ milestone: v1.6
 milestone_name: Free Canvas Play Area
 status: executing
 stopped_at: Phase 33 UI-SPEC approved
-last_updated: "2026-05-25T13:54:50.232Z"
-last_activity: 2026-05-25 -- Phase 33 planning complete
+last_updated: "2026-05-25T13:58:54.436Z"
+last_activity: 2026-05-25 -- Phase 33 execution started
 progress:
   total_phases: 5
   completed_phases: 2
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 32 — canvas-core
+**Current focus:** Phase 33 — overlap-visibility
 
 ## Current Position
 
-Phase: 33
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-25 -- Phase 33 planning complete
+Phase: 33 (overlap-visibility) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 33
+Last activity: 2026-05-25 -- Phase 33 execution started
 
 ```
 [          ] 0% complete
