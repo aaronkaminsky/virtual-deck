@@ -12,7 +12,7 @@ Players can see the shared table and their own private hand update in real time,
 
 **v1.5 shipped (2026-05-23).** All 64 requirements across v1.0–v1.5 satisfied and shipped.
 
-**v1.6 in progress — Phase 31 (Migration) complete (2026-05-24).** Communal grid removed; sidebar + free canvas shell in place.
+**v1.6 in progress — Phase 32 (Canvas Core) complete (2026-05-24).** Free canvas fully functional: cards drag from hand/pile/spread to absolute canvas positions; real-time sync; z-ordering; NOLOSS cancel behavior; mobile clamping; Reset Table sweep.
 
 - ~3,000+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
@@ -132,6 +132,14 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Draw and discard piles in fixed left sidebar, vertically stacked, with free canvas area to the right (MIGRATE-02) — Phase 31
 - ✓ Reset table moves all canvas cards to draw pile; canvas clears on reset (MIGRATE-03) — Phase 31
 
+### Validated (v1.6, Phase 32)
+
+- ✓ Player can drag any card (hand, pile, spread) onto the free canvas; card anchors at the drop point (CANVAS-01) — Phase 32
+- ✓ Player can reposition a canvas card by dragging it to a new location; real-time sync to all players (CANVAS-02) — Phase 32
+- ✓ Canvas cards render in z-order; newly placed/moved card always renders on top (CANVAS-03) — Phase 32
+- ✓ Canvas card can be dragged to a pile or hand using existing dialogs/drop targets (CANVAS-04) — Phase 32
+- ✓ No card loss on missed drop or Escape cancel — card returns to prior position (NOLOSS-01) — Phase 32
+
 ### Active
 
 ### Out of Scope
@@ -194,6 +202,10 @@ Players can see the shared table and their own private hand update in real time,
 | `MeasuringStrategy.Always` on DndContext after DOM restructure | After moving opponent spreads out of header band, dnd-kit cached stale droppable rects; Always re-measures every frame | ✓ Validated Phase 30 |
 | Opponent spreads in a `flex-shrink-0` board area row with `w-7` spacer for column alignment | Docking spreads below their hands required matching the hand column width; spacer equals the controls-bar width so spreads align under hand cards | ✓ Validated Phase 30 |
 | Hover-only OpponentHand drop-target via `isOver` (not `isDragging`) | Outline was firing at drag start because `isDragging` is true globally; `isOver` scopes the highlight to the specific droppable being hovered | ✓ Validated Phase 27 |
+| `CanvasCard` as standalone type (`{card, x, y, z}`) rather than extending `Pile` | Type extension kept existing MOVE_CARD/UNDO/viewFor handlers untouched; separate `canvasCards[]` field is cleaner than adding optional canvas fields to every Pile | ✓ Validated Phase 32 |
+| `CanvasDraggableCard` uses `useDraggable` only (no `useDroppable` per card) | Canvas zone is the single droppable; individual cards being droppable would create z-order collision detection complexity — handled in Phase 33 overlap hit-testing | ✓ Validated Phase 32 |
+| `PLACE_ON_CANVAS` handles both initial placement and canvas→canvas repositioning | Unified single action with `z=max+1` keeps undo symmetric; server computes z to prevent client race conditions | ✓ Validated Phase 32 |
+| `viewFor()` broadcasts `canvasCards` without masking | Canvas cards are placed face-up by design (D-04); no privacy concern since placement is a deliberate public act | ✓ Validated Phase 32 |
 
 ## Evolution
 
@@ -213,4 +225,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-24 — Phase 31 (migration) complete; sidebar+canvas shell in place*
+*Last updated: 2026-05-24 — Phase 32 (canvas-core) complete; free canvas fully functional with real-time sync and NOLOSS guarantee*
