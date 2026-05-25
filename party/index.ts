@@ -1,5 +1,5 @@
 import type * as Party from "partykit/server";
-import type { Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
+import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
 
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -48,6 +48,7 @@ export function defaultGameState(roomId: string): GameState {
       { id: "discard", name: "Discard", cards: [], faceUp: true, region: "pile", ownerId: null },
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 
@@ -94,6 +95,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
     myPlayZoneId: `spread-${playerToken}`,
+    canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
   };
 }
 
@@ -140,6 +142,10 @@ export default class GameRoom implements Party.Server {
       if (!('handRevealed' in player)) {
         (player as any).handRevealed = false;
       }
+    }
+    // Migrate state: Phase 32 adds canvasCards to GameState
+    if (!Array.isArray((this.gameState as any).canvasCards)) {
+      (this.gameState as unknown as GameState).canvasCards = [];
     }
   }
 
@@ -223,6 +229,54 @@ export default class GameRoom implements Party.Server {
             code: "UNAUTHORIZED_MOVE",
             message: "Cannot place cards in another player's hand",
           } satisfies ServerEvent));
+          break;
+        }
+
+        // Canvas source: look up in canvasCards array
+        if (fromZone === "canvas") {
+          const canvasIdx = this.gameState.canvasCards.findIndex(c => c.card.id === cardId);
+          if (canvasIdx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found on canvas`,
+            } satisfies ServerEvent));
+            break;
+          }
+
+          const dest: Card[] | undefined =
+            toZone === "hand"
+              ? (this.gameState.hands[toId] ?? (this.gameState.hands[toId] = []))
+              : this.gameState.piles.find(p => p.id === toId)?.cards;
+
+          if (dest === undefined) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "PILE_NOT_FOUND",
+              message: `No pile found with id: ${toId}`,
+            } satisfies ServerEvent));
+            break;
+          }
+
+          takeSnapshot(this.gameState);
+          const [removedCanvasEntry] = this.gameState.canvasCards.splice(canvasIdx, 1);
+          const canvasCard = removedCanvasEntry.card;
+
+          if (toZone === "hand") {
+            canvasCard.faceUp = true;
+          } else {
+            const destPile = this.gameState.piles.find(p => p.id === toId);
+            canvasCard.faceUp = destPile?.faceUp ?? false;
+          }
+          const canvasPos = action.insertPosition ?? 'top';
+          if (canvasPos === 'bottom') {
+            dest.unshift(canvasCard);
+          } else if (canvasPos === 'random') {
+            const randomIdx = dest.length === 0 ? 0 : unbiasedRandom(dest.length + 1);
+            dest.splice(randomIdx, 0, canvasCard);
+          } else {
+            dest.push(canvasCard);
+          }
           break;
         }
 
@@ -501,6 +555,11 @@ export default class GameRoom implements Party.Server {
             resetDrawPile.cards.push(...pile.cards.splice(0));
           }
         }
+        for (const canvasCard of this.gameState.canvasCards) {
+          canvasCard.card.faceUp = false;
+          resetDrawPile.cards.push(canvasCard.card);
+        }
+        this.gameState.canvasCards = [];
         resetDrawPile.faceUp = false;
         resetDrawPile.cards.forEach(c => { c.faceUp = false; });
         resetDrawPile.cards = shuffle(resetDrawPile.cards);
@@ -510,6 +569,80 @@ export default class GameRoom implements Party.Server {
         for (const player of this.gameState.players) {
           player.handRevealed = false;
         }
+        break;
+      }
+      case "PLACE_ON_CANVAS": {
+        const { cardId, fromZone, fromId, x, y } = action;
+
+        // V5: coordinate validation
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V4: hand source auth guard — mirrors MOVE_CARD pattern
+        if (fromZone === "hand" && fromId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot move another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // Pre-validate source contains cardId (before takeSnapshot)
+        let canvasCard: Card | undefined;
+        // Compute maxZ before any splice so canvas→canvas repositioning always increments z
+        const maxZBeforeSplice = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        if (fromZone === "hand") {
+          const hand = this.gameState.hands[fromId];
+          const idx = hand?.findIndex(c => c.id === cardId) ?? -1;
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found in hand`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          [canvasCard] = hand.splice(idx, 1);
+        } else if (fromZone === "pile") {
+          const pile = this.gameState.piles.find(p => p.id === fromId);
+          const idx = pile?.cards.findIndex(c => c.id === cardId) ?? -1;
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found in pile`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          [canvasCard] = pile!.cards.splice(idx, 1);
+        } else {
+          // fromZone === "canvas"
+          const idx = this.gameState.canvasCards.findIndex(c => c.card.id === cardId);
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found on canvas`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          const [removed] = this.gameState.canvasCards.splice(idx, 1);
+          canvasCard = removed.card;
+        }
+
+        canvasCard!.faceUp = true;
+        const maxZ = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), maxZBeforeSplice);
+        this.gameState.canvasCards.push({ card: canvasCard!, x, y, z: maxZ + 1 });
         break;
       }
       case "UNDO_MOVE": {

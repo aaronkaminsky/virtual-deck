@@ -25,6 +25,7 @@ function makeTestState(): GameState {
       { id: "discard", name: "Discard", cards: [], faceUp: true },
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 

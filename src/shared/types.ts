@@ -35,6 +35,16 @@ export interface ClientPile {
   ownerId?: string | null;
 }
 
+export interface CanvasCard {
+  card: Card;
+  x: number;
+  y: number;
+  z: number;
+}
+
+// ClientCanvasCard is identical in phase 32 — no masking on canvas
+export type ClientCanvasCard = CanvasCard;
+
 export interface GameState {
   roomId: string;
   phase: "lobby" | "setup" | "playing";
@@ -42,6 +52,7 @@ export interface GameState {
   hands: Record<string, Card[]>;  // keyed by player token
   piles: Pile[];
   undoSnapshots: GameState[];
+  canvasCards: CanvasCard[];
 }
 
 export interface ClientGameState {
@@ -56,10 +67,11 @@ export interface ClientGameState {
   piles: ClientPile[];
   canUndo: boolean;
   myPlayZoneId: string;
+  canvasCards: ClientCanvasCard[];
 }
 
 export type ClientAction =
-  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
+  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
   | { type: "REORDER_HAND"; orderedCardIds: string[]; skipSnapshot?: boolean }
   | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[] }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
@@ -72,7 +84,8 @@ export type ClientAction =
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
-  | { type: "PING" };
+  | { type: "PING" }
+  | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number };
 
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }

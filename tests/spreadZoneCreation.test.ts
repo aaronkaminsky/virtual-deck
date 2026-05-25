@@ -31,6 +31,7 @@ function makeOldShapeState(): GameState {
       { id: "play", name: "Play Area", cards: [], faceUp: true } as any,
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 
@@ -45,6 +46,7 @@ function makeTestState(): GameState {
       { id: "play", name: "Play Area", cards: [], faceUp: true, region: "spread", ownerId: null },
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 
