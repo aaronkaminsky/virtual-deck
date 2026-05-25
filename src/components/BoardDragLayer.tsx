@@ -447,9 +447,12 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
+            {/* Shadow wrapper is outside the opacity div so it renders at full opacity (CSS opacity composites box-shadow) */}
             {activeCard ? (
-              <div style={{ opacity: 0.5, transform: 'scale(1.05)', boxShadow: dragCoversSomeCard ? STACK_SHADOW : undefined, borderRadius: dragCoversSomeCard ? 6 : undefined }}>
-                <CardOverlay card={activeCard} />
+              <div style={{ boxShadow: dragCoversSomeCard ? STACK_SHADOW : undefined, borderRadius: dragCoversSomeCard ? 6 : undefined }}>
+                <div style={{ opacity: 0.5, transform: 'scale(1.05)' }}>
+                  <CardOverlay card={activeCard} />
+                </div>
               </div>
             ) : null}
           </DragOverlay>,
