@@ -1,3 +1,4 @@
+import React from 'react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
 
 import { OpponentHand } from './OpponentHand';
@@ -6,6 +7,7 @@ import { SpreadZone } from './SpreadZone';
 import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
+import { CanvasZone } from './CanvasZone';
 
 interface BoardViewProps {
   gameState: ClientGameState;
@@ -19,9 +21,10 @@ interface BoardViewProps {
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -87,7 +90,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
             ))}
           </div>
-          <div className="flex-1 min-w-0 overflow-hidden bg-background self-stretch" data-testid="canvas-shell" />
+          <CanvasZone canvasCards={gameState.canvasCards} draggingCardId={draggingCardId} canvasRef={canvasRef} />
         </div>
 
         {mySpreadZone && (

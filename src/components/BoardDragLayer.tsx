@@ -51,6 +51,12 @@ const customCollision: CollisionDetection = (args) => {
     }
     return pileCollisions;
   }
+  // D-08: canvas is the FINAL fallback — after zone and pile checks both return empty
+  const canvasContainers = args.droppableContainers.filter(
+    (c) => String(c.id) === 'canvas'
+  );
+  const canvasCollisions = pointerWithin({ ...args, droppableContainers: canvasContainers });
+  if (canvasCollisions.length > 0) return canvasCollisions;
   return [];
 };
 
@@ -68,7 +74,7 @@ interface BoardDragLayerProps {
 
 type PendingMove = {
   card: Card;
-  fromZone: 'hand' | 'pile';
+  fromZone: 'hand' | 'pile' | 'canvas'; // D-11: widened to support canvas → pile dialog path
   fromId: string;
   toZone: 'hand' | 'pile';
   toId: string;
@@ -83,6 +89,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleToggleSelect = (id: string, zone: 'hand' | 'pile', zoneId: string) => {
     const isDifferentZone = selectionSource !== null &&
@@ -194,6 +201,52 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    // CANVAS BRANCH: drop on canvas → dispatch PLACE_ON_CANVAS (D-08, D-15)
+    if (event.over?.id === 'canvas' && dragDataRef.current) {
+      const { card, fromZone, fromId } = dragDataRef.current;
+      const canvasBounds = canvasRef.current?.getBoundingClientRect();
+      const canvasW = canvasBounds?.width ?? 0;
+      const canvasH = canvasBounds?.height ?? 0;
+      const CARD_W = window.innerWidth >= 640 ? 63 : 42;
+      const CARD_H = window.innerWidth >= 640 ? 88 : 59;
+
+      let newX: number;
+      let newY: number;
+      if (fromZone === 'canvas') {
+        // canvas → canvas: baseX/Y from stored position, apply delta (D-12, D-15)
+        const existing = gameState.canvasCards.find(c => c.card.id === card.id);
+        const baseX = existing?.x ?? 0;
+        const baseY = existing?.y ?? 0;
+        newX = Math.max(0, Math.min(baseX + event.delta.x, Math.max(0, canvasW - CARD_W)));
+        newY = Math.max(0, Math.min(baseY + event.delta.y, Math.max(0, canvasH - CARD_H)));
+      } else {
+        // hand/pile → canvas: derive pointer position relative to canvas (Pitfall 2)
+        const activator = event.activatorEvent as PointerEvent;
+        const pointerFinalX = activator.clientX + event.delta.x;
+        const pointerFinalY = activator.clientY + event.delta.y;
+        const baseX = pointerFinalX - (canvasBounds?.left ?? 0) - CARD_W / 2;
+        const baseY = pointerFinalY - (canvasBounds?.top ?? 0) - CARD_H / 2;
+        newX = Math.max(0, Math.min(baseX, Math.max(0, canvasW - CARD_W)));
+        newY = Math.max(0, Math.min(baseY, Math.max(0, canvasH - CARD_H)));
+      }
+
+      dropSuccessRef.current = true;
+      setActiveCard(null);
+      setDragging(false);
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+      sendAction({
+        type: 'PLACE_ON_CANVAS',
+        cardId: card.id,
+        fromZone: fromZone as 'hand' | 'pile' | 'canvas',
+        fromId,
+        x: newX,
+        y: newY,
+      });
+      dragDataRef.current = null;
+      return;
+    }
+
     const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
     const activeId = String(event.active.id);
     // D-02 (Phase 21): compute intra-zone reorder flags ONCE, before any branch.
@@ -245,6 +298,15 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dropSuccessRef.current = isSuccess || isHandReorder || isPassCard;
     setDragging(false);
 
+    // Phase 32: canvas → opponent-hand not supported; keep card on canvas (NOLOSS-01, T-32-11)
+    if (isPassCard && dragDataRef.current?.fromZone === 'canvas') {
+      dropSuccessRef.current = false;
+      setActiveCard(null);
+      dragDataRef.current = null;
+      setDragging(false);
+      return;
+    }
+
     if (isPassCard) {
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
@@ -274,7 +336,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           sendAction({
             type: 'MOVE_CARD',
             cardId: card.id,
-            fromZone: fromZone as 'hand' | 'pile',
+            fromZone: fromZone as 'hand' | 'pile' | 'canvas',
             fromId,
             toZone,
             toId,
@@ -291,7 +353,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
               sendAction({
                 type: 'MOVE_CARD',
                 cardId: card.id,
-                fromZone: fromZone as 'hand' | 'pile',
+                fromZone: fromZone as 'hand' | 'pile' | 'canvas',
                 fromId,
                 toZone,
                 toId,
@@ -299,8 +361,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
               });
             }
           } else {
-            // Non-empty pile (non-spread): intercept and show position dialog (D-01)
-            setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile', fromId, toZone, toId });
+            // Non-empty pile (non-spread): intercept and show position dialog (D-01, D-11)
+            setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile' | 'canvas', fromId, toZone, toId });
           }
         }
       } else {
@@ -308,7 +370,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         sendAction({
           type: 'MOVE_CARD',
           cardId: card.id,
-          fromZone: fromZone as 'hand' | 'pile',
+          fromZone: fromZone as 'hand' | 'pile' | 'canvas',
           fromId,
           toZone,
           toId,
@@ -351,10 +413,15 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
-            {activeCard ? <CardOverlay card={activeCard} /> : null}
+            {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
+            {activeCard ? (
+              <div style={{ opacity: 0.5, transform: 'scale(1.05)' }}>
+                <CardOverlay card={activeCard} />
+              </div>
+            ) : null}
           </DragOverlay>,
           document.body
         )}
