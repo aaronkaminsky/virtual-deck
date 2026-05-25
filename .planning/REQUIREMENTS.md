@@ -83,6 +83,7 @@ Items acknowledged but deferred beyond v1.6.
 | MIGRATE-03 | Phase 31 | Complete |
 
 **Coverage:**
+
 - v1.6 requirements: 18 total
 - Mapped to phases: 18
 - Unmapped: 0
