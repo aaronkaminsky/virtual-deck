@@ -7,7 +7,7 @@ import type { Card, ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
-import { coversMajority, STACK_SHADOW } from '@/lib/canvas-utils';
+import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
 
 const customCollision: CollisionDetection = (args) => {
   const zoneContainers = args.droppableContainers.filter(
@@ -234,8 +234,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       const canvasBounds = canvasRef.current?.getBoundingClientRect();
       const canvasW = canvasBounds?.width ?? 0;
       const canvasH = canvasBounds?.height ?? 0;
-      const CARD_W = window.innerWidth >= 640 ? 63 : 42;
-      const CARD_H = window.innerWidth >= 640 ? 88 : 59;
+      const { w: CARD_W, h: CARD_H } = getCardDimensions();
 
       let newX: number;
       let newY: number;
