@@ -483,17 +483,19 @@ if (!allInBounds) {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`dragDelta` delivery to `CanvasZone` for passenger ghosts**
    - What we know: `BoardDragLayer` owns the delta ref; `CanvasZone` needs it for rendering.
    - What's unclear: Should `dragDelta` be passed as state prop through `BoardView` → `CanvasZone`, or should `CanvasZone` be elevated into `BoardDragLayer`'s render tree to avoid prop threading?
    - Recommendation: Pass `dragDelta: { x: number; y: number } | null` and `activeCardId: string | null` as props on `CanvasZone`. `BoardDragLayer` maintains a `dragDelta` useState (parallel to existing `dragDeltaRef`) updated in `handleDragMove`. Small perf cost, trivially correct.
+   - **RESOLVED:** Plan 02 Task 1 adds `const [dragDelta, setDragDelta] = useState<{x:number;y:number}|null>(null)` in `BoardDragLayer` and threads it through `BoardView` → `CanvasZone`. `handleDragMove` updates both `dragDeltaRef.current` (WS closure) and `setDragDelta` (re-render).
 
 2. **Selection count badge location**
    - What we know: UI-SPEC specifies a badge showing `{N} selected` when canvas selection >= 2. The badge should appear "to the right of the canvas zone label."
    - What's unclear: `CanvasZone` has no label currently. The badge could render inside `CanvasZone`, inside `BoardView` next to the canvas, or nowhere (since there's no label to be "to the right of").
    - Recommendation: Render the badge as an overlay in the top-left corner of `CanvasZone` (e.g., `position: absolute; top: 8px; left: 8px; zIndex: 10`). Simpler than adding a label/header to `CanvasZone`.
+   - **RESOLVED:** Plan 02 Task 3 step 5 renders the badge as `position: absolute; top: 8px; left: 8px; zIndex: 10` inside `CanvasZone`, visible when `selectedCount >= 2`.
 
 ---
 
