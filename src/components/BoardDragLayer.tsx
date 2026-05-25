@@ -83,7 +83,7 @@ type PendingMove = {
 
 export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
-  const [activeDragOrigin, setActiveDragOrigin] = useState<{ x: number; y: number } | null>(null);
+  const activeDragOriginRef = useRef<{ x: number; y: number } | null>(null);
   const [dragCoversSomeCard, setDragCoversSomeCard] = useState(false);
   const dragDeltaRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
@@ -205,27 +205,29 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     // Capture canvas-card origin for drag-time shadow check (D-05, D-06, RESEARCH Pitfall 1)
     if (data.fromZone === 'canvas') {
       const existing = gameState.canvasCards.find(cc => cc.card.id === dragDataRef.current!.card.id);
-      setActiveDragOrigin(existing ? { x: existing.x, y: existing.y } : null);
+      activeDragOriginRef.current = existing ? { x: existing.x, y: existing.y } : null;
     } else {
-      setActiveDragOrigin(null);
+      activeDragOriginRef.current = null;
     }
     dragDeltaRef.current = { x: 0, y: 0 };
   }
 
   function handleDragMove(event: DragMoveEvent) {
     if (dragDataRef.current?.fromZone !== 'canvas') return;
-    if (activeDragOrigin === null) return;
+    if (activeDragOriginRef.current === null) return;
     dragDeltaRef.current = { x: event.delta.x, y: event.delta.y };
-    const draggedPos = { x: activeDragOrigin.x + event.delta.x, y: activeDragOrigin.y + event.delta.y };
+    const origin = activeDragOriginRef.current;
+    const draggedPos = { x: origin.x + event.delta.x, y: origin.y + event.delta.y };
+    const draggedId = dragDataRef.current.card.id;
     const nowCovers = gameState.canvasCards.some(
-      other => other.card.id !== activeCard?.id && coversMajority(draggedPos, other)
+      other => other.card.id !== draggedId && coversMajority(draggedPos, other)
     );
     if (nowCovers !== dragCoversSomeCard) setDragCoversSomeCard(nowCovers);
   }
 
   function handleDragEnd(event: DragEndEvent) {
     setDragCoversSomeCard(false);
-    setActiveDragOrigin(null);
+    activeDragOriginRef.current = null;
     // CANVAS BRANCH: drop on canvas → dispatch PLACE_ON_CANVAS (D-08, D-15)
     if (event.over?.id === 'canvas' && dragDataRef.current) {
       const { card, fromZone, fromId } = dragDataRef.current;
@@ -423,7 +425,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     setDragging(false);
     dragDataRef.current = null;
     setDragCoversSomeCard(false);
-    setActiveDragOrigin(null);
+    activeDragOriginRef.current = null;
     snapBackTimerRef.current = setTimeout(() => {
       setActiveCard(null);
       snapBackTimerRef.current = null;
