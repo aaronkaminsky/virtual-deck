@@ -645,6 +645,126 @@ export default class GameRoom implements Party.Server {
         this.gameState.canvasCards.push({ card: canvasCard!, x, y, z: maxZ + 1 });
         break;
       }
+      case "GROUP_PLACE_ON_CANVAS": {
+        const { fromZone, fromId, cards } = action;
+
+        // V1: cards array must be non-empty
+        if (cards.length === 0) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "EMPTY_CARD_SET",
+            message: "cards must contain at least one card",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V2: per-card finite coordinate check
+        for (const c of cards) {
+          if (!Number.isFinite(c.x) || !Number.isFinite(c.y)) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "INVALID_COORDINATES",
+              message: "x and y must be finite numbers",
+            } satisfies ServerEvent));
+            break;
+          }
+        }
+        // Re-check after loop so we can break out of the case
+        if (cards.some(c => !Number.isFinite(c.x) || !Number.isFinite(c.y))) break;
+
+        // V3: duplicate cardIds check
+        const groupCardIdSet = new Set(cards.map(c => c.cardId));
+        if (groupCardIdSet.size !== cards.length) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "DUPLICATE_CARD_IDS",
+            message: "cardIds must be unique",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V4: hand source auth guard
+        if (fromZone === "hand" && fromId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot move another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V5: resolve all cardIds in source (read-only — no mutation yet)
+        // Compute maxZ BEFORE any splice so pre-splice z values are captured
+        const maxZGroup = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+
+        type ResolvedGroupCard = { card: Card; preDragZ: number; x: number; y: number };
+        const resolvedGroupCards: ResolvedGroupCard[] = [];
+
+        let missingCardId: string | null = null;
+
+        if (fromZone === "hand") {
+          const hand = this.gameState.hands[fromId] ?? [];
+          for (const { cardId, x, y } of cards) {
+            const found = hand.find(c => c.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found, preDragZ: 0, x, y });
+          }
+        } else if (fromZone === "pile") {
+          const pile = this.gameState.piles.find(p => p.id === fromId);
+          const pileCards = pile?.cards ?? [];
+          for (const { cardId, x, y } of cards) {
+            const found = pileCards.find(c => c.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found, preDragZ: 0, x, y });
+          }
+        } else {
+          // fromZone === "canvas"
+          for (const { cardId, x, y } of cards) {
+            const found = this.gameState.canvasCards.find(cc => cc.card.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found.card, preDragZ: found.z, x, y });
+          }
+        }
+
+        if (missingCardId !== null) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: `Card ${missingCardId} not found in ${fromZone}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // All validation passed — take exactly one snapshot
+        takeSnapshot(this.gameState);
+
+        // Atomically remove all cards from source
+        if (fromZone === "hand") {
+          this.gameState.hands[fromId] = (this.gameState.hands[fromId] ?? []).filter(
+            c => !groupCardIdSet.has(c.id),
+          );
+        } else if (fromZone === "pile") {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
+          srcPile.cards = srcPile.cards.filter(c => !groupCardIdSet.has(c.id));
+        } else {
+          // fromZone === "canvas" — collect indices descending to avoid index shift
+          const indicesToRemove = resolvedGroupCards
+            .map(r => this.gameState.canvasCards.findIndex(cc => cc.card.id === r.card.id))
+            .sort((a, b) => b - a);
+          for (const idx of indicesToRemove) {
+            if (idx !== -1) this.gameState.canvasCards.splice(idx, 1);
+          }
+        }
+
+        // Sort by pre-drag z ascending, then assign z = maxZ + 1 + rank
+        resolvedGroupCards.sort((a, b) => a.preDragZ - b.preDragZ);
+        resolvedGroupCards.forEach((r, rank) => {
+          r.card.faceUp = true;
+          this.gameState.canvasCards.push({ card: r.card, x: r.x, y: r.y, z: maxZGroup + 1 + rank });
+        });
+
+        break;
+      }
       case "UNDO_MOVE": {
         const remainingSnapshots = [...this.gameState.undoSnapshots];
         const snap = remainingSnapshots.pop();

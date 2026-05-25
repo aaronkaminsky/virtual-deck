@@ -85,7 +85,13 @@ export type ClientAction =
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
-  | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number };
+  | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number }
+  | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] };
+
+export type SelectionSource =
+  | { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean }
+  | { zone: 'canvas'; zoneId: 'canvas' }
+  | null;
 
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }

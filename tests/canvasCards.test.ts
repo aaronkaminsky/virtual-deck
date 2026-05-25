@@ -408,3 +408,312 @@ describe("defaultGameState", () => {
     expect(state.canvasCards).toHaveLength(0);
   });
 });
+
+describe("GROUP_PLACE_ON_CANVAS handler", () => {
+  let room: GameRoom;
+  let sender: Party.Connection & { send: ReturnType<typeof vi.fn> };
+
+  beforeEach(() => {
+    const mockRoom = makeMockRoom();
+    room = new GameRoom(mockRoom);
+    sender = makeMockConnection("player-1");
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [];
+  });
+
+  // --- Happy path: canvas→canvas ---
+  it("canvas→canvas: 2 cards moved to new positions, both land above maxZ with internal z ascending", async () => {
+    room.gameState.canvasCards = [
+      { card: makeCard("2-s"), x: 0, y: 0, z: 1 },
+      { card: makeCard("A-s"), x: 50, y: 50, z: 3 },
+      { card: makeCard("K-h"), x: 100, y: 100, z: 7 },
+    ];
+    // Move A-s (z=3) and K-h (z=7) as a group; 2-s (z=1) stays
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "canvas",
+        fromId: "canvas",
+        cards: [
+          { cardId: "A-s", x: 200, y: 200 },
+          { cardId: "K-h", x: 250, y: 250 },
+        ],
+      }),
+      sender,
+    );
+
+    // 2-s should still be there plus both moved cards
+    expect(room.gameState.canvasCards).toHaveLength(3);
+    const aEntry = room.gameState.canvasCards.find(cc => cc.card.id === "A-s");
+    const kEntry = room.gameState.canvasCards.find(cc => cc.card.id === "K-h");
+    expect(aEntry?.x).toBe(200);
+    expect(aEntry?.y).toBe(200);
+    expect(kEntry?.x).toBe(250);
+    expect(kEntry?.y).toBe(250);
+    // 2-s stays at z=1; A-s had lower pre-drag z (3) than K-h (7) → A-s gets lower new z
+    expect(aEntry!.z).toBeLessThan(kEntry!.z);
+    // Both new z values must be above maxZ before the move (which was 7 before splicing)
+    // After splicing 2-s remains with z=1; maxZ before splice was 7 (pre-splice)
+    expect(aEntry!.z).toBeGreaterThan(1);
+    expect(kEntry!.z).toBeGreaterThan(aEntry!.z);
+    expect(getErrors(sender)).toHaveLength(0);
+  });
+
+  // --- Happy path: hand→canvas ---
+  it("hand→canvas: 2 hand cards placed on canvas, both faceUp=true, both removed from hand", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "K-h", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+    expect(room.gameState.canvasCards).toHaveLength(2);
+    const aEntry = room.gameState.canvasCards.find(cc => cc.card.id === "A-s");
+    const kEntry = room.gameState.canvasCards.find(cc => cc.card.id === "K-h");
+    expect(aEntry?.card.faceUp).toBe(true);
+    expect(kEntry?.card.faceUp).toBe(true);
+    // z values must be consecutive above 0 (empty canvas before)
+    expect(aEntry!.z).toBeGreaterThanOrEqual(1);
+    expect(kEntry!.z).toBeGreaterThanOrEqual(1);
+    expect(getErrors(sender)).toHaveLength(0);
+  });
+
+  // --- Happy path: pile (spread) → canvas ---
+  it("spread→canvas: 2 cards from a spread pile placed on canvas, both removed from pile", async () => {
+    const spreadPile = { id: "spread-player-1", name: "Spread", cards: [makeCard("A-s"), makeCard("K-h")], region: "spread" as const, ownerId: "player-1" };
+    room.gameState.piles.push(spreadPile);
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "pile",
+        fromId: "spread-player-1",
+        cards: [
+          { cardId: "A-s", x: 80, y: 90 },
+          { cardId: "K-h", x: 120, y: 90 },
+        ],
+      }),
+      sender,
+    );
+
+    expect(spreadPile.cards).toHaveLength(0);
+    expect(room.gameState.canvasCards).toHaveLength(2);
+    expect(getErrors(sender)).toHaveLength(0);
+  });
+
+  // --- Z-ordering ---
+  it("z-ordering: pre-drag z [3, 7, 1] → sorted ascending, lowest pre-drag z gets lowest new z", async () => {
+    room.gameState.canvasCards = [
+      { card: makeCard("existing"), x: 0, y: 0, z: 5 },
+      { card: makeCard("A-s"), x: 10, y: 10, z: 3 },
+      { card: makeCard("K-h"), x: 20, y: 20, z: 7 },
+      { card: makeCard("Q-d"), x: 30, y: 30, z: 1 },
+    ];
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "canvas",
+        fromId: "canvas",
+        cards: [
+          { cardId: "A-s", x: 200, y: 200 },
+          { cardId: "K-h", x: 210, y: 210 },
+          { cardId: "Q-d", x: 220, y: 220 },
+        ],
+      }),
+      sender,
+    );
+
+    // maxZ before splice was 7
+    // pre-drag z order: Q-d=1, A-s=3, K-h=7 (ascending)
+    // Q-d → maxZ+1 = 8, A-s → maxZ+2 = 9, K-h → maxZ+3 = 10
+    const aEntry = room.gameState.canvasCards.find(cc => cc.card.id === "A-s");
+    const kEntry = room.gameState.canvasCards.find(cc => cc.card.id === "K-h");
+    const qEntry = room.gameState.canvasCards.find(cc => cc.card.id === "Q-d");
+    expect(qEntry!.z).toBe(8);
+    expect(aEntry!.z).toBe(9);
+    expect(kEntry!.z).toBe(10);
+    expect(getErrors(sender)).toHaveLength(0);
+  });
+
+  // --- Auth guard ---
+  it("auth guard: hand source with fromId !== senderToken → UNAUTHORIZED_MOVE, no mutation", async () => {
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-2"] = [makeCard("A-s"), makeCard("K-h")];
+    const canvasLengthBefore = room.gameState.canvasCards.length;
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-2",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "K-h", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    const errors = getErrors(sender);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("UNAUTHORIZED_MOVE");
+    expect(room.gameState.hands["player-2"]).toHaveLength(2);
+    expect(room.gameState.canvasCards).toHaveLength(canvasLengthBefore);
+  });
+
+  // --- Invalid coordinates ---
+  it("invalid coordinates: NaN x on any card → INVALID_COORDINATES, no mutation", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+    const handLengthBefore = room.gameState.hands["player-1"].length;
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: NaN, y: 50 },
+          { cardId: "K-h", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    const errors = getErrors(sender);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("INVALID_COORDINATES");
+    expect(room.gameState.canvasCards).toHaveLength(0);
+    expect(room.gameState.hands["player-1"]).toHaveLength(handLengthBefore);
+  });
+
+  // --- Empty cards array ---
+  it("empty cards array → EMPTY_CARD_SET, no mutation", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s")];
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [],
+      }),
+      sender,
+    );
+
+    const errors = getErrors(sender);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("EMPTY_CARD_SET");
+    expect(room.gameState.canvasCards).toHaveLength(0);
+    expect(room.gameState.hands["player-1"]).toHaveLength(1);
+  });
+
+  // --- Duplicate cardIds ---
+  it("duplicate cardIds → DUPLICATE_CARD_IDS, no mutation", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "A-s", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    const errors = getErrors(sender);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("DUPLICATE_CARD_IDS");
+    expect(room.gameState.canvasCards).toHaveLength(0);
+    expect(room.gameState.hands["player-1"]).toHaveLength(2);
+  });
+
+  // --- Missing cardId (atomicity) ---
+  it("one of N cardIds not in source → CARD_NOT_IN_SOURCE, no mutation (atomicity)", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+    const handLengthBefore = room.gameState.hands["player-1"].length;
+    const canvasLengthBefore = room.gameState.canvasCards.length;
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "GHOST", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    const errors = getErrors(sender);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("CARD_NOT_IN_SOURCE");
+    // Both A-s and K-h remain in hand — no partial removal
+    expect(room.gameState.hands["player-1"]).toHaveLength(handLengthBefore);
+    expect(room.gameState.canvasCards).toHaveLength(canvasLengthBefore);
+  });
+
+  // --- Single undo snapshot ---
+  it("single undo snapshot: GROUP_PLACE_ON_CANVAS of 2 hand cards takes exactly one snapshot", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+    const snapshotsBefore = room.gameState.undoSnapshots.length;
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "K-h", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    expect(room.gameState.undoSnapshots.length).toBe(snapshotsBefore + 1);
+  });
+
+  // --- Single UNDO_MOVE restores all N cards ---
+  it("UNDO_MOVE after group drop restores all N hand cards and clears canvasCards", async () => {
+    room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
+
+    await room.onMessage(
+      JSON.stringify({
+        type: "GROUP_PLACE_ON_CANVAS",
+        fromZone: "hand",
+        fromId: "player-1",
+        cards: [
+          { cardId: "A-s", x: 100, y: 50 },
+          { cardId: "K-h", x: 150, y: 75 },
+        ],
+      }),
+      sender,
+    );
+
+    expect(room.gameState.canvasCards).toHaveLength(2);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(2);
+    expect(room.gameState.hands["player-1"].map(c => c.id)).toContain("A-s");
+    expect(room.gameState.hands["player-1"].map(c => c.id)).toContain("K-h");
+    expect(room.gameState.canvasCards).toHaveLength(0);
+  });
+});
