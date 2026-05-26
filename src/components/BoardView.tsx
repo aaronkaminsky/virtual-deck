@@ -95,7 +95,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
             ))}
           </div>
-          <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} />
+          <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onDeselectAll={onDeselectAll} />
         </div>
 
         {mySpreadZone && (
