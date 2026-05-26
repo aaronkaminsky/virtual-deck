@@ -195,7 +195,11 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
   2. A one-finger drag on a canvas card moves that card (not the canvas viewport); edge-pan and card drag never activate simultaneously for the same touch gesture
   3. At viewport widths below 640px, the canvas height is capped so personal spread zones remain visible below the canvas without vertical overlap or scroll required to reach them
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+- [ ] 35-01-PLAN.md — Wave-0 mobile.spec.ts RED tests + CanvasZone two-div refactor with EdgeArrow x4 + pan state + ResizeObserver + BoardDragLayer scrollOffsetRef plumbing (hand/pile→canvas drop math) + BoardView max-h-[240px] sm:max-h-none wrapper
+- [ ] 35-02-PLAN.md — Human visual verification at 375×667 + max-h tuning + touch device confirmation + two-player sync sanity check
+
 **UI hint**: yes
 
 ## Progress Table
@@ -206,7 +210,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 | 32. Canvas Core | 3/3 | Complete    | 2026-05-25 |
 | 33. Overlap & Visibility | 3/3 | Complete   | 2026-05-25 |
 | 34. Multi-Card Group Drop | 4/4 | Complete   | 2026-05-26 |
-| 35. Mobile | 0/? | Not started | - |
+| 35. Mobile | 0/2 | Not started | - |
 
 ## Backlog
 
