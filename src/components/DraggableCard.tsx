@@ -23,11 +23,15 @@ export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: Dr
   const didDragRef = useRef(false);
   const prevIsDragging = useRef(false);
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     if (prevIsDragging.current && !isDragging) {
-      setTimeout(() => { didDragRef.current = false; }, 300);
+      timerId = setTimeout(() => { didDragRef.current = false; }, 300);
     }
     if (isDragging) didDragRef.current = true;
     prevIsDragging.current = isDragging;
+    return () => {
+      if (timerId !== null) clearTimeout(timerId);
+    };
   }, [isDragging]);
 
   function handleClick() {
