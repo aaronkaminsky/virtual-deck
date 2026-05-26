@@ -103,7 +103,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 - [x] **Phase 31: Migration** — Remove communal grid; establish fixed left sidebar with draw/discard piles and free canvas play area shell (completed 2026-05-24)
 - [x] **Phase 32: Canvas Core** — Server x/y/z model, drag-to-position on canvas, cancel-reverts, z-ordering on drop, no-card-loss guarantee (completed 2026-05-25)
 - [x] **Phase 33: Overlap & Visibility** — Topmost-card pointer events, drag opacity, stack shadow indicator (completed 2026-05-25)
-- [ ] **Phase 34: Multi-Card Group Drop** — Canvas click-to-select, group drop with relative offsets, z-order above existing, all-or-nothing bounds rule
+- [x] **Phase 34: Multi-Card Group Drop** — Canvas click-to-select, group drop with relative offsets, z-order above existing, all-or-nothing bounds rule (completed 2026-05-26)
 - [ ] **Phase 35: Mobile** — Edge-pan hold-to-scroll arrows, drag non-conflict, bounded canvas height at narrow viewports
 
 ## Phase Details
@@ -180,7 +180,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 - [x] 34-01-PLAN.md — Server + types + Wave-0 RED tests: GROUP_PLACE_ON_CANVAS action, atomic handler, SelectionSource type extraction
 - [x] 34-02-PLAN.md — Client selection foundation: canvas click-to-select, ring/badge, deselect-all, data-card-id attributes on all draggable cards
 - [x] 34-03-PLAN.md — Group drag mechanics: DOM offset capture, passenger ghosts, handleDragEnd GROUP dispatch + all-or-nothing bounds check
-- [ ] 34-04-PLAN.md — Human visual verification of selection, group drops (3 sources), bounds snap-back, undo atomicity, two-player sync
+- [x] 34-04-PLAN.md — Human visual verification of selection, group drops (3 sources), bounds snap-back, undo atomicity, two-player sync
 
 **UI hint**: yes
 
@@ -205,7 +205,7 @@ See full phase details in [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.m
 | 31. Migration | 8/8 | Complete    | 2026-05-24 |
 | 32. Canvas Core | 3/3 | Complete    | 2026-05-25 |
 | 33. Overlap & Visibility | 3/3 | Complete   | 2026-05-25 |
-| 34. Multi-Card Group Drop | 3/4 | In Progress|  |
+| 34. Multi-Card Group Drop | 4/4 | Complete   | 2026-05-26 |
 | 35. Mobile | 0/? | Not started | - |
 
 ## Backlog
