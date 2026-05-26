@@ -45,7 +45,7 @@ export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: Dr
   };
 
   return (
-    <div ref={setNodeRef} style={style} onClick={handleClick} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm')}>
+    <div ref={setNodeRef} style={style} onClick={handleClick} data-card-id={card.id} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm')}>
       {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
   );
