@@ -295,7 +295,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     setDragCoversSomeCard(false);
     activeDragOriginRef.current = null;
-    // CANVAS BRANCH: drop on canvas → dispatch PLACE_ON_CANVAS (D-08, D-15)
+    // CANVAS BRANCH: drop on canvas → GROUP_PLACE_ON_CANVAS or PLACE_ON_CANVAS (D-08, D-15)
     if (event.over?.id === 'canvas' && dragDataRef.current) {
       const { card, fromZone, fromId } = dragDataRef.current;
       const canvasBounds = canvasRef.current?.getBoundingClientRect();
@@ -303,6 +303,81 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       const canvasH = canvasBounds?.height ?? 0;
       const { w: CARD_W, h: CARD_H } = getCardDimensions();
 
+      // GROUP PATH: 2+ selected cards and drag handle is in the selection (D-08, D-13, D-14, D-15)
+      if (canvasBounds && selectedIds.size >= 2 && selectedIds.has(String(event.active.id))) {
+        const activeIdStr = String(event.active.id);
+
+        // Compute handle drop coordinates (unclamped) — same formula as single-card path below.
+        let handleDropX: number;
+        let handleDropY: number;
+        if (fromZone === 'canvas') {
+          const existing = gameState.canvasCards.find(c => c.card.id === card.id);
+          handleDropX = (existing?.x ?? 0) + event.delta.x;
+          handleDropY = (existing?.y ?? 0) + event.delta.y;
+        } else {
+          const activator = event.activatorEvent as PointerEvent;
+          const pointerFinalX = activator.clientX + event.delta.x;
+          const pointerFinalY = activator.clientY + event.delta.y;
+          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2;
+          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2;
+        }
+
+        // Build the cards array for all selected cards (D-11).
+        const cards: Array<{ cardId: string; x: number; y: number }> = [];
+        for (const cardId of selectedIds) {
+          if (fromZone === 'canvas') {
+            const cc = gameState.canvasCards.find(c => c.card.id === cardId);
+            if (cc) {
+              cards.push({ cardId, x: cc.x + event.delta.x, y: cc.y + event.delta.y });
+            }
+          } else {
+            // hand/pile source: use DOM-captured offsets (captured at drag start)
+            const offsets = passengerOffsetsRef.current[cardId] ?? { offsetX: 0, offsetY: 0 };
+            // Handle card itself uses offsetX:0, offsetY:0 (always the anchor)
+            const isHandle = cardId === activeIdStr;
+            const ox = isHandle ? 0 : offsets.offsetX;
+            const oy = isHandle ? 0 : offsets.offsetY;
+            cards.push({ cardId, x: handleDropX + ox, y: handleDropY + oy });
+          }
+        }
+
+        // All-or-nothing bounds check (D-13, D-14): every card must be within canvas bounds.
+        const allInBounds = cards.every(({ x, y }) =>
+          x >= 0 && x <= Math.max(0, canvasW - CARD_W) &&
+          y >= 0 && y <= Math.max(0, canvasH - CARD_H)
+        );
+
+        if (!allInBounds) {
+          // D-15: silent snap-back — do not dispatch, clear all state.
+          setActiveCard(null);
+          setDragging(false);
+          setSelectedIds(new Set());
+          setSelectionSource(null);
+          setDragDelta(null);
+          passengerOffsetsRef.current = {};
+          dragDataRef.current = null;
+          return;
+        }
+
+        // All in bounds: dispatch GROUP_PLACE_ON_CANVAS.
+        dropSuccessRef.current = true;
+        setActiveCard(null);
+        setDragging(false);
+        setSelectedIds(new Set());
+        setSelectionSource(null);
+        setDragDelta(null);
+        passengerOffsetsRef.current = {};
+        sendAction({
+          type: 'GROUP_PLACE_ON_CANVAS',
+          fromZone: fromZone as 'hand' | 'pile' | 'canvas',
+          fromId,
+          cards,
+        });
+        dragDataRef.current = null;
+        return;
+      }
+
+      // SINGLE-CARD PATH: fewer than 2 selected, or active card not in selection.
       let newX: number;
       let newY: number;
       if (fromZone === 'canvas') {
