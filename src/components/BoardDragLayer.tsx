@@ -341,6 +341,20 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           }
         }
 
+        // WR-02: stale-selection guard — if canvas source cards are no longer present,
+        // cards.length will be 0 (or shorter than expected). Snap back silently rather
+        // than dispatching GROUP_PLACE_ON_CANVAS with an empty array.
+        if (fromZone === 'canvas' && cards.length === 0) {
+          setActiveCard(null);
+          setDragging(false);
+          setSelectedIds(new Set());
+          setSelectionSource(null);
+          setDragDelta(null);
+          passengerOffsetsRef.current = {};
+          dragDataRef.current = null;
+          return;
+        }
+
         // All-or-nothing bounds check (D-13, D-14): every card must be within canvas bounds.
         const allInBounds = cards.every(({ x, y }) =>
           x >= 0 && x <= Math.max(0, canvasW - CARD_W) &&
@@ -431,7 +445,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
       !isIntraSpreadReorder &&
-      !isIntraHandReorder;
+      !isIntraHandReorder &&
+      fromZoneAtEnd !== 'canvas';
 
     if (isMultiCardSet) {
       setActiveCard(null);
