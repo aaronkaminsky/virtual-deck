@@ -1,7 +1,7 @@
 import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Card, ClientPile, ClientAction } from '@/shared/types';
+import type { Card, ClientPile, ClientAction, SelectionSource } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, SquareCheck } from 'lucide-react';
 import { CardFace } from './CardFace';
@@ -48,6 +48,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
       <div
         ref={setNodeRef}
         style={style}
+        data-card-id={card.id}
         className={cn(
           isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
         )}
@@ -75,7 +76,7 @@ interface SpreadZoneProps {
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
-  selectionSource?: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  selectionSource?: SelectionSource;
 }
 
 export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource }: SpreadZoneProps) {

@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
 import { Dialog } from '@base-ui/react/dialog';
-import type { Card, ClientAction, ClientGameState } from '@/shared/types';
+import type { Card, ClientAction, ClientGameState, SelectionSource } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
@@ -61,8 +61,6 @@ const customCollision: CollisionDetection = (args) => {
   return [];
 };
 
-type SelectionSource = { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean } | null;
-
 interface BoardDragLayerProps {
   gameState: ClientGameState;
   playerId: string;
@@ -89,6 +87,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
+  const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
@@ -131,6 +130,41 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     setSelectionSource({ zone, zoneId, hasMaskedCards });
   };
 
+  const handleToggleSelectCanvas = (id: string) => {
+    // Zone-exclusive: if currently in hand/pile zone, switch to canvas and start fresh selection
+    if (selectionSource !== null && selectionSource.zone !== 'canvas') {
+      setSelectionSource({ zone: 'canvas', zoneId: 'canvas' });
+      setSelectedIds(new Set([id]));
+      return;
+    }
+    // Already canvas or null: toggle the card
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      if (next.size === 0) {
+        // Defer clearing selectionSource — must set after selectedIds resolves
+        setSelectionSource(null);
+      } else if (selectionSource === null) {
+        setSelectionSource({ zone: 'canvas', zoneId: 'canvas' });
+      }
+      return next;
+    });
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds(new Set());
+    setSelectionSource(null);
+  };
+
+  const groupIds = useMemo(() => {
+    if (activeCard === null) return new Set<string>();
+    return new Set([...selectedIds, activeCard.id]);
+  }, [activeCard, selectedIds]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -154,6 +188,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     let sourceCardIds: Set<string>;
     if (selectionSource.zone === 'hand') {
       sourceCardIds = new Set(gameState.myHand.map(c => c.id));
+    } else if (selectionSource.zone === 'canvas') {
+      sourceCardIds = new Set(gameState.canvasCards.map(cc => cc.card.id));
     } else {
       const pile = gameState.piles.find(p => p.id === selectionSource.zoneId);
       sourceCardIds = new Set(
@@ -164,7 +200,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectedIds(new Set());
       setSelectionSource(null);
     }
-  }, [gameState.myHand, gameState.piles, selectedIds, selectionSource]);
+  }, [gameState.myHand, gameState.piles, gameState.canvasCards, selectedIds, selectionSource]);
 
   function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
     if (!pendingMove) {
@@ -261,6 +297,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setDragging(false);
       setSelectedIds(new Set());
       setSelectionSource(null);
+      setDragDelta(null);
       sendAction({
         type: 'PLACE_ON_CANVAS',
         cardId: card.id,
@@ -280,8 +317,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     const fromIdAtEnd = dragDataRef.current?.fromId;
     const isIntraSpreadReorder = fromZoneAtEnd === 'pile' && fromIdAtEnd === overData?.toId;
     const isIntraHandReorder = fromZoneAtEnd === 'hand' && overData?.toZone === 'hand';
+    const hasMaskedCardsInSource = selectionSource !== null && selectionSource.zone !== 'canvas' && selectionSource.hasMaskedCards === true;
     const isMultiCardSet =
-      (selectedIds.size > 1 || selectionSource?.hasMaskedCards === true) &&
+      (selectedIds.size > 1 || hasMaskedCardsInSource) &&
       selectedIds.has(activeId) &&
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
@@ -292,10 +330,11 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setActiveCard(null);
       setSelectedIds(new Set());
       setSelectionSource(null);
+      setDragDelta(null);
       setDragging(false);
       dropSuccessRef.current = true;
       dragDataRef.current = null;
-      if (selectionSource?.hasMaskedCards) {
+      if (hasMaskedCardsInSource) {
         // Face-down pile: client doesn't have all card IDs — server moves the whole pile
         sendAction({
           type: 'MOVE_ALL_PILE_CARDS',
@@ -306,9 +345,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         sendAction({
           type: 'PLAY_CARD_SET',
           cardIds: [...selectedIds],
-          fromZone: (selectionSource?.zone ?? 'hand') as 'hand' | 'pile',
-          fromId: selectionSource?.zone === 'pile'
-            ? (selectionSource.zoneId)   // use selectionSource as canonical pile ID
+          fromZone: (selectionSource !== null && selectionSource.zone !== 'canvas' ? selectionSource.zone : 'hand') as 'hand' | 'pile',
+          fromId: selectionSource !== null && selectionSource.zone === 'pile'
+            ? selectionSource.zoneId   // use selectionSource as canonical pile ID
             : playerId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
@@ -348,6 +387,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       if (!isIntraSpreadReorder && !isIntraHandReorder) {
         setSelectedIds(new Set());
         setSelectionSource(null);
+        setDragDelta(null);
       }
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
@@ -424,6 +464,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     setDragging(false);
     dragDataRef.current = null;
     setDragCoversSomeCard(false);
+    setDragDelta(null);
     activeDragOriginRef.current = null;
     snapBackTimerRef.current = setTimeout(() => {
       setActiveCard(null);
@@ -442,7 +483,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

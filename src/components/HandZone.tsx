@@ -3,7 +3,7 @@ import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
-import type { Card, ClientAction, Suit, Rank } from '@/shared/types';
+import type { Card, ClientAction, Suit, Rank, SelectionSource } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
@@ -119,7 +119,7 @@ interface HandZoneProps {
   draggingCardId: string | null;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
-  selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  selectionSource: SelectionSource;
   isRevealed: boolean;
   onToggleReveal: () => void;
 }
