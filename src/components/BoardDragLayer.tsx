@@ -89,6 +89,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
   const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
+  const passengerOffsetsRef = useRef<Record<string, { offsetX: number; offsetY: number }>>({});
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -246,9 +247,39 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       activeDragOriginRef.current = null;
     }
     dragDeltaRef.current = { x: 0, y: 0 };
+
+    // DOM offset capture for passenger cards (D-11)
+    const activeIdStr = String(event.active.id);
+    if (data.fromZone !== 'canvas' && selectedIds.size > 0 && selectedIds.has(activeIdStr)) {
+      // Hand/spread source group drag: capture offsets relative to the drag handle DOM element.
+      const handleEl = document.querySelector<HTMLElement>(`[data-card-id="${activeIdStr}"]`);
+      const handleRect = handleEl?.getBoundingClientRect();
+      if (handleRect) {
+        const offsets: Record<string, { offsetX: number; offsetY: number }> = {};
+        for (const cardId of selectedIds) {
+          const el = document.querySelector<HTMLElement>(`[data-card-id="${cardId}"]`);
+          if (el) {
+            const r = el.getBoundingClientRect();
+            offsets[cardId] = { offsetX: r.left - handleRect.left, offsetY: r.top - handleRect.top };
+          }
+        }
+        passengerOffsetsRef.current = offsets;
+      } else {
+        passengerOffsetsRef.current = {};
+      }
+    } else {
+      // Canvas source or single-card drag: offsets not needed; clear for safety.
+      passengerOffsetsRef.current = {};
+    }
+
+    // Initialize dragDelta so passenger ghosts render at resting positions immediately.
+    setDragDelta({ x: 0, y: 0 });
   }
 
   function handleDragMove(event: DragMoveEvent) {
+    // Update dragDelta state for passenger ghost rendering (dual ref+state pattern per RESEARCH Pitfall 1).
+    // Must update unconditionally so cross-zone group drags also get delta (not just canvas→canvas).
+    setDragDelta({ x: event.delta.x, y: event.delta.y });
     if (dragDataRef.current?.fromZone !== 'canvas') return;
     if (activeDragOriginRef.current === null) return;
     dragDeltaRef.current = { x: event.delta.x, y: event.delta.y };
@@ -298,6 +329,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectedIds(new Set());
       setSelectionSource(null);
       setDragDelta(null);
+      passengerOffsetsRef.current = {};
       sendAction({
         type: 'PLACE_ON_CANVAS',
         cardId: card.id,
@@ -331,6 +363,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectedIds(new Set());
       setSelectionSource(null);
       setDragDelta(null);
+      passengerOffsetsRef.current = {};
       setDragging(false);
       dropSuccessRef.current = true;
       dragDataRef.current = null;
@@ -374,6 +407,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
 
     if (isPassCard) {
       setActiveCard(null);
+      setDragDelta(null);
+      passengerOffsetsRef.current = {};
       const { card, fromZone, fromId } = dragDataRef.current!;
       sendAction({
         type: 'PASS_CARD',
@@ -388,6 +423,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         setSelectedIds(new Set());
         setSelectionSource(null);
         setDragDelta(null);
+        passengerOffsetsRef.current = {};
       }
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
@@ -448,8 +484,12 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     }
     // Failed drop: keep activeCard set so overlay has content during snap-back animation.
     // defaultDropAnimation's sideEffects hide the source card while the overlay animates.
-    // Clear after animation completes.
+    // Clear after animation completes. Selection and passenger offsets clear immediately (D-06).
     else {
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+      setDragDelta(null);
+      passengerOffsetsRef.current = {};
       snapBackTimerRef.current = setTimeout(() => {
         setActiveCard(null);
         snapBackTimerRef.current = null;
@@ -465,6 +505,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dragDataRef.current = null;
     setDragCoversSomeCard(false);
     setDragDelta(null);
+    passengerOffsetsRef.current = {};
     activeDragOriginRef.current = null;
     snapBackTimerRef.current = setTimeout(() => {
       setActiveCard(null);
