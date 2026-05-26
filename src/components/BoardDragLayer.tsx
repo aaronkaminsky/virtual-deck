@@ -89,6 +89,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
   const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
+  const passengerOffsetsRef = useRef<Record<string, { offsetX: number; offsetY: number }>>({});
   const dropSuccessRef = useRef(false);
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -246,9 +247,39 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       activeDragOriginRef.current = null;
     }
     dragDeltaRef.current = { x: 0, y: 0 };
+
+    // DOM offset capture for passenger cards (D-11)
+    const activeIdStr = String(event.active.id);
+    if (data.fromZone !== 'canvas' && selectedIds.size > 0 && selectedIds.has(activeIdStr)) {
+      // Hand/spread source group drag: capture offsets relative to the drag handle DOM element.
+      const handleEl = document.querySelector<HTMLElement>(`[data-card-id="${activeIdStr}"]`);
+      const handleRect = handleEl?.getBoundingClientRect();
+      if (handleRect) {
+        const offsets: Record<string, { offsetX: number; offsetY: number }> = {};
+        for (const cardId of selectedIds) {
+          const el = document.querySelector<HTMLElement>(`[data-card-id="${cardId}"]`);
+          if (el) {
+            const r = el.getBoundingClientRect();
+            offsets[cardId] = { offsetX: r.left - handleRect.left, offsetY: r.top - handleRect.top };
+          }
+        }
+        passengerOffsetsRef.current = offsets;
+      } else {
+        passengerOffsetsRef.current = {};
+      }
+    } else {
+      // Canvas source or single-card drag: offsets not needed; clear for safety.
+      passengerOffsetsRef.current = {};
+    }
+
+    // Initialize dragDelta so passenger ghosts render at resting positions immediately.
+    setDragDelta({ x: 0, y: 0 });
   }
 
   function handleDragMove(event: DragMoveEvent) {
+    // Update dragDelta state for passenger ghost rendering (dual ref+state pattern per RESEARCH Pitfall 1).
+    // Must update unconditionally so cross-zone group drags also get delta (not just canvas→canvas).
+    setDragDelta({ x: event.delta.x, y: event.delta.y });
     if (dragDataRef.current?.fromZone !== 'canvas') return;
     if (activeDragOriginRef.current === null) return;
     dragDeltaRef.current = { x: event.delta.x, y: event.delta.y };
@@ -264,7 +295,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     setDragCoversSomeCard(false);
     activeDragOriginRef.current = null;
-    // CANVAS BRANCH: drop on canvas → dispatch PLACE_ON_CANVAS (D-08, D-15)
+    // CANVAS BRANCH: drop on canvas → GROUP_PLACE_ON_CANVAS or PLACE_ON_CANVAS (D-08, D-15)
     if (event.over?.id === 'canvas' && dragDataRef.current) {
       const { card, fromZone, fromId } = dragDataRef.current;
       const canvasBounds = canvasRef.current?.getBoundingClientRect();
@@ -272,6 +303,81 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       const canvasH = canvasBounds?.height ?? 0;
       const { w: CARD_W, h: CARD_H } = getCardDimensions();
 
+      // GROUP PATH: 2+ selected cards and drag handle is in the selection (D-08, D-13, D-14, D-15)
+      if (canvasBounds && selectedIds.size >= 2 && selectedIds.has(String(event.active.id))) {
+        const activeIdStr = String(event.active.id);
+
+        // Compute handle drop coordinates (unclamped) — same formula as single-card path below.
+        let handleDropX: number;
+        let handleDropY: number;
+        if (fromZone === 'canvas') {
+          const existing = gameState.canvasCards.find(c => c.card.id === card.id);
+          handleDropX = (existing?.x ?? 0) + event.delta.x;
+          handleDropY = (existing?.y ?? 0) + event.delta.y;
+        } else {
+          const activator = event.activatorEvent as PointerEvent;
+          const pointerFinalX = activator.clientX + event.delta.x;
+          const pointerFinalY = activator.clientY + event.delta.y;
+          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2;
+          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2;
+        }
+
+        // Build the cards array for all selected cards (D-11).
+        const cards: Array<{ cardId: string; x: number; y: number }> = [];
+        for (const cardId of selectedIds) {
+          if (fromZone === 'canvas') {
+            const cc = gameState.canvasCards.find(c => c.card.id === cardId);
+            if (cc) {
+              cards.push({ cardId, x: cc.x + event.delta.x, y: cc.y + event.delta.y });
+            }
+          } else {
+            // hand/pile source: use DOM-captured offsets (captured at drag start)
+            const offsets = passengerOffsetsRef.current[cardId] ?? { offsetX: 0, offsetY: 0 };
+            // Handle card itself uses offsetX:0, offsetY:0 (always the anchor)
+            const isHandle = cardId === activeIdStr;
+            const ox = isHandle ? 0 : offsets.offsetX;
+            const oy = isHandle ? 0 : offsets.offsetY;
+            cards.push({ cardId, x: handleDropX + ox, y: handleDropY + oy });
+          }
+        }
+
+        // All-or-nothing bounds check (D-13, D-14): every card must be within canvas bounds.
+        const allInBounds = cards.every(({ x, y }) =>
+          x >= 0 && x <= Math.max(0, canvasW - CARD_W) &&
+          y >= 0 && y <= Math.max(0, canvasH - CARD_H)
+        );
+
+        if (!allInBounds) {
+          // D-15: silent snap-back — do not dispatch, clear all state.
+          setActiveCard(null);
+          setDragging(false);
+          setSelectedIds(new Set());
+          setSelectionSource(null);
+          setDragDelta(null);
+          passengerOffsetsRef.current = {};
+          dragDataRef.current = null;
+          return;
+        }
+
+        // All in bounds: dispatch GROUP_PLACE_ON_CANVAS.
+        dropSuccessRef.current = true;
+        setActiveCard(null);
+        setDragging(false);
+        setSelectedIds(new Set());
+        setSelectionSource(null);
+        setDragDelta(null);
+        passengerOffsetsRef.current = {};
+        sendAction({
+          type: 'GROUP_PLACE_ON_CANVAS',
+          fromZone: fromZone as 'hand' | 'pile' | 'canvas',
+          fromId,
+          cards,
+        });
+        dragDataRef.current = null;
+        return;
+      }
+
+      // SINGLE-CARD PATH: fewer than 2 selected, or active card not in selection.
       let newX: number;
       let newY: number;
       if (fromZone === 'canvas') {
@@ -298,6 +404,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectedIds(new Set());
       setSelectionSource(null);
       setDragDelta(null);
+      passengerOffsetsRef.current = {};
       sendAction({
         type: 'PLACE_ON_CANVAS',
         cardId: card.id,
@@ -331,6 +438,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectedIds(new Set());
       setSelectionSource(null);
       setDragDelta(null);
+      passengerOffsetsRef.current = {};
       setDragging(false);
       dropSuccessRef.current = true;
       dragDataRef.current = null;
@@ -374,6 +482,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
 
     if (isPassCard) {
       setActiveCard(null);
+      setDragDelta(null);
+      passengerOffsetsRef.current = {};
       const { card, fromZone, fromId } = dragDataRef.current!;
       sendAction({
         type: 'PASS_CARD',
@@ -388,6 +498,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         setSelectedIds(new Set());
         setSelectionSource(null);
         setDragDelta(null);
+        passengerOffsetsRef.current = {};
       }
       setActiveCard(null);
       const { card, fromZone, fromId } = dragDataRef.current!;
@@ -448,8 +559,12 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     }
     // Failed drop: keep activeCard set so overlay has content during snap-back animation.
     // defaultDropAnimation's sideEffects hide the source card while the overlay animates.
-    // Clear after animation completes.
+    // Clear after animation completes. Selection and passenger offsets clear immediately (D-06).
     else {
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+      setDragDelta(null);
+      passengerOffsetsRef.current = {};
       snapBackTimerRef.current = setTimeout(() => {
         setActiveCard(null);
         snapBackTimerRef.current = null;
@@ -465,6 +580,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dragDataRef.current = null;
     setDragCoversSomeCard(false);
     setDragDelta(null);
+    passengerOffsetsRef.current = {};
     activeDragOriginRef.current = null;
     snapBackTimerRef.current = setTimeout(() => {
       setActiveCard(null);

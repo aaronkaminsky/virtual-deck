@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { ClientCanvasCard } from '@/shared/types';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
+import { CardFace } from './CardFace';
+import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 import { coversMajority } from '@/lib/canvas-utils';
 
@@ -16,7 +18,7 @@ interface CanvasZoneProps {
   onDeselectAll: () => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta: _dragDelta, onToggleSelectCanvas, onDeselectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onDeselectAll }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -36,6 +38,14 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     }
     return ids;
   }, [canvasCards]);
+
+  // Passenger ghost divs for canvas→canvas group drag (Spike004 pattern).
+  // Only renders when there is an active drag (dragDelta !== null) with a group of 2+ canvas cards.
+  // Hand/spread→canvas passengers do not render here — their stored x/y is unknown client-side.
+  const passengerGhosts = useMemo(() => {
+    if (dragDelta === null || groupIds.size === 0 || activeCardId === null) return [];
+    return canvasCards.filter(cc => cc.card.id !== activeCardId && groupIds.has(cc.card.id));
+  }, [dragDelta, canvasCards, activeCardId, groupIds]);
 
   return (
     <div
@@ -65,6 +75,22 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
           isPassenger={groupIds.has(cc.card.id) && cc.card.id !== activeCardId}
           onToggleSelect={onToggleSelectCanvas}
         />
+      ))}
+      {passengerGhosts.map(cc => (
+        <div
+          key={`ghost-${cc.card.id}`}
+          data-testid={`canvas-ghost-${cc.card.id}`}
+          style={{
+            position: 'absolute',
+            left: cc.x + (dragDelta?.x ?? 0),
+            top: cc.y + (dragDelta?.y ?? 0),
+            zIndex: 998,
+            opacity: 0.5,
+            pointerEvents: 'none',
+          }}
+        >
+          {cc.card.faceUp ? <CardFace card={cc.card} /> : <CardBack />}
+        </div>
       ))}
     </div>
   );
