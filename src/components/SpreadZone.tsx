@@ -137,7 +137,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
           reordered = arrayMove(faceUpCards, activeIdx, overIdx);
         }
-        sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id) });
+        sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id), skipSnapshot: true });
       }
     },
   });

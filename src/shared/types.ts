@@ -73,7 +73,7 @@ export interface ClientGameState {
 export type ClientAction =
   | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
   | { type: "REORDER_HAND"; orderedCardIds: string[]; skipSnapshot?: boolean }
-  | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[] }
+  | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[]; skipSnapshot?: boolean }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
   | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
