@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { ClientCanvasCard } from '@/shared/types';
@@ -9,9 +9,12 @@ import { STACK_SHADOW } from '@/lib/canvas-utils';
 interface CanvasDraggableCardProps {
   canvasCard: ClientCanvasCard;
   coversAnother?: boolean;
+  isSelected?: boolean;
+  isPassenger?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export function CanvasDraggableCard({ canvasCard, coversAnother }: CanvasDraggableCardProps) {
+export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect }: CanvasDraggableCardProps) {
   // D-12: useDraggable only — no useDroppable on the card itself
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: canvasCard.card.id,
@@ -32,25 +35,29 @@ export function CanvasDraggableCard({ canvasCard, coversAnother }: CanvasDraggab
     };
   }, [isDragging]);
 
-  function handleClick() {
+  function handleClick(e: React.MouseEvent) {
+    e.stopPropagation();
     if (didDragRef.current) {
       didDragRef.current = false;
       return;
     }
-    // Phase 32: no flip; click reserved for Phase 33+
+    onToggleSelect?.(canvasCard.card.id);
   }
 
   // D-13: source card opacity:0 while isDragging; absolutely positioned at stored (x, y, z)
+  // D-17: passengers (group members that are not the drag handle) also render opacity:0 during drag
   const style: React.CSSProperties = {
     position: 'absolute',
     left: canvasCard.x,
     top: canvasCard.y,
     zIndex: canvasCard.z,
-    opacity: isDragging ? 0 : 1,
+    opacity: (isDragging || isPassenger) ? 0 : 1,
     transform: isDragging ? undefined : CSS.Translate.toString(transform),
     touchAction: 'none',
-    boxShadow: coversAnother ? STACK_SHADOW : undefined,
-    borderRadius: coversAnother ? 6 : undefined,
+    boxShadow: isSelected
+      ? '0 0 0 2px #60a5fa, 0 0 0 4px rgba(96,165,250,0.3)' + (coversAnother ? `, ${STACK_SHADOW}` : '')
+      : coversAnother ? STACK_SHADOW : undefined,
+    borderRadius: (isSelected || coversAnother) ? 6 : undefined,
   };
 
   return (
@@ -58,11 +65,12 @@ export function CanvasDraggableCard({ canvasCard, coversAnother }: CanvasDraggab
       ref={setNodeRef}
       style={style}
       onClick={handleClick}
+      data-card-id={canvasCard.card.id}
       {...listeners}
       {...attributes}
       aria-roledescription="Draggable card"
       aria-label={`${canvasCard.card.rank} of ${canvasCard.card.suit}`}
-      aria-pressed={undefined}
+      aria-pressed={isSelected}
     >
       {/* D-07: canvas cards are always face-up on server; ternary kept for defense in depth */}
       {canvasCard.card.faceUp ? <CardFace card={canvasCard.card} /> : <CardBack />}
