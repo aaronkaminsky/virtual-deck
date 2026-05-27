@@ -303,6 +303,55 @@
 
 ---
 
+## Milestone: v1.6 — Free Canvas Play Area
+
+**Shipped:** 2026-05-27
+**Phases:** 5 (31–35) | **Plans:** 20 | **Timeline:** 5 days (2026-05-22 → 2026-05-27)
+
+### What Was Built
+
+- Phase 31 (Migration) — Communal grid fully removed; draw/discard piles docked in fixed left sidebar; free canvas shell established; reset table sweeps canvas to draw pile
+- Phase 32 (Canvas Core) — `CanvasCard` type with (x, y, z); `PLACE_ON_CANVAS` server action; real-time sync to all players; NOLOSS cancel (Escape or missed drop returns card to canvas position); `viewFor()` broadcasts canvas cards unmasked
+- Phase 33 (Overlap & Visibility) — Topmost-card pointer-events via z-index CSS; ~50% DragOverlay opacity; box-shadow layering indicator on >50% area coverage; `dragDelta` ref (not state) prevents per-pointermove re-renders
+- Phase 34 (Multi-Card Group Drop) — Canvas click-to-select with ring/lift/badge UX; `GROUP_PLACE_ON_CANVAS` atomic server action; DOM offset capture for passenger ghosts; all-or-nothing bounds check — silent snap-back if any card would overflow
+- Phase 35 (Mobile) — Two-div viewport+canvas model; `EdgeArrow` components with hold-to-scroll at 8px/16ms; dnd-kit `TouchSensor` isolation prevents edge-arrow taps from activating card drag; `scrollOffsetRef` shared via prop chain for accurate drop math after panning
+
+### What Worked
+
+- **Spike 999.37 pre-validated the architecture** — the free canvas spike proved `useDraggable` (not `useSortable`), absolute positioning, `dragDelta` ref, and mobile edge-pan before Phase 31 started. Phase 32 had zero architecture unknowns.
+- **Type extension pattern held** — `CanvasCard` as a standalone top-level `GameState` field (not a `Pile` extension) kept all existing MOVE_CARD/UNDO/viewFor handlers unchanged. Zero handler rework.
+- **Wave-0 RED scaffolds** — Phase 34 and 35 both started with failing Vitest/Playwright tests pinning the contract. Green-flip cadence was clean and fast.
+- **`PLACE_ON_CANVAS` unified initial + reposition** — making one action handle both initial placement and canvas→canvas moves simplified undo symmetry and prevented a server z-race condition.
+- **Two-div viewport+canvas model** — `overflow:hidden` outer + CSS `translate` inner gave smooth edge-pan without `scrollLeft` mutations, and `scrollOffsetRef` could be read synchronously at pointer-up without state lag.
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md traceability stale again at close** — MULTI-* and MOBILE-* requirements still showed "Pending" despite both phases being complete. Fourth consecutive milestone with this issue. The traceability update needs to happen during execution (in `gsd-transition` or the executor), not at archive time.
+- **No formal milestone audit** — skipped `gsd-audit-milestone` before close; decided to proceed manually since all verification was human-witnessed. The audit step would have caught the stale traceability earlier.
+- **`max-h-[240px]` removed in 35-02 post-verification** — the mobile height cap was planned as a fixed value but flex-1 turned out to distribute height correctly without any cap. The discovery happened during live verification, adding an extra iteration to Phase 35.
+
+### Patterns Established
+
+- `scrollOffsetRef` shared via prop chain (CanvasZone → BoardView → BoardDragLayer) — synchronous live value for drop math after edge-pan; state would capture stale scroll causing off-position drops
+- All-or-nothing group bounds rule — any card in a selected group overflowing cancels the entire drop; matches physical card intuition; no partial placement state to manage
+- `GROUP_PLACE_ON_CANVAS` atomic server action — server computes all z-indices in one pass; prevents two simultaneous group drops from corrupting z-order; single undo snapshot
+- `pointerdown` deselect on canvas background — clicking empty canvas area clears selection; `data-canvas-background` attribute gates the handler so card clicks don't bubble to deselect
+
+### Key Lessons
+
+1. **Spike before architectural bets.** The 999.37 free canvas spike de-risked the entire v1.6 plan before a single Phase 31 commit. The spike proved three non-obvious decisions (useDraggable-not-useSortable, dragDelta ref, two-div model) that would each have caused multi-plan rework if discovered mid-execution.
+2. **Unify placement and repositioning into one action.** Separate `PLACE_ON_CANVAS` and `REPOSITION_CANVAS_CARD` actions would have duplicated undo logic, z-assignment, and bounds checking. One action = one snapshot = symmetric undo.
+3. **The traceability update pattern is broken at the system level.** This is the fourth consecutive milestone where requirements showed "Pending" at archive time despite being fully complete. The executor or `gsd-transition` must mark requirements complete at plan completion — not at milestone close.
+4. **Hard caps are risky in flex layouts.** A `max-h-[240px]` looks correct in isolation but breaks when sibling zones are empty and the flex container has more space to give. Always verify height constraints with real content in multiple zone-population states.
+
+### Cost Observations
+
+- Model: Claude Sonnet 4.6 throughout
+- Sessions: ~8 estimated
+- Notable: 5-day clock for 5 phases (1 phase/day); spike pre-work was the reason — zero architectural unknowns at execution time
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -315,6 +364,7 @@
 | v1.3 | 6 | 24 (18 planned → 24 with gap closure) | Layout redesign + responsive; code review cycles added; HUMAN-UAT as structured gate |
 | v1.4 | 4 | 10 (10 planned, 0 gap-closure) | Table polish + features; fastest milestone; Wave-0 RED scaffolds paid off |
 | v1.5 | 5 | 8 (8 planned, 0 gap-closure) | Board Polish II; tightest scope; DOM restructure + MeasuringStrategy.Always |
+| v1.6 | 5 | 20 (planned; 0 gap-closure) | Free canvas play area; spike pre-validated architecture; all-or-nothing group drops; mobile edge-pan |
 
 ### Cumulative Quality
 
@@ -326,6 +376,7 @@
 | v1.3 | 165 unit + 8 e2e | SortableSentinel drop-to-end, selectionSource zone-scoped state, Wave 0 RED scaffolds, delta.x group-reorder direction |
 | v1.4 | 165+ unit + 8 e2e | skipSnapshot for display-pref actions, render-time sort, atomic handleSelectAll, grid-cell droppable routing |
 | v1.5 | 170+ unit + 15 e2e | MeasuringStrategy.Always for DOM restructure, w-7 spacer docking, isOver vs isDragging drop-target scoping, render-time-only sort no-mutation invariant |
+| v1.6 | 250+ unit + 20 e2e | CanvasCard standalone type, PLACE_ON_CANVAS unified action, scrollOffsetRef prop chain, all-or-nothing group bounds, two-div viewport+canvas model |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -340,4 +391,5 @@
 9. Track requirements during execution, not at close — stale "Pending" entries at archive time are wasted reconciliation work; `gsd-transition` should mark requirements Complete as each plan lands
 10. `skipSnapshot: true` is the correct default for any sort/filter/display-preference action that round-trips through the game action system
 11. `MeasuringStrategy.Always` should be the default on `DndContext` in any project with dynamic layout — one-line fix, eliminates an entire class of stale-rect drag bugs
-12. Track requirements at execution time — correcting stale "Pending" entries at archive time is wasted work and has occurred in v1.3, v1.4, and v1.5; make `gsd-transition` or the executor mark requirements complete when each plan lands
+12. Track requirements at execution time — correcting stale "Pending" entries at archive time is wasted work and has occurred in v1.3, v1.4, v1.5, and v1.6; this is a system-level gap, not a human error
+13. Spike before architectural bets — v1.6 999.37 spike proved useDraggable-not-useSortable, dragDelta ref, and two-div canvas model before Phase 31 started; zero architecture unknowns at execution

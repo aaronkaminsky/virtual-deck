@@ -1,5 +1,26 @@
 # Milestones
 
+## v1.6 Free Canvas Play Area (Shipped: 2026-05-27)
+
+**Phases completed:** 5 phases (31–35) · 20 plans
+**Timeline:** 2026-05-22 → 2026-05-27 (5 days)
+**Files changed:** 160 files, +21,230 / -1,101 lines
+**Commits:** 138
+
+**Key accomplishments:**
+
+1. Phase 31 (Migration) — Replaced communal grid with sidebar+canvas shell; draw/discard piles docked in fixed left sidebar; reset table sweeps canvas to draw pile
+2. Phase 32 (Canvas Core) — Free canvas with absolute (x, y, z) positioning; `PLACE_ON_CANVAS` server action; real-time sync to all players; NOLOSS cancel behavior (card returns to canvas on missed drop or Escape)
+3. Phase 33 (Overlap & Visibility) — Topmost-card pointer hit-testing; ~50% drag opacity reveals cards beneath; box-shadow layering indicator on >50% overlap (ref-not-state tracking)
+4. Phase 34 (Multi-Card Group Drop) — Canvas click-to-select with ring/lift UX; group drag preserving relative offsets; all-or-nothing bounds rule (silent snap-back if any card would overflow); undo atomicity
+5. Phase 35 (Mobile) — Hold-to-scroll edge-pan arrows at 8px/16ms; one-finger drag/pan non-conflict via dnd-kit TouchSensor isolation; canvas height distributes via flex-1 (hard cap removed)
+
+**No formal milestone audit** — REQUIREMENTS.md traceability for MULTI-* and MOBILE-* was stale at close; corrected manually.
+
+**Archive:** `.planning/milestones/v1.6-ROADMAP.md` · `.planning/milestones/v1.6-REQUIREMENTS.md`
+
+---
+
 ## v1.5 Board Polish II (Shipped: 2026-05-23)
 
 **Phases completed:** 5 phases, 8 plans, 14 tasks

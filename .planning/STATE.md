@@ -2,37 +2,35 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
-status: executing
-stopped_at: Phase 35 UI-SPEC approved
-last_updated: "2026-05-27T02:40:48.582Z"
-last_activity: 2026-05-27 -- Phase 35 execution started
+status: complete
+stopped_at: v1.6 milestone archived
+last_updated: "2026-05-27"
+last_activity: 2026-05-27 -- v1.6 milestone complete
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 20
-  completed_plans: 18
-  percent: 80
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-23)
+See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 35 — mobile
+**Current focus:** Planning next milestone (v1.7)
 
 ## Current Position
 
-Phase: 35 (mobile) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 35
-Last activity: 2026-05-27 -- Phase 35 execution started
+Milestone v1.6 complete — archived to .planning/milestones/v1.6-ROADMAP.md
+Start next milestone with `/gsd:new-milestone`
 
 ```
-[████████  ] 80% complete
-4/5 v1.6 phases done
+[██████████] 100% complete
+5/5 v1.6 phases done
 ```
 
 ## Performance Metrics
@@ -94,10 +92,9 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 
 ## Session Continuity
 
-Last session: 2026-05-26T13:22:04.304Z
-Stopped at: Phase 35 UI-SPEC approved
-Resume file: .planning/phases/35-mobile/35-UI-SPEC.md
+Last session: 2026-05-27
+Stopped at: v1.6 milestone archived
 
 ## Operator Next Steps
 
-- Plan Phase 34: `/gsd:plan-phase 34`
+- Start next milestone: `/gsd:new-milestone`
