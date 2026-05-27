@@ -319,9 +319,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           const activator = event.activatorEvent as PointerEvent;
           const pointerFinalX = activator.clientX + event.delta.x;
           const pointerFinalY = activator.clientY + event.delta.y;
-          const { x: scrollX, y: scrollY } = scrollOffsetRef.current;
-          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2 + scrollX;
-          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2 + scrollY;
+          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2;
+          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2;
         }
 
         // Build the cards array for all selected cards (D-11).
@@ -404,14 +403,14 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         newX = Math.max(0, Math.min(baseX + event.delta.x, Math.max(0, canvasW - CARD_W)));
         newY = Math.max(0, Math.min(baseY + event.delta.y, Math.max(0, canvasH - CARD_H)));
       } else {
-        // hand/pile → canvas: derive pointer position relative to canvas (Pitfall 2)
-        // Add scrollOffsetRef to convert from viewport-relative to inner-canvas-relative coords (T-35-01)
+        // hand/pile → canvas: pointer coords minus the inner canvas bounds.
+        // getBoundingClientRect() on the translated inner div already encodes scroll offset,
+        // so no explicit scroll addend is needed (adding it would double-count).
         const activator = event.activatorEvent as PointerEvent;
         const pointerFinalX = activator.clientX + event.delta.x;
         const pointerFinalY = activator.clientY + event.delta.y;
-        const { x: scrollX, y: scrollY } = scrollOffsetRef.current;
-        const baseX = pointerFinalX - (canvasBounds?.left ?? 0) - CARD_W / 2 + scrollX;
-        const baseY = pointerFinalY - (canvasBounds?.top ?? 0) - CARD_H / 2 + scrollY;
+        const baseX = pointerFinalX - (canvasBounds?.left ?? 0) - CARD_W / 2;
+        const baseY = pointerFinalY - (canvasBounds?.top ?? 0) - CARD_H / 2;
         newX = Math.max(0, Math.min(baseX, Math.max(0, canvasW - CARD_W)));
         newY = Math.max(0, Math.min(baseY, Math.max(0, canvasH - CARD_H)));
       }

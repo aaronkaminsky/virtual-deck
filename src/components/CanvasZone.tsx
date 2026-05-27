@@ -44,6 +44,7 @@ function EdgeArrow({ dir, visible, onPanStart, onPanEnd }: EdgeArrowProps) {
       onPointerDown={e => { e.stopPropagation(); onPanStart(dir); }}
       onPointerUp={onPanEnd}
       onPointerLeave={onPanEnd}
+      onPointerCancel={onPanEnd}
       onContextMenu={e => e.preventDefault()}
       style={{
         position: 'absolute',
