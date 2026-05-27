@@ -84,12 +84,11 @@ interface CanvasZoneProps {
   groupIds: Set<string>;
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
-  scrollOffsetRef: React.MutableRefObject<{ x: number; y: number }>;
   onToggleSelectCanvas: (id: string) => void;
   onDeselectAll: () => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, scrollOffsetRef, onToggleSelectCanvas, onDeselectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onDeselectAll }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -120,12 +119,6 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
-  // Keep scrollOffsetRef in sync with scroll state so BoardDragLayer can read the current
-  // scroll offset in handleDragEnd without subscribing to re-renders (ref = zero re-render cost)
-  useEffect(() => {
-    scrollOffsetRef.current = scroll;
-  }, [scroll, scrollOffsetRef]);
 
   // Dynamic inner canvas size — derived from card positions + padding (D-02)
   // Uses getCardDimensions() so mobile card sizes (42×59) are accounted for

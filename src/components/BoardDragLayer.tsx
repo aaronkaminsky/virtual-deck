@@ -94,7 +94,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const scrollOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleToggleSelect = (id: string, zone: 'hand' | 'pile', zoneId: string) => {
     const isDifferentZone = selectionSource !== null &&
@@ -617,7 +616,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} scrollOffsetRef={scrollOffsetRef} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

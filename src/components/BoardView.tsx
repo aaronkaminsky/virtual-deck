@@ -22,7 +22,6 @@ interface BoardViewProps {
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource: SelectionSource;
   canvasRef: React.RefObject<HTMLDivElement | null>;
-  scrollOffsetRef: React.MutableRefObject<{ x: number; y: number }>;
   onToggleSelectCanvas: (id: string) => void;
   onDeselectAll: () => void;
   groupIds: Set<string>;
@@ -30,7 +29,7 @@ interface BoardViewProps {
   dragDelta: { x: number; y: number } | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, scrollOffsetRef, onToggleSelectCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -97,7 +96,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} scrollOffsetRef={scrollOffsetRef} onToggleSelectCanvas={onToggleSelectCanvas} onDeselectAll={onDeselectAll} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onDeselectAll={onDeselectAll} />
           </div>
         </div>
 
