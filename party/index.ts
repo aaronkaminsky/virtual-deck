@@ -1,5 +1,5 @@
 import type * as Party from "partykit/server";
-import type { Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
+import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
 
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -46,9 +46,9 @@ export function defaultGameState(roomId: string): GameState {
     piles: [
       { id: "draw", name: "Draw", cards: buildDeck(), faceUp: false, region: "pile", ownerId: null },
       { id: "discard", name: "Discard", cards: [], faceUp: true, region: "pile", ownerId: null },
-      { id: "play", name: "Play Area", cards: [], faceUp: true, region: "spread", ownerId: null },
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 
@@ -87,7 +87,6 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
       faceUp: pile.faceUp,
       region: pile.region,
       ownerId: pile.ownerId,
-      gridPositions: pile.gridPositions, // Phase 24: Pitfall 4 — must be explicit
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;
@@ -96,6 +95,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
     myPlayZoneId: `spread-${playerToken}`,
+    canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
   };
 }
 
@@ -137,46 +137,15 @@ export default class GameRoom implements Party.Server {
         (pile as any).ownerId = null;
       }
     }
-    // Migrate state: Phase 14-GAP04 — convert 'play' pile to region='spread', remove 'spread-communal'
-    const playPile = this.gameState.piles.find(p => p.id === "play");
-    if (playPile) {
-      playPile.region = "spread";
-    }
-    // Remove 'spread-communal' if it exists (now replaced by the 'play' pile as the communal spread zone)
-    const communalIdx = this.gameState.piles.findIndex(p => p.id === "spread-communal");
-    if (communalIdx !== -1) {
-      // Move any cards from spread-communal into the play pile before removing it
-      if (playPile) {
-        playPile.cards.push(...this.gameState.piles[communalIdx].cards);
-      }
-      this.gameState.piles.splice(communalIdx, 1);
-    }
-    // If 'play' pile doesn't exist at all (very old state), seed it as a spread zone
-    if (!this.gameState.piles.find(p => p.id === "play")) {
-      this.gameState.piles.push({
-        id: "play",
-        name: "Play Area",
-        cards: [],
-        faceUp: true,
-        region: "spread",
-        ownerId: null,
-      });
-    }
     // Migrate state: Phase 22 adds handRevealed to Player
     for (const player of this.gameState.players) {
       if (!('handRevealed' in player)) {
         (player as any).handRevealed = false;
       }
     }
-    // Migrate state: Phase 24 — initialize gridPositions for orphaned cards in 'play' pile
-    const playPileForMigration = this.gameState.piles.find(p => p.id === 'play');
-    if (playPileForMigration && playPileForMigration.cards.length > 0 && !playPileForMigration.gridPositions) {
-      playPileForMigration.gridPositions = {};
-      playPileForMigration.cards.forEach((card, i) => {
-        const row = Math.floor(i / 7) % 2;
-        const col = i % 7;
-        playPileForMigration.gridPositions![card.id] = { row, col };
-      });
+    // Migrate state: Phase 32 adds canvasCards to GameState
+    if (!Array.isArray((this.gameState as any).canvasCards)) {
+      (this.gameState as unknown as GameState).canvasCards = [];
     }
   }
 
@@ -263,6 +232,54 @@ export default class GameRoom implements Party.Server {
           break;
         }
 
+        // Canvas source: look up in canvasCards array
+        if (fromZone === "canvas") {
+          const canvasIdx = this.gameState.canvasCards.findIndex(c => c.card.id === cardId);
+          if (canvasIdx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found on canvas`,
+            } satisfies ServerEvent));
+            break;
+          }
+
+          const dest: Card[] | undefined =
+            toZone === "hand"
+              ? (this.gameState.hands[toId] ?? (this.gameState.hands[toId] = []))
+              : this.gameState.piles.find(p => p.id === toId)?.cards;
+
+          if (dest === undefined) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "PILE_NOT_FOUND",
+              message: `No pile found with id: ${toId}`,
+            } satisfies ServerEvent));
+            break;
+          }
+
+          takeSnapshot(this.gameState);
+          const [removedCanvasEntry] = this.gameState.canvasCards.splice(canvasIdx, 1);
+          const canvasCard = removedCanvasEntry.card;
+
+          if (toZone === "hand") {
+            canvasCard.faceUp = true;
+          } else {
+            const destPile = this.gameState.piles.find(p => p.id === toId);
+            canvasCard.faceUp = destPile?.faceUp ?? false;
+          }
+          const canvasPos = action.insertPosition ?? 'top';
+          if (canvasPos === 'bottom') {
+            dest.unshift(canvasCard);
+          } else if (canvasPos === 'random') {
+            const randomIdx = dest.length === 0 ? 0 : unbiasedRandom(dest.length + 1);
+            dest.splice(randomIdx, 0, canvasCard);
+          } else {
+            dest.push(canvasCard);
+          }
+          break;
+        }
+
         const source: Card[] | undefined =
           fromZone === "hand"
             ? this.gameState.hands[fromId]
@@ -323,29 +340,6 @@ export default class GameRoom implements Party.Server {
         } else {
           dest.push(card);
         }
-        // Assign grid position when card enters the play grid (D-06)
-        if (toZone === 'pile') {
-          const destPile = this.gameState.piles.find(p => p.id === toId);
-          if (destPile?.id === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
-            const MAX_ROWS = 2;
-            const MAX_COLS = 7;
-            if (
-              !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
-              !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
-            ) {
-              sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
-                message: "toRow/toCol out of range" } satisfies ServerEvent));
-              break;
-            }
-            if (!destPile.gridPositions) destPile.gridPositions = {};
-            destPile.gridPositions[cardId] = { row: action.toRow, col: action.toCol };
-          }
-        }
-        // Clean up gridPositions when card leaves a pile (Pitfall 2)
-        if (fromZone === 'pile') {
-          const srcPile = this.gameState.piles.find(p => p.id === fromId);
-          if (srcPile?.gridPositions) delete srcPile.gridPositions[cardId];
-        }
         break;
       }
       case "REORDER_HAND": {
@@ -392,36 +386,11 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        takeSnapshot(this.gameState);
+        if (!action.skipSnapshot) {
+          takeSnapshot(this.gameState);
+        }
         const spreadCardMap = new Map(spreadPile.cards.map(c => [c.id, c]));
         spreadPile.cards = action.orderedCardIds.map(id => spreadCardMap.get(id)!);
-        break;
-      }
-      case "MOVE_GRID_CARD": {
-        const { cardId, pileId, toRow, toCol } = action;
-        const MAX_ROWS = 2;
-        const MAX_COLS = 7;
-        if (!Number.isInteger(toRow) || toRow < 0 || toRow >= MAX_ROWS) {
-          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toRow out of range` } satisfies ServerEvent));
-          break;
-        }
-        if (!Number.isInteger(toCol) || toCol < 0 || toCol >= MAX_COLS) {
-          sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION", message: `toCol out of range` } satisfies ServerEvent));
-          break;
-        }
-        const gridPile = this.gameState.piles.find(p => p.id === pileId && p.region === "spread");
-        if (!gridPile) {
-          sender.send(JSON.stringify({ type: "ERROR", code: "PILE_NOT_FOUND", message: `No spread pile found with id: ${pileId}` } satisfies ServerEvent));
-          break;
-        }
-        const cardExists = gridPile.cards.some(c => c.id === cardId);
-        if (!cardExists) {
-          sender.send(JSON.stringify({ type: "ERROR", code: "CARD_NOT_IN_SOURCE", message: `Card ${cardId} not found in pile ${pileId}` } satisfies ServerEvent));
-          break;
-        }
-        takeSnapshot(this.gameState);
-        if (!gridPile.gridPositions) gridPile.gridPositions = {};
-        gridPile.gridPositions[cardId] = { row: toRow, col: toCol };
         break;
       }
       case "SET_PILE_FACE": {
@@ -586,9 +555,13 @@ export default class GameRoom implements Party.Server {
         for (const pile of this.gameState.piles) {
           if (pile.id !== "draw") {
             resetDrawPile.cards.push(...pile.cards.splice(0));
-            if (pile.gridPositions) pile.gridPositions = {};  // Pitfall 3: RESET_TABLE must clear gridPositions
           }
         }
+        for (const canvasCard of this.gameState.canvasCards) {
+          canvasCard.card.faceUp = false;
+          resetDrawPile.cards.push(canvasCard.card);
+        }
+        this.gameState.canvasCards = [];
         resetDrawPile.faceUp = false;
         resetDrawPile.cards.forEach(c => { c.faceUp = false; });
         resetDrawPile.cards = shuffle(resetDrawPile.cards);
@@ -598,6 +571,200 @@ export default class GameRoom implements Party.Server {
         for (const player of this.gameState.players) {
           player.handRevealed = false;
         }
+        break;
+      }
+      case "PLACE_ON_CANVAS": {
+        const { cardId, fromZone, fromId, x, y } = action;
+
+        // V5: coordinate validation
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V4: hand source auth guard — mirrors MOVE_CARD pattern
+        if (fromZone === "hand" && fromId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot move another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // Pre-validate source contains cardId (before takeSnapshot)
+        let canvasCard: Card | undefined;
+        // Compute maxZ before any splice so canvas→canvas repositioning always increments z
+        const maxZBeforeSplice = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        if (fromZone === "hand") {
+          const hand = this.gameState.hands[fromId];
+          const idx = hand?.findIndex(c => c.id === cardId) ?? -1;
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found in hand`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          [canvasCard] = hand.splice(idx, 1);
+        } else if (fromZone === "pile") {
+          const pile = this.gameState.piles.find(p => p.id === fromId);
+          const idx = pile?.cards.findIndex(c => c.id === cardId) ?? -1;
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found in pile`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          [canvasCard] = pile!.cards.splice(idx, 1);
+        } else {
+          // fromZone === "canvas"
+          const idx = this.gameState.canvasCards.findIndex(c => c.card.id === cardId);
+          if (idx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_IN_SOURCE",
+              message: `Card ${cardId} not found on canvas`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          const [removed] = this.gameState.canvasCards.splice(idx, 1);
+          canvasCard = removed.card;
+        }
+
+        canvasCard!.faceUp = true;
+        const maxZ = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), maxZBeforeSplice);
+        this.gameState.canvasCards.push({ card: canvasCard!, x, y, z: maxZ + 1 });
+        break;
+      }
+      case "GROUP_PLACE_ON_CANVAS": {
+        const { fromZone, fromId, cards } = action;
+
+        // V1: cards array must be non-empty
+        if (cards.length === 0) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "EMPTY_CARD_SET",
+            message: "cards must contain at least one card",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V2: per-card finite coordinate check
+        for (const c of cards) {
+          if (!Number.isFinite(c.x) || !Number.isFinite(c.y)) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "INVALID_COORDINATES",
+              message: "x and y must be finite numbers",
+            } satisfies ServerEvent));
+            break;
+          }
+        }
+        // Re-check after loop so we can break out of the case
+        if (cards.some(c => !Number.isFinite(c.x) || !Number.isFinite(c.y))) break;
+
+        // V3: duplicate cardIds check
+        const groupCardIdSet = new Set(cards.map(c => c.cardId));
+        if (groupCardIdSet.size !== cards.length) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "DUPLICATE_CARD_IDS",
+            message: "cardIds must be unique",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V4: hand source auth guard
+        if (fromZone === "hand" && fromId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_MOVE",
+            message: "Cannot move another player's cards",
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // V5: resolve all cardIds in source (read-only — no mutation yet)
+        // Compute maxZ BEFORE any splice so pre-splice z values are captured
+        const maxZGroup = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+
+        type ResolvedGroupCard = { card: Card; preDragZ: number; x: number; y: number };
+        const resolvedGroupCards: ResolvedGroupCard[] = [];
+
+        let missingCardId: string | null = null;
+
+        if (fromZone === "hand") {
+          const hand = this.gameState.hands[fromId] ?? [];
+          for (const { cardId, x, y } of cards) {
+            const found = hand.find(c => c.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found, preDragZ: 0, x, y });
+          }
+        } else if (fromZone === "pile") {
+          const pile = this.gameState.piles.find(p => p.id === fromId);
+          const pileCards = pile?.cards ?? [];
+          for (const { cardId, x, y } of cards) {
+            const found = pileCards.find(c => c.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found, preDragZ: 0, x, y });
+          }
+        } else {
+          // fromZone === "canvas"
+          for (const { cardId, x, y } of cards) {
+            const found = this.gameState.canvasCards.find(cc => cc.card.id === cardId);
+            if (!found) { missingCardId = cardId; break; }
+            resolvedGroupCards.push({ card: found.card, preDragZ: found.z, x, y });
+          }
+        }
+
+        if (missingCardId !== null) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: `Card ${missingCardId} not found in ${fromZone}`,
+          } satisfies ServerEvent));
+          break;
+        }
+
+        // All validation passed — take exactly one snapshot
+        takeSnapshot(this.gameState);
+
+        // Atomically remove all cards from source
+        if (fromZone === "hand") {
+          this.gameState.hands[fromId] = (this.gameState.hands[fromId] ?? []).filter(
+            c => !groupCardIdSet.has(c.id),
+          );
+        } else if (fromZone === "pile") {
+          const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
+          srcPile.cards = srcPile.cards.filter(c => !groupCardIdSet.has(c.id));
+        } else {
+          // fromZone === "canvas" — collect indices descending to avoid index shift
+          const indicesToRemove = resolvedGroupCards
+            .map(r => this.gameState.canvasCards.findIndex(cc => cc.card.id === r.card.id))
+            .sort((a, b) => b - a);
+          for (const idx of indicesToRemove) {
+            if (idx !== -1) this.gameState.canvasCards.splice(idx, 1);
+          }
+        }
+
+        // Sort by pre-drag z ascending, then assign z = maxZ + 1 + rank
+        resolvedGroupCards.sort((a, b) => a.preDragZ - b.preDragZ);
+        resolvedGroupCards.forEach((r, rank) => {
+          r.card.faceUp = true;
+          this.gameState.canvasCards.push({ card: r.card, x: r.x, y: r.y, z: maxZGroup + 1 + rank });
+        });
+
         break;
       }
       case "UNDO_MOVE": {
@@ -733,35 +900,6 @@ export default class GameRoom implements Party.Server {
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
         dest.push(...cardsToPlay);
-        // Assign grid positions when cards land in the play grid (mirrors MOVE_CARD D-06)
-        if (toZone === 'pile' && toId === 'play' && action.toRow !== undefined && action.toCol !== undefined) {
-          const MAX_ROWS = 2;
-          const MAX_COLS = 7;
-          if (
-            !Number.isInteger(action.toRow) || action.toRow < 0 || action.toRow >= MAX_ROWS ||
-            !Number.isInteger(action.toCol) || action.toCol < 0 || action.toCol >= MAX_COLS
-          ) {
-            sender.send(JSON.stringify({ type: "ERROR", code: "INVALID_POSITION",
-              message: "toRow/toCol out of range" } satisfies ServerEvent));
-            break;
-          }
-          const destPile = this.gameState.piles.find(p => p.id === toId);
-          if (destPile) {
-            if (!destPile.gridPositions) destPile.gridPositions = {};
-            for (const cId of cardIds) {
-              destPile.gridPositions[cId] = { row: action.toRow, col: action.toCol };
-            }
-          }
-        }
-        // Clean up gridPositions when cards leave a pile (Pitfall 2)
-        if (fromZone === 'pile') {
-          const srcPile = this.gameState.piles.find(p => p.id === fromId);
-          if (srcPile?.gridPositions) {
-            for (const cId of cardIds) {
-              delete srcPile.gridPositions[cId];
-            }
-          }
-        }
         break;
       }
       case "MOVE_ALL_PILE_CARDS": {
@@ -781,7 +919,6 @@ export default class GameRoom implements Party.Server {
         const moving = srcPile.cards.splice(0); // remove all cards
         moving.forEach(card => { card.faceUp = destPile.faceUp === true; });
         destPile.cards.push(...moving);
-        if (srcPile.gridPositions) srcPile.gridPositions = {};
         break;
       }
       case "PING":

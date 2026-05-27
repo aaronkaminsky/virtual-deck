@@ -2,43 +2,42 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
-status: planning
-last_updated: "2026-05-23"
-last_activity: 2026-05-23
+status: complete
+stopped_at: v1.6 milestone archived
+last_updated: "2026-05-27"
+last_activity: 2026-05-27 -- v1.6 milestone complete
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 5
+  total_plans: 20
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-23)
+See: .planning/PROJECT.md (updated 2026-05-27)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** v1.6 — Free Canvas Play Area — roadmap created, ready to plan Phase 31
+**Current focus:** Planning next milestone (v1.7)
 
 ## Current Position
 
-Phase: 31 (not started)
-Plan: —
-Status: Roadmap complete — ready for phase planning
-Last activity: 2026-05-23 — Roadmap created for v1.6
+Milestone v1.6 complete — archived to .planning/milestones/v1.6-ROADMAP.md
+Start next milestone with `/gsd:new-milestone`
 
 ```
-[          ] 0% complete
-Phase 31 of 35 (0/5 phases done)
+[██████████] 100% complete
+5/5 v1.6 phases done
 ```
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 10 (v1.4), 8 (v1.5)
+- Total plans completed: 21 (v1.4), 8 (v1.5)
 - Average duration: —
 - Total execution time: —
 
@@ -58,6 +57,8 @@ Recent decisions affecting current work:
 - [v1.6 roadmap]: Phase 31 (Migration) lands first — remove grid, establish sidebar+canvas shell before any canvas feature work
 - [v1.6 roadmap]: Phase 32 bundles CANVAS-01–04 + NOLOSS-01 — server x/y/z model and no-card-loss are inseparable; both need to be correct before overlap and multi-select land
 - [Phase 30]: MeasuringStrategy.Always added to DndContext — eliminates stale droppable rect drift after DOM restructure
+- [Phase ?]: D-01: canvasCards: CanvasCard[] as top-level GameState field, not a Pile extension — canvas cards have absolute position not ordered index
+- [Phase ?]: D-11: MOVE_CARD fromZone widened to include canvas for canvas→pile drops; toZone remains hand|pile only
 
 ### Pending Todos
 
@@ -72,6 +73,8 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260522-t4p | Fix 999.51 reset button enable on any game state change and 999.54 opponent spread zone empty resting state collapse | 2026-05-23 | b51718c | [260522-t4p-fix-999-51-reset-button-enable-on-any-ga](./quick/260522-t4p-fix-999-51-reset-button-enable-on-any-ga/) |
+| 260523-t9o | Fix PileZone empty-state collapse and add board min-height | 2026-05-24 | 00582fb | [260523-t9o-fix-pilezone-empty-state-collapse-and-ad](./quick/260523-t9o-fix-pilezone-empty-state-collapse-and-ad/) |
+| Phase 32-canvas-core P01 | 11 | 2 tasks | 7 files |
 
 ## Deferred Items
 
@@ -89,10 +92,9 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 
 ## Session Continuity
 
-Last session: 2026-05-23
-Stopped at: Roadmap created for v1.6 (5 phases, 18 requirements mapped)
-Resume file: .planning/ROADMAP.md
+Last session: 2026-05-27
+Stopped at: v1.6 milestone archived
 
 ## Operator Next Steps
 
-- Plan Phase 31: `/gsd:plan-phase 31`
+- Start next milestone: `/gsd:new-milestone`

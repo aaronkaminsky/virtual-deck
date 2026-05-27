@@ -18,6 +18,7 @@ function makeTestState(): GameState {
       { id: "play", name: "Play Area", cards: [], faceUp: true },
     ],
     undoSnapshots: [],
+    canvasCards: [],
   };
 }
 

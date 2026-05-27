@@ -394,10 +394,10 @@ function makeSpreadDropLogic(
 describe("GAP-06: Intra-spread reorder does not dispatch MOVE_CARD", () => {
   it("GAP-06-A: same-pile spread drop skips sendAction entirely (SpreadZone handles it)", () => {
     const card = makeCard("A-s");
-    const piles = [{ id: "play", cards: [{ id: "2-h" }], region: "spread" as const }];
+    const piles = [{ id: "spread-player-1", cards: [{ id: "2-h" }], region: "spread" as const }];
     const logic = makeSpreadDropLogic(piles);
 
-    logic.handlePileDrop(card, "pile", "play", "play");
+    logic.handlePileDrop(card, "pile", "spread-player-1", "spread-player-1");
 
     expect(logic.sendAction).not.toHaveBeenCalled();
     expect(logic.pendingMove).toBeNull();
@@ -406,25 +406,25 @@ describe("GAP-06: Intra-spread reorder does not dispatch MOVE_CARD", () => {
   it("GAP-06-B: cross-spread move (different source pile) still dispatches MOVE_CARD at top", () => {
     const card = makeCard("K-d");
     const piles = [
-      { id: "play", cards: [{ id: "2-h" }], region: "spread" as const },
+      { id: "spread-player-1", cards: [{ id: "2-h" }], region: "spread" as const },
       { id: "spread-alice", cards: [{ id: "K-d" }], region: "spread" as const },
     ];
     const logic = makeSpreadDropLogic(piles);
 
-    logic.handlePileDrop(card, "pile", "spread-alice", "play");
+    logic.handlePileDrop(card, "pile", "spread-alice", "spread-player-1");
 
     expect(logic.sendAction).toHaveBeenCalledOnce();
     expect(logic.sendAction).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "MOVE_CARD", insertPosition: "top", toId: "play" })
+      expect.objectContaining({ type: "MOVE_CARD", insertPosition: "top", toId: "spread-player-1" })
     );
   });
 
   it("GAP-06-C: hand-to-spread drop dispatches MOVE_CARD at top (not a reorder)", () => {
     const card = makeCard("Q-h");
-    const piles = [{ id: "play", cards: [{ id: "2-h" }], region: "spread" as const }];
+    const piles = [{ id: "spread-player-1", cards: [{ id: "2-h" }], region: "spread" as const }];
     const logic = makeSpreadDropLogic(piles);
 
-    logic.handlePileDrop(card, "hand", "hand", "play");
+    logic.handlePileDrop(card, "hand", "hand", "spread-player-1");
 
     expect(logic.sendAction).toHaveBeenCalledOnce();
     expect(logic.sendAction).toHaveBeenCalledWith(
@@ -434,10 +434,10 @@ describe("GAP-06: Intra-spread reorder does not dispatch MOVE_CARD", () => {
 
   it("GAP-06-D: intra-spread drop onto empty spread zone takes the isEmpty path (sends MOVE_CARD)", () => {
     const card = makeCard("5-c");
-    const piles = [{ id: "play", cards: [], region: "spread" as const }];
+    const piles = [{ id: "spread-player-1", cards: [], region: "spread" as const }];
     const logic = makeSpreadDropLogic(piles);
 
-    logic.handlePileDrop(card, "pile", "play", "play");
+    logic.handlePileDrop(card, "pile", "spread-player-1", "spread-player-1");
 
     // isEmpty branch fires before isSpread — no change in behavior
     expect(logic.sendAction).toHaveBeenCalledOnce();

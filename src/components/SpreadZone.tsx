@@ -1,7 +1,7 @@
 import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Card, ClientPile, ClientAction } from '@/shared/types';
+import type { Card, ClientPile, ClientAction, SelectionSource } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, SquareCheck } from 'lucide-react';
 import { CardFace } from './CardFace';
@@ -48,6 +48,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
       <div
         ref={setNodeRef}
         style={style}
+        data-card-id={card.id}
         className={cn(
           isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
         )}
@@ -75,7 +76,7 @@ interface SpreadZoneProps {
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
-  selectionSource?: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  selectionSource?: SelectionSource;
 }
 
 export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource }: SpreadZoneProps) {
@@ -136,7 +137,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
           reordered = arrayMove(faceUpCards, activeIdx, overIdx);
         }
-        sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id) });
+        sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id), skipSnapshot: true });
       }
     },
   });
@@ -165,10 +166,10 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         className={cn(
           isEmpty
             ? isOver
-              ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2'
+              ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2 py-2'
               : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
             : cn(
-                'min-w-[56px] h-[64px] sm:min-w-[80px] sm:h-[88px] rounded-lg border flex items-center px-2 overflow-x-auto bg-secondary',
+                'min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-2 overflow-x-auto bg-secondary',
                 isEmpty ? 'border-dashed' : '',
                 isOver ? 'border-primary' : 'border-border'
               ),

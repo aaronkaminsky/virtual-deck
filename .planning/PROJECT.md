@@ -10,33 +10,25 @@ Players can see the shared table and their own private hand update in real time,
 
 ## Current State
 
-**v1.5 shipped (2026-05-23).** All 64 requirements across v1.0–v1.5 satisfied and shipped.
+**v1.6 shipped (2026-05-27).** All 82 requirements across v1.0–v1.6 satisfied and shipped.
 
 - ~3,000+ TypeScript LOC across `src/`, `party/`, `shared/`
 - Stack: React 18 + Vite + shadcn v4 (dark felt theme) on GitHub Pages; PartyKit (Cloudflare edge) for server
-- Full Playwright e2e infrastructure (15 tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (170+ tests)
-- Layout: opponent spreads docked below their owner hands in board area; personal spread flush above player hand; MeasuringStrategy.Always eliminates stale droppable rect drift
+- Full Playwright e2e infrastructure (20+ tests, dual-server config, 2-BrowserContext fixture); Vitest unit suite (250+ tests)
+- Layout: fixed left sidebar (draw + discard piles); free canvas play area to the right; opponent spreads docked below owner hands
+- Canvas: cards positioned absolutely with (x, y, z); PLACE_ON_CANVAS action; z=max+1 on drop; NOLOSS cancel behavior; group selection with ring/lift UX; all-or-nothing bounds rule on group drops; edge-pan arrows for mobile
+- Overlap hit-testing: topmost card receives pointer events; 50% drag opacity; box-shadow indicator on >50% coverage
 - Zones: empty personal spread shows faint dashed strip (¼ height); no zone name labels; opponent spreads have no face-toggle control; hover-only drop-target outline on opponent hand
-- Piles: count badge hidden at 0; controls row tight against pile card; Select All works correctly on piles and spread zones
-- Mobile: communal grid collapses from 7 to 4 columns at < 640px viewport
-- Hand sort: "original order" = current server/manual order; render-time-only visual overlay (no undo stack mutation)
+- Piles: count badge hidden at 0; controls row tight against pile card; Select All works correctly
+- Hand sort: render-time-only visual overlay; original order = current server/manual order
+- Board: min-w-[320px] prevents zone overlap at narrow viewports; canvas height distributes via flex-1
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** v1.6 — Free Canvas Play Area (planning in progress)
+**Next milestone:** v1.7 — TBD (run `/gsd:new-milestone` to plan)
 
-## Current Milestone: v1.6 Free Canvas Play Area
+## Previous Milestone: v1.6 Free Canvas Play Area (SHIPPED 2026-05-27)
 
-**Goal:** Replace the fixed communal grid with a free-form canvas where each card has an absolute (x, y, z) position and can be placed and overlapped anywhere — with a no-card-loss guarantee.
-
-**Target features:**
-- Free canvas: cards positioned absolutely with x/y/z; drop anchors card at pointer position; cancel reverts to pre-drag position
-- No-card-loss invariant: a card dragged out of the canvas is either over a valid drop zone (hand, pile, personal spread) or the drop is cancelled and the card returns to its canvas position
-- Overlap hit-testing: pointer-events target the topmost visible card; ~50% drag opacity reveals card below for drop decisions
-- Multi-card group drop: selected cards land maintaining relative positions, z-order preserved above all existing cards
-- Mobile edge-pan: hold-to-scroll arrow buttons replace scrollbar panning (no conflict with one-finger card drag)
-- Stack shadow: visual layering indicator when >50% of a lower card is covered
-
-**Backlog items resolved:** 999.37 (free canvas, spike validated), 999.52 (mobile grid overflow, obsoleted), 999.53 (mobile layout overlap, obsoleted)
+Replaced the fixed communal grid with a free-form canvas: absolute (x, y, z) positioning, no-card-loss invariant, topmost-card hit-testing, multi-card group drop, and mobile edge-pan. See `.planning/milestones/v1.6-ROADMAP.md` for full details.
 
 ## Requirements
 
@@ -124,6 +116,33 @@ Players can see the shared table and their own private hand update in real time,
 - ✓ Grid zone face-toggle icon positioned near the zone label, not inside the card grid (CTRL-07) — Phase 26
 - ✓ Hand sort "original order" = current server/manual order; render-time-only; locked with non-mutation invariant test (SORT-02) — Phase 29
 
+### Validated (v1.6, Phase 31)
+
+- ✓ Communal grid zone fully removed; GRID-01 region code deleted (MIGRATE-01) — Phase 31
+- ✓ Draw and discard piles in fixed left sidebar, vertically stacked, with free canvas area to the right (MIGRATE-02) — Phase 31
+- ✓ Reset table moves all canvas cards to draw pile; canvas clears on reset (MIGRATE-03) — Phase 31
+
+### Validated (v1.6, Phase 32)
+
+- ✓ Player can drag any card (hand, pile, spread) onto the free canvas; card anchors at the drop point (CANVAS-01) — Phase 32
+- ✓ Player can reposition a canvas card by dragging it to a new location; real-time sync to all players (CANVAS-02) — Phase 32
+- ✓ Canvas cards render in z-order; newly placed/moved card always renders on top (CANVAS-03) — Phase 32
+- ✓ Canvas card can be dragged to a pile or hand using existing dialogs/drop targets (CANVAS-04) — Phase 32
+- ✓ No card loss on missed drop or Escape cancel — card returns to prior position (NOLOSS-01) — Phase 32
+
+### Validated (v1.6, Phases 33–35)
+
+- ✓ Topmost canvas card receives all pointer events; cards beneath are non-interactive (OVERLAP-01) — Phase 33
+- ✓ Dragged canvas card renders at ~50% opacity so cards beneath are visible (OVERLAP-02) — Phase 33
+- ✓ Box-shadow layering indicator when card covers >50% of a lower card; ref-not-state tracking (OVERLAP-03) — Phase 33
+- ✓ Player can click-to-select multiple canvas cards with ring/lift UX (MULTI-01) — Phase 34
+- ✓ Group drop preserves pre-drag relative offsets between selected cards (MULTI-02) — Phase 34
+- ✓ All group-dropped cards receive z-indices above existing canvas cards (MULTI-03) — Phase 34
+- ✓ Group drop cancelled entirely if any card would overflow canvas bounds (MULTI-04) — Phase 34
+- ✓ Hold-to-scroll edge arrows pan canvas continuously without lifting finger (MOBILE-01) — Phase 35
+- ✓ Edge-pan does not conflict with one-finger card drag gestures (MOBILE-02) — Phase 35
+- ✓ Canvas height distributes via flex-1 so spread zones remain visible at narrow viewports (MOBILE-03) — Phase 35
+
 ### Active
 
 ### Out of Scope
@@ -186,6 +205,14 @@ Players can see the shared table and their own private hand update in real time,
 | `MeasuringStrategy.Always` on DndContext after DOM restructure | After moving opponent spreads out of header band, dnd-kit cached stale droppable rects; Always re-measures every frame | ✓ Validated Phase 30 |
 | Opponent spreads in a `flex-shrink-0` board area row with `w-7` spacer for column alignment | Docking spreads below their hands required matching the hand column width; spacer equals the controls-bar width so spreads align under hand cards | ✓ Validated Phase 30 |
 | Hover-only OpponentHand drop-target via `isOver` (not `isDragging`) | Outline was firing at drag start because `isDragging` is true globally; `isOver` scopes the highlight to the specific droppable being hovered | ✓ Validated Phase 27 |
+| `CanvasCard` as standalone type (`{card, x, y, z}`) rather than extending `Pile` | Type extension kept existing MOVE_CARD/UNDO/viewFor handlers untouched; separate `canvasCards[]` field is cleaner than adding optional canvas fields to every Pile | ✓ Validated Phase 32 |
+| `CanvasDraggableCard` uses `useDraggable` only (no `useDroppable` per card) | Canvas zone is the single droppable; individual cards being droppable would create z-order collision detection complexity — handled in Phase 33 overlap hit-testing | ✓ Validated Phase 32 |
+| `PLACE_ON_CANVAS` handles both initial placement and canvas→canvas repositioning | Unified single action with `z=max+1` keeps undo symmetric; server computes z to prevent client race conditions | ✓ Validated Phase 32 |
+| `viewFor()` broadcasts `canvasCards` without masking | Canvas cards are placed face-up by design (D-04); no privacy concern since placement is a deliberate public act | ✓ Validated Phase 32 |
+| `GROUP_PLACE_ON_CANVAS` as atomic server action; server computes all z-indices in one pass | Prevents client race condition where two simultaneous group drops corrupt z-order; atomicity also simplifies undo (single snapshot) | ✓ Validated Phase 34 |
+| All-or-nothing bounds rule for group drops (not anchor-and-clamp) | Partial placement creates confusing UI state where some cards move and others don't; all-or-nothing matches physical card intuition | ✓ Validated Phase 34 |
+| `scrollOffsetRef` shared via prop chain (CanvasZone → BoardView → BoardDragLayer), not state | Drop math needs live scroll value at pointer-up moment; state would capture stale value causing off-position drops after panning | ✓ Validated Phase 35 |
+| Canvas height via `flex-1` row (no hard `max-h` cap) | `max-h-[240px]` caused pile sidebar / canvas height mismatch; flex-1 correctly distributes available height based on surrounding zone sizes | ✓ Validated Phase 35 |
 
 ## Evolution
 
@@ -205,4 +232,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-23 — milestone v1.6 started*
+*Last updated: 2026-05-27 after v1.6 milestone (Free Canvas Play Area)*

@@ -23,11 +23,15 @@ export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: Dr
   const didDragRef = useRef(false);
   const prevIsDragging = useRef(false);
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     if (prevIsDragging.current && !isDragging) {
-      setTimeout(() => { didDragRef.current = false; }, 300);
+      timerId = setTimeout(() => { didDragRef.current = false; }, 300);
     }
     if (isDragging) didDragRef.current = true;
     prevIsDragging.current = isDragging;
+    return () => {
+      if (timerId !== null) clearTimeout(timerId);
+    };
   }, [isDragging]);
 
   function handleClick() {
@@ -45,7 +49,7 @@ export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: Dr
   };
 
   return (
-    <div ref={setNodeRef} style={style} onClick={handleClick} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm')}>
+    <div ref={setNodeRef} style={style} onClick={handleClick} data-card-id={card.id} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm')}>
       {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
   );

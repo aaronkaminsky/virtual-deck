@@ -1,12 +1,13 @@
-import type { ClientAction, ClientGameState } from '@/shared/types';
+import React from 'react';
+import type { ClientAction, ClientGameState, SelectionSource } from '@/shared/types';
 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
-import { GridZone } from './GridZone';
 import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
+import { CanvasZone } from './CanvasZone';
 
 interface BoardViewProps {
   gameState: ClientGameState;
@@ -19,14 +20,19 @@ interface BoardViewProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
-  selectionSource: { zone: 'hand' | 'pile'; zoneId: string } | null;
+  selectionSource: SelectionSource;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
+  onToggleSelectCanvas: (id: string) => void;
+  onDeselectAll: () => void;
+  groupIds: Set<string>;
+  activeCardId: string | null;
+  dragDelta: { x: number; y: number } | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
-  const communalZone = spreadPiles.find(p => p.id === 'play');
   const allOpponentIds = Array.from(new Set([
     ...Object.keys(gameState.opponentHandCounts),
     ...Object.keys(gameState.opponentRevealedHands),
@@ -34,7 +40,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const opponentCount = allOpponentIds.length;
 
   return (
-    <div className="h-screen w-screen overflow-x-hidden flex flex-col bg-background">
+    <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
@@ -83,20 +89,15 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           <div className="w-7 self-start shrink-0 pointer-events-none" aria-hidden="true" />
         </div>
 
-        <div className="flex-1 min-h-0 flex items-center px-4 gap-4">
-          {pilePiles.map((pile) => (
-            <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
-          ))}
-          {communalZone && (
-            <div className="shrink-0">
-              <GridZone
-                pile={communalZone}
-                sendAction={sendAction}
-                draggingCardId={draggingCardId}
-                interactive={true}
-              />
-            </div>
-          )}
+        <div className="flex-1 min-h-0 flex items-start mt-1 pr-2">
+          <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
+            {pilePiles.map((pile) => (
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
+            ))}
+          </div>
+          <div className="flex-1 min-w-0 self-stretch flex">
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onDeselectAll={onDeselectAll} />
+          </div>
         </div>
 
         {mySpreadZone && (

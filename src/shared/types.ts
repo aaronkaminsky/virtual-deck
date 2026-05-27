@@ -22,7 +22,6 @@ export interface Pile {
   faceUp?: boolean;  // whether the pile shows face-up by default
   region?: "pile" | "spread";
   ownerId?: string | null;
-  gridPositions?: Record<string, { row: number; col: number }>; // Phase 24: play grid
 }
 
 export type MaskedCard = { faceUp: false };
@@ -34,8 +33,17 @@ export interface ClientPile {
   faceUp?: boolean;
   region?: "pile" | "spread";
   ownerId?: string | null;
-  gridPositions?: Record<string, { row: number; col: number }>; // Phase 24
 }
+
+export interface CanvasCard {
+  card: Card;
+  x: number;
+  y: number;
+  z: number;
+}
+
+// ClientCanvasCard is identical in phase 32 — no masking on canvas
+export type ClientCanvasCard = CanvasCard;
 
 export interface GameState {
   roomId: string;
@@ -44,6 +52,7 @@ export interface GameState {
   hands: Record<string, Card[]>;  // keyed by player token
   piles: Pile[];
   undoSnapshots: GameState[];
+  canvasCards: CanvasCard[];
 }
 
 export interface ClientGameState {
@@ -58,24 +67,31 @@ export interface ClientGameState {
   piles: ClientPile[];
   canUndo: boolean;
   myPlayZoneId: string;
+  canvasCards: ClientCanvasCard[];
 }
 
 export type ClientAction =
-  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random'; toRow?: number; toCol?: number }
+  | { type: "MOVE_CARD"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; toZone: "hand" | "pile"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
   | { type: "REORDER_HAND"; orderedCardIds: string[]; skipSnapshot?: boolean }
-  | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[] }
+  | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[]; skipSnapshot?: boolean }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
   | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
-  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string; toRow?: number; toCol?: number }
+  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile"; fromId: string; toZone: "pile" | "hand"; toId: string }
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
-  | { type: "MOVE_GRID_CARD"; cardId: string; pileId: string; toRow: number; toCol: number }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
-  | { type: "PING" };
+  | { type: "PING" }
+  | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number }
+  | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] };
+
+export type SelectionSource =
+  | { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean }
+  | { zone: 'canvas'; zoneId: 'canvas' }
+  | null;
 
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }

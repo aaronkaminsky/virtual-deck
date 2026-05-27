@@ -38,8 +38,15 @@ describe("SpreadZone — D-07: controls guard unchanged", () => {
   });
 });
 
-describe("SpreadZone — non-empty / opponent path unchanged", () => {
-  it("still contains the non-empty zone height classes", () => {
-    expect(SpreadZoneSrc).toContain("h-[64px] sm:min-w-[80px] sm:h-[88px]");
+describe("SpreadZone — non-empty slot uses intrinsic sizing (GAP-04)", () => {
+  it("populated slot has intrinsic sizing — no fixed h-[64px] or sm:h-[88px]", () => {
+    expect(SpreadZoneSrc).not.toContain("h-[64px]");
+    expect(SpreadZoneSrc).not.toContain("sm:h-[88px]");
+  });
+
+  it("populated slot retains min-w and symmetric padding", () => {
+    expect(SpreadZoneSrc).toContain(
+      "min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-2 overflow-x-auto bg-secondary"
+    );
   });
 });
