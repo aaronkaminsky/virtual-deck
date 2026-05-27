@@ -94,6 +94,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const scrollOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleToggleSelect = (id: string, zone: 'hand' | 'pile', zoneId: string) => {
     const isDifferentZone = selectionSource !== null &&
@@ -318,8 +319,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           const activator = event.activatorEvent as PointerEvent;
           const pointerFinalX = activator.clientX + event.delta.x;
           const pointerFinalY = activator.clientY + event.delta.y;
-          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2;
-          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2;
+          const { x: scrollX, y: scrollY } = scrollOffsetRef.current;
+          handleDropX = pointerFinalX - canvasBounds.left - CARD_W / 2 + scrollX;
+          handleDropY = pointerFinalY - canvasBounds.top - CARD_H / 2 + scrollY;
         }
 
         // Build the cards array for all selected cards (D-11).
@@ -403,11 +405,13 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         newY = Math.max(0, Math.min(baseY + event.delta.y, Math.max(0, canvasH - CARD_H)));
       } else {
         // hand/pile → canvas: derive pointer position relative to canvas (Pitfall 2)
+        // Add scrollOffsetRef to convert from viewport-relative to inner-canvas-relative coords (T-35-01)
         const activator = event.activatorEvent as PointerEvent;
         const pointerFinalX = activator.clientX + event.delta.x;
         const pointerFinalY = activator.clientY + event.delta.y;
-        const baseX = pointerFinalX - (canvasBounds?.left ?? 0) - CARD_W / 2;
-        const baseY = pointerFinalY - (canvasBounds?.top ?? 0) - CARD_H / 2;
+        const { x: scrollX, y: scrollY } = scrollOffsetRef.current;
+        const baseX = pointerFinalX - (canvasBounds?.left ?? 0) - CARD_W / 2 + scrollX;
+        const baseY = pointerFinalY - (canvasBounds?.top ?? 0) - CARD_H / 2 + scrollY;
         newX = Math.max(0, Math.min(baseX, Math.max(0, canvasW - CARD_W)));
         newY = Math.max(0, Math.min(baseY, Math.max(0, canvasH - CARD_H)));
       }
@@ -614,7 +618,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} scrollOffsetRef={scrollOffsetRef} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
