@@ -4,8 +4,8 @@ milestone: v1.6
 milestone_name: Free Canvas Play Area
 status: executing
 stopped_at: Phase 35 UI-SPEC approved
-last_updated: "2026-05-26T15:03:51.979Z"
-last_activity: 2026-05-26 -- Phase 35 planning complete
+last_updated: "2026-05-27T02:40:48.582Z"
+last_activity: 2026-05-27 -- Phase 35 execution started
 progress:
   total_phases: 5
   completed_phases: 4
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23)
 
 **Core value:** Players can see the shared table and their own private hand update in real time, with no one able to see each other's face-down cards.
-**Current focus:** Phase 34 — multi-card-group-drop
+**Current focus:** Phase 35 — mobile
 
 ## Current Position
 
-Phase: 34 (multi-card-group-drop) — EXECUTING
-Plan: 1 of 4
-Status: Ready to execute
-Last activity: 2026-05-26 -- Phase 35 planning complete
+Phase: 35 (mobile) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 35
+Last activity: 2026-05-27 -- Phase 35 execution started
 
 ```
 [████████  ] 80% complete
