@@ -163,6 +163,13 @@ No new threat surface beyond the plan's threat model. Threat entries T-32-07 thr
 - T-32-09 (stale canvasRef): `getBoundingClientRect()` called live; `MeasuringStrategy.Always` preserved — mitigated
 - T-32-11 (canvas → opponent-hand no-op): explicit early-return guard added before `isPassCard` block — mitigated
 
+## Self-Check: PASSED
+
+- src/components/CanvasDraggableCard.tsx: FOUND
+- src/components/CanvasZone.tsx: FOUND
+- .planning/phases/32-canvas-core/32-02-SUMMARY.md: FOUND
+- Commit d71cce9: FOUND
+
 ---
 *Phase: 32-canvas-core*
 *Completed: 2026-05-25*
