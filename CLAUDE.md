@@ -1,4 +1,3 @@
-<!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
 **Virtual Deck**
@@ -13,9 +12,6 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 - **Cost**: Free tier only — no paid infrastructure
 - **Scale**: 2–4 players per session; no need to optimize for large concurrent rooms
 - **Card art**: Customization is a code change, not a runtime config — simplifies data model
-<!-- GSD:project-end -->
-
-<!-- GSD:stack-start source:research/STACK.md -->
 ## Technology Stack
 
 ## Recommended Stack
@@ -50,9 +46,6 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 | nanoid | 5.x | Generate short room codes and player IDs | nanoid's default alphabet produces URL-safe IDs. Use for room code generation on the PartyKit server. v5 dropped CJS support and uses pure ESM; confirmed working in Cloudflare Workers. |
 | zustand | 4.x [UNVERIFIED] | Local client-side UI state (drag preview, selected card, etc.) | Lightweight, no boilerplate. Use for ephemeral UI state that does not need to sync over the wire — not for game state (that lives on PartyKit). Do not put game state in zustand; it should flow from server messages. |
 | immer | 10.x [UNVERIFIED] | Immutable state updates inside zustand and PartyKit | Prevents accidental mutation of shared game state objects. Makes hand-masking logic easier to reason about. |
-<!-- GSD:stack-end -->
-
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
 ### dnd-kit
@@ -89,12 +82,10 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 ### Process
 
-- **Track requirements at execution time** via `gsd-transition`, not at milestone close. Stale "Pending" entries have required retroactive correction in v1.3, v1.4, and v1.5.
-- **Run `gsd-code-review` after every execution phase** — WR-series fixes in multiple phases caught real correctness bugs (off-by-one, modulo bias, missing auth guard) that planning and tests missed.
+- **Track requirements at execution time**, not at milestone close — mark each requirement complete as its plan lands. Stale "Pending" entries have required retroactive correction in v1.3, v1.4, and v1.5.
+- **Run a code review after every execution phase** (the `requesting-code-review` / `code-review` skill) — review caught real correctness bugs (off-by-one, modulo bias, missing auth guard) that planning and tests missed.
 - **VALIDATION.md sign-off is consistently skipped** — complete it before phase transition, not as a separate cleanup pass.
 - **Responsive layout is an iceberg** — budget 3–5× planned scope when making an existing desktop-first UI responsive.
-<!-- GSD:conventions-end -->
-
 ## Dev Commands
 
 | Command | Purpose |
@@ -107,7 +98,6 @@ A web-based multiplayer virtual card table for a standard 52-card deck. 2–4 pl
 
 To run the full local stack: `npm run dev` in one terminal, `npm run dev:client` in another.
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
 **Server:** `server.ts` runs on PartyKit (Cloudflare Workers). One room instance per URL slug; state is in-memory per room. All game mutations arrive as typed action messages and the server is authoritative. `viewFor(connectionId)` masks card face values before each broadcast — players receive only their own hand cards; opponents see only counts (or full cards if revealed).
@@ -117,27 +107,23 @@ To run the full local stack: `npm run dev` in one terminal, `npm run dev:client`
 **Zones:** All card containers are typed as `Pile`. Spread zones add `region: "spread"` and `ownerId` fields; grid zones add `region: "grid"` with row/col metadata. This keeps all existing handlers (MOVE_CARD, UNDO_MOVE, RESET_TABLE, viewFor) working without parallel dispatch paths.
 
 **Shared types:** `src/shared/` contains types imported by both client and server, eliminating client/server sync bugs.
-<!-- GSD:architecture-end -->
+## Workflow
 
-<!-- GSD:workflow-start source:GSD defaults -->
-## GSD Workflow Enforcement
+Planning and execution run on superpowers skills plus direct prompting. Start work through the appropriate skill so design, plans, and verification stay in sync:
 
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+- **New feature or behavior change** — `brainstorming` to shape the design, then `writing-plans` to produce an implementation plan, then `executing-plans` (or `subagent-driven-development`) to build it.
+- **Bug or unexpected behavior** — `systematic-debugging` before proposing a fix.
+- **Implementation** — `test-driven-development` for any feature or bugfix; `verification-before-completion` before claiming work is done.
+- **Review** — `requesting-code-review` (or the `code-review` skill) after completing a phase or before merging.
 
-Use these entry points:
-- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd:debug` for investigation and bug fixing
-- `/gsd:execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
+Planning artifacts live in `.planning/` (shipped milestone history) and `docs/superpowers/specs/` (active and future designs). See `.planning/ROADMAP.md`.
 
 ## Git Workflow
 
 **Golden rule: main is never modified locally. All changes go through feature branches and PRs.**
 
 ### Branch usage
-- All work happens on a feature branch (e.g. `gsd/phase-n-slug` or `fix/description`)
+- All work happens on a feature branch (e.g. `fix/description` or `chore/short-slug`)
 - Never commit directly to `main` — hooks will block this
 - Never `git merge` into local `main` — hooks will block this
 
@@ -157,12 +143,3 @@ Both enforced by `.git/hooks/pre-commit`:
 - **If servers are down**: prints a reminder with the exact commands to run before creating the PR
 
 To run manually: start `npm run dev` and `npm run dev:client` in separate terminals, then `npm run test:e2e`
-
-
-
-<!-- GSD:profile-start -->
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
