@@ -1,13 +1,3 @@
-  ▶ Next Up — Phase 31: Migration
-
-  Goal: Remove communal grid; establish fixed left sidebar with
-  draw/discard piles and free canvas play area shell.
-
-  /clear then:
-
-  /gsd:discuss-phase 31   — gather context and clarify approach
-  /gsd:plan-phase 31      — skip discussion, plan directly
-
 This file is some brainstorming ideas for the virtual card deck I am building.
 
 What is below is just one approach, alternatives that improve on my goals are welcome.
