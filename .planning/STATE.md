@@ -1,5 +1,4 @@
 ---
-gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Free Canvas Play Area
 status: complete
@@ -26,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-05-27)
 ## Current Position
 
 Milestone v1.6 complete — archived to .planning/milestones/v1.6-ROADMAP.md
-Start next milestone with `/gsd:new-milestone`
+Start next work by running the `brainstorming` skill on a backlog item (see docs/superpowers/specs/BACKLOG.md)
 
 ```
 [██████████] 100% complete
@@ -88,7 +87,7 @@ Items acknowledged and deferred at milestone close on 2026-05-23 (carried from v
 | verification_gap | Phase 28: 28-VERIFICATION.md | human_needed — visual: select ring + mobile grid columns |
 | verification_gap | Phase 30: 30-VERIFICATION.md | human_needed — visual column alignment + tall-viewport space distribution |
 | quick_task | fix-5-failing-viewFor-tests | missing — deferred to next milestone |
-| todo | fix-decision-coverage-gate-parenthetical-pattern-matching | planning-internal — deferred |
+| todo | fix-decision-coverage-gate-parenthetical-pattern-matching | removed — GSD-internal tooling, no longer applicable |
 
 ## Session Continuity
 
@@ -97,4 +96,4 @@ Stopped at: v1.6 milestone archived
 
 ## Operator Next Steps
 
-- Start next milestone: `/gsd:new-milestone`
+- Pick a backlog item from `docs/superpowers/specs/BACKLOG.md` and run the `brainstorming` skill to turn it into a design spec, then `writing-plans` for the implementation plan.

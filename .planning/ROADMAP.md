@@ -111,19 +111,11 @@ See full phase details in [milestones/v1.6-ROADMAP.md](milestones/v1.6-ROADMAP.m
 
 </details>
 
-## Backlog
+## Active & Future Work
 
-Promote items with `/gsd-review-backlog` when ready to plan.
+This file is the record of **shipped** milestones (above). Active and future planning now lives under [`docs/superpowers/specs/`](../docs/superpowers/specs/):
 
-| Phase | Goal | Plans |
-|-------|------|-------|
-| 999.14 | Custom card art — new artwork for card fronts and backs | TBD |
-| 999.17 | Chips — poker/betting chip support | TBD |
-| 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit onBeforeConnect rejects connections without the correct password (passed in URL query string) | TBD |
-| 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message | TBD |
-| 999.23 | Sound effects — shuffle, deal, card drop/play sounds; icon toggle to mute; group near art/customization features (see 999.14) | TBD |
-| 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features | TBD |
-| 999.36 | Editable zone names — players can rename spread zones and piles inline | TBD |
-| 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action | TBD |
-| 999.39 | Add favicon — site icon for browser tabs and bookmarks | TBD |
-| 999.40 | Fix browser console source map errors — resolve installHook.js.map and react_devtools_backend_compact.js.map parse/access errors from React DevTools | TBD |
+- **Backlog of ideas:** [`docs/superpowers/specs/BACKLOG.md`](../docs/superpowers/specs/BACKLOG.md)
+- **Designs in progress:** dated specs `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+
+To start new work: run the `brainstorming` skill to turn a backlog item into a design spec, then `writing-plans` for the implementation plan. When a body of work ships, add it as a new milestone entry above (with an archive link if it was a multi-phase effort).

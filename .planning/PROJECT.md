@@ -24,7 +24,7 @@ Players can see the shared table and their own private hand update in real time,
 - Board: min-w-[320px] prevents zone overlap at narrow viewports; canvas height distributes via flex-1
 - CI: GitHub Actions deploys both Vite frontend (GitHub Pages) and PartyKit server atomically on push to main
 
-**Next milestone:** v1.7 — TBD (run `/gsd:new-milestone` to plan)
+**Next milestone:** TBD — pick a backlog item from `docs/superpowers/specs/BACKLOG.md` and run the `brainstorming` skill to plan it.
 
 ## Previous Milestone: v1.6 Free Canvas Play Area (SHIPPED 2026-05-27)
 
@@ -218,14 +218,14 @@ Replaced the fixed communal grid with a free-form canvas: absolute (x, y, z) pos
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd-transition`):
+**After each phase / unit of work ships:**
 1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
+2. Requirements validated? → Move to Validated with a reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd-complete-milestone`):
+**After each milestone:**
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
