@@ -1,6 +1,6 @@
 import type { Card, Rank, Suit } from './shared/types';
 
-export const CARD_BACK_URL: string = '/cards/bellot/back.svg';
+export const CARD_BACK_URL: string = `${import.meta.env.BASE_URL}cards/bellot/back.svg`;
 
 const RANK_MAP: Record<Rank, string> = {
   A: '1',
@@ -22,5 +22,5 @@ export function CARD_FACE_URL(card: Card): string {
   const rank = RANK_MAP[card.rank];
   const suit = SUIT_MAP[card.suit];
   const filename = FACE_RANKS.has(rank) ? `${rank} ${suit}.svg` : `${rank}_${suit}.svg`;
-  return `/cards/bellot/${encodeURIComponent(filename)}`;
+  return `${import.meta.env.BASE_URL}cards/bellot/${encodeURIComponent(filename)}`;
 }
