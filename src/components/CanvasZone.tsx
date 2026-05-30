@@ -198,7 +198,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
       data-testid="canvas-zone"
       onClick={onDeselectAll}
       className={cn(
-        'relative flex-1 min-w-0 self-stretch overflow-hidden bg-background',
+        'relative flex-1 min-w-0 self-stretch overflow-hidden bg-felt',
         isOver && 'ring-1 ring-primary/30'
       )}
     >
