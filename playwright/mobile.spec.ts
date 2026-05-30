@@ -36,7 +36,7 @@ test.describe('Phase 35 mobile edge pan', () => {
     await dealCards(page, 5);
 
     // Wait for cards to appear in hand
-    await expect(page.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // Drag a hand card to near the right edge of the canvas to create right overflow
     // At <640px viewport, card width is 42px (getCardDimensions), so placing at x~350 causes overflow
@@ -64,7 +64,7 @@ test.describe('Phase 35 mobile edge pan', () => {
     const roomCode = nanoid(8);
     await joinRoom(page, roomCode);
     await dealCards(page, 5);
-    await expect(page.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // Place a card near the right edge to create overflow and make the right arrow appear
     const handZone = page.getByTestId('hand-zone');
@@ -113,7 +113,7 @@ test.describe('Phase 35 mobile edge pan', () => {
     const roomCode = nanoid(8);
     await joinRoom(page, roomCode);
     await dealCards(page, 5);
-    await expect(page.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // Place a card near the right edge to create overflow and make the arrow appear
     const handZone = page.getByTestId('hand-zone');

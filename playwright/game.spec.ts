@@ -19,9 +19,9 @@ test.describe('virtual-deck e2e', () => {
     await dealCards(p1, 5);
 
     // P1's hand should have cards
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
     // P2's hand should also have cards — proving P1's action synced to P2 in real time
-    await expect(p2.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p2.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   });
 
   test('deal cards: cards distributed to both hands', async ({ twoPlayerRoom }) => {
@@ -36,8 +36,8 @@ test.describe('virtual-deck e2e', () => {
     await dealCards(p1, 5);
 
     // Both players should have cards in their hand zones
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
-    await expect(p2.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+    await expect(p2.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   });
 
   test('pass card: P1 hand to P2 hand', async ({ twoPlayerRoom }) => {
@@ -45,7 +45,7 @@ test.describe('virtual-deck e2e', () => {
 
     // Deal first to get cards in hand
     await dealCards(p1, 5);
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // Find the first draggable card in P1's hand zone
     // SortableHandCard renders an inner div with dnd-kit attributes (role="button")
@@ -78,7 +78,7 @@ test.describe('virtual-deck e2e', () => {
 
     // Deal first to enter "playing" phase (Reset button only visible in playing phase)
     await dealCards(p1, 5);
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // Open controls to access the Reset button (inside the popover)
     await p1.getByRole('button', { name: /open controls/i }).click();
@@ -98,7 +98,7 @@ test.describe('virtual-deck e2e', () => {
 
     // Deal first so P1 has cards in hand
     await dealCards(p1, 5);
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
     // P2 should see the opponent-hand area for P1
     // (P2's page renders P1's hand as OpponentHand with cardCount badge)
@@ -109,7 +109,7 @@ test.describe('virtual-deck e2e', () => {
 
     // P1 should NOT see opponent-hand with their own cards
     // P1's page shows HandZone (their own hand) not OpponentHand — confirms server masking
-    await expect(p1.getByTestId('hand-zone')).not.toBeEmpty();
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   });
 
   test('spread zone visibility: both players see personal spread zones', async ({ twoPlayerRoom }) => {
