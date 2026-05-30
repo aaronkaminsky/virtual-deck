@@ -9,16 +9,16 @@ describe("coversMajority", () => {
 
   it("returns false at the exact 50% overlap threshold (strict > not >=)", () => {
     // Exact 50%: overlapW * overlapH === CARD_W * CARD_H * 0.5
-    // With CARD_W=63, CARD_H=88: half area = 63*88*0.5 = 2772
-    // To get exact 50%: overlapW=63 (full width), overlapH=44 (half height)
-    // top at x=0, y=0; bottom at x=0, y=44 → overlapH = min(88,132)-max(0,44) = 88-44 = 44; overlapW = 63
+    // With CARD_W=60, CARD_H=88: half area = 60*88*0.5 = 2640
+    // To get exact 50%: overlapW=60 (full width), overlapH=44 (half height)
+    // top at x=0, y=0; bottom at x=0, y=44 → overlapH = min(88,132)-max(0,44) = 88-44 = 44; overlapW = 60
     expect(coversMajority({ x: 0, y: 0 }, { x: 0, y: 44 })).toBe(false);
   });
 
   it("returns true when overlap area exceeds 50%", () => {
     // Small offset: nearly aligned, most area overlaps
-    // top at (0,0), bottom at (5,5) → overlapW = min(63,68)-max(0,5) = 63-5=58, overlapH = min(88,93)-max(0,5) = 88-5=83
-    // area = 58*83 = 4814 > 2772 = 63*88*0.5
+    // top at (0,0), bottom at (5,5) → overlapW = min(60,65)-max(0,5) = 60-5=55, overlapH = min(88,93)-max(0,5) = 88-5=83
+    // area = 55*83 = 4565 > 2640 = 60*88*0.5
     expect(coversMajority({ x: 0, y: 0 }, { x: 5, y: 5 })).toBe(true);
   });
 
@@ -27,8 +27,8 @@ describe("coversMajority", () => {
   });
 
   it("handles negative-offset edge case (top to upper-left of bottom by small amount)", () => {
-    // top at (-3, -3), bottom at (0, 0) → overlapW = min(60,63)-max(-3,0) = 60-0=60, overlapH = min(85,88)-max(-3,0) = 85-0=85
-    // area = 60*85 = 5100 > 2772
+    // top at (-3, -3), bottom at (0, 0) → overlapW = min(57,60)-max(-3,0) = 57-0=57, overlapH = min(85,88)-max(-3,0) = 85-0=85
+    // area = 57*85 = 4845 > 2640
     expect(coversMajority({ x: -3, y: -3 }, { x: 0, y: 0 })).toBe(true);
   });
 });
@@ -40,8 +40,8 @@ describe("STACK_SHADOW", () => {
 });
 
 describe("CARD_W / CARD_H", () => {
-  it("CARD_W is 63", () => {
-    expect(CARD_W).toBe(63);
+  it("CARD_W is 60", () => {
+    expect(CARD_W).toBe(60);
   });
 
   it("CARD_H is 88", () => {

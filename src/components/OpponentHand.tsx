@@ -46,13 +46,13 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
                 <CardFace
                   key={card.id}
                   card={card}
-                  className={cn('w-[42px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
+                  className={cn('w-[40px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
                 />
               ))
             : Array.from({ length: Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS) }).map((_, i) => (
                 <CardBack
                   key={i}
-                  className={cn('w-[42px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
+                  className={cn('w-[40px] h-[59px]', i > 0 ? '-ml-3' : undefined)}
                 />
               ))
           }
