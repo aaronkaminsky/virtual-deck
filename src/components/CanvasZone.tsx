@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import type { ClientCanvasCard } from '@/shared/types';
+import { CanvasControls } from './CanvasControls';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
@@ -85,10 +86,12 @@ interface CanvasZoneProps {
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
   onToggleSelectCanvas: (id: string) => void;
+  onSelectAllCanvas: () => void;
+  onDiscardAllCanvas: () => void;
   onDeselectAll: () => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onDeselectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -216,7 +219,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
         {selectedIds.size >= 2 && (
           <span
             data-testid="canvas-selection-count"
-            className="absolute top-2 left-2 z-10 text-xs bg-primary text-primary-foreground rounded-full px-1.5 py-0.5"
+            className="absolute top-12 left-2 z-10 text-xs bg-primary text-primary-foreground rounded-full px-1.5 py-0.5"
           >
             {selectedIds.size} selected
           </span>
@@ -248,6 +251,10 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
           </div>
         ))}
       </div>
+
+      {canvasCards.length > 0 && (
+        <CanvasControls onSelectAll={onSelectAllCanvas} onDiscardAll={onDiscardAllCanvas} />
+      )}
 
       {/* EdgeArrows — inside outer viewport, outside inner canvas; stops pointer propagation */}
       <EdgeArrow dir="left"  visible={hasOverflow.left}  onPanStart={startPan} onPanEnd={stopPan} />

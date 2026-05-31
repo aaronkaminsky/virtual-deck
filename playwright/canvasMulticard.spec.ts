@@ -97,4 +97,36 @@ test.describe('canvas multi-card interactions', () => {
     // Canvas is now empty; the cards moved off the canvas
     await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(0);
   });
+
+  test('999.41: select-all selects every canvas card; discard-all clears the canvas', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+
+    const handCards = page.getByTestId('hand-zone').locator('[aria-pressed]');
+    const canvas = await page.getByTestId('canvas-zone').boundingBox();
+    if (!canvas) throw new Error('no canvas box');
+
+    // Place three cards on the canvas
+    for (let i = 0; i < 3; i++) {
+      await page.waitForTimeout(350);
+      const src = await handCards.nth(0).boundingBox();
+      if (!src) throw new Error('no hand card');
+      await pointerDrag(page,
+        { x: src.x + src.width / 2, y: src.y + src.height / 2 },
+        { x: canvas.x + 150 + i * 120, y: canvas.y + 200 },
+      );
+    }
+    await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(3);
+
+    // Panel is visible; Select all selects all three (badge shows count)
+    await page.getByTestId('canvas-select-all').click();
+    await expect(page.getByTestId('canvas-selection-count')).toHaveText(/3 selected/);
+
+    // Discard all clears the canvas immediately
+    await page.getByTestId('canvas-discard-all').click();
+    await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(0);
+    // Panel hides when the canvas is empty
+    await expect(page.getByTestId('canvas-controls')).toHaveCount(0);
+  });
 });
