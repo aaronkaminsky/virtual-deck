@@ -82,6 +82,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await createRightOverflow(page);
 
     const card = page.locator('[data-testid="canvas-inner"] [data-card-id]').first();
+    await expect(card).toHaveAttribute('aria-pressed', 'false'); // wait for state hydration before clicking
     await card.click();
     await expect(card).toHaveAttribute('aria-pressed', 'true');
 
@@ -102,6 +103,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     // Click canvas-select-all from unselected state: it selects all canvas cards.
     // If the viewport's tap-to-deselect incorrectly fired, the card would not become selected.
     const card = page.locator('[data-testid="canvas-inner"] [data-card-id]').first();
+    await expect(card).toHaveAttribute('aria-pressed', 'false'); // wait for state hydration before clicking
     await page.getByTestId('canvas-select-all').click();
     await expect(card).toHaveAttribute('aria-pressed', 'true');
   });
