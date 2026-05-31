@@ -20,3 +20,10 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.42 | Possible bug, iPad with Safari the screen is too tall, requires scrolling |
 | 999.43 | Add some kind of firework animation or sound (win button) |
 | 999.44 | The shuffle animation could be a bit better, maybe use the background picture instead of the green? |
+| 999.45 | 
+    Source map error: No sources are declared in this source map.
+    Resource URL: http://localhost:5173/virtual-deck/%3Canonymous%20code%3E
+    Source Map URL: installHook.js.map
+    Source map error: No sources are declared in this source map.
+    Resource URL: http://localhost:5173/virtual-deck/%3Canonymous%20code%3E
+    Source Map URL: react_devtools_backend_compact.js.map |
