@@ -65,7 +65,9 @@ The single-card canvas→pile path (`MOVE_CARD`, which *does* show the Top/Botto
 
 ## Section 3 — 999.41: Canvas Controls
 
-**New component:** `src/components/CanvasControls.tsx` — a small panel absolutely positioned in the **top-right** corner of the canvas play area (inside the outer viewport `<div>` in `CanvasZone`, clear of the edge-pan arrows which sit mid-edge). Rendered only when `canvasCards.length > 0`.
+**New component:** `src/components/CanvasControls.tsx` — a small panel absolutely positioned in the **top-left** corner of the canvas play area (inside the outer viewport `<div>` in `CanvasZone`, clear of the edge-pan arrows which sit mid-edge). Top-left keeps the controls near the pile column and their controls, and anchored to the left edge so they shift less when the screen is resized. Rendered only when `canvasCards.length > 0`.
+
+Note: the existing canvas selection-count badge is also top-left (`absolute top-2 left-2` on the inner canvas div). The panel sits in the outer viewport at the top-left; position it so the two don't collide (e.g. offset the badge or stack the panel just inside the corner) — the badge only appears at 2+ selected.
 
 **Buttons:**
 - **Select all** — calls `onSelectAllCanvas()`. Toggles like the existing pile/hand select-all (`handleSelectAll`): if `selectionSource.zone` is already `'canvas'`, it clears the selection; otherwise it selects every canvas card and sets `selectionSource` to canvas. The user can then drag the whole selection (Section 2), and the existing canvas selection-count badge shows the count.
@@ -111,7 +113,7 @@ The single-card canvas→pile path (`MOVE_CARD`, which *does* show the Top/Botto
 | `src/components/HandZone.tsx` | Add `data-card-id={card.id}` to the per-card wrapper |
 | `src/components/BoardDragLayer.tsx` | Allow canvas source in the multi-card-set path; add `handleSelectAllCanvas` / `handleDiscardAllCanvas`; thread props |
 | `src/components/BoardView.tsx` | Thread `onSelectAllCanvas` / `onDiscardAllCanvas` to `CanvasZone` |
-| `src/components/CanvasZone.tsx` | Render `CanvasControls` (top-right, only when canvas non-empty) |
+| `src/components/CanvasZone.tsx` | Render `CanvasControls` (top-left, only when canvas non-empty; avoid the selection-count badge) |
 | `src/components/CanvasControls.tsx` | **New** — Select all + Discard all panel |
 | `tests/*` (Vitest) | `PLAY_CARD_SET` canvas-source coverage |
 | `playwright/*` (e2e) | 999.39 / 999.40 / 999.41 scenarios |
