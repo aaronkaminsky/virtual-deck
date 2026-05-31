@@ -40,7 +40,7 @@ The `Vertical2` variant is used: **two-color** suits (traditional black/red) wit
 
 **Source:** The same deck's back design — a grayscale floral pattern over a single solid background field.
 
-**Recolor:** The deck's stock back fields are vibrant (`#0000df` blue / `#ff0000` red), which clashed with the muted felt/UI tone. The blue field was recolored to a **muted navy `#1e3a5f`** during rasterization (a one-line color substitution before capturing the back cell from the sprite), keeping the grayscale floral pattern intact. Navy stays distinct from the green felt while fitting the overall tone.
+**Recolor:** The deck's stock back fields are vibrant (`#0000df` blue / `#ff0000` red), which clashed with the muted felt/UI tone. The field was recolored to a **deep burgundy `#6b2230`** during rasterization (a one-line color substitution before capturing the back cell from the sprite), keeping the grayscale floral pattern intact. The warm wine red gives a classic casino contrast against the green felt and stays clearly distinct from the table.
 
 **Asset:** `public/cards/jumbo/back.png` (210×315).
 
@@ -116,7 +116,7 @@ When theme selection is added later:
 
 | File | Change |
 |------|--------|
-| `public/cards/jumbo/*.png` | 52 card face PNGs + navy `back.png` (rasterized from the jumbo-index sprite) |
+| `public/cards/jumbo/*.png` | 52 card face PNGs + burgundy `back.png` (rasterized from the jumbo-index sprite) |
 | `src/card-art.ts` | `CARD_FACE_URL`/`CARD_BACK_URL` map to `jumbo/` PNG paths, `BASE_URL`-prefixed |
 | `src/globals.css` | Felt theme tokens in `@theme inline`; raised `--muted-foreground` contrast |
 | `src/components/BoardView.tsx`, `CanvasZone.tsx` | `bg-background` → `bg-felt` on the play surface |
