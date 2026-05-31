@@ -6,13 +6,11 @@ import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
-import { coversMajority, getCardDimensions } from '@/lib/canvas-utils';
+import { coversMajority, getCardDimensions, clampScroll, touchActionForOverflow, PAN_TAP_THRESHOLD_PX, type PanDir } from '@/lib/canvas-utils';
 
 const PAN_STEP = 8; // px per interval tick — spike-tuned value (Spike003)
 const PAN_INTERVAL = 16; // ms (~60fps) — spike-tuned value (Spike003)
 const CANVAS_PADDING = 48; // px padding beyond the furthest card edge
-
-type PanDir = 'left' | 'right' | 'up' | 'down';
 
 interface EdgeArrowProps {
   dir: PanDir;
@@ -112,6 +110,16 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
   // Viewport size state — updated by ResizeObserver; used for overflow detection and pan clamping
   const [viewportSize, setViewportSize] = useState({ w: 0, h: 0 });
 
+  // Drag-to-pan gesture state (refs, not state — live values inside pointer handlers, no re-render churn)
+  const dragPanRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startScrollX: number;
+    startScrollY: number;
+    moved: number;
+  } | null>(null);
+
   // ResizeObserver: track outer viewport size so overflow detection stays accurate on resize
   useEffect(() => {
     const el = viewportRef.current;
@@ -174,6 +182,41 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
   // Cleanup: clear interval on unmount (T-35-03)
   useEffect(() => () => stopPan(), [stopPan]);
 
+  // Drag-to-pan: only when the press lands on empty felt (not a card or a control).
+  // Edge arrows stopPropagation on pointerdown, so they never reach here.
+  const onViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('[data-card-id], button')) return;
+    dragPanRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startScrollX: scroll.x,
+      startScrollY: scroll.y,
+      moved: 0,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onViewportPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const p = dragPanRef.current;
+    if (!p || e.pointerId !== p.pointerId) return;
+    const dx = e.clientX - p.startX;
+    const dy = e.clientY - p.startY;
+    p.moved = Math.max(p.moved, Math.hypot(dx, dy));
+    setScroll(clampScroll(p.startScrollX - dx, p.startScrollY - dy, innerW, innerH, viewportSize.w, viewportSize.h));
+  };
+
+  const onViewportPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const p = dragPanRef.current;
+    if (!p || e.pointerId !== p.pointerId) return;
+    dragPanRef.current = null;
+    if (p.moved < PAN_TAP_THRESHOLD_PX) onDeselectAll(); // it was a tap, not a pan
+  };
+
+  const onViewportPointerCancel = () => {
+    dragPanRef.current = null;
+  };
+
   // D-04: static shadow — set of card IDs that cover >50% of a lower-z card at rest
   const coveringIds = useMemo(() => {
     const ids = new Set<string>();
@@ -199,7 +242,11 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
       ref={viewportRef}
       aria-label="Play area"
       data-testid="canvas-zone"
-      onClick={onDeselectAll}
+      onPointerDown={onViewportPointerDown}
+      onPointerMove={onViewportPointerMove}
+      onPointerUp={onViewportPointerUp}
+      onPointerCancel={onViewportPointerCancel}
+      style={{ touchAction: touchActionForOverflow(hasOverflow) }}
       className={cn(
         'relative flex-1 min-w-0 self-stretch overflow-hidden bg-felt',
         isOver && 'ring-1 ring-primary/30'
