@@ -52,4 +52,49 @@ test.describe('canvas multi-card interactions', () => {
     if (!box0 || !box1) throw new Error('missing canvas card boxes');
     expect(Math.abs(box0.x - box1.x)).toBeGreaterThan(5);
   });
+
+  test('999.40: multi-select from canvas drops onto a pile together', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+
+    const handCards = page.getByTestId('hand-zone').locator('[aria-pressed]');
+    const canvas = await page.getByTestId('canvas-zone').boundingBox();
+    if (!canvas) throw new Error('no canvas box');
+
+    // Place two separate cards on the canvas (two single drags to different spots)
+    for (let i = 0; i < 2; i++) {
+      // Wait for the hand to settle (one card leaves per placement) so
+      // handCards.nth(0) resolves to a stable card, not one mid-removal.
+      await expect(handCards).toHaveCount(5 - i);
+      // The hand re-fans (animates) after a card leaves; let layout settle before
+      // measuring, or the pointer-down lands off the card and no drag starts.
+      await page.waitForTimeout(350);
+      const src = await handCards.nth(0).boundingBox();
+      if (!src) throw new Error('no hand card');
+      await pointerDrag(page,
+        { x: src.x + src.width / 2, y: src.y + src.height / 2 },
+        { x: canvas.x + 200 + i * 120, y: canvas.y + 200 },
+      );
+      await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(i + 1);
+    }
+    const canvasCards = page.locator('[data-testid="canvas-inner"] [data-card-id]');
+    await expect(canvasCards).toHaveCount(2);
+
+    // Select both canvas cards, then drag them onto the Draw pile
+    await canvasCards.nth(0).click();
+    await canvasCards.nth(1).click();
+    await expect(page.getByTestId('canvas-selection-count')).toBeVisible();
+
+    const src = await canvasCards.nth(0).boundingBox();
+    const drawPile = await page.getByTestId('pile-draw').boundingBox();
+    if (!src || !drawPile) throw new Error('missing boxes');
+    await pointerDrag(page,
+      { x: src.x + src.width / 2, y: src.y + src.height / 2 },
+      { x: drawPile.x + drawPile.width / 2, y: drawPile.y + drawPile.height / 2 },
+    );
+
+    // Canvas is now empty; the cards moved off the canvas
+    await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(0);
+  });
 });

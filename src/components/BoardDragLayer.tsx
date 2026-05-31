@@ -447,8 +447,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
       !isIntraSpreadReorder &&
-      !isIntraHandReorder &&
-      fromZoneAtEnd !== 'canvas';
+      !isIntraHandReorder;
 
     if (isMultiCardSet) {
       setActiveCard(null);
@@ -467,13 +466,19 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           toId: overData!.toId,
         });
       } else {
+        const setFromZone: 'hand' | 'pile' | 'canvas' =
+          selectionSource?.zone === 'canvas' ? 'canvas'
+          : selectionSource?.zone === 'pile' ? 'pile'
+          : 'hand';
+        const setFromId =
+          selectionSource?.zone === 'canvas' ? 'canvas'
+          : selectionSource?.zone === 'pile' ? selectionSource.zoneId
+          : playerId;
         sendAction({
           type: 'PLAY_CARD_SET',
           cardIds: [...selectedIds],
-          fromZone: (selectionSource !== null && selectionSource.zone !== 'canvas' ? selectionSource.zone : 'hand') as 'hand' | 'pile',
-          fromId: selectionSource !== null && selectionSource.zone === 'pile'
-            ? selectionSource.zoneId   // use selectionSource as canonical pile ID
-            : playerId,
+          fromZone: setFromZone,
+          fromId: setFromId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
         });
