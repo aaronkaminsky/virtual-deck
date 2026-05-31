@@ -1,12 +1,17 @@
 import type { Card, Rank, Suit } from './shared/types';
 
-export const CARD_BACK_URL: string = `${import.meta.env.BASE_URL}cards/bellot/back.svg`;
+// Jumbo-index deck by Saul Spatz (CC0 / public domain), rasterized to PNG from
+// the Vertical2 (two-color, traditional index) sprite for readability at small
+// sizes. Source: https://opengameart.org/content/jumbo-index-playing-cards
+const DECK = 'jumbo';
+
+export const CARD_BACK_URL: string = `${import.meta.env.BASE_URL}cards/${DECK}/back.png`;
 
 const RANK_MAP: Record<Rank, string> = {
-  A: '1',
+  A: 'Ace',
   '2': '2', '3': '3', '4': '4', '5': '5', '6': '6',
   '7': '7', '8': '8', '9': '9', '10': '10',
-  J: 'jack', Q: 'queen', K: 'king',
+  J: 'Jack', Q: 'Queen', K: 'King',
 };
 
 const SUIT_MAP: Record<Suit, string> = {
@@ -16,11 +21,6 @@ const SUIT_MAP: Record<Suit, string> = {
   clubs: 'club',
 };
 
-const FACE_RANKS = new Set(['jack', 'queen', 'king']);
-
 export function CARD_FACE_URL(card: Card): string {
-  const rank = RANK_MAP[card.rank];
-  const suit = SUIT_MAP[card.suit];
-  const filename = FACE_RANKS.has(rank) ? `${rank} ${suit}.svg` : `${rank}_${suit}.svg`;
-  return `${import.meta.env.BASE_URL}cards/bellot/${encodeURIComponent(filename)}`;
+  return `${import.meta.env.BASE_URL}cards/${DECK}/${SUIT_MAP[card.suit]}${RANK_MAP[card.rank]}.png`;
 }

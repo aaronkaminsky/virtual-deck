@@ -24,7 +24,7 @@ export function CardFace({ card, className }: CardFaceProps) {
       <img
         src={imageUrl}
         alt={`${card.rank} of ${card.suit}`}
-        className={cn('w-[40px] h-[59px] sm:w-[60px] sm:h-[88px] select-none object-contain', className)}
+        className={cn('w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] select-none object-contain', className)}
         draggable={false}
       />
     );
@@ -36,7 +36,7 @@ export function CardFace({ card, className }: CardFaceProps) {
   return (
     <div
       className={cn(
-        'w-[40px] h-[59px] sm:w-[60px] sm:h-[88px] relative bg-white rounded-md border border-gray-300 select-none',
+        'w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] relative bg-white rounded-md border border-gray-300 select-none',
         className
       )}
     >

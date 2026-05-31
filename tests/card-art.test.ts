@@ -7,8 +7,8 @@ describe('card-art (DECK-03)', () => {
     expect(typeof CARD_BACK_URL).toBe('string');
   });
 
-  it('CARD_BACK_URL points to bellot back', () => {
-    expect(CARD_BACK_URL).toBe('/cards/bellot/back.svg');
+  it('CARD_BACK_URL points to the jumbo back', () => {
+    expect(CARD_BACK_URL).toBe('/cards/jumbo/back.png');
   });
 
   it('exports CARD_FACE_URL as a function', () => {
@@ -17,31 +17,31 @@ describe('card-art (DECK-03)', () => {
 
   it('maps Ace of Spades', () => {
     const card: Card = { id: 'A-s', suit: 'spades', rank: 'A', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/1_spade.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/spadeAce.png');
   });
 
   it('maps 10 of Hearts', () => {
     const card: Card = { id: '10-h', suit: 'hearts', rank: '10', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/10_heart.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/heart10.png');
   });
 
   it('maps 2 of Clubs', () => {
     const card: Card = { id: '2-c', suit: 'clubs', rank: '2', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/2_club.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/club2.png');
   });
 
-  it('maps Jack of Diamonds (space-separated filename, URL-encoded)', () => {
+  it('maps Jack of Diamonds', () => {
     const card: Card = { id: 'J-d', suit: 'diamonds', rank: 'J', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/jack%20diamond.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/diamondJack.png');
   });
 
-  it('maps Queen of Clubs (space-separated filename, URL-encoded)', () => {
+  it('maps Queen of Clubs', () => {
     const card: Card = { id: 'Q-c', suit: 'clubs', rank: 'Q', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/queen%20club.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/clubQueen.png');
   });
 
-  it('maps King of Hearts (space-separated filename, URL-encoded)', () => {
+  it('maps King of Hearts', () => {
     const card: Card = { id: 'K-h', suit: 'hearts', rank: 'K', faceUp: false };
-    expect(CARD_FACE_URL(card)).toBe('/cards/bellot/king%20heart.svg');
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/heartKing.png');
   });
 });

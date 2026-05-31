@@ -82,7 +82,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
 
   return (
     <div
-      className={cn('relative w-[40px] h-[59px] sm:w-[60px] sm:h-[88px] flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
+      className={cn('relative w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
       onClick={() => onToggleSelect(card.id, 'hand', playerId)}
       onPointerDown={(e) => e.stopPropagation()}
     >
