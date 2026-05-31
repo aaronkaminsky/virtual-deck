@@ -119,6 +119,10 @@ test.describe('canvas multi-card interactions', () => {
     }
     await expect(page.locator('[data-testid="canvas-inner"] [data-card-id]')).toHaveCount(3);
 
+    // Let the last placement's server STATE_UPDATE settle before reading selection state
+    // (the suite runs 3 parallel workers; the click can otherwise race the final render).
+    await page.waitForTimeout(350);
+
     // Panel is visible; Select all selects all three (badge shows count)
     await page.getByTestId('canvas-select-all').click();
     await expect(page.getByTestId('canvas-selection-count')).toHaveText(/3 selected/);
