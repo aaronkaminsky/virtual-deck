@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import GameRoom, { defaultGameState } from "../party/index";
-import type { Card, GameState, ServerEvent } from "../src/shared/types";
+import type { Card, GameState, ServerEvent, CanvasCard } from "../src/shared/types";
 import { makeMockRoom, makeMockConnection, makeCard } from "./helpers";
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
@@ -244,5 +244,97 @@ describe("PLAY_CARD_SET handler", () => {
     const handCards = room.gameState.hands["player-1"];
     expect(handCards).toHaveLength(2);
     expect(handCards.every(c => c.faceUp === true)).toBe(true);
+  });
+});
+
+function makeStateWithCanvasCards(playerId: string, cards: Card[]): GameState {
+  const state = defaultGameState("test-room");
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.hands[playerId] = [];
+  state.canvasCards = cards.map((card, i): CanvasCard => ({ card, x: 10 + i * 20, y: 10, z: i + 1 }));
+  return state;
+}
+
+describe("PLAY_CARD_SET canvas source (999.40)", () => {
+  let mockRoom: ReturnType<typeof makeMockRoom>;
+  let room: GameRoom;
+  let sender: ReturnType<typeof makeMockConnection>;
+
+  beforeEach(() => {
+    mockRoom = makeMockRoom();
+    room = new GameRoom(mockRoom);
+    sender = makeMockConnection("player-1");
+  });
+
+  it("moves all named canvas cards to the discard pile and clears them from the canvas", async () => {
+    room.gameState = makeStateWithCanvasCards("player-1", [makeCard("A-s"), makeCard("K-h"), makeCard("Q-d")]);
+
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["A-s", "K-h", "Q-d"],
+      fromZone: "canvas",
+      fromId: "canvas",
+      toZone: "pile",
+      toId: "discard",
+    }), sender);
+
+    expect(room.gameState.canvasCards).toHaveLength(0);
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards.map(c => c.id)).toEqual(["A-s", "K-h", "Q-d"]);
+  });
+
+  it("moves only the named subset, leaving other canvas cards in place", async () => {
+    room.gameState = makeStateWithCanvasCards("player-1", [makeCard("A-s"), makeCard("K-h"), makeCard("Q-d")]);
+
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["A-s", "Q-d"],
+      fromZone: "canvas",
+      fromId: "canvas",
+      toZone: "pile",
+      toId: "discard",
+    }), sender);
+
+    expect(room.gameState.canvasCards.map(cc => cc.card.id)).toEqual(["K-h"]);
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards.map(c => c.id)).toEqual(["A-s", "Q-d"]);
+  });
+
+  it("rejects atomically when a cardId is not on the canvas (no mutation)", async () => {
+    room.gameState = makeStateWithCanvasCards("player-1", [makeCard("A-s"), makeCard("K-h")]);
+
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["A-s", "NOT-ON-CANVAS"],
+      fromZone: "canvas",
+      fromId: "canvas",
+      toZone: "pile",
+      toId: "discard",
+    }), sender);
+
+    expect(room.gameState.canvasCards).toHaveLength(2);
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
+    const errors = sender.send.mock.calls
+      .map((c: string[]) => JSON.parse(c[0]))
+      .filter((e: { type: string }) => e.type === "ERROR");
+    expect(errors.some((e: { code: string }) => e.code === "CARD_NOT_IN_SOURCE")).toBe(true);
+  });
+
+  it("UNDO_MOVE restores the canvas and pile to the pre-move state", async () => {
+    room.gameState = makeStateWithCanvasCards("player-1", [makeCard("A-s"), makeCard("K-h")]);
+
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["A-s", "K-h"],
+      fromZone: "canvas",
+      fromId: "canvas",
+      toZone: "pile",
+      toId: "discard",
+    }), sender);
+    expect(room.gameState.canvasCards).toHaveLength(0);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
+    expect(room.gameState.canvasCards.map(cc => cc.card.id)).toEqual(["A-s", "K-h"]);
+    expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
   });
 });
