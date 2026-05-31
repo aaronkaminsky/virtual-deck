@@ -19,7 +19,7 @@ export function coversMajority(top: { x: number; y: number }, bottom: { x: numbe
 export const PAN_TAP_THRESHOLD_PX = 6;
 export const NUDGE_FRACTION = 0.5; // a single arrow tap pans half a viewport
 
-export type PanDir = "left" | "right" | "up" | "down";
+export type PanDir = 'left' | 'right' | 'up' | 'down';
 export type Overflow = { left: boolean; right: boolean; up: boolean; down: boolean };
 
 export function clampScroll(
@@ -36,22 +36,22 @@ export function clampScroll(
   };
 }
 
-export function touchActionForOverflow(o: Overflow): "auto" | "pan-x" | "pan-y" | "none" {
+export function touchActionForOverflow(o: Overflow): 'auto' | 'pan-x' | 'pan-y' | 'none' {
   const horiz = o.left || o.right;
   const vert = o.up || o.down;
-  if (horiz && vert) return "none";
-  if (horiz) return "pan-y"; // browser scrolls the page vertically; we pan horizontally
-  if (vert) return "pan-x";
-  return "auto";
+  if (horiz && vert) return 'none';
+  if (horiz) return 'pan-y'; // browser scrolls the page vertically; we pan horizontally
+  if (vert) return 'pan-x';
+  return 'auto';
 }
 
 export function nudgeDelta(dir: PanDir, viewportW: number, viewportH: number): { dx: number; dy: number } {
   const stepX = viewportW * NUDGE_FRACTION;
   const stepY = viewportH * NUDGE_FRACTION;
   switch (dir) {
-    case "left":  return { dx: -stepX, dy: 0 };
-    case "right": return { dx: stepX, dy: 0 };
-    case "up":    return { dx: 0, dy: -stepY };
-    case "down":  return { dx: 0, dy: stepY };
+    case 'left':  return { dx: -stepX, dy: 0 };
+    case 'right': return { dx: stepX, dy: 0 };
+    case 'up':    return { dx: 0, dy: -stepY };
+    case 'down':  return { dx: 0, dy: stepY };
   }
 }

@@ -26,9 +26,11 @@ describe("touchActionForOverflow", () => {
   });
   it("returns pan-y when only horizontal overflows (browser keeps vertical page scroll)", () => {
     expect(touchActionForOverflow({ left: false, right: true, up: false, down: false })).toBe("pan-y");
+    expect(touchActionForOverflow({ left: true, right: false, up: false, down: false })).toBe("pan-y");
   });
   it("returns pan-x when only vertical overflows", () => {
     expect(touchActionForOverflow({ left: false, right: false, up: false, down: true })).toBe("pan-x");
+    expect(touchActionForOverflow({ left: false, right: false, up: true, down: false })).toBe("pan-x");
   });
   it("returns none when both axes overflow", () => {
     expect(touchActionForOverflow({ left: true, right: false, up: false, down: true })).toBe("none");
