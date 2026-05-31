@@ -213,7 +213,9 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     if (p.moved < PAN_TAP_THRESHOLD_PX) onDeselectAll(); // it was a tap, not a pan
   };
 
-  const onViewportPointerCancel = () => {
+  const onViewportPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    const p = dragPanRef.current;
+    if (!p || e.pointerId !== p.pointerId) return;
     dragPanRef.current = null;
   };
 

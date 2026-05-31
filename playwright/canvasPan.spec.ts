@@ -15,8 +15,8 @@ async function dealCards(page: Page, count = 5) {
 }
 
 // Place a hand card near the right edge of the canvas so the canvas overflows right.
-// Drop at -70px from the right edge: the card lands at canvasWidth-100 (center at canvasWidth-70),
-// which is outside the 32px-wide right edge arrow, so card.click() is not intercepted.
+// The drop lands clear of the right edge arrow; the edge-arrow-right visibility assertion
+// below confirms overflow was actually created.
 async function createRightOverflow(page: Page) {
   await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   const firstCard = page.getByTestId('hand-zone').locator('[role="button"]').first();
@@ -31,7 +31,7 @@ async function createRightOverflow(page: Page) {
   await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
 }
 
-function innerTransform(page: Page) {
+function getInnerTransform(page: Page) {
   return page.locator('[data-testid="canvas-inner"]').evaluate((el) => getComputedStyle(el).transform);
 }
 
@@ -41,7 +41,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await dealCards(page, 5);
     await createRightOverflow(page);
 
-    const before = await innerTransform(page);
+    const before = await getInnerTransform(page);
 
     const canvas = await page.getByTestId('canvas-zone').boundingBox();
     if (!canvas) throw new Error('no canvas');
@@ -52,7 +52,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await page.mouse.move(startX - 150, startY, { steps: 15 }); // drag left → pan right
     await page.mouse.up();
 
-    const after = await innerTransform(page);
+    const after = await getInnerTransform(page);
     expect(after).not.toEqual(before);
     expect(after).toContain('matrix');
   });
@@ -62,7 +62,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await dealCards(page, 5);
     await createRightOverflow(page);
 
-    const before = await innerTransform(page);
+    const before = await getInnerTransform(page);
 
     const card = page.locator('[data-testid="canvas-inner"] [data-card-id]').first();
     const box = await card.boundingBox();
@@ -72,7 +72,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await page.mouse.move(box.x + box.width / 2 - 40, box.y + box.height / 2 + 20, { steps: 15 });
     await page.mouse.up();
 
-    const after = await innerTransform(page);
+    const after = await getInnerTransform(page);
     expect(after).toEqual(before); // view did not pan
   });
 
@@ -112,5 +112,23 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await joinRoom(page, nanoid(8));
     const ta = await page.getByTestId('canvas-zone').evaluate((el) => getComputedStyle(el).touchAction);
     expect(ta).toBe('auto');
+  });
+
+  test('tapping the controls panel background does not deselect', async ({ page }) => {
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+    await createRightOverflow(page);
+
+    // Select a canvas card.
+    const card = page.locator('[data-testid="canvas-inner"] [data-card-id]').first();
+    await expect(card).toHaveAttribute('aria-pressed', 'false'); // wait for hydration
+    await card.click();
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    // Tap the controls panel's padding corner (the div itself, not a button).
+    // Before the fix this armed the viewport pan/tap-deselect and cleared the selection.
+    await page.getByTestId('canvas-controls').click({ position: { x: 2, y: 2 } });
+
+    await expect(card).toHaveAttribute('aria-pressed', 'true'); // still selected
   });
 });
