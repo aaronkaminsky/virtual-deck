@@ -822,7 +822,9 @@ export default class GameRoom implements Party.Server {
         const source: Card[] | undefined =
           (!fromZone || fromZone === "hand")
             ? this.gameState.hands[fromId]
-            : this.gameState.piles.find(p => p.id === fromId)?.cards;
+            : fromZone === "canvas"
+              ? this.gameState.canvasCards.map(cc => cc.card)
+              : this.gameState.piles.find(p => p.id === fromId)?.cards;
 
         if (source === undefined) {
           const code = (!fromZone || fromZone === "hand") ? "HAND_NOT_FOUND" : "PILE_NOT_FOUND";
@@ -885,6 +887,8 @@ export default class GameRoom implements Party.Server {
         // Remove from source first (before mutating faceUp to keep source array clean)
         if (!fromZone || fromZone === "hand") {
           this.gameState.hands[fromId] = source.filter(c => !cardIdSet.has(c.id));
+        } else if (fromZone === "canvas") {
+          this.gameState.canvasCards = this.gameState.canvasCards.filter(cc => !cardIdSet.has(cc.card.id));
         } else {
           const srcPile = this.gameState.piles.find(p => p.id === fromId)!;
           srcPile.cards = srcPile.cards.filter(c => !cardIdSet.has(c.id));

@@ -92,6 +92,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
       <div
         ref={setNodeRef}
         style={style}
+        data-card-id={card.id}
         className={cn(
           isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
         )}

@@ -161,6 +161,33 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     setSelectionSource(null);
   };
 
+  const handleSelectAllCanvas = () => {
+    if (selectionSource?.zone === 'canvas') {
+      setSelectedIds(new Set());
+      setSelectionSource(null);
+      return;
+    }
+    const ids = gameState.canvasCards.map(cc => cc.card.id);
+    if (ids.length === 0) return;
+    setSelectedIds(new Set(ids));
+    setSelectionSource({ zone: 'canvas', zoneId: 'canvas' });
+  };
+
+  const handleDiscardAllCanvas = () => {
+    const ids = gameState.canvasCards.map(cc => cc.card.id);
+    if (ids.length === 0) return;
+    setSelectedIds(new Set());
+    setSelectionSource(null);
+    sendAction({
+      type: 'PLAY_CARD_SET',
+      cardIds: ids,
+      fromZone: 'canvas',
+      fromId: 'canvas',
+      toZone: 'pile',
+      toId: 'discard',
+    });
+  };
+
   const groupIds = useMemo(() => {
     if (activeCard === null) return new Set<string>();
     return new Set([...selectedIds, activeCard.id]);
@@ -447,8 +474,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       !!event.over &&
       (overData?.toZone === 'pile' || overData?.toZone === 'hand') &&
       !isIntraSpreadReorder &&
-      !isIntraHandReorder &&
-      fromZoneAtEnd !== 'canvas';
+      !isIntraHandReorder;
 
     if (isMultiCardSet) {
       setActiveCard(null);
@@ -467,13 +493,19 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           toId: overData!.toId,
         });
       } else {
+        const setFromZone: 'hand' | 'pile' | 'canvas' =
+          selectionSource?.zone === 'canvas' ? 'canvas'
+          : selectionSource?.zone === 'pile' ? 'pile'
+          : 'hand';
+        const setFromId =
+          selectionSource?.zone === 'canvas' ? 'canvas'
+          : selectionSource?.zone === 'pile' ? selectionSource.zoneId
+          : playerId;
         sendAction({
           type: 'PLAY_CARD_SET',
           cardIds: [...selectedIds],
-          fromZone: (selectionSource !== null && selectionSource.zone !== 'canvas' ? selectionSource.zone : 'hand') as 'hand' | 'pile',
-          fromId: selectionSource !== null && selectionSource.zone === 'pile'
-            ? selectionSource.zoneId   // use selectionSource as canonical pile ID
-            : playerId,
+          fromZone: setFromZone,
+          fromId: setFromId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
         });
@@ -616,7 +648,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

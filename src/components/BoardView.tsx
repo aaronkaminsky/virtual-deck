@@ -23,13 +23,15 @@ interface BoardViewProps {
   selectionSource: SelectionSource;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   onToggleSelectCanvas: (id: string) => void;
+  onSelectAllCanvas: () => void;
+  onDiscardAllCanvas: () => void;
   onDeselectAll: () => void;
   groupIds: Set<string>;
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -96,7 +98,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onDeselectAll={onDeselectAll} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} />
           </div>
         </div>
 
