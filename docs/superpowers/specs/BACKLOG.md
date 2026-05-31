@@ -19,3 +19,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.41 | Need to add button to select all canvas, or to discard all from canvas |
 | 999.42 | Possible bug, iPad with Safari the screen is too tall, requires scrolling |
 | 999.43 | Add some kind of firework animation or sound (win button) |
+| 999.44 | The shuffle animation could be a bit better, maybe use the background picture instead of the green? |
