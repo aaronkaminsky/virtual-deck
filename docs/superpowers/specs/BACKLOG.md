@@ -23,3 +23,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
     Source map error: No sources are declared in this source map.
     Resource URL: http://localhost:5173/virtual-deck/%3Canonymous%20code%3E
     Source Map URL: react_devtools_backend_compact.js.map |
+| 999.46 | Consider adding keyboard commands, for example  Cmd-Z to undo, arrow and space to select cards, hold a key to show zone shortcuts, etc |
