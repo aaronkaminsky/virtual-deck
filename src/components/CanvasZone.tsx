@@ -31,48 +31,69 @@ function EdgeArrow({ dir, visible, onPanStart, onPanEnd }: EdgeArrowProps) {
     dir === 'up'    ? { top: 0, left: '50%', transform: 'translateX(-50%)' } :
                       { bottom: 0, left: '50%', transform: 'translateX(-50%)' };
 
+  const horizontal = dir === 'left' || dir === 'right';
+  // CSS edge property for this direction ('up'/'down' are not CSS props → top/bottom).
+  const edge: 'left' | 'right' | 'top' | 'bottom' =
+    dir === 'up' ? 'top' : dir === 'down' ? 'bottom' : dir;
+
+  // Non-interactive gradient scrim along the overflowing edge ("more this way").
+  const scrimStyle: React.CSSProperties = {
+    position: 'absolute',
+    zIndex: 999,
+    pointerEvents: 'none',
+    background:
+      dir === 'left'  ? 'linear-gradient(to left,  rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
+      dir === 'right' ? 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
+      dir === 'up'    ? 'linear-gradient(to top,   rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
+                        'linear-gradient(to bottom,rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)',
+    ...(horizontal
+      ? { top: 0, bottom: 0, width: 64, [edge]: 0 }
+      : { left: 0, right: 0, height: 64, [edge]: 0 }),
+  };
+
   return (
-    <div
-      data-testid={`edge-arrow-${dir}`}
-      aria-label={
-        dir === 'left'  ? 'Pan canvas left' :
-        dir === 'right' ? 'Pan canvas right' :
-        dir === 'up'    ? 'Pan canvas up' :
-                          'Pan canvas down'
-      }
-      onPointerDown={e => { e.stopPropagation(); onPanStart(dir); }}
-      onPointerUp={onPanEnd}
-      onPointerLeave={onPanEnd}
-      onPointerCancel={onPanEnd}
-      onContextMenu={e => e.preventDefault()}
-      style={{
-        position: 'absolute',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: dir === 'left' || dir === 'right' ? 32 : 80,
-        height: dir === 'left' || dir === 'right' ? 80 : 32,
-        background: 'rgba(255,255,255,0.15)',
-        backdropFilter: 'blur(4px)',
-        borderRadius: 6,
-        cursor: 'pointer',
-        userSelect: 'none',
-        touchAction: 'none',
-        ...posStyle,
-      }}
-    >
-      <span style={{
-        color: 'white',
-        fontSize: 20,
-        lineHeight: 1,
-        display: 'block',
-        transform: `rotate(${rotate})`,
-        opacity: 0.9,
-      }}>
-        {label}
-      </span>
-    </div>
+    <>
+      <div data-testid={`edge-scrim-${dir}`} aria-hidden="true" style={scrimStyle} />
+      <div
+        data-testid={`edge-arrow-${dir}`}
+        aria-label={
+          dir === 'left'  ? 'Pan canvas left' :
+          dir === 'right' ? 'Pan canvas right' :
+          dir === 'up'    ? 'Pan canvas up' :
+                            'Pan canvas down'
+        }
+        onPointerDown={e => { e.stopPropagation(); onPanStart(dir); }}
+        onPointerUp={onPanEnd}
+        onPointerLeave={onPanEnd}
+        onPointerCancel={onPanEnd}
+        onContextMenu={e => e.preventDefault()}
+        style={{
+          position: 'absolute',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: horizontal ? 34 : 80,
+          height: horizontal ? 80 : 34,
+          cursor: 'pointer',
+          userSelect: 'none',
+          touchAction: 'none',
+          ...posStyle,
+        }}
+      >
+        <span style={{
+          color: 'white',
+          fontSize: 26,
+          lineHeight: 1,
+          display: 'block',
+          transform: `rotate(${rotate})`,
+          textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+          animation: 'canvas-edge-pulse 1.6s ease-in-out infinite',
+        }}>
+          {label}
+        </span>
+      </div>
+    </>
   );
 }
 

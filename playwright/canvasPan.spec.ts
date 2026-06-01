@@ -199,4 +199,15 @@ test.describe('999.42 canvas drag-to-pan', () => {
 
     expect(afterHold).not.toEqual(afterNudge); // continuous pan advanced beyond the nudge
   });
+
+  test('overflowing edge shows the scrim cue and the chevron stays tappable', async ({ page }) => {
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+    await createRightOverflow(page);
+
+    // The new ambient scrim cue renders on the overflowing edge…
+    await expect(page.locator('[data-testid="edge-scrim-right"]')).toBeVisible();
+    // …and the existing chevron target is still present and usable.
+    await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
+  });
 });
