@@ -124,3 +124,8 @@
   40%  { transform: translateX(var(--fan-x)) rotate(var(--fan-r));    opacity: 0.9; }
   100% { transform: translateX(0) rotate(0deg);                       opacity: 0; }
 }
+
+@keyframes canvas-edge-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}

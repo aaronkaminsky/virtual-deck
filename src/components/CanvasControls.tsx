@@ -11,7 +11,11 @@ export function CanvasControls({ onSelectAll, onDiscardAll }: CanvasControlsProp
     <div
       data-testid="canvas-controls"
       className="absolute top-2 left-2 z-20 flex gap-1 rounded-md bg-card/80 p-1 backdrop-blur-sm"
+      // Both stopPropagations keep the controls panel from reaching the viewport pan/deselect handler:
+      // onClick prevents deselect on button clicks; onPointerDown prevents the viewport from arming
+      // the drag-pan gesture when the panel's padding gap (not a button) is pressed.
       onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       <Button
         variant="ghost"

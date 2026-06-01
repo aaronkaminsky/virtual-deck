@@ -11,6 +11,7 @@
 - ✅ **v1.6 Free Canvas Play Area** — Phases 31–35 (shipped 2026-05-27) — [archive](milestones/v1.6-ROADMAP.md)
 - ✅ **v1.7 Card Art & Visual Overhaul** — 999.14 (shipped 2026-05-30)
 - ✅ **v1.8 Canvas Multi-Card Interactions** — 999.39, 999.40, 999.41 (shipped 2026-05-31)
+- ✅ **v1.9 Canvas Pan Discoverability** — 999.42 (shipped 2026-05-31)
 
 ## Phases
 
