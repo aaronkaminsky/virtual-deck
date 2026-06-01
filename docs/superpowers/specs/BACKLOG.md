@@ -13,7 +13,6 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action |
-| 999.42 | Possible bug, iPad with Safari the screen is too tall, requires scrolling |
 | 999.43 | Add some kind of firework animation or sound (win button, maybe as an easter egg) |
 | 999.44 | The shuffle animation could be a bit better, maybe use the background picture instead of the green? |
 | 999.45 | 
