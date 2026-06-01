@@ -37,15 +37,12 @@ function EdgeArrow({ dir, visible, onPanStart, onPanEnd }: EdgeArrowProps) {
     dir === 'up' ? 'top' : dir === 'down' ? 'bottom' : dir;
 
   // Non-interactive gradient scrim along the overflowing edge ("more this way").
+  // `edge` is already the CSS edge name, so the gradient direction reuses it directly.
   const scrimStyle: React.CSSProperties = {
     position: 'absolute',
     zIndex: 999,
     pointerEvents: 'none',
-    background:
-      dir === 'left'  ? 'linear-gradient(to left,  rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
-      dir === 'right' ? 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
-      dir === 'up'    ? 'linear-gradient(to top,   rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)' :
-                        'linear-gradient(to bottom,rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)',
+    background: `linear-gradient(to ${edge}, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 100%)`,
     ...(horizontal
       ? { top: 0, bottom: 0, width: 64, [edge]: 0 }
       : { left: 0, right: 0, height: 64, [edge]: 0 }),
@@ -295,6 +292,9 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
           width: innerW,
           height: innerH,
           transform: `translate(${-scroll.x}px, ${-scroll.y}px)`,
+          // Isolate so card z-indexes stay contained here; the edge scrim/chevron
+          // (siblings at z 999/1000) always render above cards regardless of card z.
+          isolation: 'isolate',
         }}
       >
         {selectedIds.size >= 2 && (
