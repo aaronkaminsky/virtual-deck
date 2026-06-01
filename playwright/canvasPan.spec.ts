@@ -14,9 +14,9 @@ async function dealCards(page: Page, count = 5) {
   await page.getByRole('button', { name: 'Deal' }).click();
 }
 
-// Place a hand card near the right edge of the canvas AND send a second card directly to
-// canvas x=2000 via WebSocket, creating overflow >> viewportW * 0.5 so the tap-nudge test
-// has room to pan further. The edge-arrow-right visibility assertion confirms overflow exists.
+// Place a hand card near the right edge of the canvas so the canvas overflows right.
+// The drop lands clear of the right edge arrow; the edge-arrow-right visibility assertion
+// confirms overflow was actually created.
 async function createRightOverflow(page: Page) {
   await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   const firstCard = page.getByTestId('hand-zone').locator('[role="button"]').first();
@@ -29,42 +29,38 @@ async function createRightOverflow(page: Page) {
   await page.mouse.move(canvasBox.x + canvasBox.width - 70, canvasBox.y + canvasBox.height / 2, { steps: 15 });
   await page.mouse.up();
   await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
+}
 
-  // Send a second card to x=2000 via raw WebSocket, bypassing the UI drop-clamp so that
-  // innerW - viewportW > viewportW * 0.5 (needed for the hold-to-repeat test).
+// The "hold pans past the nudge" test needs overflow LARGER than a half-viewport nudge.
+// A normal UI drop is clamped to canvas bounds by BoardDragLayer, so it can only create
+// ~padding of overflow — less than a half-viewport nudge, which would let the single
+// immediate nudge exhaust all available scroll (making hold indistinguishable from tap).
+// To plant a card far enough off-screen we inject a PLACE_ON_CANVAS action over a short-lived
+// WebSocket using the same player token. This couples to the server's port + action contract,
+// so it is deliberately confined to the one test that requires it.
+async function createLargeRightOverflow(page: Page) {
+  await createRightOverflow(page); // real card on canvas + the right edge arrow
   const wsParams = await page.evaluate(() => {
     const playerId = localStorage.getItem('playerId') ?? '';
     const name = localStorage.getItem('displayName') ?? '';
-    const urlParams = new URLSearchParams(window.location.search);
-    const room = urlParams.get('room') ?? '';
-    const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement;
+    const room = new URLSearchParams(window.location.search).get('room') ?? '';
+    const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement | null;
     const cardId = cardEl?.getAttribute('data-card-id') ?? '';
     return { playerId, name, room, cardId };
   });
-
-  if (wsParams.cardId) {
-    await page.evaluate(async ({ playerId, name, room, cardId }) => {
-      const ws = new WebSocket(
-        `ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`
-      );
-      await new Promise<void>((resolve, reject) => {
-        ws.onopen = () => {
-          ws.send(JSON.stringify({
-            type: 'PLACE_ON_CANVAS',
-            cardId,
-            fromZone: 'hand',
-            fromId: playerId,
-            x: 2000,
-            y: 200,
-          }));
-          setTimeout(() => { ws.close(); resolve(); }, 100);
-        };
-        ws.onerror = () => reject(new Error('ws error'));
-        setTimeout(() => reject(new Error('ws timeout')), 3000);
-      });
-    }, wsParams);
-    await page.waitForTimeout(300); // let server broadcast and React update
-  }
+  if (!wsParams.cardId) throw new Error('createLargeRightOverflow: no hand card available to inject');
+  await page.evaluate(async ({ playerId, name, room, cardId }) => {
+    const ws = new WebSocket(`ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`);
+    await new Promise<void>((resolve, reject) => {
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'PLACE_ON_CANVAS', cardId, fromZone: 'hand', fromId: playerId, x: 2000, y: 200 }));
+        setTimeout(() => { ws.close(); resolve(); }, 100);
+      };
+      ws.onerror = () => reject(new Error('ws error'));
+      setTimeout(() => reject(new Error('ws timeout')), 3000);
+    });
+  }, wsParams);
+  await page.waitForTimeout(300); // let the server broadcast and React update
 }
 
 function getInnerTransform(page: Page) {
@@ -189,7 +185,7 @@ test.describe('999.42 canvas drag-to-pan', () => {
   test('holding an edge arrow keeps panning past the first nudge', async ({ page }) => {
     await joinRoom(page, nanoid(8));
     await dealCards(page, 5);
-    await createRightOverflow(page);
+    await createLargeRightOverflow(page);
 
     const arrow = await page.locator('[data-testid="edge-arrow-right"]').boundingBox();
     if (!arrow) throw new Error('no arrow');
