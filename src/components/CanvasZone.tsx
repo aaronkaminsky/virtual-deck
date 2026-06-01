@@ -11,15 +11,17 @@ import { coversMajority, getCardDimensions, clampScroll, touchActionForOverflow,
 const PAN_STEP = 8; // px per interval tick — spike-tuned value (Spike003)
 const PAN_INTERVAL = 16; // ms (~60fps) — spike-tuned value (Spike003)
 const CANVAS_PADDING = 48; // px padding beyond the furthest card edge
+const HOLD_DELAY_MS = 250; // press shorter than this = tap (jump); longer = hold (continuous scroll)
 
 interface EdgeArrowProps {
   dir: PanDir;
   visible: boolean;
   onPanStart: (dir: PanDir) => void;
-  onPanEnd: () => void;
+  onPanEnd: (dir: PanDir) => void;
+  onPanCancel: () => void;
 }
 
-function EdgeArrow({ dir, visible, onPanStart, onPanEnd }: EdgeArrowProps) {
+function EdgeArrow({ dir, visible, onPanStart, onPanEnd, onPanCancel }: EdgeArrowProps) {
   if (!visible) return null;
 
   const label = '‹';
@@ -60,9 +62,9 @@ function EdgeArrow({ dir, visible, onPanStart, onPanEnd }: EdgeArrowProps) {
                             'Pan canvas down'
         }
         onPointerDown={e => { e.stopPropagation(); onPanStart(dir); }}
-        onPointerUp={onPanEnd}
-        onPointerLeave={onPanEnd}
-        onPointerCancel={onPanEnd}
+        onPointerUp={() => onPanEnd(dir)}
+        onPointerLeave={onPanCancel}
+        onPointerCancel={onPanCancel}
         onContextMenu={e => e.preventDefault()}
         style={{
           position: 'absolute',
@@ -128,6 +130,10 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
   const [scroll, setScroll] = useState({ x: 0, y: 0 });
   // Viewport size state — updated by ResizeObserver; used for overflow detection and pan clamping
   const [viewportSize, setViewportSize] = useState({ w: 0, h: 0 });
+  // Direction of the edge arrow currently pressed (null = none). Keeping the pressed arrow
+  // mounted while held is what makes its release/contextmenu handlers fire reliably even after
+  // its overflow is exhausted — otherwise the arrow unmounts mid-press and the pan loop orphans.
+  const [pressedDir, setPressedDir] = useState<PanDir | null>(null);
 
   // Drag-to-pan gesture state (refs, not state — live values inside pointer handlers, no re-render churn)
   const dragPanRef = useRef<{
@@ -173,8 +179,15 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     down:  scroll.y < innerH - viewportSize.h,
   };
 
-  // stopPan: clears both the repeat-delay timeout and the continuous interval.
-  const stopPan = useCallback(() => {
+  // Latest pan bounds in a ref so the running pan interval clamps against current values,
+  // not the stale closure captured when the hold began (e.g. a card landing mid-hold).
+  const boundsRef = useRef({ innerW, innerH, vw: viewportSize.w, vh: viewportSize.h });
+  useEffect(() => {
+    boundsRef.current = { innerW, innerH, vw: viewportSize.w, vh: viewportSize.h };
+  }, [innerW, innerH, viewportSize]);
+
+  // clearPanTimers: clears both the hold-delay timeout and the continuous interval.
+  const clearPanTimers = useCallback(() => {
     if (panTimeoutRef.current) {
       clearTimeout(panTimeoutRef.current);
       panTimeoutRef.current = null;
@@ -185,31 +198,46 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     }
   }, []);
 
-  // nudge: a single half-viewport step toward the arrow's direction (clamped).
+  // nudge: a single half-viewport step toward the direction (clamped). Fired on a tap.
   const nudge = useCallback((dir: PanDir) => {
     const { dx, dy } = nudgeDelta(dir, viewportSize.w, viewportSize.h);
     setScroll(prev => clampScroll(prev.x + dx, prev.y + dy, innerW, innerH, viewportSize.w, viewportSize.h));
   }, [viewportSize, innerW, innerH]);
 
-  // startPan: fire an immediate nudge (so a tap always moves), then — if still held
-  // after a short delay — begin continuous PAN_STEP panning. Classic button-repeat.
-  // CRITICAL: innerW/innerH are dynamic; they MUST stay in deps (Pitfall 4 from Spike003).
+  // startPan (press): no immediate jump. After HOLD_DELAY_MS still held → begin continuous
+  // PAN_STEP panning. A release before the delay is treated as a tap (nudge) in endPan.
   const startPan = useCallback((dir: PanDir) => {
-    stopPan();
-    nudge(dir);
+    clearPanTimers();
+    setPressedDir(dir);
     panTimeoutRef.current = setTimeout(() => {
+      panTimeoutRef.current = null;
       panIntervalRef.current = setInterval(() => {
+        const { innerW: iW, innerH: iH, vw, vh } = boundsRef.current;
         setScroll(prev => clampScroll(
           prev.x + (dir === 'left' ? -PAN_STEP : dir === 'right' ? PAN_STEP : 0),
           prev.y + (dir === 'up' ? -PAN_STEP : dir === 'down' ? PAN_STEP : 0),
-          innerW, innerH, viewportSize.w, viewportSize.h,
+          iW, iH, vw, vh,
         ));
       }, PAN_INTERVAL);
-    }, 250);
-  }, [stopPan, nudge, viewportSize, innerW, innerH]);
+    }, HOLD_DELAY_MS);
+  }, [clearPanTimers]);
 
-  // Cleanup: clear interval on unmount (T-35-03)
-  useEffect(() => () => stopPan(), [stopPan]);
+  // endPan (release on the arrow): if released before the hold delay, it was a tap → nudge.
+  const endPan = useCallback((dir: PanDir) => {
+    const wasTap = panTimeoutRef.current !== null;
+    clearPanTimers();
+    setPressedDir(null);
+    if (wasTap) nudge(dir);
+  }, [clearPanTimers, nudge]);
+
+  // cancelPan (pointer left the arrow or was cancelled): stop, no nudge.
+  const cancelPan = useCallback(() => {
+    clearPanTimers();
+    setPressedDir(null);
+  }, [clearPanTimers]);
+
+  // Cleanup: clear timers on unmount (T-35-03)
+  useEffect(() => () => clearPanTimers(), [clearPanTimers]);
 
   // Drag-to-pan: only when the press lands on empty felt (not a card or a control).
   // Edge arrows stopPropagation on pointerdown, so they never reach here.
@@ -337,11 +365,12 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
         <CanvasControls onSelectAll={onSelectAllCanvas} onDiscardAll={onDiscardAllCanvas} />
       )}
 
-      {/* EdgeArrows — inside outer viewport, outside inner canvas; stops pointer propagation */}
-      <EdgeArrow dir="left"  visible={hasOverflow.left}  onPanStart={startPan} onPanEnd={stopPan} />
-      <EdgeArrow dir="right" visible={hasOverflow.right} onPanStart={startPan} onPanEnd={stopPan} />
-      <EdgeArrow dir="up"    visible={hasOverflow.up}    onPanStart={startPan} onPanEnd={stopPan} />
-      <EdgeArrow dir="down"  visible={hasOverflow.down}  onPanStart={startPan} onPanEnd={stopPan} />
+      {/* EdgeArrows — inside outer viewport, outside inner canvas; stays mounted while pressed
+          (pressedDir) so its release/contextmenu handlers fire even after overflow is exhausted. */}
+      <EdgeArrow dir="left"  visible={hasOverflow.left  || pressedDir === 'left'}  onPanStart={startPan} onPanEnd={endPan} onPanCancel={cancelPan} />
+      <EdgeArrow dir="right" visible={hasOverflow.right || pressedDir === 'right'} onPanStart={startPan} onPanEnd={endPan} onPanCancel={cancelPan} />
+      <EdgeArrow dir="up"    visible={hasOverflow.up    || pressedDir === 'up'}    onPanStart={startPan} onPanEnd={endPan} onPanCancel={cancelPan} />
+      <EdgeArrow dir="down"  visible={hasOverflow.down  || pressedDir === 'down'}  onPanStart={startPan} onPanEnd={endPan} onPanCancel={cancelPan} />
     </div>
   );
 }
