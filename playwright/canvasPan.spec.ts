@@ -14,9 +14,9 @@ async function dealCards(page: Page, count = 5) {
   await page.getByRole('button', { name: 'Deal' }).click();
 }
 
-// Place a hand card near the right edge of the canvas so the canvas overflows right.
-// The drop lands clear of the right edge arrow; the edge-arrow-right visibility assertion
-// below confirms overflow was actually created.
+// Place a hand card near the right edge of the canvas AND send a second card directly to
+// canvas x=2000 via WebSocket, creating overflow >> viewportW * 0.5 so the tap-nudge test
+// has room to pan further. The edge-arrow-right visibility assertion confirms overflow exists.
 async function createRightOverflow(page: Page) {
   await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
   const firstCard = page.getByTestId('hand-zone').locator('[role="button"]').first();
@@ -29,6 +29,42 @@ async function createRightOverflow(page: Page) {
   await page.mouse.move(canvasBox.x + canvasBox.width - 70, canvasBox.y + canvasBox.height / 2, { steps: 15 });
   await page.mouse.up();
   await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
+
+  // Send a second card to x=2000 via raw WebSocket, bypassing the UI drop-clamp so that
+  // innerW - viewportW > viewportW * 0.5 (needed for the hold-to-repeat test).
+  const wsParams = await page.evaluate(() => {
+    const playerId = localStorage.getItem('playerId') ?? '';
+    const name = localStorage.getItem('displayName') ?? '';
+    const urlParams = new URLSearchParams(window.location.search);
+    const room = urlParams.get('room') ?? '';
+    const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement;
+    const cardId = cardEl?.getAttribute('data-card-id') ?? '';
+    return { playerId, name, room, cardId };
+  });
+
+  if (wsParams.cardId) {
+    await page.evaluate(async ({ playerId, name, room, cardId }) => {
+      const ws = new WebSocket(
+        `ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`
+      );
+      await new Promise<void>((resolve, reject) => {
+        ws.onopen = () => {
+          ws.send(JSON.stringify({
+            type: 'PLACE_ON_CANVAS',
+            cardId,
+            fromZone: 'hand',
+            fromId: playerId,
+            x: 2000,
+            y: 200,
+          }));
+          setTimeout(() => { ws.close(); resolve(); }, 100);
+        };
+        ws.onerror = () => reject(new Error('ws error'));
+        setTimeout(() => reject(new Error('ws timeout')), 3000);
+      });
+    }, wsParams);
+    await page.waitForTimeout(300); // let server broadcast and React update
+  }
 }
 
 function getInnerTransform(page: Page) {
@@ -130,5 +166,41 @@ test.describe('999.42 canvas drag-to-pan', () => {
     await page.getByTestId('canvas-controls').click({ position: { x: 2, y: 2 } });
 
     await expect(card).toHaveAttribute('aria-pressed', 'true'); // still selected
+  });
+
+  test('a quick tap on an edge arrow nudges the view', async ({ page }) => {
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+    await createRightOverflow(page);
+
+    const before = await getInnerTransform(page);
+
+    // Quick tap (down+up, no hold) on the right arrow → one half-viewport nudge
+    const arrow = await page.locator('[data-testid="edge-arrow-right"]').boundingBox();
+    if (!arrow) throw new Error('no arrow');
+    await page.mouse.move(arrow.x + arrow.width / 2, arrow.y + arrow.height / 2);
+    await page.mouse.down();
+    await page.mouse.up();
+
+    const after = await getInnerTransform(page);
+    expect(after).not.toEqual(before); // a single tap moved the view
+  });
+
+  test('holding an edge arrow keeps panning past the first nudge', async ({ page }) => {
+    await joinRoom(page, nanoid(8));
+    await dealCards(page, 5);
+    await createRightOverflow(page);
+
+    const arrow = await page.locator('[data-testid="edge-arrow-right"]').boundingBox();
+    if (!arrow) throw new Error('no arrow');
+
+    await page.mouse.move(arrow.x + arrow.width / 2, arrow.y + arrow.height / 2);
+    await page.mouse.down();
+    const afterNudge = await getInnerTransform(page); // immediate nudge already applied
+    await page.waitForTimeout(450); // past the 250ms repeat delay + a few ticks
+    const afterHold = await getInnerTransform(page);
+    await page.mouse.up();
+
+    expect(afterHold).not.toEqual(afterNudge); // continuous pan advanced beyond the nudge
   });
 });

@@ -6,7 +6,7 @@ import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
-import { coversMajority, getCardDimensions, clampScroll, touchActionForOverflow, PAN_TAP_THRESHOLD_PX, type PanDir } from '@/lib/canvas-utils';
+import { coversMajority, getCardDimensions, clampScroll, touchActionForOverflow, nudgeDelta, PAN_TAP_THRESHOLD_PX, type PanDir } from '@/lib/canvas-utils';
 
 const PAN_STEP = 8; // px per interval tick — spike-tuned value (Spike003)
 const PAN_INTERVAL = 16; // ms (~60fps) — spike-tuned value (Spike003)
@@ -105,6 +105,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
   const viewportRef = useRef<HTMLDivElement>(null);
   // Interval ref for the pan loop — cleared on pointerUp/leave and unmount
   const panIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const panTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Scroll offset state — drives the CSS translate on the inner canvas div
   const [scroll, setScroll] = useState({ x: 0, y: 0 });
   // Viewport size state — updated by ResizeObserver; used for overflow detection and pan clamping
@@ -154,30 +155,40 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
     down:  scroll.y < innerH - viewportSize.h,
   };
 
-  // stopPan: clears the pan interval; called on pointerUp, pointerLeave, and at unmount
+  // stopPan: clears both the repeat-delay timeout and the continuous interval.
   const stopPan = useCallback(() => {
+    if (panTimeoutRef.current) {
+      clearTimeout(panTimeoutRef.current);
+      panTimeoutRef.current = null;
+    }
     if (panIntervalRef.current) {
       clearInterval(panIntervalRef.current);
       panIntervalRef.current = null;
     }
   }, []);
 
-  // startPan: starts the pan loop; calls stopPan first to prevent double-interval on rapid touch
-  // CRITICAL: innerW and innerH MUST be in deps — they are dynamic (derived from canvasCards),
-  // unlike the Spike003 constants. Omitting them causes stale closure pan boundary (Pitfall 4).
+  // nudge: a single half-viewport step toward the arrow's direction (clamped).
+  const nudge = useCallback((dir: PanDir) => {
+    const { dx, dy } = nudgeDelta(dir, viewportSize.w, viewportSize.h);
+    setScroll(prev => clampScroll(prev.x + dx, prev.y + dy, innerW, innerH, viewportSize.w, viewportSize.h));
+  }, [viewportSize, innerW, innerH]);
+
+  // startPan: fire an immediate nudge (so a tap always moves), then — if still held
+  // after a short delay — begin continuous PAN_STEP panning. Classic button-repeat.
+  // CRITICAL: innerW/innerH are dynamic; they MUST stay in deps (Pitfall 4 from Spike003).
   const startPan = useCallback((dir: PanDir) => {
     stopPan();
-    panIntervalRef.current = setInterval(() => {
-      setScroll(prev => {
-        const dx = dir === 'left' ? -PAN_STEP : dir === 'right' ? PAN_STEP : 0;
-        const dy = dir === 'up'   ? -PAN_STEP : dir === 'down'  ? PAN_STEP : 0;
-        return {
-          x: Math.max(0, Math.min(innerW - viewportSize.w, prev.x + dx)),
-          y: Math.max(0, Math.min(innerH - viewportSize.h, prev.y + dy)),
-        };
-      });
-    }, PAN_INTERVAL);
-  }, [stopPan, viewportSize, innerW, innerH]);
+    nudge(dir);
+    panTimeoutRef.current = setTimeout(() => {
+      panIntervalRef.current = setInterval(() => {
+        setScroll(prev => clampScroll(
+          prev.x + (dir === 'left' ? -PAN_STEP : dir === 'right' ? PAN_STEP : 0),
+          prev.y + (dir === 'up' ? -PAN_STEP : dir === 'down' ? PAN_STEP : 0),
+          innerW, innerH, viewportSize.w, viewportSize.h,
+        ));
+      }, PAN_INTERVAL);
+    }, 250);
+  }, [stopPan, nudge, viewportSize, innerW, innerH]);
 
   // Cleanup: clear interval on unmount (T-35-03)
   useEffect(() => () => stopPan(), [stopPan]);
