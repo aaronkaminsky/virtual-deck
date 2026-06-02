@@ -512,6 +512,7 @@ export default class GameRoom implements Party.Server {
           }
         }
         this.gameState.phase = "playing";
+        this.broadcastEffect("deal");
         break;
       }
       case "SHUFFLE_PILE": {
@@ -925,6 +926,10 @@ export default class GameRoom implements Party.Server {
         destPile.cards.push(...moving);
         break;
       }
+      case "CELEBRATE": {
+        this.broadcastEffect("celebrate");
+        break;
+      }
       case "PING":
         break;
     }
@@ -952,6 +957,15 @@ export default class GameRoom implements Party.Server {
       conn.send(JSON.stringify({
         type: "PILE_SHUFFLED",
         pileId,
+      } satisfies ServerEvent));
+    }
+  }
+
+  private broadcastEffect(kind: "deal" | "celebrate") {
+    for (const conn of [...this.room.getConnections()]) {
+      conn.send(JSON.stringify({
+        type: "EFFECT",
+        kind,
       } satisfies ServerEvent));
     }
   }
