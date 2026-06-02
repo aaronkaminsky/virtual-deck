@@ -4,11 +4,13 @@ import { getOrCreatePlayerId, saveDisplayName } from './hooks/usePlayerId';
 import { usePartySocket } from './hooks/usePartySocket';
 import LobbyPanel from './components/LobbyPanel';
 import { BoardDragLayer } from './components/BoardDragLayer';
+import { CelebrationOverlay } from './components/CelebrationOverlay';
+import { createDoubleKeyDetector, isEditableTarget } from './lib/celebrationHotkey';
 
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -20,17 +22,34 @@ function RoomView({ roomId }: { roomId: string }) {
     setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
   };
 
+  useEffect(() => {
+    if (!connected) return;
+    const detect = createDoubleKeyDetector(500);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key.toLowerCase() !== 'w' || e.repeat) return;
+      if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
+      if (detect(performance.now())) {
+        sendAction({ type: 'CELEBRATE' });
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [connected, sendAction]);
+
   if (joinState && gameState) {
     return (
-      <BoardDragLayer
-        gameState={gameState}
-        playerId={joinState.playerId}
-        roomId={roomId}
-        connected={connected}
-        sendAction={sendAction}
-        setDragging={setDragging}
-        shufflingPileIds={shufflingPileIds}
-      />
+      <>
+        <BoardDragLayer
+          gameState={gameState}
+          playerId={joinState.playerId}
+          roomId={roomId}
+          connected={connected}
+          sendAction={sendAction}
+          setDragging={setDragging}
+          shufflingPileIds={shufflingPileIds}
+        />
+        <CelebrationOverlay nonce={celebrationNonce} />
+      </>
     );
   }
 
