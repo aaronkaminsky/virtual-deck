@@ -85,6 +85,7 @@ export type ClientAction =
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
+  | { type: "CELEBRATE" }
   | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number }
   | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] };
 
@@ -96,4 +97,5 @@ export type SelectionSource =
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
-  | { type: "PILE_SHUFFLED"; pileId: string };
+  | { type: "PILE_SHUFFLED"; pileId: string }
+  | { type: "EFFECT"; kind: "deal" | "celebrate" };
