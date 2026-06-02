@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Menu, Copy, Check, Undo2, RotateCcw } from 'lucide-react';
+import { Menu, Copy, Check, Undo2, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { getMuted, setMuted } from '@/lib/sound';
 
 interface ControlsBarProps {
   gameState: ClientGameState;
@@ -18,6 +19,14 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
   const [dealCount, setDealCount] = useState('1');
   const [confirmReset, setConfirmReset] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const [muted, setMutedState] = useState(getMuted());
+
+  function handleToggleMute() {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  }
 
   const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
   const connectedPlayerCount = gameState.players.filter(p => p.connected).length || 1;
@@ -79,6 +88,24 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
               <><Check className="mr-2 size-4" /> Copied!</>
             ) : (
               <><Copy className="mr-2 size-4" /> Copy link</>
+            )}
+          </Button>
+
+          <Separator />
+
+          {/* Sound toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleToggleMute}
+            aria-pressed={muted}
+            aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
+          >
+            {muted ? (
+              <><VolumeX className="mr-2 size-4" /> Sound off</>
+            ) : (
+              <><Volume2 className="mr-2 size-4" /> Sound on</>
             )}
           </Button>
 
