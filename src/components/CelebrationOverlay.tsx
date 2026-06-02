@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { generateBursts, CELEBRATION_BURST_COUNT, CELEBRATION_DURATION_MS } from '@/lib/celebrationBursts';
 
 const SUITS = ['♠', '♥', '♦', '♣'] as const;
@@ -17,9 +17,11 @@ export function CelebrationOverlay({ nonce }: { nonce: number }) {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [nonce]);
 
-  if (run === 0) return null;
+  // Generate once per trigger (keyed on `run`), so incidental re-renders during the
+  // 5s window — e.g. server STATE_UPDATEs — don't re-randomize burst positions.
+  const bursts = useMemo(() => generateBursts(CELEBRATION_BURST_COUNT), [run]);
 
-  const bursts = generateBursts(CELEBRATION_BURST_COUNT);
+  if (run === 0) return null;
 
   return (
     <div
