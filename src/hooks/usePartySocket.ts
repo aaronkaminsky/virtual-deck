@@ -51,6 +51,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       } else if (event.type === 'ERROR') {
         setError(event.message);
       } else if (event.type === 'PILE_SHUFFLED') {
+        // Fires for both explicit shuffles and deal-shuffles; deal sound follows via EFFECT.
         playSound('shuffle');
         const { pileId } = event;
         const existing = shuffleTimersRef.current.get(pileId);

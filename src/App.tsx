@@ -22,6 +22,7 @@ function RoomView({ roomId }: { roomId: string }) {
     setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
   };
 
+  // Re-running on reconnect intentionally resets the double-press detector.
   useEffect(() => {
     if (!connected) return;
     const detect = createDoubleKeyDetector(500);
