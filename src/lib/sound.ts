@@ -5,13 +5,16 @@ export type SoundName = "shuffle" | "deal" | "celebrate";
 let mutedCache: boolean | null = null;
 const audioCache = new Map<string, HTMLAudioElement>(); // keyed by resolved filename
 
-// Number of numbered variants per sound in public/sounds/. When > 1, files are named
-// e.g. celebrate1.mp3 .. celebrateN.mp3 and a random one plays on each call; when 1, the
-// file is the bare name (shuffle.mp3). Bump `celebrate` to match the files you add.
+// Number of celebrate variants in public/sounds/ (celebrate1.mp3 .. celebrateN.mp3).
+// A random one plays on each celebration. Set this to match the files you add.
+export const CELEBRATE_VARIANT_COUNT = 4;
+
+// Number of numbered variants per sound. When > 1, files are named e.g.
+// celebrate1.mp3 .. celebrateN.mp3; when 1, the file is the bare name (shuffle.mp3).
 const VARIANT_COUNTS: Record<SoundName, number> = {
   shuffle: 1,
   deal: 1,
-  celebrate: 3,
+  celebrate: CELEBRATE_VARIANT_COUNT,
 };
 
 function resolveFile(name: SoundName): string {

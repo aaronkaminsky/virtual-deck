@@ -102,7 +102,7 @@ Three CC0 audio files to be added under `public/sounds/` (mirrors how card art l
 |------|-------|
 | `public/sounds/shuffle.mp3` | A card riffle/shuffle. |
 | `public/sounds/deal.mp3` | Cards being dealt out (short). |
-| `public/sounds/celebrate1.mp3`, `celebrate2.mp3`, … | One or more short cheer + firework-pop clips (~5s each, to match the visual). `playSound('celebrate')` picks one at random per celebration. The number of variants is the `VARIANT_COUNTS.celebrate` constant in `src/lib/sound.ts` — set it to match the files added. |
+| `public/sounds/celebrate1.mp3`, `celebrate2.mp3`, … | One or more short cheer + firework-pop clips (~5s each, to match the visual). `playSound('celebrate')` picks one at random per celebration. The number of variants is the `CELEBRATE_VARIANT_COUNT` constant in `src/lib/sound.ts` — set it to match the files added. |
 
 **These files must be supplied at implementation time** — they cannot be generated/downloaded here. Candidate CC0 sources: [freesound.org](https://freesound.org) (filter to CC0) and [Pixabay](https://pixabay.com/sound-effects/). Implementation can scaffold the code with the filenames in place and a graceful fallback (a missing file simply fails to play; no crash) so the feature is testable before final audio is chosen. `.mp3` is used for broad browser support; a single format is sufficient for the target browsers.
 

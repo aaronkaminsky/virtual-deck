@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { getMuted, setMuted, playSound, __resetSoundForTests } from "../src/lib/sound";
+import { getMuted, setMuted, playSound, __resetSoundForTests, CELEBRATE_VARIANT_COUNT } from "../src/lib/sound";
 
 function makeStorage() {
   const store = new Map<string, string>();
@@ -66,20 +66,21 @@ describe("playSound gating", () => {
 });
 
 describe("celebrate variant selection", () => {
-  it("plays a numbered celebrate variant chosen by Math.random", () => {
+  it("plays the numbered celebrate variant chosen by Math.random", () => {
     setMuted(false);
-    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5); // floor(0.5*3)+1 = 2
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
     try {
       playSound("celebrate");
     } finally {
       randSpy.mockRestore();
     }
+    const expected = Math.floor(0.5 * CELEBRATE_VARIANT_COUNT) + 1;
     expect(MockAudio.instances).toHaveLength(1);
-    expect(MockAudio.instances[0].src).toMatch(/sounds\/celebrate2\.mp3$/);
+    expect(MockAudio.instances[0].src).toMatch(new RegExp(`sounds/celebrate${expected}\\.mp3$`));
   });
 
-  it("only ever selects variants within range", () => {
-    for (const r of [0, 0.34, 0.67, 0.999]) {
+  it("only ever selects variants within 1..N", () => {
+    for (const r of [0, 0.25, 0.5, 0.75, 0.999]) {
       __resetSoundForTests();
       MockAudio.instances = [];
       setMuted(false);
@@ -89,7 +90,11 @@ describe("celebrate variant selection", () => {
       } finally {
         randSpy.mockRestore();
       }
-      expect(MockAudio.instances[0].src).toMatch(/sounds\/celebrate[123]\.mp3$/);
+      const match = MockAudio.instances[0].src.match(/sounds\/celebrate(\d+)\.mp3$/);
+      expect(match).not.toBeNull();
+      const n = Number(match![1]);
+      expect(n).toBeGreaterThanOrEqual(1);
+      expect(n).toBeLessThanOrEqual(CELEBRATE_VARIANT_COUNT);
     }
   });
 
