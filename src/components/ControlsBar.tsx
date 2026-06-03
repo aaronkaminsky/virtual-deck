@@ -30,9 +30,17 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
 
   const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
   const connectedPlayerCount = gameState.players.filter(p => p.connected).length || 1;
-  const maxCards = Math.floor(drawPileCount / connectedPlayerCount);
 
-  const dealDisabled = gameState.phase !== 'setup' && gameState.phase !== 'lobby';
+  const totalCardsInGame =
+    gameState.myHand.length +
+    Object.values(gameState.opponentHandCounts).reduce((a, b) => a + b, 0) +
+    Object.values(gameState.opponentRevealedHands).reduce((acc, cards) => acc + cards.length, 0) +
+    gameState.piles.reduce((acc, p) => acc + p.cards.length, 0) +
+    gameState.canvasCards.length;
+
+  const maxCards = gameState.phase === 'playing'
+    ? Math.floor(totalCardsInGame / connectedPlayerCount)
+    : Math.floor(drawPileCount / connectedPlayerCount);
   const undoDisabled = !gameState.canUndo;
   const resetDisabled = !gameState.canUndo;
 
@@ -59,7 +67,11 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
   function handleDeal() {
     const parsed = parseInt(dealCount, 10);
     if (Number.isNaN(parsed) || parsed < 1 || parsed > maxCards) return;
-    sendAction({ type: 'DEAL_CARDS', cardsPerPlayer: parsed });
+    if (gameState.phase === 'playing') {
+      sendAction({ type: 'DEAL_NEXT_HAND', cardsPerPlayer: parsed });
+    } else {
+      sendAction({ type: 'DEAL_CARDS', cardsPerPlayer: parsed });
+    }
     handleOpenChange(false);
   }
 
@@ -122,15 +134,13 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
                 value={dealCount}
                 onChange={e => setDealCount(e.target.value)}
                 className="flex-1"
-                disabled={dealDisabled}
               />
               <Button
                 variant="default"
                 size="sm"
-                disabled={dealDisabled}
                 onClick={handleDeal}
               >
-                Deal
+                {gameState.phase === 'playing' ? 'Deal next hand' : 'Deal'}
               </Button>
             </div>
           </div>
