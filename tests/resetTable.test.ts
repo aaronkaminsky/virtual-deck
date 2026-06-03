@@ -116,4 +116,17 @@ describe("RESET_TABLE handler", () => {
     expect(room.gameState.players.find(p => p.id === "player-1")?.handRevealed).toBe(false);
     expect(room.gameState.players.find(p => p.id === "player-2")?.handRevealed).toBe(false);
   });
+
+  it("gathers canvas cards to draw pile and clears canvasCards", async () => {
+    room.gameState.canvasCards = [
+      { card: makeCard("7-d", true), x: 100, y: 100, z: 1 },
+    ];
+    const totalBefore = 2 + 1 + 3 + 1 + 1; // hands(p1=2,p2=1) + draw(3) + discard(1) + canvas(1)
+
+    await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
+
+    const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+    expect(drawPile.cards).toHaveLength(totalBefore);
+    expect(room.gameState.canvasCards).toHaveLength(0);
+  });
 });
