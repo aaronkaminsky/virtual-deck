@@ -68,6 +68,17 @@ export function playSound(name: SoundName): void {
   });
 }
 
+// Eagerly fetch + decode every sound file. Call once inside a user gesture (e.g. joining a
+// room) so the first shuffle/deal/celebrate doesn't pay fetch/decode latency on first play.
+export function preloadSounds(): void {
+  if (typeof Audio === "undefined") return;
+  const files = ["shuffle.mp3", "deal.mp3"];
+  for (let i = 1; i <= CELEBRATE_VARIANT_COUNT; i++) files.push(`celebrate${i}.mp3`);
+  for (const file of files) {
+    getAudio(file)?.load();
+  }
+}
+
 // Test-only: clear module-level caches between tests.
 export function __resetSoundForTests(): void {
   mutedCache = null;

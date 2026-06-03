@@ -6,6 +6,7 @@ import LobbyPanel from './components/LobbyPanel';
 import { BoardDragLayer } from './components/BoardDragLayer';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { createDoubleKeyDetector, isEditableTarget } from './lib/celebrationHotkey';
+import { preloadSounds } from './lib/sound';
 
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
@@ -19,6 +20,7 @@ function RoomView({ roomId }: { roomId: string }) {
 
   const handleJoin = (name: string) => {
     saveDisplayName(name);
+    preloadSounds(); // warm audio inside the join gesture so first shuffle/deal plays instantly
     setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
   };
 

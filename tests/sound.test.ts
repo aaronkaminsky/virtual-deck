@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { getMuted, setMuted, playSound, __resetSoundForTests, CELEBRATE_VARIANT_COUNT } from "../src/lib/sound";
+import { getMuted, setMuted, playSound, preloadSounds, __resetSoundForTests, CELEBRATE_VARIANT_COUNT } from "../src/lib/sound";
 
 function makeStorage() {
   const store = new Map<string, string>();
@@ -17,6 +17,7 @@ class MockAudio {
   preload = "";
   currentTime = 0;
   play = vi.fn().mockResolvedValue(undefined);
+  load = vi.fn();
   constructor(src: string) { this.src = src; MockAudio.instances.push(this); }
 }
 
@@ -102,5 +103,31 @@ describe("celebrate variant selection", () => {
     setMuted(false);
     playSound("shuffle");
     expect(MockAudio.instances[0].src).toMatch(/sounds\/shuffle\.mp3$/);
+  });
+});
+
+describe("preloadSounds", () => {
+  it("warms shuffle, deal, and every celebrate variant", () => {
+    preloadSounds();
+    expect(MockAudio.instances).toHaveLength(2 + CELEBRATE_VARIANT_COUNT);
+    for (const a of MockAudio.instances) {
+      expect(a.load).toHaveBeenCalledTimes(1);
+    }
+    const srcs = MockAudio.instances.map(a => a.src);
+    expect(srcs.some(s => s.endsWith("sounds/shuffle.mp3"))).toBe(true);
+    expect(srcs.some(s => s.endsWith("sounds/deal.mp3"))).toBe(true);
+    for (let i = 1; i <= CELEBRATE_VARIANT_COUNT; i++) {
+      expect(srcs.some(s => s.endsWith(`sounds/celebrate${i}.mp3`))).toBe(true);
+    }
+  });
+
+  it("reuses a warmed element on play instead of creating a new one", () => {
+    setMuted(false);
+    preloadSounds();
+    const countAfterPreload = MockAudio.instances.length;
+    playSound("shuffle");
+    expect(MockAudio.instances).toHaveLength(countAfterPreload); // reused, not recreated
+    const shuffleEl = MockAudio.instances.find(a => a.src.endsWith("sounds/shuffle.mp3"))!;
+    expect(shuffleEl.play).toHaveBeenCalledTimes(1);
   });
 });
