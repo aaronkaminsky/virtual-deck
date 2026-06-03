@@ -78,6 +78,7 @@ export type ClientAction =
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
   | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
+  | { type: "DEAL_NEXT_HAND"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string }
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
