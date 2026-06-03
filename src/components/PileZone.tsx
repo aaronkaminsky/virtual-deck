@@ -93,21 +93,19 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
           isOver ? 'border-primary' : 'border-border'
         )}
       >
-        {isShuffling && [0, 1, 2, 3, 4].map(i => (
+        {isShuffling && (['shuffle-cut-right-1', 'shuffle-cut-right-2', 'shuffle-cut-mid', 'shuffle-cut-left-4', 'shuffle-cut-left-5'] as const).map((animName, i) => (
           <div
             key={i}
-            className="absolute inset-0 rounded-lg bg-secondary border border-border pointer-events-none"
+            className={`absolute inset-0 pointer-events-none flex items-center justify-center shuffle-card-${i + 1}`}
             style={{
-              '--fan-x': `${(i - 2) * 12}px`,
-              '--fan-r': `${(i - 2) * 6}deg`,
-              animationName: 'pile-fan-spread',
-              animationDuration: '550ms',
-              animationDelay: `${i * 30}ms`,
+              animationName: animName,
+              animationDuration: '600ms',
               animationFillMode: 'forwards',
-              animationTimingFunction: 'ease-out',
-              zIndex: 10 - i,
+              animationTimingFunction: 'ease-in-out',
             } as React.CSSProperties}
-          />
+          >
+            <CardBack />
+          </div>
         ))}
         {isDraggingTopCard && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
