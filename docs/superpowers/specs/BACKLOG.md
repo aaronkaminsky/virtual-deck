@@ -12,14 +12,5 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline |
 | 999.38 | Highlight last move — subtle visual indicator on cards/zones that were just moved; fades after a few seconds so players who blink don't miss the action |
-| 999.44 | The shuffle animation could be a bit better, maybe use the background picture instead of the green? |
-| 999.45 | 
-    Source map error: No sources are declared in this source map.
-    Resource URL: http://localhost:5173/virtual-deck/%3Canonymous%20code%3E
-    Source Map URL: installHook.js.map
-    Source map error: No sources are declared in this source map.
-    Resource URL: http://localhost:5173/virtual-deck/%3Canonymous%20code%3E
-    Source Map URL: react_devtools_backend_compact.js.map |
 | 999.46 | Consider adding keyboard commands, for example  Cmd-Z to undo, arrow and space to select cards, hold a key to show zone shortcuts, etc |
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
-| 999.48 | Maybe combine reset and deal, so at the end of a hand it would be one click to reset and then deal the next hand? |
