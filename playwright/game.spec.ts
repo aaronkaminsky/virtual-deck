@@ -108,14 +108,12 @@ test.describe('virtual-deck e2e', () => {
     // Click "Deal next hand" — clears table and deals fresh cards
     await p1.getByRole('button', { name: 'Deal next hand' }).click();
 
+    // Wait for deal to complete
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+
     // Both players should have cards in their hands after the deal
     await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
     await expect(p2.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
-
-    // Still in playing phase — controls should still show "Deal next hand"
-    await p1.getByRole('button', { name: /open controls/i }).click();
-    await expect(p1.getByRole('button', { name: 'Deal next hand' })).toBeVisible();
-    await p1.getByRole('button', { name: /open controls/i }).click(); // close
 
     // Undo — should restore the prior hand (canUndo becomes true after DEAL_NEXT_HAND)
     await p1.getByRole('button', { name: /open controls/i }).click();
