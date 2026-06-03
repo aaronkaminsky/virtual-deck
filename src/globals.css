@@ -119,10 +119,50 @@
   }
 }
 
-@keyframes pile-fan-spread {
-  0%   { transform: translateX(0) rotate(0deg);                       opacity: 0.7; }
-  40%  { transform: translateX(var(--fan-x)) rotate(var(--fan-r));    opacity: 0.9; }
-  100% { transform: translateX(0) rotate(0deg);                       opacity: 0; }
+@keyframes shuffle-cut-right-1 {
+  0%   { transform: translateX(0)    translateY(0)     rotate(0deg);   z-index: 10; }
+  25%  { transform: translateX(60px) translateY(-18px) rotate(14deg);  z-index: 15; }
+  55%  { transform: translateX(6px)  translateY(18px)  rotate(2deg);   z-index: 1; }
+  100% { transform: translateX(6px)  translateY(18px)  rotate(2deg);   z-index: 1; }
+}
+
+@keyframes shuffle-cut-right-2 {
+  0%   { transform: translateX(0)    translateY(0)     rotate(0deg);   z-index: 9; }
+  30%  { transform: translateX(60px) translateY(-18px) rotate(14deg);  z-index: 14; }
+  60%  { transform: translateX(2px)  translateY(18px)  rotate(1deg);   z-index: 1; }
+  100% { transform: translateX(2px)  translateY(18px)  rotate(1deg);   z-index: 1; }
+}
+
+@keyframes shuffle-cut-mid {
+  0%   { transform: translateX(0) translateY(0)   rotate(0deg); z-index: 8; }
+  40%  { transform: translateX(0) translateY(6px) rotate(0deg); z-index: 8; }
+  100% { transform: translateX(0) translateY(2px) rotate(0deg); z-index: 8; }
+}
+
+@keyframes shuffle-cut-left-4 {
+  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 7; }
+  10%  { transform: translateX(-10px) translateY(-5px)  rotate(-4deg);   z-index: 13; }
+  45%  { transform: translateX(-60px) translateY(-18px) rotate(-14deg);  z-index: 13; }
+  70%  { transform: translateX(-4px)  translateY(8px)   rotate(-2deg);   z-index: 2; }
+  100% { transform: translateX(-4px)  translateY(8px)   rotate(-2deg);   z-index: 2; }
+}
+
+@keyframes shuffle-cut-left-5 {
+  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 6; }
+  15%  { transform: translateX(-10px) translateY(-5px)  rotate(-4deg);   z-index: 12; }
+  50%  { transform: translateX(-60px) translateY(-18px) rotate(-14deg);  z-index: 12; }
+  80%  { transform: translateX(0px)   translateY(4px)   rotate(0deg);    z-index: 2; }
+  100% { transform: translateX(0px)   translateY(4px)   rotate(0deg);    z-index: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shuffle-card-1,
+  .shuffle-card-2,
+  .shuffle-card-3,
+  .shuffle-card-4,
+  .shuffle-card-5 {
+    animation: none;
+  }
 }
 
 @keyframes canvas-edge-pulse {

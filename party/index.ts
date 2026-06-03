@@ -515,6 +515,54 @@ export default class GameRoom implements Party.Server {
         this.broadcastEffect("deal");
         break;
       }
+      case "DEAL_NEXT_HAND": {
+        if (
+          !Number.isInteger(action.cardsPerPlayer) ||
+          action.cardsPerPlayer < 1 ||
+          action.cardsPerPlayer > 13
+        ) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_CARDS_PER_PLAYER",
+            message: "cardsPerPlayer must be an integer between 1 and 13",
+          } satisfies ServerEvent));
+          break;
+        }
+        const nextHandPlayers = this.gameState.players.filter(p => p.connected);
+        const nextHandNeeded = action.cardsPerPlayer * nextHandPlayers.length;
+        const totalCards =
+          Object.values(this.gameState.hands).reduce((sum, hand) => sum + hand.length, 0) +
+          this.gameState.piles.reduce((sum, pile) => sum + pile.cards.length, 0) +
+          this.gameState.canvasCards.length;
+        if (totalCards < nextHandNeeded) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CARDS",
+            message: "Not enough cards to deal",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        this.gatherAllCardsToDraw();
+        this.broadcastShuffleEvent("draw");
+        await new Promise(resolve => setTimeout(resolve, 650));
+        const nextHandDrawPile = this.gameState.piles.find(p => p.id === "draw")!;
+        for (const player of nextHandPlayers) {
+          if (!this.gameState.hands[player.id]) {
+            this.gameState.hands[player.id] = [];
+          }
+        }
+        for (let i = 0; i < action.cardsPerPlayer; i++) {
+          for (const player of nextHandPlayers) {
+            const dealt = nextHandDrawPile.cards.pop()!;
+            dealt.faceUp = true;
+            this.gameState.hands[player.id].push(dealt);
+          }
+        }
+        this.gameState.phase = "playing";
+        this.broadcastEffect("deal");
+        break;
+      }
       case "SHUFFLE_PILE": {
         const shufflePile = this.gameState.piles.find(p => p.id === action.pileId);
         if (!shufflePile) {
@@ -545,33 +593,11 @@ export default class GameRoom implements Party.Server {
         // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
         // Undo history is cleared so no pre-reset state can be restored.
         // INTENTIONAL: No authorization check — any connected player can reset the table.
-        // If room-owner semantics are added in the future, add an ownership guard here before mutations.
         const resetDrawPile = this.gameState.piles.find(p => p.id === "draw");
-        if (!resetDrawPile) {
-          break;
-        }
-        for (const hand of Object.values(this.gameState.hands)) {
-          resetDrawPile.cards.push(...hand.splice(0));
-        }
-        for (const pile of this.gameState.piles) {
-          if (pile.id !== "draw") {
-            resetDrawPile.cards.push(...pile.cards.splice(0));
-          }
-        }
-        for (const canvasCard of this.gameState.canvasCards) {
-          canvasCard.card.faceUp = false;
-          resetDrawPile.cards.push(canvasCard.card);
-        }
-        this.gameState.canvasCards = [];
-        resetDrawPile.faceUp = false;
-        resetDrawPile.cards.forEach(c => { c.faceUp = false; });
-        resetDrawPile.cards = shuffle(resetDrawPile.cards);
+        if (!resetDrawPile) break;
+        this.gatherAllCardsToDraw();
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
-        // D-07: clear all reveal states on reset
-        for (const player of this.gameState.players) {
-          player.handRevealed = false;
-        }
         break;
       }
       case "PLACE_ON_CANVAS": {
@@ -950,6 +976,30 @@ export default class GameRoom implements Party.Server {
 
   private async persist() {
     await this.room.storage.put("gameState", this.gameState);
+  }
+
+  private gatherAllCardsToDraw(): void {
+    const drawPile = this.gameState.piles.find(p => p.id === "draw");
+    if (!drawPile) return;
+    for (const hand of Object.values(this.gameState.hands)) {
+      drawPile.cards.push(...hand.splice(0));
+    }
+    for (const pile of this.gameState.piles) {
+      if (pile.id !== "draw") {
+        drawPile.cards.push(...pile.cards.splice(0));
+      }
+    }
+    for (const canvasCard of this.gameState.canvasCards) {
+      canvasCard.card.faceUp = false;
+      drawPile.cards.push(canvasCard.card);
+    }
+    this.gameState.canvasCards = [];
+    drawPile.faceUp = false;
+    drawPile.cards.forEach(c => { c.faceUp = false; });
+    drawPile.cards = shuffle(drawPile.cards);
+    for (const player of this.gameState.players) {
+      player.handRevealed = false;
+    }
   }
 
   private broadcastShuffleEvent(pileId: string) {

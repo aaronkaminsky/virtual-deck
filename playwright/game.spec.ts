@@ -93,6 +93,38 @@ test.describe('virtual-deck e2e', () => {
     await expect(p2.getByTestId('pile-draw')).toContainText('52');
   });
 
+  test('deal next hand: Deal button available in playing phase, deals fresh hand, undo restores previous', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    // Deal initial hand — enters playing phase
+    await dealCards(p1, 3);
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+    await expect(p2.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+
+    // Open controls in playing phase — button should say "Deal next hand"
+    await p1.getByRole('button', { name: /open controls/i }).click();
+    await expect(p1.getByRole('button', { name: 'Deal next hand' })).toBeVisible();
+
+    // Click "Deal next hand" — clears table and deals fresh cards
+    await p1.getByRole('button', { name: 'Deal next hand' }).click();
+
+    // Wait for deal to complete
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+
+    // Both players should have cards in their hands after the deal
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+    await expect(p2.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+
+    // Undo — should restore the prior hand (canUndo becomes true after DEAL_NEXT_HAND)
+    await p1.getByRole('button', { name: /open controls/i }).click();
+    const undoButton = p1.getByRole('button', { name: /undo/i });
+    await expect(undoButton).toBeEnabled();
+    await undoButton.click();
+
+    // After undo, P1 should still have cards (restored from snapshot)
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+  });
+
   test('hand privacy: P2 sees count not card IDs', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
