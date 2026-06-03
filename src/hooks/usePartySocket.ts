@@ -1,6 +1,7 @@
 import PartySocket from 'partysocket';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientAction, ClientGameState, ServerEvent } from '../shared/types';
+import { playSound } from '../lib/sound';
 
 const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
   ?? (import.meta.env.DEV ? 'localhost:1999' : 'virtual-deck.aaronkaminsky.partykit.dev');
@@ -10,6 +11,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shufflingPileIds, setShufflingPileIds] = useState<Set<string>>(new Set());
+  const [celebrationNonce, setCelebrationNonce] = useState(0);
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
@@ -49,6 +51,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       } else if (event.type === 'ERROR') {
         setError(event.message);
       } else if (event.type === 'PILE_SHUFFLED') {
+        // Fires for both explicit shuffles and deal-shuffles; deal sound follows via EFFECT.
+        playSound('shuffle');
         const { pileId } = event;
         const existing = shuffleTimersRef.current.get(pileId);
         if (existing !== undefined) clearTimeout(existing);
@@ -62,6 +66,13 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
           shuffleTimersRef.current.delete(pileId);
         }, 650);
         shuffleTimersRef.current.set(pileId, timer);
+      } else if (event.type === 'EFFECT') {
+        if (event.kind === 'deal') {
+          playSound('deal');
+        } else if (event.kind === 'celebrate') {
+          playSound('celebrate');
+          setCelebrationNonce((n) => n + 1);
+        }
       }
     });
 
@@ -85,5 +96,5 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     }
   }, []);
 
-  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds };
+  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce };
 }

@@ -129,3 +129,31 @@
   0%, 100% { opacity: 0.5; }
   50%      { opacity: 1; }
 }
+
+@keyframes celebration-pop {
+  0%   { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: translate(var(--cx), calc(var(--cy) + 28px)) scale(1.25) rotate(var(--cr)); opacity: 0; }
+}
+
+@keyframes celebration-fade {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.celebration-suit {
+  position: absolute;
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+  /* 1.7s must match CELEBRATION_ANIMATION_MS in celebrationBursts.ts (burst-delay budget). */
+  animation: celebration-pop 1.7s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration-suit {
+    animation-name: celebration-fade;
+  }
+}
