@@ -64,3 +64,38 @@ describe("playSound gating", () => {
     expect(MockAudio.instances).toHaveLength(0);
   });
 });
+
+describe("celebrate variant selection", () => {
+  it("plays a numbered celebrate variant chosen by Math.random", () => {
+    setMuted(false);
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5); // floor(0.5*3)+1 = 2
+    try {
+      playSound("celebrate");
+    } finally {
+      randSpy.mockRestore();
+    }
+    expect(MockAudio.instances).toHaveLength(1);
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/celebrate2\.mp3$/);
+  });
+
+  it("only ever selects variants within range", () => {
+    for (const r of [0, 0.34, 0.67, 0.999]) {
+      __resetSoundForTests();
+      MockAudio.instances = [];
+      setMuted(false);
+      const randSpy = vi.spyOn(Math, "random").mockReturnValue(r);
+      try {
+        playSound("celebrate");
+      } finally {
+        randSpy.mockRestore();
+      }
+      expect(MockAudio.instances[0].src).toMatch(/sounds\/celebrate[123]\.mp3$/);
+    }
+  });
+
+  it("uses a bare filename (no number) for single-variant sounds", () => {
+    setMuted(false);
+    playSound("shuffle");
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/shuffle\.mp3$/);
+  });
+});

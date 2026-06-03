@@ -3,7 +3,23 @@ const MUTE_KEY = "vd-muted";
 export type SoundName = "shuffle" | "deal" | "celebrate";
 
 let mutedCache: boolean | null = null;
-const audioCache = new Map<SoundName, HTMLAudioElement>();
+const audioCache = new Map<string, HTMLAudioElement>(); // keyed by resolved filename
+
+// Number of numbered variants per sound in public/sounds/. When > 1, files are named
+// e.g. celebrate1.mp3 .. celebrateN.mp3 and a random one plays on each call; when 1, the
+// file is the bare name (shuffle.mp3). Bump `celebrate` to match the files you add.
+const VARIANT_COUNTS: Record<SoundName, number> = {
+  shuffle: 1,
+  deal: 1,
+  celebrate: 3,
+};
+
+function resolveFile(name: SoundName): string {
+  const count = VARIANT_COUNTS[name];
+  if (count <= 1) return `${name}.mp3`;
+  const n = Math.floor(Math.random() * count) + 1;
+  return `${name}${n}.mp3`;
+}
 
 function loadMuted(): boolean {
   try {
@@ -27,21 +43,21 @@ export function setMuted(value: boolean): void {
   }
 }
 
-function getAudio(name: SoundName): HTMLAudioElement | null {
+function getAudio(file: string): HTMLAudioElement | null {
   if (typeof Audio === "undefined") return null;
-  let el = audioCache.get(name);
+  let el = audioCache.get(file);
   if (!el) {
     const base = import.meta.env.BASE_URL || "/";
-    el = new Audio(`${base}sounds/${name}.mp3`);
+    el = new Audio(`${base}sounds/${file}`);
     el.preload = "auto";
-    audioCache.set(name, el);
+    audioCache.set(file, el);
   }
   return el;
 }
 
 export function playSound(name: SoundName): void {
   if (getMuted()) return;
-  const el = getAudio(name);
+  const el = getAudio(resolveFile(name));
   if (!el) return;
   el.currentTime = 0;
   void el.play().catch(() => {
