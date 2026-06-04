@@ -123,6 +123,14 @@ The `last-move-highlight` class is present while `highlightedMove` is non-null a
 }
 ```
 
+## Future: Per-Player Toggle
+
+A "show highlight" preference is a natural addition to the config popup. When implemented:
+
+- Gate it in `usePartySocket` only — one check on the `LAST_MOVE` handler that skips `setHighlightedMove` when the preference is off. All five components automatically receive `null` with no changes.
+- Store it in localStorage — purely client-side, no server involvement. The server always broadcasts `LAST_MOVE` regardless.
+- Do not scatter `&& highlightEnabled` checks across individual components.
+
 ## Testing
 
 **Unit tests (Vitest):** Add cases to `tests/moveCard.test.ts`, `tests/flipCard.test.ts`, `tests/playCardSet.test.ts`, and `tests/undoMove.test.ts` verifying that:
