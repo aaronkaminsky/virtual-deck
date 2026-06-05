@@ -1,6 +1,6 @@
 import PartySocket from 'partysocket';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientAction, ClientGameState, ServerEvent } from '../shared/types';
+import type { ClientAction, ClientGameState, LastMoveHighlight, ServerEvent } from '../shared/types';
 import { playSound } from '../lib/sound';
 
 const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
@@ -16,6 +16,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
   const shuffleTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const [highlightedMove, setHighlightedMove] = useState<LastMoveHighlight | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const displayNameRef = useRef(displayName);
   displayNameRef.current = displayName;
 
@@ -73,6 +75,13 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
           playSound('celebrate');
           setCelebrationNonce((n) => n + 1);
         }
+      } else if (event.type === 'LAST_MOVE') {
+        if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+        setHighlightedMove({ toZoneType: event.toZoneType, toZoneId: event.toZoneId, cardIds: event.cardIds });
+        highlightTimerRef.current = setTimeout(() => setHighlightedMove(null), 8000);
+      } else if (event.type === 'CLEAR_LAST_MOVE') {
+        if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+        setHighlightedMove(null);
       }
     });
 
@@ -81,6 +90,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       wsRef.current = null;
       for (const t of shuffleTimersRef.current.values()) clearTimeout(t);
       shuffleTimersRef.current.clear();
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
     };
   }, [roomId, playerId, enabled]);
 
@@ -96,5 +106,5 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     }
   }, []);
 
-  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce };
+  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, highlightedMove };
 }
