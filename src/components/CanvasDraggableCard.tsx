@@ -5,6 +5,7 @@ import type { ClientCanvasCard } from '@/shared/types';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { STACK_SHADOW } from '@/lib/canvas-utils';
+import { cn } from '@/lib/utils';
 
 interface CanvasDraggableCardProps {
   canvasCard: ClientCanvasCard;
@@ -12,9 +13,10 @@ interface CanvasDraggableCardProps {
   isSelected?: boolean;
   isPassenger?: boolean;
   onToggleSelect?: (id: string) => void;
+  isHighlighted?: boolean;
 }
 
-export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect }: CanvasDraggableCardProps) {
+export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, isHighlighted = false }: CanvasDraggableCardProps) {
   // D-12: useDraggable only — no useDroppable on the card itself
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: canvasCard.card.id,
@@ -66,6 +68,7 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
       style={style}
       onClick={handleClick}
       data-card-id={canvasCard.card.id}
+      className={cn(isHighlighted && 'last-move-highlight')}
       {...listeners}
       {...attributes}
       aria-roledescription="Draggable card"

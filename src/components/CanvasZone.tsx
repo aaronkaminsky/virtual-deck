@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { ClientCanvasCard } from '@/shared/types';
+import type { ClientCanvasCard, LastMoveHighlight } from '@/shared/types';
 import { CanvasControls } from './CanvasControls';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CardFace } from './CardFace';
@@ -107,9 +107,10 @@ interface CanvasZoneProps {
   onSelectAllCanvas: () => void;
   onDiscardAllCanvas: () => void;
   onDeselectAll: () => void;
+  highlightedMove?: LastMoveHighlight | null;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -341,6 +342,10 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
             isSelected={selectedIds.has(cc.card.id)}
             isPassenger={groupIds.has(cc.card.id) && cc.card.id !== activeCardId}
             onToggleSelect={onToggleSelectCanvas}
+            isHighlighted={
+              highlightedMove?.toZoneType === "canvas" &&
+              highlightedMove.cardIds.includes(cc.card.id)
+            }
           />
         ))}
         {passengerGhosts.map(cc => (

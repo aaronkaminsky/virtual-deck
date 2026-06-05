@@ -1,7 +1,7 @@
 import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Card, ClientPile, ClientAction, SelectionSource } from '@/shared/types';
+import type { Card, ClientPile, ClientAction, SelectionSource, LastMoveHighlight } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, SquareCheck } from 'lucide-react';
 import { CardFace } from './CardFace';
@@ -15,9 +15,10 @@ interface SortableSpreadCardProps {
   draggingCardId: string | null;
   isSelected: boolean;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  isHighlighted: boolean;
 }
 
-function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect }: SortableSpreadCardProps) {
+function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect, isHighlighted }: SortableSpreadCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'pile' as const, fromId: pileId, toZone: 'pile' as const, toId: pileId },
@@ -50,7 +51,8 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
         style={style}
         data-card-id={card.id}
         className={cn(
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
+          isHighlighted && 'last-move-highlight'
         )}
         {...listeners}
         {...attributes}
@@ -77,9 +79,10 @@ interface SpreadZoneProps {
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource?: SelectionSource;
+  highlightedMove?: LastMoveHighlight | null;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -189,6 +192,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
                       draggingCardId={draggingCardId}
                       isSelected={selectedIds?.has((card as Card).id) ?? false}
                       onToggleSelect={onToggleSelect ?? (() => {})}
+                      isHighlighted={
+                        highlightedMove?.toZoneType === "pile" &&
+                        highlightedMove.toZoneId === pile.id &&
+                        highlightedMove.cardIds.includes((card as Card).id)
+                      }
                     />
                   ) : (
                     <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>

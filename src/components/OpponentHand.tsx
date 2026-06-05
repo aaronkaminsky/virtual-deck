@@ -2,7 +2,7 @@ import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
 import { cn } from '@/lib/utils';
-import type { Card, ClientAction } from '@/shared/types';
+import type { Card, ClientAction, LastMoveHighlight } from '@/shared/types';
 
 const MAX_VISIBLE_OPPONENT_CARDS = 5;
 
@@ -13,9 +13,10 @@ interface OpponentHandProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   revealedCards?: Card[];
+  highlightedMove?: LastMoveHighlight | null;
 }
 
-export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards }: OpponentHandProps) {
+export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove }: OpponentHandProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `opponent-hand-${playerId}`,
     data: { toZone: 'opponent-hand' as const, toId: playerId },
@@ -23,6 +24,8 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
 
   const { active } = useDndContext();
   const dragIsActive = active !== null;
+  const isZoneHighlighted =
+    highlightedMove?.toZoneType === "hand" && highlightedMove.toZoneId === playerId;
 
   return (
     <div
@@ -30,7 +33,8 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
       data-testid="opponent-hand"
       className={cn(
         'flex flex-col rounded-lg p-1',
-        isOver ? 'border-2 border-primary' : 'border-2 border-transparent'
+        isOver ? 'border-2 border-primary' : 'border-2 border-transparent',
+        isZoneHighlighted && 'last-move-highlight'
       )}
     >
       <div className="flex items-center gap-2 px-1 mb-1">

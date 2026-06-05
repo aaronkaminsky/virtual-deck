@@ -1,6 +1,6 @@
 import { useDroppable } from '@dnd-kit/core';
 import { Eye, EyeOff, Shuffle, SquareCheck } from 'lucide-react';
-import type { Card, ClientPile, ClientAction } from '@/shared/types';
+import type { Card, ClientPile, ClientAction, LastMoveHighlight } from '@/shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DraggableCard } from './DraggableCard';
@@ -14,9 +14,10 @@ interface PileZoneProps {
   shufflingPileIds?: Set<string>;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
   selectedIds?: Set<string>;
+  highlightedMove?: LastMoveHighlight | null;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds, highlightedMove }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -26,6 +27,10 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   const topCard = isEmpty ? null : pile.cards[pile.cards.length - 1];
   const isDraggingTopCard = !!draggingCardId && !!topCard && 'id' in topCard && draggingCardId === (topCard as Card).id;
   const isShuffling = shufflingPileIds.has(pile.id);
+  const isPileHighlighted =
+    highlightedMove?.toZoneType === "pile" &&
+    highlightedMove.toZoneId === pile.id &&
+    pile.region !== "spread";
 
   function handleToggleFace() {
     sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp });
@@ -90,7 +95,8 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         className={cn(
           'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
           isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border'
+          isOver ? 'border-primary' : 'border-border',
+          isPileHighlighted && 'last-move-highlight'
         )}
       >
         {isShuffling && (['shuffle-cut-right-1', 'shuffle-cut-right-2', 'shuffle-cut-mid', 'shuffle-cut-left-4', 'shuffle-cut-left-5'] as const).map((animName, i) => (
