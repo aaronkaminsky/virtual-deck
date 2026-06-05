@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import GameRoom, { defaultGameState, takeSnapshot } from "../party/index";
 import type { Card, GameState, ServerEvent } from "../src/shared/types";
 import type * as Party from "partykit/server";
+import { makeMockRoom as helpMakeMockRoom, makeMockConnection as helpMakeMockConnection } from "./helpers";
 
 function makeCard(id: string, faceUp = false): Card {
   return { id, suit: "spades", rank: "A", faceUp };
@@ -90,5 +91,32 @@ describe("FLIP_CARD handler", () => {
     await room.onMessage(JSON.stringify({ type: "FLIP_CARD", pileId: "discard", cardId: "A-s" }), sender);
 
     expect(room.gameState.undoSnapshots).toHaveLength(1);
+  });
+});
+
+function lastMoveMessages(conn: ReturnType<typeof helpMakeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "LAST_MOVE");
+}
+
+describe("FLIP_CARD LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with toZoneType=pile after flipping a card", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    const discardPile = room.gameState.piles.find(p => p.id === "discard")!;
+    discardPile.faceUp = true;
+    discardPile.cards.push({ id: "Q-d", suit: "diamonds", rank: "Q", faceUp: true });
+
+    await room.onMessage(JSON.stringify({
+      type: "FLIP_CARD", pileId: "discard", cardId: "Q-d",
+    }), conn1);
+
+    const msgs = lastMoveMessages(conn1);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].toZoneType).toBe("pile");
+    expect(msgs[0].toZoneId).toBe("discard");
+    expect(msgs[0].cardIds).toEqual(["Q-d"]);
   });
 });

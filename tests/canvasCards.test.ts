@@ -3,6 +3,7 @@ import GameRoom, { defaultGameState, viewFor } from "../party/index";
 import type { Card, GameState, ServerEvent } from "../src/shared/types";
 import type { CanvasCard } from "../src/shared/types";
 import type * as Party from "partykit/server";
+import { makeMockRoom as helpMakeMockRoom, makeMockConnection as helpMakeMockConnection } from "./helpers";
 
 function makeCard(id: string): Card {
   return { id, suit: "spades", rank: "A", faceUp: false };
@@ -715,5 +716,57 @@ describe("GROUP_PLACE_ON_CANVAS handler", () => {
     expect(room.gameState.hands["player-1"].map(c => c.id)).toContain("A-s");
     expect(room.gameState.hands["player-1"].map(c => c.id)).toContain("K-h");
     expect(room.gameState.canvasCards).toHaveLength(0);
+  });
+});
+
+function lastMoveMessages(conn: ReturnType<typeof helpMakeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "LAST_MOVE");
+}
+
+describe("PLACE_ON_CANVAS LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with toZoneType=canvas after placing a card on canvas", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [{ id: "5-h", suit: "hearts", rank: "5", faceUp: true }];
+
+    await room.onMessage(JSON.stringify({
+      type: "PLACE_ON_CANVAS", cardId: "5-h",
+      fromZone: "hand", fromId: "player-1",
+      x: 100, y: 200,
+    }), conn1);
+
+    const msgs = lastMoveMessages(conn1);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].toZoneType).toBe("canvas");
+    expect(msgs[0].toZoneId).toBe("canvas");
+    expect(msgs[0].cardIds).toEqual(["5-h"]);
+  });
+});
+
+describe("GROUP_PLACE_ON_CANVAS LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with all cardIds after group place", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [
+      { id: "5-h", suit: "hearts", rank: "5", faceUp: true },
+      { id: "6-h", suit: "hearts", rank: "6", faceUp: true },
+    ];
+
+    await room.onMessage(JSON.stringify({
+      type: "GROUP_PLACE_ON_CANVAS",
+      fromZone: "hand", fromId: "player-1",
+      cards: [{ cardId: "5-h", x: 100, y: 200 }, { cardId: "6-h", x: 150, y: 200 }],
+    }), conn1);
+
+    const msgs = lastMoveMessages(conn1);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].toZoneType).toBe("canvas");
+    expect(msgs[0].toZoneId).toBe("canvas");
+    expect(msgs[0].cardIds).toEqual(expect.arrayContaining(["5-h", "6-h"]));
+    expect(msgs[0].cardIds).toHaveLength(2);
   });
 });

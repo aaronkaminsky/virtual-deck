@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import GameRoom, { defaultGameState, takeSnapshot, viewFor } from "../party/index";
 import type { Card, GameState, ServerEvent } from "../src/shared/types";
 import type * as Party from "partykit/server";
+import { makeMockRoom as helpMakeMockRoom, makeMockConnection as helpMakeMockConnection } from "./helpers";
 
 function makeCard(id: string): Card {
   return { id, suit: "spades", rank: "A", faceUp: false };
@@ -216,5 +217,40 @@ describe("UNDO_MOVE handler", () => {
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), sender);
     expect(room.gameState.undoSnapshots).toHaveLength(0);
     expect(viewFor(room.gameState, "player-1").canUndo).toBe(false);
+  });
+});
+
+function clearMessages(conn: ReturnType<typeof helpMakeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "CLEAR_LAST_MOVE");
+}
+
+describe("UNDO_MOVE CLEAR_LAST_MOVE broadcast", () => {
+  it("emits CLEAR_LAST_MOVE to all connections after undo", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [{ id: "A-s", suit: "spades", rank: "A", faceUp: true }];
+    takeSnapshot(room.gameState);
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), conn1);
+
+    for (const conn of [conn1, conn2]) {
+      const msgs = clearMessages(conn);
+      expect(msgs).toHaveLength(1);
+    }
+  });
+
+  it("does not emit CLEAR_LAST_MOVE when there is nothing to undo", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    // No snapshots
+
+    await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), conn1);
+
+    expect(clearMessages(conn1)).toHaveLength(0);
   });
 });

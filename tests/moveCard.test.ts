@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import GameRoom, { defaultGameState, viewFor } from "../party/index";
 import type { Card, GameState, ServerEvent } from "../src/shared/types";
 import type * as Party from "partykit/server";
+import { makeMockRoom as helpMakeMockRoom, makeMockConnection as helpMakeMockConnection } from "./helpers";
 
 function makeCard(id: string): Card {
   return { id, suit: "spades", rank: "A", faceUp: false };
@@ -288,5 +289,113 @@ describe("MOVE_CARD handler", () => {
 
     const afterView = viewFor(room.gameState, "player-2");
     expect(afterView.opponentHandCounts["player-1"]).toBe(0);
+  });
+});
+
+// Helpers for LAST_MOVE broadcast tests (use helpers.ts versions that accept a connections array)
+function lastMoveMessages(conn: ReturnType<typeof helpMakeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "LAST_MOVE");
+}
+
+describe("MOVE_CARD LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with toZoneType=pile and cardId after hand→pile move", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [makeCard("A-s")];
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "A-s",
+      fromZone: "hand", fromId: "player-1",
+      toZone: "pile", toId: "discard",
+    }), conn1);
+
+    for (const conn of [conn1, conn2]) {
+      const msgs = lastMoveMessages(conn);
+      expect(msgs).toHaveLength(1);
+      expect(msgs[0].toZoneType).toBe("pile");
+      expect(msgs[0].toZoneId).toBe("discard");
+      expect(msgs[0].cardIds).toEqual(["A-s"]);
+    }
+  });
+
+  it("emits LAST_MOVE with toZoneType=hand after pile→hand move", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.piles.find(p => p.id === "discard")!.cards.push(makeCard("K-h"));
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "K-h",
+      fromZone: "pile", fromId: "discard",
+      toZone: "hand", toId: "player-1",
+    }), conn1);
+
+    const msgs = lastMoveMessages(conn1);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].toZoneType).toBe("hand");
+    expect(msgs[0].toZoneId).toBe("player-1");
+    expect(msgs[0].cardIds).toEqual(["K-h"]);
+  });
+
+  it("does not emit LAST_MOVE when MOVE_CARD fails (card not found)", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [];
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "A-s",
+      fromZone: "hand", fromId: "player-1",
+      toZone: "pile", toId: "discard",
+    }), conn1);
+
+    expect(lastMoveMessages(conn1)).toHaveLength(0);
+  });
+});
+
+describe("Non-qualifying actions do not emit LAST_MOVE", () => {
+  it("SHUFFLE_PILE does not emit LAST_MOVE", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+
+    await room.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);
+
+    expect(lastMoveMessages(conn1)).toHaveLength(0);
+  });
+
+  it("RESET_TABLE does not emit LAST_MOVE", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const room = new GameRoom(helpMakeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.phase = "playing";
+
+    await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), conn1);
+
+    expect(lastMoveMessages(conn1)).toHaveLength(0);
+  });
+
+  it("DEAL_CARDS does not emit LAST_MOVE", async () => {
+    vi.useFakeTimers();
+    try {
+      const conn1 = helpMakeMockConnection("player-1");
+      const room = new GameRoom(helpMakeMockRoom([conn1]));
+      room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+      room.gameState.hands["player-1"] = [];
+
+      const pending = room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), conn1);
+      await vi.runAllTimersAsync();
+      await pending;
+
+      expect(lastMoveMessages(conn1)).toHaveLength(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
