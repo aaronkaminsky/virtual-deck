@@ -9,10 +9,12 @@ test.describe('highlight last move', () => {
     await expect(p2.getByTestId('pile-discard')).toBeVisible();
 
     // P1 drags the top card of the draw pile to discard
-    const drawPile = p1.getByTestId('pile-draw');
+    // Target the draggable card element inside the draw pile (role="button" from dnd-kit attributes)
+    const drawCard = p1.getByTestId('pile-draw').locator('[role="button"]').first();
     const discardPile = p1.getByTestId('pile-discard');
 
-    const src = await drawPile.boundingBox();
+    await expect(drawCard).toBeVisible();
+    const src = await drawCard.boundingBox();
     const tgt = await discardPile.boundingBox();
     if (!src || !tgt) throw new Error('Could not get bounding boxes');
 
