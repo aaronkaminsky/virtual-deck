@@ -95,8 +95,16 @@ export type SelectionSource =
   | { zone: 'canvas'; zoneId: 'canvas' }
   | null;
 
+export type LastMoveHighlight = {
+  toZoneType: "hand" | "pile" | "canvas";
+  toZoneId: string;
+  cardIds: string[];
+};
+
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
   | { type: "PILE_SHUFFLED"; pileId: string }
-  | { type: "EFFECT"; kind: "deal" | "celebrate" };
+  | { type: "EFFECT"; kind: "deal" | "celebrate" }
+  | { type: "LAST_MOVE"; toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] }
+  | { type: "CLEAR_LAST_MOVE" };
