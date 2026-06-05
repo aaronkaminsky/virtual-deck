@@ -22,9 +22,7 @@ test.describe('highlight last move', () => {
     await p1.mouse.down();
     await p1.mouse.move(tgt.x + tgt.width / 2, tgt.y + tgt.height / 2, { steps: 15 });
     await p1.mouse.up();
-
-    // P1 selects "Top" in the insert dialog
-    await p1.getByRole('button', { name: 'Top' }).click();
+    // Discard pile starts empty → card placed directly (no insert dialog)
 
     // P2 should see the last-move-highlight class on the discard pile
     await expect(p2.getByTestId('pile-discard')).toHaveClass(/last-move-highlight/, { timeout: 3000 });
