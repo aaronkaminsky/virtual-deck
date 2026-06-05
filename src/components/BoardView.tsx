@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ClientAction, ClientGameState, SelectionSource } from '@/shared/types';
+import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
@@ -29,9 +29,10 @@ interface BoardViewProps {
   groupIds: Set<string>;
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
+  highlightedMove: LastMoveHighlight | null;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -59,6 +60,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   connected={player?.connected ?? false}
                   sendAction={sendAction}
                   revealedCards={revealedCards}
+                  highlightedMove={highlightedMove}
                 />
               </div>
             );
@@ -82,6 +84,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                       sendAction={sendAction}
                       draggingCardId={draggingCardId}
                       interactive={false}
+                      highlightedMove={highlightedMove}
                     />
                   )}
                 </div>
@@ -94,11 +97,11 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex-1 min-h-0 flex items-start mt-1 pr-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
             {pilePiles.map((pile) => (
-              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} />
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} highlightedMove={highlightedMove} />
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} />
           </div>
         </div>
 
@@ -113,6 +116,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onToggleSelect={onToggleSelect}
               onSelectAll={onSelectAll}
               selectionSource={selectionSource}
+              highlightedMove={highlightedMove}
             />
           </div>
         )}
@@ -132,6 +136,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               selectionSource={selectionSource}
               isRevealed={gameState.myHandRevealed}
               onToggleReveal={() => sendAction({ type: 'SET_HAND_REVEALED', revealed: !gameState.myHandRevealed })}
+              highlightedMove={highlightedMove}
             />
           );
         })()}
