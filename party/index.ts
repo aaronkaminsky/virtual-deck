@@ -277,6 +277,7 @@ export default class GameRoom implements Party.Server {
           } else {
             dest.push(canvasCard);
           }
+          this.broadcastLastMove(toZone, toId, [cardId]);
           break;
         }
 
@@ -340,6 +341,7 @@ export default class GameRoom implements Party.Server {
         } else {
           dest.push(card);
         }
+        this.broadcastLastMove(toZone, toId, [cardId]);
         break;
       }
       case "REORDER_HAND": {
@@ -428,6 +430,7 @@ export default class GameRoom implements Party.Server {
         }
         takeSnapshot(this.gameState);
         flipCard.faceUp = !flipCard.faceUp;
+        this.broadcastLastMove("pile", action.pileId, [action.cardId]);
         break;
       }
       case "PASS_CARD": {
@@ -464,6 +467,7 @@ export default class GameRoom implements Party.Server {
         const [passedCard] = sourceArr.splice(passCardIdx, 1);
         passedCard.faceUp = true;
         this.gameState.hands[action.targetPlayerId].push(passedCard);
+        this.broadcastLastMove("hand", action.targetPlayerId, [action.cardId]);
         break;
       }
       case "DEAL_CARDS": {
@@ -672,6 +676,7 @@ export default class GameRoom implements Party.Server {
         canvasCard!.faceUp = true;
         const maxZ = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), maxZBeforeSplice);
         this.gameState.canvasCards.push({ card: canvasCard!, x, y, z: maxZ + 1 });
+        this.broadcastLastMove("canvas", "canvas", [cardId]);
         break;
       }
       case "GROUP_PLACE_ON_CANVAS": {
@@ -791,6 +796,7 @@ export default class GameRoom implements Party.Server {
           r.card.faceUp = true;
           this.gameState.canvasCards.push({ card: r.card, x: r.x, y: r.y, z: maxZGroup + 1 + rank });
         });
+        this.broadcastLastMove("canvas", "canvas", resolvedGroupCards.map(r => r.card.id));
 
         break;
       }
@@ -802,6 +808,7 @@ export default class GameRoom implements Party.Server {
         }
         this.gameState = snap;
         this.gameState.undoSnapshots = remainingSnapshots;
+        this.broadcastClearLastMove();
         break;
       }
       case "PLAY_CARD_SET": {
@@ -931,6 +938,7 @@ export default class GameRoom implements Party.Server {
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
         dest.push(...cardsToPlay);
+        this.broadcastLastMove(toZone, toId, cardIds);
         break;
       }
       case "MOVE_ALL_PILE_CARDS": {
@@ -1026,6 +1034,18 @@ export default class GameRoom implements Party.Server {
         type: "STATE_UPDATE",
         state: viewFor(this.gameState, getPlayerToken(conn)),
       } satisfies ServerEvent));
+    }
+  }
+
+  private broadcastLastMove(toZoneType: "hand" | "pile" | "canvas", toZoneId: string, cardIds: string[]) {
+    for (const conn of [...this.room.getConnections()]) {
+      conn.send(JSON.stringify({ type: "LAST_MOVE", toZoneType, toZoneId, cardIds } satisfies ServerEvent));
+    }
+  }
+
+  private broadcastClearLastMove() {
+    for (const conn of [...this.room.getConnections()]) {
+      conn.send(JSON.stringify({ type: "CLEAR_LAST_MOVE" } satisfies ServerEvent));
     }
   }
 }
