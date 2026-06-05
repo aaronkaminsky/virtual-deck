@@ -342,6 +342,29 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
     expect(msgs[0].cardIds).toEqual(["K-h"]);
   });
 
+  it("emits LAST_MOVE with toZoneType=pile after canvas→pile move", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.canvasCards.push({ card: { id: "7-d", suit: "diamonds", rank: "7", faceUp: true }, x: 100, y: 100, z: 1 });
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "7-d",
+      fromZone: "canvas", fromId: "7-d",
+      toZone: "pile", toId: "discard",
+    }), conn1);
+
+    for (const conn of [conn1, conn2]) {
+      const msgs = lastMoveMessages(conn);
+      expect(msgs).toHaveLength(1);
+      expect(msgs[0].toZoneType).toBe("pile");
+      expect(msgs[0].toZoneId).toBe("discard");
+      expect(msgs[0].cardIds).toEqual(["7-d"]);
+    }
+  });
+
   it("does not emit LAST_MOVE when MOVE_CARD fails (card not found)", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
