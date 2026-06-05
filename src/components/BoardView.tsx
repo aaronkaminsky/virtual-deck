@@ -46,13 +46,13 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
     <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-felt">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card">
-        <div className="flex items-start gap-4 flex-1 overflow-hidden">
+        <div className="flex items-start gap-4 flex-1 overflow-hidden p-1">
           {allOpponentIds.map((id) => {
             const player = gameState.players.find(p => p.id === id);
             const revealedCards = gameState.opponentRevealedHands[id];
             const cardCount = gameState.opponentHandCounts[id] ?? (revealedCards?.length ?? 0);
             return (
-              <div key={id} className={`flex flex-col ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
+              <div key={id} className={`flex flex-col ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none`}>
                 <OpponentHand
                   playerId={id}
                   cardCount={cardCount}
