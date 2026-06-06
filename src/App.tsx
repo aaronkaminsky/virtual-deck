@@ -11,7 +11,7 @@ import { preloadSounds } from './lib/sound';
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, highlightedMove } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -50,6 +50,7 @@ function RoomView({ roomId }: { roomId: string }) {
           sendAction={sendAction}
           setDragging={setDragging}
           shufflingPileIds={shufflingPileIds}
+          highlightedMove={highlightedMove}
         />
         <CelebrationOverlay nonce={celebrationNonce} />
       </>

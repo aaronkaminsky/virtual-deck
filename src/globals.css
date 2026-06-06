@@ -197,3 +197,21 @@
     animation-name: celebration-fade;
   }
 }
+
+@keyframes last-move-pulse {
+  0%   { box-shadow: 0 0 0 2px #38bdf8, 0 0 16px 6px rgba(56,189,248,0.6); }
+  15%  { box-shadow: 0 0 0 3px #38bdf8, 0 0 20px 8px rgba(56,189,248,0.5); }
+  40%  { box-shadow: 0 0 0 2px #38bdf8, 0 0 14px 4px rgba(56,189,248,0.35); }
+  100% { box-shadow: none; }
+}
+
+.last-move-highlight {
+  animation: last-move-pulse 8s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .last-move-highlight {
+    animation: none;
+    box-shadow: 0 0 0 2px #38bdf8;
+  }
+}

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import GameRoom, { defaultGameState, viewFor } from "../party/index";
 import type { Card, GameState, ServerEvent } from "../src/shared/types";
 import type * as Party from "partykit/server";
+import { makeMockRoom as helpMakeMockRoom, makeMockConnection as helpMakeMockConnection } from "./helpers";
 
 function makeCard(id: string, faceUp = false): Card {
   return { id, suit: "spades", rank: "A", faceUp };
@@ -114,5 +115,35 @@ describe("PASS_CARD handler", () => {
     expect(afterP2.myHand[0].id).toBe("A-s");
     expect(afterP3.opponentHandCounts["player-1"]).toBe(0);
     expect(afterP3.opponentHandCounts["player-2"]).toBe(1);
+  });
+});
+
+function lastMoveMessages(conn: ReturnType<typeof helpMakeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "LAST_MOVE");
+}
+
+describe("PASS_CARD LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with toZoneType=hand and targetPlayerId after pass", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [{ id: "J-c", suit: "clubs", rank: "J", faceUp: true }];
+    room.gameState.hands["player-2"] = [];
+
+    await room.onMessage(JSON.stringify({
+      type: "PASS_CARD", cardId: "J-c", targetPlayerId: "player-2",
+    }), conn1);
+
+    for (const conn of [conn1, conn2]) {
+      const msgs = lastMoveMessages(conn);
+      expect(msgs).toHaveLength(1);
+      expect(msgs[0].toZoneType).toBe("hand");
+      expect(msgs[0].toZoneId).toBe("player-2");
+      expect(msgs[0].cardIds).toEqual(["J-c"]);
+    }
   });
 });

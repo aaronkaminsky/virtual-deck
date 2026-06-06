@@ -338,3 +338,34 @@ describe("PLAY_CARD_SET canvas source (999.40)", () => {
     expect(room.gameState.piles.find(p => p.id === "discard")!.cards).toHaveLength(0);
   });
 });
+
+function lastMoveMessages(conn: ReturnType<typeof makeMockConnection>) {
+  return conn.send.mock.calls
+    .map((c: unknown[]) => JSON.parse(c[0] as string))
+    .filter((e: { type: string }) => e.type === "LAST_MOVE");
+}
+
+describe("PLAY_CARD_SET LAST_MOVE broadcast", () => {
+  it("emits LAST_MOVE with all cardIds after multi-card play", async () => {
+    const conn1 = makeMockConnection("player-1");
+    const room = new GameRoom(makeMockRoom([conn1]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.hands["player-1"] = [
+      { id: "A-s", suit: "spades", rank: "A", faceUp: true },
+      { id: "2-s", suit: "spades", rank: "2", faceUp: true },
+    ];
+
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["A-s", "2-s"],
+      fromZone: "hand", fromId: "player-1",
+      toZone: "pile", toId: "discard",
+    }), conn1);
+
+    const msgs = lastMoveMessages(conn1);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0].toZoneType).toBe("pile");
+    expect(msgs[0].toZoneId).toBe("discard");
+    expect(msgs[0].cardIds).toEqual(["A-s", "2-s"]);
+  });
+});

@@ -3,7 +3,7 @@ import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
-import type { Card, ClientAction, Suit, Rank, SelectionSource } from '@/shared/types';
+import type { Card, ClientAction, Suit, Rank, SelectionSource, LastMoveHighlight } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
@@ -59,9 +59,11 @@ interface SortableHandCardProps {
   index: number;
   isSelected: boolean;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  isHighlighted: boolean;
+  highlightNonce?: number;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, isHighlighted, highlightNonce }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -94,12 +96,16 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         style={style}
         data-card-id={card.id}
         className={cn(
+          'relative',
           isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
         )}
         {...listeners}
         {...attributes}
         aria-pressed={isSelected}
       >
+        {isHighlighted && (
+          <div key={highlightNonce} className="last-move-highlight absolute inset-0 rounded-md pointer-events-none" />
+        )}
         {card.faceUp ? <CardFace card={card} /> : <CardBack />}
       </div>
     </div>
@@ -123,9 +129,10 @@ interface HandZoneProps {
   selectionSource: SelectionSource;
   isRevealed: boolean;
   onToggleReveal: () => void;
+  highlightedMove?: LastMoveHighlight | null;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
@@ -259,6 +266,12 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
               index={index}
               isSelected={selectedIds.has(card.id)}
               onToggleSelect={onToggleSelect}
+              isHighlighted={
+                highlightedMove?.toZoneType === "hand" &&
+                highlightedMove.toZoneId === playerId &&
+                highlightedMove.cardIds.includes(card.id)
+              }
+              highlightNonce={highlightedMove?.nonce}
             />
           ))}
           <SortableSentinel id={sentinelId} />

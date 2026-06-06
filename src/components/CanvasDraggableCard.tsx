@@ -5,6 +5,7 @@ import type { ClientCanvasCard } from '@/shared/types';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { STACK_SHADOW } from '@/lib/canvas-utils';
+import { cn } from '@/lib/utils';
 
 interface CanvasDraggableCardProps {
   canvasCard: ClientCanvasCard;
@@ -12,9 +13,11 @@ interface CanvasDraggableCardProps {
   isSelected?: boolean;
   isPassenger?: boolean;
   onToggleSelect?: (id: string) => void;
+  isHighlighted?: boolean;
+  highlightNonce?: number;
 }
 
-export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect }: CanvasDraggableCardProps) {
+export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, isHighlighted = false, highlightNonce }: CanvasDraggableCardProps) {
   // D-12: useDraggable only — no useDroppable on the card itself
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: canvasCard.card.id,
@@ -72,6 +75,9 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
       aria-label={`${canvasCard.card.rank} of ${canvasCard.card.suit}`}
       aria-pressed={isSelected}
     >
+      {isHighlighted && (
+        <div key={highlightNonce} className="last-move-highlight absolute inset-0 rounded-md pointer-events-none" />
+      )}
       {/* D-07: canvas cards are always face-up on server; ternary kept for defense in depth */}
       {canvasCard.card.faceUp ? <CardFace card={canvasCard.card} /> : <CardBack />}
     </div>

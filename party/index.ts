@@ -199,6 +199,8 @@ export default class GameRoom implements Party.Server {
     }
     const senderToken = getPlayerToken(sender);
     let action: ClientAction;
+    let lastMoveArgs: { toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] } | null = null;
+    let clearLastMove = false;
     try {
       action = JSON.parse(message) as ClientAction;
     } catch {
@@ -277,6 +279,7 @@ export default class GameRoom implements Party.Server {
           } else {
             dest.push(canvasCard);
           }
+          lastMoveArgs = { toZoneType: toZone, toZoneId: toId, cardIds: [cardId] };
           break;
         }
 
@@ -340,6 +343,7 @@ export default class GameRoom implements Party.Server {
         } else {
           dest.push(card);
         }
+        lastMoveArgs = { toZoneType: toZone, toZoneId: toId, cardIds: [cardId] };
         break;
       }
       case "REORDER_HAND": {
@@ -428,6 +432,7 @@ export default class GameRoom implements Party.Server {
         }
         takeSnapshot(this.gameState);
         flipCard.faceUp = !flipCard.faceUp;
+        lastMoveArgs = { toZoneType: "pile", toZoneId: action.pileId, cardIds: [action.cardId] };
         break;
       }
       case "PASS_CARD": {
@@ -464,6 +469,7 @@ export default class GameRoom implements Party.Server {
         const [passedCard] = sourceArr.splice(passCardIdx, 1);
         passedCard.faceUp = true;
         this.gameState.hands[action.targetPlayerId].push(passedCard);
+        lastMoveArgs = { toZoneType: "hand", toZoneId: action.targetPlayerId, cardIds: [action.cardId] };
         break;
       }
       case "DEAL_CARDS": {
@@ -672,6 +678,7 @@ export default class GameRoom implements Party.Server {
         canvasCard!.faceUp = true;
         const maxZ = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), maxZBeforeSplice);
         this.gameState.canvasCards.push({ card: canvasCard!, x, y, z: maxZ + 1 });
+        lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: [cardId] };
         break;
       }
       case "GROUP_PLACE_ON_CANVAS": {
@@ -791,6 +798,7 @@ export default class GameRoom implements Party.Server {
           r.card.faceUp = true;
           this.gameState.canvasCards.push({ card: r.card, x: r.x, y: r.y, z: maxZGroup + 1 + rank });
         });
+        lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: resolvedGroupCards.map(r => r.card.id) };
 
         break;
       }
@@ -802,6 +810,7 @@ export default class GameRoom implements Party.Server {
         }
         this.gameState = snap;
         this.gameState.undoSnapshots = remainingSnapshots;
+        clearLastMove = true;
         break;
       }
       case "PLAY_CARD_SET": {
@@ -931,6 +940,7 @@ export default class GameRoom implements Party.Server {
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
         dest.push(...cardsToPlay);
+        lastMoveArgs = { toZoneType: toZone, toZoneId: toId, cardIds };
         break;
       }
       case "MOVE_ALL_PILE_CARDS": {
@@ -962,6 +972,11 @@ export default class GameRoom implements Party.Server {
 
     await this.persist();
     this.broadcastState();
+    if (lastMoveArgs) {
+      this.broadcastLastMove(lastMoveArgs.toZoneType, lastMoveArgs.toZoneId, lastMoveArgs.cardIds);
+    } else if (clearLastMove) {
+      this.broadcastClearLastMove();
+    }
   }
 
   async onClose(connection: Party.Connection) {
@@ -1026,6 +1041,18 @@ export default class GameRoom implements Party.Server {
         type: "STATE_UPDATE",
         state: viewFor(this.gameState, getPlayerToken(conn)),
       } satisfies ServerEvent));
+    }
+  }
+
+  private broadcastLastMove(toZoneType: "hand" | "pile" | "canvas", toZoneId: string, cardIds: string[]) {
+    for (const conn of [...this.room.getConnections()]) {
+      conn.send(JSON.stringify({ type: "LAST_MOVE", toZoneType, toZoneId, cardIds } satisfies ServerEvent));
+    }
+  }
+
+  private broadcastClearLastMove() {
+    for (const conn of [...this.room.getConnections()]) {
+      conn.send(JSON.stringify({ type: "CLEAR_LAST_MOVE" } satisfies ServerEvent));
     }
   }
 }

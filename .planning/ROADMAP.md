@@ -14,6 +14,7 @@
 - ✅ **v1.9 Canvas Pan Discoverability** — 999.42 (shipped 2026-05-31)
 - ✅ **v1.10 Sound Effects & Celebration** — 999.23, 999.43 (shipped 2026-06-02)
 - ✅ **v1.11 Deal Next Hand & Shuffle Motion Polish** — 999.48, 999.44 (shipped 2026-06-03)
+- ✅ **v1.12 Highlight Last Move** — 999.38 (shipped 2026-06-05)
 
 ## Phases
 
