@@ -24,14 +24,14 @@ test.describe('highlight last move', () => {
     await p1.mouse.up();
     // Discard pile starts empty → card placed directly (no insert dialog)
 
-    // P2 should see the last-move-highlight class on the discard pile
-    await expect(p2.getByTestId('pile-discard')).toHaveClass(/last-move-highlight/, { timeout: 3000 });
+    // P2 should see the last-move-highlight overlay inside the discard pile
+    await expect(p2.getByTestId('pile-discard').locator('.last-move-highlight')).toBeVisible({ timeout: 3000 });
 
     // P1 undoes the move
     await p1.getByRole('button', { name: /open controls/i }).click();
     await p1.getByRole('button', { name: /undo/i }).click();
 
     // P2's highlight should now be absent
-    await expect(p2.getByTestId('pile-discard')).not.toHaveClass(/last-move-highlight/, { timeout: 3000 });
+    await expect(p2.getByTestId('pile-discard').locator('.last-move-highlight')).not.toBeVisible({ timeout: 3000 });
   });
 });
