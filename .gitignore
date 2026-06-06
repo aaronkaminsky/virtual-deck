@@ -9,4 +9,5 @@ dist/
 *.key
 test-results/
 .superpowers/
+.worktrees/
 .DS_Store
