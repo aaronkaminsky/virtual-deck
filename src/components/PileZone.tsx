@@ -95,10 +95,12 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         className={cn(
           'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
           isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border',
-          isPileHighlighted && 'last-move-highlight'
+          isOver ? 'border-primary' : 'border-border'
         )}
       >
+        {isPileHighlighted && (
+          <div key={highlightedMove!.nonce} className="last-move-highlight absolute inset-0 rounded-lg pointer-events-none" />
+        )}
         {isShuffling && (['shuffle-cut-right-1', 'shuffle-cut-right-2', 'shuffle-cut-mid', 'shuffle-cut-left-4', 'shuffle-cut-left-5'] as const).map((animName, i) => (
           <div
             key={i}

@@ -18,6 +18,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const shuffleTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const [highlightedMove, setHighlightedMove] = useState<LastMoveHighlight | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightNonceRef = useRef(0);
   const displayNameRef = useRef(displayName);
   displayNameRef.current = displayName;
 
@@ -77,7 +78,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         }
       } else if (event.type === 'LAST_MOVE') {
         if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
-        setHighlightedMove({ toZoneType: event.toZoneType, toZoneId: event.toZoneId, cardIds: event.cardIds });
+        setHighlightedMove({ toZoneType: event.toZoneType, toZoneId: event.toZoneId, cardIds: event.cardIds, nonce: ++highlightNonceRef.current });
         highlightTimerRef.current = setTimeout(() => setHighlightedMove(null), 8000);
       } else if (event.type === 'CLEAR_LAST_MOVE') {
         if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);

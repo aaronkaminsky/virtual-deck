@@ -99,6 +99,7 @@ export type LastMoveHighlight = {
   toZoneType: "hand" | "pile" | "canvas";
   toZoneId: string;
   cardIds: string[];
+  nonce: number;
 };
 
 export type ServerEvent =

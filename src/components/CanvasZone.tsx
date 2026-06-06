@@ -346,6 +346,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
               highlightedMove?.toZoneType === "canvas" &&
               highlightedMove.cardIds.includes(cc.card.id)
             }
+            highlightNonce={highlightedMove?.nonce}
           />
         ))}
         {passengerGhosts.map(cc => (

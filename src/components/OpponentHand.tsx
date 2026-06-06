@@ -32,11 +32,13 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
       ref={setNodeRef}
       data-testid="opponent-hand"
       className={cn(
-        'flex flex-col rounded-lg p-1',
-        isOver ? 'border-2 border-primary' : 'border-2 border-transparent',
-        isZoneHighlighted && 'last-move-highlight'
+        'flex flex-col rounded-lg p-1 relative',
+        isOver ? 'border-2 border-primary' : 'border-2 border-transparent'
       )}
     >
+      {isZoneHighlighted && (
+        <div key={highlightedMove!.nonce} className="last-move-highlight absolute inset-0 rounded-lg pointer-events-none" />
+      )}
       <div className="flex items-center gap-2 px-1 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">

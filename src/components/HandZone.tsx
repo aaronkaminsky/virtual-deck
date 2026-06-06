@@ -60,9 +60,10 @@ interface SortableHandCardProps {
   isSelected: boolean;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   isHighlighted: boolean;
+  highlightNonce?: number;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, isHighlighted }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, isHighlighted, highlightNonce }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -95,13 +96,16 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         style={style}
         data-card-id={card.id}
         className={cn(
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
-          isHighlighted && 'last-move-highlight'
+          'relative',
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
         )}
         {...listeners}
         {...attributes}
         aria-pressed={isSelected}
       >
+        {isHighlighted && (
+          <div key={highlightNonce} className="last-move-highlight absolute inset-0 rounded-md pointer-events-none" />
+        )}
         {card.faceUp ? <CardFace card={card} /> : <CardBack />}
       </div>
     </div>
@@ -267,6 +271,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
                 highlightedMove.toZoneId === playerId &&
                 highlightedMove.cardIds.includes(card.id)
               }
+              highlightNonce={highlightedMove?.nonce}
             />
           ))}
           <SortableSentinel id={sentinelId} />
