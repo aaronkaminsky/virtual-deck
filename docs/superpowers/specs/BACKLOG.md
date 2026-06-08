@@ -14,3 +14,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.46 | Consider adding keyboard commands, for example  Cmd-Z to undo, arrow and space to select cards, hold a key to show zone shortcuts, etc |
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
+| 999.49 | On chrome on PC click to drag canvas seems not to be working |
