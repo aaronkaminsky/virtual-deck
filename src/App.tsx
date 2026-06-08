@@ -29,7 +29,7 @@ function RoomView({ roomId }: { roomId: string }) {
     if (!connected) return;
     const detect = createDoubleKeyDetector(500);
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key.toLowerCase() !== 'w' || e.repeat) return;
+      if (e.key.toLowerCase() !== 'g' || e.repeat) return;
       if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
       if (detect(performance.now())) {
         sendAction({ type: 'CELEBRATE' });

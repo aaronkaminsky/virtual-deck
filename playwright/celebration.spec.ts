@@ -1,13 +1,13 @@
 import { nanoid } from 'nanoid';
 import { test, expect } from './fixtures';
 
-test('w-w celebration shows on both players and clears after ~5s', async ({ twoPlayerRoom }) => {
+test('g-g celebration shows on both players and clears after ~5s', async ({ twoPlayerRoom }) => {
   const { p1, p2 } = twoPlayerRoom;
 
-  // Ensure window (not an input) has focus, then press 'w' twice quickly.
+  // Ensure window (not an input) has focus, then press 'g' twice quickly.
   await p1.locator('body').click();
-  await p1.keyboard.press('w');
-  await p1.keyboard.press('w');
+  await p1.keyboard.press('g');
+  await p1.keyboard.press('g');
 
   // Shared: overlay appears for BOTH players.
   await expect(p1.getByTestId('celebration-overlay')).toBeVisible();
