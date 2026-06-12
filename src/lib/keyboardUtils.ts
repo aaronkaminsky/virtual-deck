@@ -36,22 +36,53 @@ export function computeTabStops(gameState: ClientGameState): TabStop[] {
     if (ids.length > 0) stops.push({ zoneId: `pile-${mySpread.id}`, cardIds: ids });
   }
 
-  // 3. Non-spread pile zones in gameState order — only the top card is visible
-  for (const pile of gameState.piles.filter((p) => (p.region ?? "pile") === "pile")) {
+  // 3. Non-spread piles in clockwise order: discard first, draw second, then others
+  const nonSpreadPiles = gameState.piles.filter((p) => (p.region ?? "pile") === "pile");
+  const discard = nonSpreadPiles.find((p) => p.id === "discard");
+  const draw = nonSpreadPiles.find((p) => p.id === "draw");
+  const otherPiles = nonSpreadPiles.filter((p) => p.id !== "discard" && p.id !== "draw");
+  for (const pile of [discard, draw, ...otherPiles]) {
+    if (!pile) continue;
     const cards = pile.cards.filter((c): c is Card => "id" in c);
     if (cards.length > 0) {
       stops.push({ zoneId: `pile-${pile.id}`, cardIds: [cards[cards.length - 1].id] });
     }
   }
 
-  // 4. Canvas (navigated by z-index order, ascending)
+  // 4. For each opponent (clockwise): their spread zone, then their hand
+  const opponentIds = [
+    ...new Set([
+      ...Object.keys(gameState.opponentHandCounts),
+      ...Object.keys(gameState.opponentRevealedHands),
+    ]),
+  ];
+  for (const id of opponentIds) {
+    const oppSpread = gameState.piles.find(
+      (p) => p.region === "spread" && p.ownerId === id
+    );
+    if (oppSpread) {
+      const ids = oppSpread.cards
+        .filter((c): c is Card => "id" in c)
+        .map((c) => c.id);
+      if (ids.length > 0) stops.push({ zoneId: `pile-${oppSpread.id}`, cardIds: ids });
+    }
+    const count =
+      gameState.opponentHandCounts[id] ??
+      (gameState.opponentRevealedHands[id]?.length ?? 0);
+    if (count > 0) {
+      const revealedIds = gameState.opponentRevealedHands[id]?.map((c) => c.id) ?? [];
+      stops.push({ zoneId: `opponent-hand-${id}`, cardIds: revealedIds });
+    }
+  }
+
+  // 5. Menu — always present, before canvas in clockwise order
+  stops.push({ zoneId: "menu", cardIds: [] });
+
+  // 6. Canvas last (navigated by z-index order, ascending)
   if (gameState.canvasCards.length > 0) {
     const sorted = [...gameState.canvasCards].sort((a, b) => a.z - b.z);
     stops.push({ zoneId: "canvas", cardIds: sorted.map((cc) => cc.card.id) });
   }
-
-  // 5. Menu — always present, always last
-  stops.push({ zoneId: "menu", cardIds: [] });
 
   return stops;
 }
@@ -298,6 +329,11 @@ export function buildKeyDownHandler(
       )
     )
       return;
+
+    // Don't intercept keyboard events when focus is inside an open popover or modal.
+    // Base UI popovers and dialogs render their popup with role="dialog"; let them
+    // manage their own Tab/arrow navigation instead of moving the game cursor.
+    if ((e.target as HTMLElement | null)?.closest?.("[role=\"dialog\"]")) return;
 
     const {
       connected,

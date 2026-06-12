@@ -91,17 +91,18 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger render={
-        <Button
-          ref={triggerRef}
-          variant="ghost"
-          size="icon-sm"
-          aria-label={open ? 'Close controls' : 'Open controls'}
-          className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1')}
-        >
-          <Menu className="size-4" />
-        </Button>
-      } />
+      <div className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1 rounded-lg')}>
+        <PopoverTrigger render={
+          <Button
+            ref={triggerRef}
+            variant="ghost"
+            size="icon-sm"
+            aria-label={open ? 'Close controls' : 'Open controls'}
+          >
+            <Menu className="size-4" />
+          </Button>
+        } />
+      </div>
       <PopoverContent side="bottom" align="end" className="w-56 p-4">
         <div className="flex flex-col gap-3">
           {/* Copy link */}

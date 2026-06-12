@@ -12,26 +12,23 @@ test.describe('keyboard shortcuts', () => {
 
     // Deal cards so there's something to undo
     await dealCards(p1, 5);
-    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).toHaveCount(5);
 
-    // Verify initial card count in hand
-    const initialCount = await p1.getByTestId('hand-zone').locator('[aria-pressed]').count();
-    expect(initialCount).toBe(5);
+    // Wait for the deal popover to close (ensures no input has keyboard focus)
+    await expect(p1.locator('input[type="number"]')).not.toBeVisible();
 
     // Press Cmd+Z to undo the deal
     await p1.keyboard.press('Meta+z');
 
-    // Wait briefly for undo to process
-    await p1.waitForTimeout(300);
-
-    // After undo, hand should be empty or have different card count
-    // (undo should restore to pre-deal state)
-    const postUndoCount = await p1.getByTestId('hand-zone').locator('[aria-pressed]').count();
-    expect(postUndoCount).toBe(0);
+    // After undo, hand should be empty (restored to pre-deal state)
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).toHaveCount(0, { timeout: 3000 });
   });
 
   test('? opens the shortcuts cheat sheet and Escape closes it', async ({ twoPlayerRoom }) => {
     const { p1 } = twoPlayerRoom;
+
+    // Click somewhere neutral to ensure the page has keyboard focus (not any overlay/input)
+    await p1.mouse.click(200, 400);
 
     // Press ? to open cheat sheet
     await p1.keyboard.press('?');

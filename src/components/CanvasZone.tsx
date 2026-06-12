@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { ClientCanvasCard, LastMoveHighlight } from '@/shared/types';
+import type { ClientCanvasCard, LastMoveHighlight, SelectionSource } from '@/shared/types';
 import { CanvasControls } from './CanvasControls';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CardFace } from './CardFace';
@@ -100,6 +100,7 @@ interface CanvasZoneProps {
   canvasCards: ClientCanvasCard[];
   canvasRef: React.RefObject<HTMLDivElement | null>;
   selectedIds: Set<string>;
+  selectionSource: SelectionSource;
   groupIds: Set<string>;
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
@@ -111,7 +112,7 @@ interface CanvasZoneProps {
   cursorCardId?: string;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -327,7 +328,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
           isolation: 'isolate',
         }}
       >
-        {selectedIds.size >= 2 && (
+        {selectedIds.size >= 2 && selectionSource?.zone === 'canvas' && (
           <span
             data-testid="canvas-selection-count"
             className="absolute top-12 left-2 z-10 text-xs bg-primary text-primary-foreground rounded-full px-1.5 py-0.5"

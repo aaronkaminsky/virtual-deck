@@ -42,7 +42,7 @@ describe("computeTabStops", () => {
     expect(stops).toEqual([{ zoneId: "menu", cardIds: [] }]);
   });
 
-  it("includes hand before piles before canvas, menu last", () => {
+  it("includes hand before piles, then menu, then canvas last", () => {
     const state = makeState({
       myHand: [makeCard("h1"), makeCard("h2")],
       piles: [
@@ -51,8 +51,45 @@ describe("computeTabStops", () => {
       canvasCards: [{ card: makeCard("c1"), x: 0, y: 0, z: 1 }],
     });
     const stops = computeTabStops(state);
-    expect(stops.map((s) => s.zoneId)).toEqual(["hand", "pile-draw", "canvas", "menu"]);
+    expect(stops.map((s) => s.zoneId)).toEqual(["hand", "pile-draw", "menu", "canvas"]);
     expect(stops[0].cardIds).toEqual(["h1", "h2"]);
+  });
+
+  it("places discard before draw in tab order", () => {
+    const state = makeState({
+      piles: [
+        { id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined },
+        { id: "discard", name: "Discard", cards: [makeCard("dc1")], region: undefined },
+      ],
+    });
+    const stops = computeTabStops(state);
+    expect(stops.map((s) => s.zoneId)).toEqual(["pile-discard", "pile-draw", "menu"]);
+  });
+
+  it("includes opponent spread and hand in tab order after my zones", () => {
+    const state = makeState({
+      myHand: [makeCard("h1")],
+      opponentHandCounts: { player2: 3 },
+      piles: [
+        {
+          id: "spread-player2",
+          name: "Player 2",
+          cards: [makeCard("os1")],
+          region: "spread",
+          ownerId: "player2",
+        },
+      ],
+    });
+    const stops = computeTabStops(state);
+    expect(stops.map((s) => s.zoneId)).toEqual([
+      "hand",
+      "pile-spread-player2",
+      "opponent-hand-player2",
+      "menu",
+    ]);
+    // Opponent hand with unknown IDs has empty cardIds
+    const oppHandStop = stops.find((s) => s.zoneId === "opponent-hand-player2");
+    expect(oppHandStop?.cardIds).toEqual([]);
   });
 
   it("places my spread zone after hand, before pile zones", () => {
