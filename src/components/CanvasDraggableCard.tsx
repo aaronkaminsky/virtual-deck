@@ -15,9 +15,10 @@ interface CanvasDraggableCardProps {
   onToggleSelect?: (id: string) => void;
   isHighlighted?: boolean;
   highlightNonce?: number;
+  hasCursor?: boolean;
 }
 
-export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, isHighlighted = false, highlightNonce }: CanvasDraggableCardProps) {
+export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, isHighlighted = false, highlightNonce, hasCursor }: CanvasDraggableCardProps) {
   // D-12: useDraggable only — no useDroppable on the card itself
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: canvasCard.card.id,
@@ -60,7 +61,9 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
     boxShadow: isSelected
       ? '0 0 0 2px #60a5fa, 0 0 0 4px rgba(96,165,250,0.3)' + (coversAnother ? `, ${STACK_SHADOW}` : '')
       : coversAnother ? STACK_SHADOW : undefined,
-    borderRadius: (isSelected || coversAnother) ? 6 : undefined,
+    borderRadius: (isSelected || coversAnother || hasCursor) ? 6 : undefined,
+    outline: hasCursor ? '2px solid white' : undefined,
+    outlineOffset: hasCursor ? '2px' : undefined,
   };
 
   return (
