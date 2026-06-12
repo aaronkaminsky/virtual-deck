@@ -36,12 +36,12 @@ export function computeTabStops(gameState: ClientGameState): TabStop[] {
     if (ids.length > 0) stops.push({ zoneId: `pile-${mySpread.id}`, cardIds: ids });
   }
 
-  // 3. Non-spread pile zones in gameState order
+  // 3. Non-spread pile zones in gameState order — only the top card is visible
   for (const pile of gameState.piles.filter((p) => (p.region ?? "pile") === "pile")) {
-    const ids = pile.cards
-      .filter((c): c is Card => "id" in c)
-      .map((c) => c.id);
-    if (ids.length > 0) stops.push({ zoneId: `pile-${pile.id}`, cardIds: ids });
+    const cards = pile.cards.filter((c): c is Card => "id" in c);
+    if (cards.length > 0) {
+      stops.push({ zoneId: `pile-${pile.id}`, cardIds: [cards[cards.length - 1].id] });
+    }
   }
 
   // 4. Canvas (navigated by z-index order, ascending)
@@ -170,35 +170,37 @@ export function moveCursor(
   }
 
   const currentIdx = stops.findIndex((s) => s.zoneId === pos.zoneId);
-  const safeIdx = currentIdx === -1 ? 0 : currentIdx;
-  const currentStop = stops[safeIdx];
+  if (currentIdx === -1) {
+    return { zoneId: stops[0].zoneId, index: 0 };
+  }
+  const currentStop = stops[currentIdx];
 
   if (direction === "left") {
-    if (currentIdx !== -1 && pos.index > 0) {
+    if (pos.index > 0) {
       return { zoneId: pos.zoneId, index: pos.index - 1 };
     }
-    const prevIdx = (safeIdx - 1 + stops.length) % stops.length;
+    const prevIdx = (currentIdx - 1 + stops.length) % stops.length;
     const prev = stops[prevIdx];
     return { zoneId: prev.zoneId, index: Math.max(0, prev.cardIds.length - 1) };
   }
 
   if (direction === "right") {
-    if (currentIdx !== -1 && pos.index < (currentStop?.cardIds.length ?? 1) - 1) {
+    if (pos.index < (currentStop?.cardIds.length ?? 1) - 1) {
       return { zoneId: pos.zoneId, index: pos.index + 1 };
     }
-    const nextIdx = (safeIdx + 1) % stops.length;
+    const nextIdx = (currentIdx + 1) % stops.length;
     const next = stops[nextIdx];
     return { zoneId: next.zoneId, index: 0 };
   }
 
   if (direction === "next-zone") {
-    const nextIdx = (safeIdx + 1) % stops.length;
+    const nextIdx = (currentIdx + 1) % stops.length;
     const next = stops[nextIdx];
     return { zoneId: next.zoneId, index: 0 };
   }
 
   // "prev-zone"
-  const prevIdx = (safeIdx - 1 + stops.length) % stops.length;
+  const prevIdx = (currentIdx - 1 + stops.length) % stops.length;
   const prev = stops[prevIdx];
   return { zoneId: prev.zoneId, index: Math.max(0, prev.cardIds.length - 1) };
 }
@@ -355,8 +357,10 @@ export function buildKeyDownHandler(
     }
 
     // Alt+letter — move selected cards to zone
-    if (e.altKey && e.key.length === 1 && !e.repeat) {
-      const zoneId = letterToZoneMap.get(e.key.toLowerCase());
+    // Use e.code (e.g. "KeyD") to avoid macOS Option key composition (e.g. "∂")
+    if (e.altKey && e.code.startsWith("Key") && !e.repeat) {
+      const letter = e.code.slice(3).toLowerCase();
+      const zoneId = letterToZoneMap.get(letter);
       if (zoneId && selectedIds.size > 0 && selectionSource) {
         e.preventDefault();
         const action = buildAltShortcutAction({

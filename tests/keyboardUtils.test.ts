@@ -89,6 +89,22 @@ describe("computeTabStops", () => {
     const stops = computeTabStops(state);
     expect(stops.map((s) => s.zoneId)).toEqual(["pile-discard", "menu"]);
   });
+
+  it("includes only top card for non-spread pile with multiple cards", () => {
+    const state = makeState({
+      piles: [
+        {
+          id: "draw",
+          name: "Draw",
+          cards: [makeCard("bottom"), makeCard("middle"), makeCard("top")],
+          region: undefined,
+        },
+      ],
+    });
+    const stops = computeTabStops(state);
+    const pileStop = stops.find((s) => s.zoneId === "pile-draw");
+    expect(pileStop?.cardIds).toEqual(["top"]);
+  });
 });
 
 // ─── computeZoneLetterMap ─────────────────────────────────────────────────────
@@ -202,6 +218,11 @@ describe("moveCursor", () => {
   it("prev-zone from menu goes to last card of pile-draw", () => {
     const pos: CursorPos = { zoneId: "menu", index: 0 };
     expect(moveCursor(pos, "prev-zone", stops)).toEqual({ zoneId: "pile-draw", index: 0 });
+  });
+
+  it("ArrowRight from menu stop (filtered out) goes to first card stop", () => {
+    const pos: CursorPos = { zoneId: "menu", index: 0 };
+    expect(moveCursor(pos, "right", stops)).toEqual({ zoneId: "hand", index: 0 });
   });
 });
 
@@ -378,11 +399,13 @@ function fakeEvent(
     shiftKey?: boolean;
     altKey?: boolean;
     repeat?: boolean;
+    code?: string;
   } = {},
   target: object = { tagName: "DIV" }
 ): KeyboardEvent {
   return {
     key,
+    code: `Key${key.toUpperCase()}`,
     metaKey: false,
     ctrlKey: false,
     shiftKey: false,

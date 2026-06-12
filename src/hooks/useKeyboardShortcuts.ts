@@ -55,11 +55,17 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams): void {
       buildKeyUpHandler({ setAltHeld: paramsRef.current.setAltHeld })(e);
     }
 
+    function onBlur() {
+      paramsRef.current.setAltHeld(false);
+    }
+
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
     };
   }, []); // empty deps — paramsRef always has latest values
 }
