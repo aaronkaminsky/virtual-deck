@@ -154,10 +154,11 @@ export function moveCursor(
   direction: "left" | "right" | "next-zone" | "prev-zone",
   tabStops: TabStop[]
 ): CursorPos {
-  // Arrow navigation and prev-zone exclude menu (menu has no cards).
-  // next-zone (Tab forward) includes menu so it is reachable in the forward cycle.
+  // Arrow navigation excludes menu (menu has no cards).
+  // next-zone (Tab) and prev-zone (Shift+Tab) both include menu so it is
+  // reachable in both directions of the zone cycle.
   const stops =
-    direction === "left" || direction === "right" || direction === "prev-zone"
+    direction === "left" || direction === "right"
       ? tabStops.filter((s) => s.cardIds.length > 0)
       : tabStops;
 

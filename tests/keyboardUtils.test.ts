@@ -452,9 +452,17 @@ describe("buildKeyDownHandler — cursor navigation", () => {
     expect(mocks.setCursorPos).toHaveBeenCalledWith({ zoneId: "menu", index: 0 });
   });
 
-  it("Shift+Tab goes to prev zone", () => {
+  it("Shift+Tab goes to prev zone (wraps to menu)", () => {
     const { mocks, handler } = makeHandlerParams({
       cursorPos: { zoneId: "hand", index: 0 },
+    });
+    handler(fakeEvent("Tab", { shiftKey: true }));
+    expect(mocks.setCursorPos).toHaveBeenCalledWith({ zoneId: "menu", index: 0 });
+  });
+
+  it("Shift+Tab from menu goes to last card stop", () => {
+    const { mocks, handler } = makeHandlerParams({
+      cursorPos: { zoneId: "menu", index: 0 },
     });
     handler(fakeEvent("Tab", { shiftKey: true }));
     expect(mocks.setCursorPos).toHaveBeenCalledWith({ zoneId: "pile-draw", index: 0 });
