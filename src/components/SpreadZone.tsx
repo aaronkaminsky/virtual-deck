@@ -17,9 +17,10 @@ interface SortableSpreadCardProps {
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   isHighlighted: boolean;
   highlightNonce?: number;
+  hasCursor?: boolean;
 }
 
-function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect, isHighlighted, highlightNonce }: SortableSpreadCardProps) {
+function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect, isHighlighted, highlightNonce, hasCursor }: SortableSpreadCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'pile' as const, fromId: pileId, toZone: 'pile' as const, toId: pileId },
@@ -53,7 +54,8 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
         data-card-id={card.id}
         className={cn(
           'relative',
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
+          hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-md'
         )}
         {...listeners}
         {...attributes}
@@ -84,9 +86,11 @@ interface SpreadZoneProps {
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
   selectionSource?: SelectionSource;
   highlightedMove?: LastMoveHighlight | null;
+  cursorCardId?: string;
+  shortcutKey?: string;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove, cursorCardId, shortcutKey }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -167,6 +171,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           {selectedIds.size} selected
         </span>
       )}
+      {shortcutKey && (
+        <kbd className="text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight self-start">
+          {shortcutKey}
+        </kbd>
+      )}
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
@@ -202,6 +211,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
                         highlightedMove.cardIds.includes((card as Card).id)
                       }
                       highlightNonce={highlightedMove?.nonce}
+                      hasCursor={cursorCardId === (card as Card).id}
                     />
                   ) : (
                     <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>

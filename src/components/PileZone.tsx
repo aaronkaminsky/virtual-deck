@@ -15,9 +15,11 @@ interface PileZoneProps {
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
   selectedIds?: Set<string>;
   highlightedMove?: LastMoveHighlight | null;
+  cursorCardId?: string;
+  shortcutKey?: string;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds, highlightedMove }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -57,7 +59,14 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex justify-between items-center">
-        <span className="text-xs text-muted-foreground hidden sm:inline">{pile.name}</span>
+        <span className="text-xs text-muted-foreground hidden sm:inline">
+          {pile.name}
+          {shortcutKey && (
+            <kbd className="ml-1 inline-flex items-center text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight">
+              {shortcutKey}
+            </kbd>
+          )}
+        </span>
         <div className="flex gap-1">
           <Button
             variant="ghost"
@@ -118,7 +127,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         {isDraggingTopCard && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
         )}
-        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} isSelected={selectedIds?.has((topCard as Card).id) ?? false} /> : topCard && <CardBack />}
+        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} isSelected={selectedIds?.has((topCard as Card).id) ?? false} hasCursor={cursorCardId !== undefined && 'id' in (topCard ?? {}) && cursorCardId === (topCard as Card).id} /> : topCard && <CardBack />}
         {!isEmpty && <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>}
       </div>
     </div>

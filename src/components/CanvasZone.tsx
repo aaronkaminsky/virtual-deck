@@ -108,9 +108,10 @@ interface CanvasZoneProps {
   onDiscardAllCanvas: () => void;
   onDeselectAll: () => void;
   highlightedMove?: LastMoveHighlight | null;
+  cursorCardId?: string;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -347,6 +348,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, groupIds, acti
               highlightedMove.cardIds.includes(cc.card.id)
             }
             highlightNonce={highlightedMove?.nonce}
+            hasCursor={cursorCardId === cc.card.id}
           />
         ))}
         {passengerGhosts.map(cc => (

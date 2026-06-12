@@ -14,9 +14,10 @@ interface OpponentHandProps {
   sendAction: (action: ClientAction) => void;
   revealedCards?: Card[];
   highlightedMove?: LastMoveHighlight | null;
+  shortcutKey?: string;
 }
 
-export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove }: OpponentHandProps) {
+export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove, shortcutKey }: OpponentHandProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `opponent-hand-${playerId}`,
     data: { toZone: 'opponent-hand' as const, toId: playerId },
@@ -43,6 +44,11 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">
           {displayName || 'Player'}{cardCount > 0 ? ` (${cardCount})` : ''}
+          {shortcutKey && (
+            <kbd className="ml-1 inline-flex items-center text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight">
+              {shortcutKey}
+            </kbd>
+          )}
         </span>
       </div>
       <div className="flex items-center gap-1">
