@@ -112,7 +112,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} />
           </div>
         </div>
 

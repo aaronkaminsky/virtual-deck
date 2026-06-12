@@ -49,36 +49,10 @@ export function computeTabStops(gameState: ClientGameState): TabStop[] {
     }
   }
 
-  // 4. For each opponent (clockwise): their spread zone, then their hand
-  const opponentIds = [
-    ...new Set([
-      ...Object.keys(gameState.opponentHandCounts),
-      ...Object.keys(gameState.opponentRevealedHands),
-    ]),
-  ];
-  for (const id of opponentIds) {
-    const oppSpread = gameState.piles.find(
-      (p) => p.region === "spread" && p.ownerId === id
-    );
-    if (oppSpread) {
-      const ids = oppSpread.cards
-        .filter((c): c is Card => "id" in c)
-        .map((c) => c.id);
-      if (ids.length > 0) stops.push({ zoneId: `pile-${oppSpread.id}`, cardIds: ids });
-    }
-    const count =
-      gameState.opponentHandCounts[id] ??
-      (gameState.opponentRevealedHands[id]?.length ?? 0);
-    if (count > 0) {
-      const revealedIds = gameState.opponentRevealedHands[id]?.map((c) => c.id) ?? [];
-      stops.push({ zoneId: `opponent-hand-${id}`, cardIds: revealedIds });
-    }
-  }
-
-  // 5. Menu — always present, before canvas in clockwise order
+  // 4. Menu — always present, before canvas in clockwise order
   stops.push({ zoneId: "menu", cardIds: [] });
 
-  // 6. Canvas last (navigated by z-index order, ascending)
+  // 5. Canvas last (z-index ascending)
   if (gameState.canvasCards.length > 0) {
     const sorted = [...gameState.canvasCards].sort((a, b) => a.z - b.z);
     stops.push({ zoneId: "canvas", cardIds: sorted.map((cc) => cc.card.id) });
@@ -113,8 +87,7 @@ function assignLetters(entries: ZoneEntry[]): Map<string, string> {
 
 /**
  * Returns Map<zoneId, letter> for all Alt+shortcut send-targets.
- * Canvas is excluded — it requires x/y placement coordinates.
- * Order: hand → pile zones → my spread → opponent spreads → opponent hands.
+ * Order: hand → pile zones → my spread → opponent spreads → opponent hands → canvas.
  */
 export function computeZoneLetterMap(
   gameState: ClientGameState,
@@ -163,6 +136,9 @@ export function computeZoneLetterMap(
       sourceName: player?.displayName || id.slice(0, 8),
     });
   }
+
+  // 6. Canvas
+  entries.push({ zoneId: "canvas", sourceName: "canvas" });
 
   return assignLetters(entries);
 }
@@ -269,6 +245,20 @@ export function buildAltShortcutAction(params: {
       : selectionSource.zone === "pile"
         ? selectionSource.zoneId
         : myPlayerId;
+
+  if (zoneId === "canvas") {
+    const cards = [...selectedIds].map((cardId, i) => ({
+      cardId,
+      x: 300 + i * 20,
+      y: 200 + i * 15,
+    }));
+    return {
+      type: "GROUP_PLACE_ON_CANVAS",
+      fromZone,
+      fromId,
+      cards,
+    };
+  }
 
   let toZone: "pile" | "hand";
   let toId: string;

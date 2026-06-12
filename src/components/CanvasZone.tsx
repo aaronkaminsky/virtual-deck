@@ -110,9 +110,10 @@ interface CanvasZoneProps {
   onDeselectAll: () => void;
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
+  shortcutKey?: string;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId, shortcutKey }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -314,6 +315,11 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
         isOver && 'ring-1 ring-primary/30'
       )}
     >
+      {shortcutKey && (
+        <kbd className="absolute top-2 left-2 z-[1001] inline-flex items-center text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight pointer-events-none">
+          {shortcutKey}
+        </kbd>
+      )}
       {/* Inner canvas div — dnd-kit droppable + canvasRef target; panned via CSS transform */}
       <div
         ref={setRefs}

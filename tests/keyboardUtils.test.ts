@@ -66,7 +66,7 @@ describe("computeTabStops", () => {
     expect(stops.map((s) => s.zoneId)).toEqual(["pile-discard", "pile-draw", "menu"]);
   });
 
-  it("includes opponent spread and hand in tab order after my zones", () => {
+  it("does not include opponent zones in tab order", () => {
     const state = makeState({
       myHand: [makeCard("h1")],
       opponentHandCounts: { player2: 3 },
@@ -81,15 +81,7 @@ describe("computeTabStops", () => {
       ],
     });
     const stops = computeTabStops(state);
-    expect(stops.map((s) => s.zoneId)).toEqual([
-      "hand",
-      "pile-spread-player2",
-      "opponent-hand-player2",
-      "menu",
-    ]);
-    // Opponent hand with unknown IDs has empty cardIds
-    const oppHandStop = stops.find((s) => s.zoneId === "opponent-hand-player2");
-    expect(oppHandStop?.cardIds).toEqual([]);
+    expect(stops.map((s) => s.zoneId)).toEqual(["hand", "menu"]);
   });
 
   it("places my spread zone after hand, before pile zones", () => {
@@ -188,12 +180,13 @@ describe("computeZoneLetterMap", () => {
     expect(map.get("pile-custom")).toBe("e");
   });
 
-  it("does not include canvas", () => {
+  it("assigns a letter to canvas", () => {
     const state = makeState({
       canvasCards: [{ card: makeCard("c1"), x: 0, y: 0, z: 1 }],
     });
     const map = computeZoneLetterMap(state, "player1");
-    expect(map.has("canvas")).toBe(false);
+    expect(map.has("canvas")).toBe(true);
+    expect(map.get("canvas")).toBe("c");
   });
 });
 
@@ -373,6 +366,23 @@ describe("buildAltShortcutAction", () => {
       myPlayerId: "player1",
     });
     expect(action).toMatchObject({ toZone: "hand", toId: "player1" });
+  });
+
+  it("dispatches GROUP_PLACE_ON_CANVAS when zoneId is canvas", () => {
+    const action = buildAltShortcutAction({
+      zoneId: "canvas",
+      selectedIds: selected,
+      selectionSource: handSource,
+      myPlayerId: "player1",
+    });
+    expect(action).toMatchObject({
+      type: "GROUP_PLACE_ON_CANVAS",
+      fromZone: "hand",
+      fromId: "player1",
+    });
+    const cards = (action as { cards: { cardId: string; x: number; y: number }[] }).cards;
+    expect(cards).toHaveLength(2);
+    expect(cards.map((c) => c.cardId)).toEqual(["card1", "card2"]);
   });
 });
 
