@@ -221,7 +221,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     [cursorPos, tabStops]
   );
   const focusMenuTrigger = useCallback(() => {
-    menuTriggerRef.current?.focus();
+    menuTriggerRef.current?.click();
   }, []);
 
   const sensors = useSensors(

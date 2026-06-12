@@ -408,6 +408,11 @@ export function buildKeyDownHandler(
     // Tab / Shift+Tab — zone navigation (includes menu)
     if (e.key === "Tab" && !e.repeat) {
       e.preventDefault();
+      // Blur any DOM-focused element (e.g. a button that got :focus-visible after
+      // Tab exited an open popover) so its outline doesn't linger while the game
+      // cursor takes over.
+      if (typeof document !== "undefined")
+        (document.activeElement as HTMLElement)?.blur?.();
       setCursorPos(
         moveCursor(cursorPos, e.shiftKey ? "prev-zone" : "next-zone", tabStops)
       );
@@ -417,6 +422,8 @@ export function buildKeyDownHandler(
     // ArrowLeft / ArrowRight — card navigation within zone (skips menu)
     if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && !e.repeat) {
       e.preventDefault();
+      if (typeof document !== "undefined")
+        (document.activeElement as HTMLElement)?.blur?.();
       setCursorPos(
         moveCursor(cursorPos, e.key === "ArrowLeft" ? "left" : "right", tabStops)
       );
