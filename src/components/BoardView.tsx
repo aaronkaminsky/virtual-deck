@@ -8,6 +8,7 @@ import { HandZone } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
+import { ShortcutsOverlay } from './ShortcutsOverlay';
 
 interface BoardViewProps {
   gameState: ClientGameState;
@@ -30,9 +31,16 @@ interface BoardViewProps {
   activeCardId: string | null;
   dragDelta: { x: number; y: number } | null;
   highlightedMove: LastMoveHighlight | null;
+  cursorCardId: string | null;
+  altHeld: boolean;
+  zoneLetterMap: Map<string, string>;
+  menuFocused: boolean;
+  menuTriggerRef: React.RefObject<HTMLButtonElement | null>;
+  showShortcuts: boolean;
+  onCloseShortcuts: () => void;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -61,13 +69,14 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   sendAction={sendAction}
                   revealedCards={revealedCards}
                   highlightedMove={highlightedMove}
+                  shortcutKey={altHeld ? zoneLetterMap.get(`opponent-hand-${id}`) : undefined}
                 />
               </div>
             );
           })}
         </div>
         <div className="flex items-center gap-3 self-start">
-          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} />
+          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} />
         </div>
       </div>
 
@@ -85,6 +94,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                       draggingCardId={draggingCardId}
                       interactive={false}
                       highlightedMove={highlightedMove}
+                      cursorCardId={cursorCardId ?? undefined}
+                      shortcutKey={altHeld ? zoneLetterMap.get(`pile-${opponentSpread.id}`) : undefined}
                     />
                   )}
                 </div>
@@ -97,11 +108,11 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex-1 min-h-0 flex items-start mt-1 pr-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
             {pilePiles.map((pile) => (
-              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} highlightedMove={highlightedMove} />
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} />
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} />
           </div>
         </div>
 
@@ -117,6 +128,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onSelectAll={onSelectAll}
               selectionSource={selectionSource}
               highlightedMove={highlightedMove}
+              cursorCardId={cursorCardId ?? undefined}
+              shortcutKey={altHeld ? zoneLetterMap.get(`pile-${mySpreadZone.id}`) : undefined}
             />
           </div>
         )}
@@ -137,10 +150,13 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               isRevealed={gameState.myHandRevealed}
               onToggleReveal={() => sendAction({ type: 'SET_HAND_REVEALED', revealed: !gameState.myHandRevealed })}
               highlightedMove={highlightedMove}
+              cursorCardId={cursorCardId ?? undefined}
+              shortcutKey={altHeld ? zoneLetterMap.get('hand') : undefined}
             />
           );
         })()}
       </div>
+      <ShortcutsOverlay open={showShortcuts} onClose={onCloseShortcuts} />
     </div>
   );
 }
