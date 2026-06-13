@@ -43,6 +43,7 @@ interface BoardViewProps {
 
 export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts }: BoardViewProps) {
   const [sortMode, setSortMode] = useState<SortMode>('original');
+  const [lastDealCount, setLastDealCount] = useState('1');
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -78,7 +79,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           })}
         </div>
         <div className="flex items-center gap-3 self-start">
-          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} />
+          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} dealCount={lastDealCount} onDealCountChange={setLastDealCount} />
         </div>
       </div>
 
