@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 
 interface ControlsBarProps {
   gameState: ClientGameState;
-  playerId: string;
   sendAction: (action: ClientAction) => void;
   roomId: string;
   menuFocused?: boolean;

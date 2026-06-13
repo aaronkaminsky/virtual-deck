@@ -80,7 +80,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           })}
         </div>
         <div className="flex items-center gap-3 self-start">
-          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} dealCount={lastDealCount} onDealCountChange={onDealCountChange} />
+          <ControlsBar gameState={gameState} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} dealCount={lastDealCount} onDealCountChange={onDealCountChange} />
         </div>
       </div>
 
