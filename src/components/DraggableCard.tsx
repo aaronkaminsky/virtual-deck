@@ -12,9 +12,10 @@ interface DraggableCardProps {
   fromId: string;
   onFlip?: () => void;
   isSelected?: boolean;
+  hasCursor?: boolean;
 }
 
-export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: DraggableCardProps) {
+export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected, hasCursor }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: card.id,
     data: { card, fromZone, fromId },
@@ -49,7 +50,7 @@ export function DraggableCard({ card, fromZone, fromId, onFlip, isSelected }: Dr
   };
 
   return (
-    <div ref={setNodeRef} style={style} onClick={handleClick} data-card-id={card.id} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm')}>
+    <div ref={setNodeRef} style={style} onClick={handleClick} data-card-id={card.id} {...listeners} {...attributes} className={cn(isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-sm', hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-sm')}>
       {card.faceUp ? <CardFace card={card} /> : <CardBack />}
     </div>
   );

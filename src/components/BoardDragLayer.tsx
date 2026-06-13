@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
+import {
+  computeTabStops,
+  computeZoneLetterMap,
+  buildLetterToZoneMap,
+  computeCursorCardId,
+  type CursorPos,
+} from '@/lib/keyboardUtils';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const customCollision: CollisionDetection = (args) => {
   const zoneContainers = args.droppableContainers.filter(
@@ -89,6 +97,10 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
   const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null);
+  const [cursorPos, setCursorPos] = useState<CursorPos | null>(null);
+  const [altHeld, setAltHeld] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const passengerOffsetsRef = useRef<Record<string, { offsetX: number; offsetY: number }>>({});
   const dropSuccessRef = useRef(false);
@@ -194,21 +206,44 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     return new Set([...selectedIds, activeCard.id]);
   }, [activeCard, selectedIds]);
 
+  const menuFocused = cursorPos?.zoneId === 'menu';
+  const tabStops = useMemo(() => computeTabStops(gameState), [gameState]);
+  const zoneLetterMap = useMemo(
+    () => computeZoneLetterMap(gameState, playerId),
+    [gameState, playerId]
+  );
+  const letterToZoneMap = useMemo(
+    () => buildLetterToZoneMap(zoneLetterMap),
+    [zoneLetterMap]
+  );
+  const cursorCardId = useMemo(
+    () => computeCursorCardId(cursorPos, tabStops),
+    [cursorPos, tabStops]
+  );
+  const focusMenuTrigger = useCallback(() => {
+    menuTriggerRef.current?.click();
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        setSelectedIds(new Set());
-        setSelectionSource(null);
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  useKeyboardShortcuts({
+    connected,
+    gameState,
+    sendAction,
+    cursorPos,
+    setCursorPos,
+    selectedIds,
+    setSelectedIds,
+    selectionSource,
+    setSelectionSource,
+    setAltHeld,
+    showShortcuts,
+    setShowShortcuts,
+    focusMenuTrigger,
+  });
 
   // Clear stale selection when selected cards are no longer in their source zone
   // (e.g. after RESET_TABLE, deal, or any server action that moves cards out of the selection zone).
@@ -649,7 +684,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

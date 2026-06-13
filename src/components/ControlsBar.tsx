@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import React from 'react';
 import { Menu, Copy, Check, Undo2, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
@@ -6,15 +7,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { getMuted, setMuted } from '@/lib/sound';
+import { cn } from '@/lib/utils';
 
 interface ControlsBarProps {
   gameState: ClientGameState;
   playerId: string;
   sendAction: (action: ClientAction) => void;
   roomId: string;
+  menuFocused?: boolean;
+  triggerRef?: React.RefObject<HTMLButtonElement>;
 }
 
-export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps) {
+export function ControlsBar({ gameState, sendAction, roomId, menuFocused, triggerRef }: ControlsBarProps) {
   const [open, setOpen] = useState(false);
   const [dealCount, setDealCount] = useState('1');
   const [confirmReset, setConfirmReset] = useState(false);
@@ -87,11 +91,18 @@ export function ControlsBar({ gameState, sendAction, roomId }: ControlsBarProps)
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger render={
-        <Button variant="ghost" size="icon-sm" aria-label={open ? 'Close controls' : 'Open controls'}>
-          <Menu className="size-4" />
-        </Button>
-      } />
+      <div className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1 rounded-lg')}>
+        <PopoverTrigger render={
+          <Button
+            ref={triggerRef}
+            variant="ghost"
+            size="icon-sm"
+            aria-label={open ? 'Close controls' : 'Open controls'}
+          >
+            <Menu className="size-4" />
+          </Button>
+        } />
+      </div>
       <PopoverContent side="bottom" align="end" className="w-56 p-4">
         <div className="flex flex-col gap-3">
           {/* Copy link */}

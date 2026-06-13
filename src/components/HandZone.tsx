@@ -61,9 +61,10 @@ interface SortableHandCardProps {
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   isHighlighted: boolean;
   highlightNonce?: number;
+  hasCursor?: boolean;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, isHighlighted, highlightNonce }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, isHighlighted, highlightNonce, hasCursor }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -97,7 +98,8 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         data-card-id={card.id}
         className={cn(
           'relative',
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150'
+          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
+          hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-md'
         )}
         {...listeners}
         {...attributes}
@@ -130,9 +132,11 @@ interface HandZoneProps {
   isRevealed: boolean;
   onToggleReveal: () => void;
   highlightedMove?: LastMoveHighlight | null;
+  cursorCardId?: string;
+  shortcutKey?: string;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
@@ -221,7 +225,14 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
     <div>
       <div className="flex items-center gap-2 px-4 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
-        <span className="text-sm text-muted-foreground">{displayName || 'Player'}</span>
+        <span className="text-sm text-muted-foreground">
+          {displayName || 'Player'}
+          {shortcutKey && (
+            <kbd className="ml-1 inline-flex items-center text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight">
+              {shortcutKey}
+            </kbd>
+          )}
+        </span>
         {selectedIds.size >= 2 && selectionSource?.zone === 'hand' && selectionSource.zoneId === playerId && (
           <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
             {selectedIds.size} selected
@@ -272,6 +283,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
                 highlightedMove.cardIds.includes(card.id)
               }
               highlightNonce={highlightedMove?.nonce}
+              hasCursor={cursorCardId === card.id}
             />
           ))}
           <SortableSentinel id={sentinelId} />

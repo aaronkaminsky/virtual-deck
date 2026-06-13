@@ -11,7 +11,8 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline |
-| 999.46 | Consider adding keyboard commands, for example  Cmd-Z to undo, arrow and space to select cards, hold a key to show zone shortcuts, etc |
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
 | 999.49 | On chrome on PC click to drag canvas seems not to be working |
+| 999.50 | Keyboard access to zone controls — when the keyboard cursor is on a zone, secondary keys should activate its buttons (e.g. F to flip top card already works; extend to shuffle pile, cycle sort order, toggle face-up/down on spread cards, select all in zone) without requiring the user to Tab into the DOM buttons |
+| 999.51 | Remove the reset button from the controls menu — quick deal/re-deal makes it redundant; also add Cmd+D as a keyboard shortcut to trigger re-deal (deal next hand) without opening the controls panel |
