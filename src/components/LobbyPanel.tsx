@@ -31,6 +31,8 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
   const errorMessage = error
     ? error.toLowerCase().includes('full')
       ? 'This room is full (4 players max). Ask the host to share a new link.'
+      : error.startsWith("Can't reach")
+      ? error
       : 'Something went wrong. Refresh the page to reconnect.'
     : null;
 

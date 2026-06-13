@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "lsof -ti :1999 | xargs kill -9 2>/dev/null || true",
     "dev": "partykit dev",
     "dev:client": "vite",
     "build": "vite build",
