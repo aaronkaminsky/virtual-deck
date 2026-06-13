@@ -489,18 +489,27 @@ export function buildKeyDownHandler(
       if (!stop || stop.cardIds.length === 0) return;
 
       let newSource: SelectionSource;
+      let allIds: string[];
+
       if (cursorPos.zoneId === "hand") {
         newSource = { zone: "hand", zoneId: myPlayerId };
+        allIds = stop.cardIds;
       } else if (cursorPos.zoneId === "canvas") {
         newSource = { zone: "canvas", zoneId: "canvas" };
+        allIds = stop.cardIds;
       } else {
-        newSource = {
-          zone: "pile",
-          zoneId: cursorPos.zoneId.slice("pile-".length),
-        };
+        // For pile/spread zones the tab stop only tracks the top card (for
+        // cursor positioning). Look up all client-visible card IDs from the
+        // actual pile so Cmd+A selects every card the player can see.
+        const pileId = cursorPos.zoneId.slice("pile-".length);
+        const pile = gameState.piles.find((p) => p.id === pileId);
+        const visibleCards = pile?.cards.filter((c): c is Card => "id" in c) ?? [];
+        allIds = visibleCards.length > 0 ? visibleCards.map((c) => c.id) : stop.cardIds;
+        const hasMaskedCards = pile?.cards.some((c) => !("id" in c)) ?? false;
+        newSource = { zone: "pile", zoneId: pileId, ...(hasMaskedCards && { hasMaskedCards }) };
       }
 
-      setSelectedIds(new Set(stop.cardIds));
+      setSelectedIds(new Set(allIds));
       setSelectionSource(newSource);
       return;
     }

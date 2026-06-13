@@ -561,7 +561,7 @@ describe("buildKeyDownHandler — Space selection", () => {
 });
 
 describe("buildKeyDownHandler — Cmd+A select all", () => {
-  it("selects all cards in the cursor zone", () => {
+  it("selects all cards in the hand zone", () => {
     const { mocks, handler } = makeHandlerParams({
       cursorPos: { zoneId: "hand", index: 0 },
     });
@@ -570,6 +570,58 @@ describe("buildKeyDownHandler — Cmd+A select all", () => {
     expect(mocks.setSelectionSource).toHaveBeenCalledWith({
       zone: "hand",
       zoneId: "player1",
+    });
+  });
+
+  it("selects all face-up cards in a face-up pile (not just the top card)", () => {
+    const pileCards = [makeCard("p1"), makeCard("p2"), makeCard("p3")];
+    const state = makeState({
+      myHand: [makeCard("h1"), makeCard("h2")],
+      canUndo: true,
+      piles: [{ id: "draw", name: "Draw", cards: pileCards, region: undefined }],
+    });
+    const tabStops = [
+      { zoneId: "hand", cardIds: ["h1", "h2"] },
+      { zoneId: "pile-draw", cardIds: ["p3"] }, // top card only, as computeTabStops would give
+      { zoneId: "menu", cardIds: [] },
+    ];
+    const { mocks, handler } = makeHandlerParams({
+      gameState: state,
+      tabStops,
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    handler(fakeEvent("a", { metaKey: true }));
+    expect(mocks.setSelectedIds).toHaveBeenCalledWith(new Set(["p1", "p2", "p3"]));
+    expect(mocks.setSelectionSource).toHaveBeenCalledWith({
+      zone: "pile",
+      zoneId: "draw",
+    });
+  });
+
+  it("selects only the top card when lower cards are masked", () => {
+    const maskedCard = { faceUp: false as const };
+    const topCard = makeCard("top");
+    const state = makeState({
+      myHand: [makeCard("h1"), makeCard("h2")],
+      canUndo: true,
+      piles: [{ id: "draw", name: "Draw", cards: [maskedCard, maskedCard, topCard], region: undefined }],
+    });
+    const tabStops = [
+      { zoneId: "hand", cardIds: ["h1", "h2"] },
+      { zoneId: "pile-draw", cardIds: ["top"] },
+      { zoneId: "menu", cardIds: [] },
+    ];
+    const { mocks, handler } = makeHandlerParams({
+      gameState: state,
+      tabStops,
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    handler(fakeEvent("a", { metaKey: true }));
+    expect(mocks.setSelectedIds).toHaveBeenCalledWith(new Set(["top"]));
+    expect(mocks.setSelectionSource).toHaveBeenCalledWith({
+      zone: "pile",
+      zoneId: "draw",
+      hasMaskedCards: true,
     });
   });
 });
