@@ -26,6 +26,8 @@ export interface UseKeyboardShortcutsParams {
   showShortcuts: boolean;
   setShowShortcuts: (v: boolean | ((prev: boolean) => boolean)) => void;
   focusMenuTrigger?: () => void;
+  cycleSortMode?: () => void;
+  lastDealCount?: string;
 }
 
 export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams): void {
@@ -48,6 +50,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams): void {
         tabStops,
         letterToZoneMap,
         myPlayerId: p.gameState.myPlayerId,
+        lastDealCount: p.lastDealCount ?? "1",
       })(e);
     }
 
