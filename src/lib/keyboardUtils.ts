@@ -307,6 +307,8 @@ export interface KeyDownParams {
   letterToZoneMap: Map<string, string>;
   focusMenuTrigger?: () => void;
   myPlayerId: string;
+  cycleSortMode?: () => void;
+  lastDealCount: string;
 }
 
 export function buildKeyDownHandler(
@@ -342,6 +344,8 @@ export function buildKeyDownHandler(
       letterToZoneMap,
       focusMenuTrigger,
       myPlayerId,
+      cycleSortMode,
+      lastDealCount,
     } = params;
 
     // Track Alt held
@@ -378,6 +382,19 @@ export function buildKeyDownHandler(
       if (gameState.canUndo) {
         e.preventDefault();
         sendAction({ type: "UNDO_MOVE" });
+      }
+      return;
+    }
+
+    // Cmd/Ctrl+D — deal or re-deal
+    if (e.key === "d" && (e.metaKey || e.ctrlKey) && !e.repeat) {
+      e.preventDefault();
+      const parsed = parseInt(lastDealCount, 10);
+      const cardsPerPlayer = isNaN(parsed) || parsed < 1 ? 1 : parsed;
+      if (gameState.phase === "playing") {
+        sendAction({ type: "DEAL_NEXT_HAND", cardsPerPlayer });
+      } else {
+        sendAction({ type: "DEAL_CARDS", cardsPerPlayer });
       }
       return;
     }
@@ -522,6 +539,34 @@ export function buildKeyDownHandler(
       const pileId = cursorPos.zoneId.slice("pile-".length);
       e.preventDefault();
       sendAction({ type: "FLIP_CARD", pileId, cardId });
+      return;
+    }
+
+    // S — shuffle pile (non-spread) or cycle hand sort
+    if (e.key === "s" && !e.repeat && cursorPos !== null) {
+      if (cursorPos.zoneId === "hand") {
+        cycleSortMode?.();
+        return;
+      }
+      if (cursorPos.zoneId.startsWith("pile-")) {
+        const pileId = cursorPos.zoneId.slice("pile-".length);
+        const pile = gameState.piles.find((p) => p.id === pileId);
+        if (pile && (pile.region ?? "pile") !== "spread") {
+          e.preventDefault();
+          sendAction({ type: "SHUFFLE_PILE", pileId });
+        }
+        return;
+      }
+    }
+
+    // V — toggle pile face-up/face-down
+    if (e.key === "v" && !e.repeat && cursorPos !== null) {
+      if (!cursorPos.zoneId.startsWith("pile-")) return;
+      const pileId = cursorPos.zoneId.slice("pile-".length);
+      const pile = gameState.piles.find((p) => p.id === pileId);
+      if (!pile) return;
+      e.preventDefault();
+      sendAction({ type: "SET_PILE_FACE", pileId, faceUp: !pile.faceUp });
       return;
     }
   };
