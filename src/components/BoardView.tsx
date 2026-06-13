@@ -4,7 +4,8 @@ import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
-import { HandZone } from './HandZone';
+import { useState } from 'react';
+import { HandZone, type SortMode } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
@@ -41,6 +42,7 @@ interface BoardViewProps {
 }
 
 export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts }: BoardViewProps) {
+  const [sortMode, setSortMode] = useState<SortMode>('original');
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -152,6 +154,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               highlightedMove={highlightedMove}
               cursorCardId={cursorCardId ?? undefined}
               shortcutKey={altHeld ? zoneLetterMap.get('hand') : undefined}
+              sortMode={sortMode}
+              setSortMode={setSortMode}
             />
           );
         })()}

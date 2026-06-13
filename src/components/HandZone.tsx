@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -13,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 export type SortMode = 'original' | 'bySuit' | 'byRank';
 
-const SORT_CYCLE: SortMode[] = ['original', 'bySuit', 'byRank'];
+export const SORT_CYCLE: SortMode[] = ['original', 'bySuit', 'byRank'];
 
 const SUIT_ORDER: Suit[] = ['spades', 'clubs', 'diamonds', 'hearts'];
 
@@ -134,16 +133,17 @@ interface HandZoneProps {
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
+  sortMode: SortMode;
+  setSortMode: (m: SortMode) => void;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
   });
 
-  const [sortMode, setSortMode] = useState<SortMode>('original');
 
   const { active, over } = useDndContext();
   const isOver =
