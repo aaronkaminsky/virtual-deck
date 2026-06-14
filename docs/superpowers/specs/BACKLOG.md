@@ -14,6 +14,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
 | 999.49 | On chrome on PC click to drag canvas seems not to be working |
-| 999.52 | Bug: selection ring clips in hand and spread zones — the `ring` / `outline` on selected cards is cut off at the container boundary. Root cause: the zone's scroll/overflow container clips children. Fix: add `overflow: visible` (or adjust padding + clip) so the selection ring renders fully on all edges |
-| 999.53 | Bug/UX: selection highlight and last-move highlight are too visually similar on the canvas — when a card is moved onto the canvas, both highlights appear simultaneously and look nearly identical, making it hard to read the board state. Fix: differentiate the two visuals (color, opacity, or style) so the current selection and the last-moved destination are clearly distinct |
 | 999.54 | Additional visual polish, investigate improvements to make the look more modern, clean, and professional.  Perhaps a different highlighting treatment, or maybe the small buttons near each zone can instead be invisible and only appear on hover (or focus) to save room and reduce visible clutter |
