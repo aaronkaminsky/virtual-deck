@@ -672,6 +672,49 @@ describe("buildKeyDownHandler — Alt+letter", () => {
     handler(fakeEvent("d", { altKey: true }));
     expect(mocks.sendAction).not.toHaveBeenCalled();
   });
+
+  it("dispatches PASS_CARD (not PLAY_CARD_SET) when destination is opponent-hand", () => {
+    const { mocks, handler } = makeHandlerParams({
+      selectedIds: new Set(["h1", "h2"]),
+      selectionSource: { zone: "hand", zoneId: "player1" },
+      letterToZoneMap: new Map([["b", "opponent-hand-player2"]]),
+    });
+    handler(fakeEvent("b", { altKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledTimes(2);
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "h1",
+      targetPlayerId: "player2",
+      fromZone: "hand",
+      fromId: "player1",
+    });
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "h2",
+      targetPlayerId: "player2",
+      fromZone: "hand",
+      fromId: "player1",
+    });
+    expect(mocks.setSelectedIds).toHaveBeenCalledWith(new Set());
+    expect(mocks.setSelectionSource).toHaveBeenCalledWith(null);
+    expect(mocks.setCursorPos).toHaveBeenCalledWith(null);
+  });
+
+  it("dispatches PASS_CARD with fromZone canvas when selection is from canvas", () => {
+    const { mocks, handler } = makeHandlerParams({
+      selectedIds: new Set(["c1"]),
+      selectionSource: { zone: "canvas", zoneId: "canvas" },
+      letterToZoneMap: new Map([["b", "opponent-hand-player2"]]),
+    });
+    handler(fakeEvent("b", { altKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "c1",
+      targetPlayerId: "player2",
+      fromZone: "canvas",
+      fromId: "canvas",
+    });
+  });
 });
 
 describe("buildKeyUpHandler", () => {

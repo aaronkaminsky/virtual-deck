@@ -406,6 +406,27 @@ export function buildKeyDownHandler(
       const zoneId = letterToZoneMap.get(letter);
       if (zoneId && selectedIds.size > 0 && selectionSource) {
         e.preventDefault();
+
+        if (zoneId.startsWith("opponent-hand-")) {
+          // PLAY_CARD_SET is blocked server-side for cross-player hand moves; use PASS_CARD per card
+          const targetPlayerId = zoneId.slice("opponent-hand-".length);
+          const fromZone: "hand" | "pile" | "canvas" =
+            selectionSource.zone === "canvas" ? "canvas"
+            : selectionSource.zone === "pile" ? "pile"
+            : "hand";
+          const fromId =
+            selectionSource.zone === "canvas" ? "canvas"
+            : selectionSource.zone === "pile" ? selectionSource.zoneId
+            : myPlayerId;
+          for (const cardId of selectedIds) {
+            sendAction({ type: "PASS_CARD", cardId, targetPlayerId, fromZone, fromId });
+          }
+          setSelectedIds(new Set());
+          setSelectionSource(null);
+          setCursorPos(null);
+          return;
+        }
+
         const action = buildAltShortcutAction({
           zoneId,
           selectedIds,
