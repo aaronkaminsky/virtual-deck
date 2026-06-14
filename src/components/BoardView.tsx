@@ -114,7 +114,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex-1 min-h-0 flex items-start mt-1 pr-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
             {pilePiles.map((pile) => (
-              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} />
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} />
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
