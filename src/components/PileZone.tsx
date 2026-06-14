@@ -29,6 +29,8 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
 
   const isEmpty = pile.cards.length === 0;
   const topCard = isEmpty ? null : pile.cards[pile.cards.length - 1];
+  const topCardId = topCard && 'id' in topCard ? (topCard as Card).id : null;
+  const isTopCardSelected = topCardId !== null && (selectedIds?.has(topCardId) ?? false);
   const isDraggingTopCard = !!draggingCardId && !!topCard && 'id' in topCard && draggingCardId === (topCard as Card).id;
   const isShuffling = shufflingPileIds.has(pile.id);
   const isPileHighlighted =
@@ -107,7 +109,8 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         className={cn(
           'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
           isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border'
+          isOver ? 'border-primary' : 'border-border',
+          isTopCardSelected && 'ring-2 ring-primary ring-offset-2'
         )}
         onClick={handleTopCardClick}
       >
