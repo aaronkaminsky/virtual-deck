@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { CursorPos } from '@/lib/keyboardUtils';
 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
@@ -42,9 +43,10 @@ interface BoardViewProps {
   setSortMode: (m: SortMode) => void;
   lastDealCount: string;
   onDealCountChange: (v: string) => void;
+  setCursorPos: (pos: CursorPos | null) => void;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -158,6 +160,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               shortcutKey={altHeld ? zoneLetterMap.get('hand') : undefined}
               sortMode={sortMode}
               setSortMode={setSortMode}
+              onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
             />
           );
         })()}

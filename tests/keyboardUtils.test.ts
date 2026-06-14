@@ -717,13 +717,15 @@ describe("buildKeyDownHandler — S shuffle/sort", () => {
     expect(mocks.sendAction).toHaveBeenCalledWith({ type: "SHUFFLE_PILE", pileId: "draw" });
   });
 
-  it("S on hand cursor calls cycleSortMode and does not dispatch action", () => {
+  it("S on hand cursor calls cycleSortMode, prevents default, and does not dispatch action", () => {
     const cycleSortMode = vi.fn();
     const { mocks, handler } = makeHandlerParams({
       cursorPos: { zoneId: "hand", index: 0 },
       cycleSortMode,
     });
-    handler(fakeEvent("s"));
+    const event = fakeEvent("s");
+    handler(event);
+    expect(event.preventDefault).toHaveBeenCalled();
     expect(cycleSortMode).toHaveBeenCalled();
     expect(mocks.sendAction).not.toHaveBeenCalled();
   });
@@ -785,6 +787,18 @@ describe("buildKeyDownHandler — V face toggle", () => {
     });
     handler(fakeEvent("v"));
     expect(mocks.sendAction).not.toHaveBeenCalled();
+  });
+
+  it("Cmd+V on pile cursor is a no-op (does not intercept browser paste)", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: gameStateWithPile,
+      tabStops: tabStopsWithPile,
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    const event = fakeEvent("v", { metaKey: true });
+    handler(event);
+    expect(mocks.sendAction).not.toHaveBeenCalled();
+    expect(event.preventDefault).not.toHaveBeenCalled();
   });
 });
 

@@ -545,6 +545,7 @@ export function buildKeyDownHandler(
     // S — shuffle pile (non-spread) or cycle hand sort
     if (e.key === "s" && !e.repeat && cursorPos !== null) {
       if (cursorPos.zoneId === "hand") {
+        e.preventDefault();
         cycleSortMode?.();
         return;
       }
@@ -559,8 +560,8 @@ export function buildKeyDownHandler(
       }
     }
 
-    // V — toggle pile face-up/face-down
-    if (e.key === "v" && !e.repeat && cursorPos !== null) {
+    // V — toggle pile face-up/face-down (bare key only; Cmd/Ctrl+V is browser paste)
+    if (e.key === "v" && !e.metaKey && !e.ctrlKey && !e.repeat && cursorPos !== null) {
       if (!cursorPos.zoneId.startsWith("pile-")) return;
       const pileId = cursorPos.zoneId.slice("pile-".length);
       const pile = gameState.piles.find((p) => p.id === pileId);
