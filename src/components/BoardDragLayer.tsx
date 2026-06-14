@@ -565,15 +565,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dropSuccessRef.current = isSuccess || isHandReorder || isPassCard;
     setDragging(false);
 
-    // Phase 32: canvas → opponent-hand not supported; keep card on canvas (NOLOSS-01, T-32-11)
-    if (isPassCard && dragDataRef.current?.fromZone === 'canvas') {
-      dropSuccessRef.current = false;
-      setActiveCard(null);
-      dragDataRef.current = null;
-      setDragging(false);
-      return;
-    }
-
     if (isPassCard) {
       setActiveCard(null);
       setDragDelta(null);
@@ -583,7 +574,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         type: 'PASS_CARD',
         cardId: card.id,
         targetPlayerId: overData!.toId,
-        fromZone: fromZone as 'hand' | 'pile',
+        fromZone: fromZone as 'hand' | 'pile' | 'canvas',
         fromId,
       });
     } else if (isSuccess) {
