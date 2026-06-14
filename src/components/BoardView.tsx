@@ -118,7 +118,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.z - b.z); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.x - b.x); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} />
           </div>
         </div>
 

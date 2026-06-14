@@ -52,9 +52,9 @@ export function computeTabStops(gameState: ClientGameState): TabStop[] {
   // 4. Menu — always present, before canvas in clockwise order
   stops.push({ zoneId: "menu", cardIds: [] });
 
-  // 5. Canvas last (z-index ascending)
+  // 5. Canvas last (x-position ascending: left → right for arrow-key navigation)
   if (gameState.canvasCards.length > 0) {
-    const sorted = [...gameState.canvasCards].sort((a, b) => a.z - b.z);
+    const sorted = [...gameState.canvasCards].sort((a, b) => a.x - b.x);
     stops.push({ zoneId: "canvas", cardIds: sorted.map((cc) => cc.card.id) });
   }
 
