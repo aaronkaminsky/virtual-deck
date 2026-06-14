@@ -436,6 +436,31 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "PASS_CARD": {
+        if (!this.gameState.hands[action.targetPlayerId]) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PLAYER_NOT_FOUND",
+            message: `Player ${action.targetPlayerId} not found`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (action.fromZone === "canvas") {
+          const canvasIdx = this.gameState.canvasCards.findIndex(cc => cc.card.id === action.cardId);
+          if (canvasIdx === -1) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "CARD_NOT_ON_CANVAS",
+              message: `Card ${action.cardId} not found on canvas`,
+            } satisfies ServerEvent));
+            break;
+          }
+          takeSnapshot(this.gameState);
+          const [removed] = this.gameState.canvasCards.splice(canvasIdx, 1);
+          const canvasPassedCard = { ...removed.card, faceUp: true };
+          this.gameState.hands[action.targetPlayerId].push(canvasPassedCard);
+          lastMoveArgs = { toZoneType: "hand", toZoneId: action.targetPlayerId, cardIds: [action.cardId] };
+          break;
+        }
         const sourceArr: Card[] | undefined =
           action.fromZone === "pile"
             ? this.gameState.piles.find(p => p.id === action.fromId)?.cards
@@ -454,14 +479,6 @@ export default class GameRoom implements Party.Server {
             type: "ERROR",
             code: action.fromZone === "pile" ? "CARD_NOT_IN_PILE" : "CARD_NOT_IN_HAND",
             message: `Card ${action.cardId} not found in source`,
-          } satisfies ServerEvent));
-          break;
-        }
-        if (!this.gameState.hands[action.targetPlayerId]) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "PLAYER_NOT_FOUND",
-            message: `Player ${action.targetPlayerId} not found`,
           } satisfies ServerEvent));
           break;
         }

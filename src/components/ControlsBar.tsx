@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
-import { Menu, Copy, Check, Undo2, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Menu, Copy, Check, Undo2, Volume2, VolumeX } from 'lucide-react';
 import type { ClientAction, ClientGameState } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -11,17 +11,16 @@ import { cn } from '@/lib/utils';
 
 interface ControlsBarProps {
   gameState: ClientGameState;
-  playerId: string;
   sendAction: (action: ClientAction) => void;
   roomId: string;
   menuFocused?: boolean;
   triggerRef?: React.RefObject<HTMLButtonElement>;
+  dealCount: string;
+  onDealCountChange: (v: string) => void;
 }
 
-export function ControlsBar({ gameState, sendAction, roomId, menuFocused, triggerRef }: ControlsBarProps) {
+export function ControlsBar({ gameState, sendAction, roomId, menuFocused, triggerRef, dealCount, onDealCountChange }: ControlsBarProps) {
   const [open, setOpen] = useState(false);
-  const [dealCount, setDealCount] = useState('1');
-  const [confirmReset, setConfirmReset] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [muted, setMutedState] = useState(getMuted());
@@ -46,12 +45,6 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
     ? Math.floor(totalCardsInGame / connectedPlayerCount)
     : Math.floor(drawPileCount / connectedPlayerCount);
   const undoDisabled = !gameState.canUndo;
-  const resetDisabled = !gameState.canUndo;
-
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) setConfirmReset(false);
-    setOpen(nextOpen);
-  }
 
   function handleCopy() {
     const base = import.meta.env.BASE_URL || '/virtual-deck/';
@@ -63,7 +56,6 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
         setOpen(false);
       }, 1500);
     }).catch(() => {
-      // Clipboard unavailable — close the panel so the user isn't stuck
       setOpen(false);
     });
   }
@@ -76,21 +68,16 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
     } else {
       sendAction({ type: 'DEAL_CARDS', cardsPerPlayer: parsed });
     }
-    handleOpenChange(false);
+    setOpen(false);
   }
 
   function handleUndo() {
     sendAction({ type: 'UNDO_MOVE' });
-    handleOpenChange(false);
-  }
-
-  function handleResetConfirm() {
-    sendAction({ type: 'RESET_TABLE' });
-    handleOpenChange(false);
+    setOpen(false);
   }
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={setOpen}>
       <div className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1 rounded-lg')}>
         <PopoverTrigger render={
           <Button
@@ -143,7 +130,7 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
                 min={1}
                 max={maxCards}
                 value={dealCount}
-                onChange={e => setDealCount(e.target.value)}
+                onChange={e => onDealCountChange(e.target.value)}
                 className="flex-1"
               />
               <Button
@@ -158,7 +145,7 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
 
           <Separator />
 
-          {/* Undo + Reset */}
+          {/* Undo */}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -169,32 +156,7 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
             >
               <Undo2 className="mr-1 size-4" /> Undo
             </Button>
-            {!confirmReset && (
-              <Button
-                variant="destructive"
-                size="sm"
-                disabled={resetDisabled}
-                onClick={() => setConfirmReset(true)}
-                className="flex-1"
-              >
-                <RotateCcw className="mr-1 size-4" /> Reset table
-              </Button>
-            )}
           </div>
-
-          {confirmReset && (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm text-muted-foreground">Are you sure?</span>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => setConfirmReset(false)}>
-                  Keep playing
-                </Button>
-                <Button variant="destructive" size="sm" className="flex-1" onClick={handleResetConfirm}>
-                  Reset table
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -13,12 +13,13 @@ interface CanvasDraggableCardProps {
   isSelected?: boolean;
   isPassenger?: boolean;
   onToggleSelect?: (id: string) => void;
+  onCursorChange?: () => void;
   isHighlighted?: boolean;
   highlightNonce?: number;
   hasCursor?: boolean;
 }
 
-export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, isHighlighted = false, highlightNonce, hasCursor }: CanvasDraggableCardProps) {
+export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = false, isPassenger = false, onToggleSelect, onCursorChange, isHighlighted = false, highlightNonce, hasCursor }: CanvasDraggableCardProps) {
   // D-12: useDraggable only — no useDroppable on the card itself
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: canvasCard.card.id,
@@ -45,6 +46,7 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
       didDragRef.current = false;
       return;
     }
+    onCursorChange?.();
     onToggleSelect?.(canvasCard.card.id);
   }
 

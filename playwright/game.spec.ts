@@ -73,26 +73,6 @@ test.describe('virtual-deck e2e', () => {
     await expect(p1.getByTestId('opponent-hand')).toBeVisible();
   });
 
-  test('reset table: all cards return to draw pile', async ({ twoPlayerRoom }) => {
-    const { p1, p2 } = twoPlayerRoom;
-
-    // Deal first to enter "playing" phase (Reset button only visible in playing phase)
-    await dealCards(p1, 5);
-    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
-
-    // Open controls to access the Reset button (inside the popover)
-    await p1.getByRole('button', { name: /open controls/i }).click();
-
-    // Reset table is in playing phase — first click shows confirmation, second confirms
-    await p1.getByRole('button', { name: 'Reset table' }).click();
-    await p1.getByRole('button', { name: 'Reset table' }).click();
-
-    // All 52 cards should return to the draw pile — Badge shows count
-    // The pile-draw div contains a Badge element with the card count
-    await expect(p1.getByTestId('pile-draw')).toContainText('52');
-    await expect(p2.getByTestId('pile-draw')).toContainText('52');
-  });
-
   test('deal next hand: Deal button available in playing phase, deals fresh hand, undo restores previous', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 

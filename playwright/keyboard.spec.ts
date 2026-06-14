@@ -42,4 +42,29 @@ test.describe('keyboard shortcuts', () => {
     // Verify it's closed
     await expect(p1.getByText(/keyboard shortcuts/i)).not.toBeVisible();
   });
+
+  test('Cmd+D deals 1 card (default deal count)', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+
+    // Wait for the hand zone to be in DOM (game is ready)
+    await p1.getByTestId('hand-zone').waitFor({ state: 'visible' });
+
+    // Click somewhere neutral to ensure the page has keyboard focus
+    await p1.mouse.click(200, 400);
+
+    // Press Cmd+D to deal (default count = 1)
+    await p1.keyboard.press('Meta+d');
+
+    // After deal, hand should have 1 card
+    await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).toHaveCount(1, { timeout: 3000 });
+  });
+
+  test('Reset button is absent from controls menu', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+
+    await p1.getByRole('button', { name: /open controls/i }).click();
+
+    // Reset button should not exist anywhere in the visible popover
+    await expect(p1.getByRole('button', { name: /reset table/i })).not.toBeVisible();
+  });
 });

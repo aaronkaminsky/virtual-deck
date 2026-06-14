@@ -16,6 +16,7 @@ import {
   type CursorPos,
 } from '@/lib/keyboardUtils';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { type SortMode, SORT_CYCLE } from './HandZone';
 
 const customCollision: CollisionDetection = (args) => {
   const zoneContainers = args.droppableContainers.filter(
@@ -107,6 +108,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [sortMode, setSortMode] = useState<SortMode>('original');
+  const [lastDealCount, setLastDealCount] = useState('1');
 
   const handleToggleSelect = (id: string, zone: 'hand' | 'pile', zoneId: string) => {
     const isDifferentZone = selectionSource !== null &&
@@ -224,6 +227,10 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     menuTriggerRef.current?.click();
   }, []);
 
+  const cycleSortMode = useCallback(() => {
+    setSortMode(prev => SORT_CYCLE[(SORT_CYCLE.indexOf(prev) + 1) % SORT_CYCLE.length]);
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -243,6 +250,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     showShortcuts,
     setShowShortcuts,
     focusMenuTrigger,
+    cycleSortMode,
+    lastDealCount,
   });
 
   // Clear stale selection when selected cards are no longer in their source zone
@@ -556,15 +565,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     dropSuccessRef.current = isSuccess || isHandReorder || isPassCard;
     setDragging(false);
 
-    // Phase 32: canvas → opponent-hand not supported; keep card on canvas (NOLOSS-01, T-32-11)
-    if (isPassCard && dragDataRef.current?.fromZone === 'canvas') {
-      dropSuccessRef.current = false;
-      setActiveCard(null);
-      dragDataRef.current = null;
-      setDragging(false);
-      return;
-    }
-
     if (isPassCard) {
       setActiveCard(null);
       setDragDelta(null);
@@ -574,7 +574,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         type: 'PASS_CARD',
         cardId: card.id,
         targetPlayerId: overData!.toId,
-        fromZone: fromZone as 'hand' | 'pile',
+        fromZone: fromZone as 'hand' | 'pile' | 'canvas',
         fromId,
       });
     } else if (isSuccess) {
@@ -684,7 +684,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={setSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

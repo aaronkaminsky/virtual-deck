@@ -13,13 +13,15 @@ interface PileZoneProps {
   draggingCardId: string | null;
   shufflingPileIds?: Set<string>;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
+  onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  onCursorChange?: () => void;
   selectedIds?: Set<string>;
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, onToggleSelect, onCursorChange, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -27,6 +29,8 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
 
   const isEmpty = pile.cards.length === 0;
   const topCard = isEmpty ? null : pile.cards[pile.cards.length - 1];
+  const topCardId = topCard && 'id' in topCard ? (topCard as Card).id : null;
+  const isTopCardSelected = topCardId !== null && (selectedIds?.has(topCardId) ?? false);
   const isDraggingTopCard = !!draggingCardId && !!topCard && 'id' in topCard && draggingCardId === (topCard as Card).id;
   const isShuffling = shufflingPileIds.has(pile.id);
   const isPileHighlighted =
@@ -42,10 +46,11 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
     sendAction({ type: 'SHUFFLE_PILE', pileId: pile.id });
   }
 
-  function handleFlipCard() {
-    if (!topCard || !('id' in topCard)) return;
-    if (!topCard.faceUp && !pile.faceUp) return; // no peeking at face-down cards in a face-down pile
-    sendAction({ type: 'FLIP_CARD', pileId: pile.id, cardId: topCard.id });
+  function handleTopCardClick() {
+    onCursorChange?.();
+    if (topCard && 'id' in topCard) {
+      onToggleSelect?.((topCard as Card).id, 'pile', pile.id);
+    }
   }
 
   function handleSelectAll() {
@@ -104,8 +109,10 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         className={cn(
           'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',
           isEmpty ? 'border-dashed' : '',
-          isOver ? 'border-primary' : 'border-border'
+          isOver ? 'border-primary' : 'border-border',
+          isTopCardSelected && 'ring-2 ring-primary ring-offset-2'
         )}
+        onClick={handleTopCardClick}
       >
         {isPileHighlighted && (
           <div key={highlightedMove!.nonce} className="last-move-highlight absolute inset-0 rounded-lg pointer-events-none" />
@@ -127,7 +134,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         {isDraggingTopCard && (
           <div className="absolute inset-0 rounded-lg border-2 border-dashed border-muted-foreground" />
         )}
-        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} onFlip={handleFlipCard} isSelected={selectedIds?.has((topCard as Card).id) ?? false} hasCursor={cursorCardId !== undefined && 'id' in (topCard ?? {}) && cursorCardId === (topCard as Card).id} /> : topCard && <CardBack />}
+        {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} isSelected={selectedIds?.has((topCard as Card).id) ?? false} hasCursor={cursorCardId !== undefined && 'id' in (topCard ?? {}) && cursorCardId === (topCard as Card).id} /> : topCard && <CardBack />}
         {!isEmpty && <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>}
       </div>
     </div>

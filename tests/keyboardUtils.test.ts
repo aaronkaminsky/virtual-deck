@@ -432,6 +432,7 @@ function makeHandlerParams(
     tabStops,
     letterToZoneMap: new Map([["d", "pile-draw"], ["h", "hand"]]),
     myPlayerId: "player1",
+    lastDealCount: "1",
     ...overrides,
   });
 
@@ -626,20 +627,19 @@ describe("buildKeyDownHandler — Cmd+A select all", () => {
   });
 });
 
-describe("buildKeyDownHandler — F flip", () => {
-  it("dispatches FLIP_CARD when cursor is on a pile", () => {
+describe("buildKeyDownHandler — F face toggle", () => {
+  const facePile = { id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined as undefined, faceUp: false };
+
+  it("F on pile cursor dispatches SET_PILE_FACE with toggled faceUp", () => {
     const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ piles: [facePile] }),
       cursorPos: { zoneId: "pile-draw", index: 0 },
     });
     handler(fakeEvent("f"));
-    expect(mocks.sendAction).toHaveBeenCalledWith({
-      type: "FLIP_CARD",
-      pileId: "draw",
-      cardId: "d1",
-    });
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "SET_PILE_FACE", pileId: "draw", faceUp: true });
   });
 
-  it("does not flip when cursor is on hand", () => {
+  it("F on hand cursor is a no-op", () => {
     const { mocks, handler } = makeHandlerParams({
       cursorPos: { zoneId: "hand", index: 0 },
     });
@@ -672,6 +672,49 @@ describe("buildKeyDownHandler — Alt+letter", () => {
     handler(fakeEvent("d", { altKey: true }));
     expect(mocks.sendAction).not.toHaveBeenCalled();
   });
+
+  it("dispatches PASS_CARD (not PLAY_CARD_SET) when destination is opponent-hand", () => {
+    const { mocks, handler } = makeHandlerParams({
+      selectedIds: new Set(["h1", "h2"]),
+      selectionSource: { zone: "hand", zoneId: "player1" },
+      letterToZoneMap: new Map([["b", "opponent-hand-player2"]]),
+    });
+    handler(fakeEvent("b", { altKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledTimes(2);
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "h1",
+      targetPlayerId: "player2",
+      fromZone: "hand",
+      fromId: "player1",
+    });
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "h2",
+      targetPlayerId: "player2",
+      fromZone: "hand",
+      fromId: "player1",
+    });
+    expect(mocks.setSelectedIds).toHaveBeenCalledWith(new Set());
+    expect(mocks.setSelectionSource).toHaveBeenCalledWith(null);
+    expect(mocks.setCursorPos).toHaveBeenCalledWith(null);
+  });
+
+  it("dispatches PASS_CARD with fromZone canvas when selection is from canvas", () => {
+    const { mocks, handler } = makeHandlerParams({
+      selectedIds: new Set(["c1"]),
+      selectionSource: { zone: "canvas", zoneId: "canvas" },
+      letterToZoneMap: new Map([["b", "opponent-hand-player2"]]),
+    });
+    handler(fakeEvent("b", { altKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledWith({
+      type: "PASS_CARD",
+      cardId: "c1",
+      targetPlayerId: "player2",
+      fromZone: "canvas",
+      fromId: "canvas",
+    });
+  });
 });
 
 describe("buildKeyUpHandler", () => {
@@ -687,5 +730,122 @@ describe("buildKeyUpHandler", () => {
     const handler = buildKeyUpHandler({ setAltHeld });
     handler({ key: "d" } as KeyboardEvent);
     expect(setAltHeld).not.toHaveBeenCalled();
+  });
+});
+
+// ─── buildKeyDownHandler — S shuffle/sort ─────────────────────────────────────
+
+describe("buildKeyDownHandler — S shuffle/sort", () => {
+  const drawPile = { id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined as undefined, faceUp: false };
+  const spreadPile = { id: "spread-p1", name: "Spread", cards: [makeCard("s1")], region: "spread" as const, ownerId: "player1" };
+  const gameStateWithPile = makeState({
+    myHand: [makeCard("h1"), makeCard("h2")],
+    canUndo: true,
+    piles: [drawPile],
+  });
+  const tabStopsWithPile = [
+    { zoneId: "hand", cardIds: ["h1", "h2"] },
+    { zoneId: "pile-draw", cardIds: ["d1"] },
+    { zoneId: "menu", cardIds: [] },
+  ];
+
+  it("S on non-spread pile dispatches SHUFFLE_PILE", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: gameStateWithPile,
+      tabStops: tabStopsWithPile,
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    handler(fakeEvent("s"));
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "SHUFFLE_PILE", pileId: "draw" });
+  });
+
+  it("S on hand cursor calls cycleSortMode, prevents default, and does not dispatch action", () => {
+    const cycleSortMode = vi.fn();
+    const { mocks, handler } = makeHandlerParams({
+      cursorPos: { zoneId: "hand", index: 0 },
+      cycleSortMode,
+    });
+    const event = fakeEvent("s");
+    handler(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(cycleSortMode).toHaveBeenCalled();
+    expect(mocks.sendAction).not.toHaveBeenCalled();
+  });
+
+  it("S on spread zone is a no-op — no action dispatched, cycleSortMode not called", () => {
+    const cycleSortMode = vi.fn();
+    const spreadGameState = makeState({
+      myHand: [makeCard("h1")],
+      canUndo: true,
+      piles: [spreadPile],
+    });
+    const spreadTabStops = [
+      { zoneId: "hand", cardIds: ["h1"] },
+      { zoneId: "pile-spread-p1", cardIds: ["s1"] },
+      { zoneId: "menu", cardIds: [] },
+    ];
+    const { mocks, handler } = makeHandlerParams({
+      gameState: spreadGameState,
+      tabStops: spreadTabStops,
+      cursorPos: { zoneId: "pile-spread-p1", index: 0 },
+      cycleSortMode,
+    });
+    handler(fakeEvent("s"));
+    expect(mocks.sendAction).not.toHaveBeenCalled();
+    expect(cycleSortMode).not.toHaveBeenCalled();
+  });
+});
+
+// ─── buildKeyDownHandler — V face toggle ──────────────────────────────────────
+
+describe("buildKeyDownHandler — V key (removed)", () => {
+  it("V key is a no-op on any zone (V removed; use F for face toggle)", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ piles: [{ id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined, faceUp: false }] }),
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    handler(fakeEvent("v"));
+    expect(mocks.sendAction).not.toHaveBeenCalled();
+  });
+
+  it("Cmd+V is a no-op and does not prevent default (does not intercept browser paste)", () => {
+    const { mocks, handler } = makeHandlerParams({
+      cursorPos: { zoneId: "pile-draw", index: 0 },
+    });
+    const event = fakeEvent("v", { metaKey: true });
+    handler(event);
+    expect(mocks.sendAction).not.toHaveBeenCalled();
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+});
+
+// ─── buildKeyDownHandler — Cmd+D deal ─────────────────────────────────────────
+
+describe("buildKeyDownHandler — Cmd+D deal", () => {
+  it("Cmd+D dispatches DEAL_NEXT_HAND when phase is playing", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ phase: "playing" }),
+      lastDealCount: "3",
+    });
+    handler(fakeEvent("d", { metaKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 3 });
+  });
+
+  it("Cmd+D dispatches DEAL_CARDS when phase is not playing", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ phase: "lobby" as import("../src/shared/types").ClientGameState["phase"] }),
+      lastDealCount: "5",
+    });
+    handler(fakeEvent("d", { metaKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "DEAL_CARDS", cardsPerPlayer: 5 });
+  });
+
+  it("Cmd+D defaults cardsPerPlayer to 1 when lastDealCount is unparseable", () => {
+    const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ phase: "playing" }),
+      lastDealCount: "abc",
+    });
+    handler(fakeEvent("d", { metaKey: true }));
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 1 });
   });
 });
