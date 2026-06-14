@@ -266,7 +266,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
-          'h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card',
+          'h-[100px] sm:h-[128px] flex items-center px-4 py-2 overflow-x-auto bg-card',
           isOver ? 'border-t-2 border-primary' : '',
           isRevealed ? 'ring-1 ring-primary/50 ring-inset' : ''
         )}

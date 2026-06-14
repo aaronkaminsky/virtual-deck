@@ -61,7 +61,7 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
     transform: isDragging ? undefined : CSS.Translate.toString(transform),
     touchAction: 'none',
     boxShadow: isSelected
-      ? '0 0 0 2px #60a5fa, 0 0 0 4px rgba(96,165,250,0.3)' + (coversAnother ? `, ${STACK_SHADOW}` : '')
+      ? '0 0 0 2px #f59e0b, 0 0 0 4px rgba(245,158,11,0.3)' + (coversAnother ? `, ${STACK_SHADOW}` : '')
       : coversAnother ? STACK_SHADOW : undefined,
     borderRadius: (isSelected || coversAnother || hasCursor) ? 6 : undefined,
     outline: hasCursor ? '2px solid white' : undefined,
