@@ -219,6 +219,8 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           setSortMode('original');
         }
         sendAction({ type: 'REORDER_HAND', orderedCardIds: reordered.map(c => c.id) });
+        const newIdx = reordered.findIndex(c => c.id === draggedId);
+        if (newIdx !== -1) onCursorChange?.(newIdx);
       }
     },
   });

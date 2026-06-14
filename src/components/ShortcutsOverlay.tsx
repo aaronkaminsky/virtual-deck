@@ -14,9 +14,8 @@ const SHORTCUTS = [
   { keys: '⌘A / Ctrl+A', action: 'Select all cards in cursor zone' },
   { keys: '⌥ (hold)', action: 'Show zone shortcut letters' },
   { keys: '⌥+letter', action: 'Move selected cards to that zone' },
-  { keys: 'F', action: 'Flip cursor card (pile / spread only)' },
+  { keys: 'F', action: 'Toggle zone face-up / face-down (pile / spread)' },
   { keys: 'S', action: 'Shuffle pile / cycle sort order (hand)' },
-  { keys: 'V', action: 'Toggle face-up / face-down' },
   { keys: '⌘D / Ctrl+D', action: 'Deal (or re-deal) cards' },
   { keys: '?', action: 'Show / hide this cheat sheet' },
 ];

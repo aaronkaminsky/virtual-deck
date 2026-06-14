@@ -531,14 +531,14 @@ export function buildKeyDownHandler(
       return;
     }
 
-    // F — flip cursor card (pile/spread zones only)
+    // F — toggle pile / spread zone face-up / face-down (same as zone face button)
     if (e.key === "f" && !e.repeat && cursorPos !== null) {
       if (!cursorPos.zoneId.startsWith("pile-")) return;
-      const cardId = computeCursorCardId(cursorPos, tabStops);
-      if (!cardId) return;
       const pileId = cursorPos.zoneId.slice("pile-".length);
+      const pile = gameState.piles.find((p) => p.id === pileId);
+      if (!pile) return;
       e.preventDefault();
-      sendAction({ type: "FLIP_CARD", pileId, cardId });
+      sendAction({ type: "SET_PILE_FACE", pileId, faceUp: !pile.faceUp });
       return;
     }
 
@@ -560,16 +560,6 @@ export function buildKeyDownHandler(
       }
     }
 
-    // V — toggle pile face-up/face-down (bare key only; Cmd/Ctrl+V is browser paste)
-    if (e.key === "v" && !e.metaKey && !e.ctrlKey && !e.repeat && cursorPos !== null) {
-      if (!cursorPos.zoneId.startsWith("pile-")) return;
-      const pileId = cursorPos.zoneId.slice("pile-".length);
-      const pile = gameState.piles.find((p) => p.id === pileId);
-      if (!pile) return;
-      e.preventDefault();
-      sendAction({ type: "SET_PILE_FACE", pileId, faceUp: !pile.faceUp });
-      return;
-    }
   };
 }
 

@@ -111,9 +111,10 @@ interface CanvasZoneProps {
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
+  onCursorChange?: (cardId: string) => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId, shortcutKey }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -350,6 +351,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
             isSelected={selectedIds.has(cc.card.id)}
             isPassenger={groupIds.has(cc.card.id) && cc.card.id !== activeCardId}
             onToggleSelect={onToggleSelectCanvas}
+            onCursorChange={() => onCursorChange?.(cc.card.id)}
             isHighlighted={
               highlightedMove?.toZoneType === "canvas" &&
               highlightedMove.cardIds.includes(cc.card.id)

@@ -627,20 +627,19 @@ describe("buildKeyDownHandler — Cmd+A select all", () => {
   });
 });
 
-describe("buildKeyDownHandler — F flip", () => {
-  it("dispatches FLIP_CARD when cursor is on a pile", () => {
+describe("buildKeyDownHandler — F face toggle", () => {
+  const facePile = { id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined as undefined, faceUp: false };
+
+  it("F on pile cursor dispatches SET_PILE_FACE with toggled faceUp", () => {
     const { mocks, handler } = makeHandlerParams({
+      gameState: makeState({ piles: [facePile] }),
       cursorPos: { zoneId: "pile-draw", index: 0 },
     });
     handler(fakeEvent("f"));
-    expect(mocks.sendAction).toHaveBeenCalledWith({
-      type: "FLIP_CARD",
-      pileId: "draw",
-      cardId: "d1",
-    });
+    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "SET_PILE_FACE", pileId: "draw", faceUp: true });
   });
 
-  it("does not flip when cursor is on hand", () => {
+  it("F on hand cursor is a no-op", () => {
     const { mocks, handler } = makeHandlerParams({
       cursorPos: { zoneId: "hand", index: 0 },
     });
@@ -756,43 +755,18 @@ describe("buildKeyDownHandler — S shuffle/sort", () => {
 
 // ─── buildKeyDownHandler — V face toggle ──────────────────────────────────────
 
-describe("buildKeyDownHandler — V face toggle", () => {
-  const facePile = { id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined as undefined, faceUp: false };
-  const gameStateWithPile = makeState({
-    myHand: [makeCard("h1"), makeCard("h2")],
-    canUndo: true,
-    piles: [facePile],
-  });
-  const tabStopsWithPile = [
-    { zoneId: "hand", cardIds: ["h1", "h2"] },
-    { zoneId: "pile-draw", cardIds: ["d1"] },
-    { zoneId: "menu", cardIds: [] },
-  ];
-
-  it("V on pile cursor dispatches SET_PILE_FACE with toggled faceUp", () => {
+describe("buildKeyDownHandler — V key (removed)", () => {
+  it("V key is a no-op on any zone (V removed; use F for face toggle)", () => {
     const { mocks, handler } = makeHandlerParams({
-      gameState: gameStateWithPile,
-      tabStops: tabStopsWithPile,
+      gameState: makeState({ piles: [{ id: "draw", name: "Draw", cards: [makeCard("d1")], region: undefined, faceUp: false }] }),
       cursorPos: { zoneId: "pile-draw", index: 0 },
-    });
-    handler(fakeEvent("v"));
-    expect(mocks.sendAction).toHaveBeenCalledWith({ type: "SET_PILE_FACE", pileId: "draw", faceUp: true });
-  });
-
-  it("V on hand cursor is a no-op", () => {
-    const { mocks, handler } = makeHandlerParams({
-      gameState: gameStateWithPile,
-      tabStops: tabStopsWithPile,
-      cursorPos: { zoneId: "hand", index: 0 },
     });
     handler(fakeEvent("v"));
     expect(mocks.sendAction).not.toHaveBeenCalled();
   });
 
-  it("Cmd+V on pile cursor is a no-op (does not intercept browser paste)", () => {
+  it("Cmd+V is a no-op and does not prevent default (does not intercept browser paste)", () => {
     const { mocks, handler } = makeHandlerParams({
-      gameState: gameStateWithPile,
-      tabStops: tabStopsWithPile,
       cursorPos: { zoneId: "pile-draw", index: 0 },
     });
     const event = fakeEvent("v", { metaKey: true });
