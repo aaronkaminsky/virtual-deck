@@ -1,10 +1,11 @@
 import React from 'react';
 import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { CursorPos } from '@/lib/keyboardUtils';
 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
-import { HandZone } from './HandZone';
+import { HandZone, type SortMode } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
@@ -38,9 +39,14 @@ interface BoardViewProps {
   menuTriggerRef: React.RefObject<HTMLButtonElement | null>;
   showShortcuts: boolean;
   onCloseShortcuts: () => void;
+  sortMode: SortMode;
+  setSortMode: (m: SortMode) => void;
+  lastDealCount: string;
+  onDealCountChange: (v: string) => void;
+  setCursorPos: (pos: CursorPos | null) => void;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -76,7 +82,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           })}
         </div>
         <div className="flex items-center gap-3 self-start">
-          <ControlsBar gameState={gameState} playerId={playerId} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} />
+          <ControlsBar gameState={gameState} sendAction={sendAction} roomId={roomId} menuFocused={menuFocused} triggerRef={menuTriggerRef as React.RefObject<HTMLButtonElement>} dealCount={lastDealCount} onDealCountChange={onDealCountChange} />
         </div>
       </div>
 
@@ -108,11 +114,11 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex-1 min-h-0 flex items-start mt-1 pr-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 border-r border-border">
             {pilePiles.map((pile) => (
-              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} />
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} />
             ))}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.z - b.z); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} />
           </div>
         </div>
 
@@ -130,6 +136,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               highlightedMove={highlightedMove}
               cursorCardId={cursorCardId ?? undefined}
               shortcutKey={altHeld ? zoneLetterMap.get(`pile-${mySpreadZone.id}`) : undefined}
+              onCursorChange={(index) => setCursorPos({ zoneId: `pile-${mySpreadZone.id}`, index })}
             />
           </div>
         )}
@@ -152,6 +159,9 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               highlightedMove={highlightedMove}
               cursorCardId={cursorCardId ?? undefined}
               shortcutKey={altHeld ? zoneLetterMap.get('hand') : undefined}
+              sortMode={sortMode}
+              setSortMode={setSortMode}
+              onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
             />
           );
         })()}

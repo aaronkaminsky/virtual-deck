@@ -15,12 +15,13 @@ interface SortableSpreadCardProps {
   draggingCardId: string | null;
   isSelected: boolean;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  onCursorChange?: () => void;
   isHighlighted: boolean;
   highlightNonce?: number;
   hasCursor?: boolean;
 }
 
-function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect, isHighlighted, highlightNonce, hasCursor }: SortableSpreadCardProps) {
+function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, onToggleSelect, onCursorChange, isHighlighted, highlightNonce, hasCursor }: SortableSpreadCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'pile' as const, fromId: pileId, toZone: 'pile' as const, toId: pileId },
@@ -42,7 +43,7 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
   return (
     <div
       className={cn('relative flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
-      onClick={() => onToggleSelect(card.id, 'pile', pileId)}
+      onClick={() => { onCursorChange?.(); onToggleSelect(card.id, 'pile', pileId); }}
       onPointerDown={(e) => e.stopPropagation()}
     >
       {draggingCardId === card.id && (
@@ -88,9 +89,10 @@ interface SpreadZoneProps {
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
+  onCursorChange?: (index: number) => void;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove, cursorCardId, shortcutKey }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove, cursorCardId, shortcutKey, onCursorChange }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -149,6 +151,8 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           reordered = arrayMove(faceUpCards, activeIdx, overIdx);
         }
         sendAction({ type: 'REORDER_PILE_SPREAD', pileId: pile.id, orderedCardIds: reordered.map(c => c.id), skipSnapshot: true });
+        const newIdx = reordered.findIndex(c => c.id === draggedId);
+        if (newIdx !== -1) onCursorChange?.(newIdx);
       }
     },
   });
@@ -205,6 +209,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
                       draggingCardId={draggingCardId}
                       isSelected={selectedIds?.has((card as Card).id) ?? false}
                       onToggleSelect={onToggleSelect ?? (() => {})}
+                      onCursorChange={onCursorChange ? () => { const idx = faceUpCards.findIndex(c => c.id === (card as Card).id); if (idx !== -1) onCursorChange(idx); } : undefined}
                       isHighlighted={
                         highlightedMove?.toZoneType === "pile" &&
                         highlightedMove.toZoneId === pile.id &&

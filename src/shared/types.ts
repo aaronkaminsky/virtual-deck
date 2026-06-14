@@ -76,7 +76,7 @@ export type ClientAction =
   | { type: "REORDER_PILE_SPREAD"; pileId: string; orderedCardIds: string[]; skipSnapshot?: boolean }
   | { type: "SET_PILE_FACE"; pileId: string; faceUp: boolean }
   | { type: "FLIP_CARD"; pileId: string; cardId: string }
-  | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile"; fromId?: string }
+  | { type: "PASS_CARD"; cardId: string; targetPlayerId: string; fromZone?: "hand" | "pile" | "canvas"; fromId?: string }
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "DEAL_NEXT_HAND"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }

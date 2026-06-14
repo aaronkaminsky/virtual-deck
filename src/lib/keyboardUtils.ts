@@ -307,6 +307,8 @@ export interface KeyDownParams {
   letterToZoneMap: Map<string, string>;
   focusMenuTrigger?: () => void;
   myPlayerId: string;
+  cycleSortMode?: () => void;
+  lastDealCount: string;
 }
 
 export function buildKeyDownHandler(
@@ -342,6 +344,8 @@ export function buildKeyDownHandler(
       letterToZoneMap,
       focusMenuTrigger,
       myPlayerId,
+      cycleSortMode,
+      lastDealCount,
     } = params;
 
     // Track Alt held
@@ -382,6 +386,19 @@ export function buildKeyDownHandler(
       return;
     }
 
+    // Cmd/Ctrl+D — deal or re-deal
+    if (e.key === "d" && (e.metaKey || e.ctrlKey) && !e.repeat) {
+      e.preventDefault();
+      const parsed = parseInt(lastDealCount, 10);
+      const cardsPerPlayer = isNaN(parsed) || parsed < 1 ? 1 : parsed;
+      if (gameState.phase === "playing") {
+        sendAction({ type: "DEAL_NEXT_HAND", cardsPerPlayer });
+      } else {
+        sendAction({ type: "DEAL_CARDS", cardsPerPlayer });
+      }
+      return;
+    }
+
     // Alt+letter — move selected cards to zone
     // Use e.code (e.g. "KeyD") to avoid macOS Option key composition (e.g. "∂")
     if (e.altKey && e.code.startsWith("Key") && !e.repeat) {
@@ -389,6 +406,27 @@ export function buildKeyDownHandler(
       const zoneId = letterToZoneMap.get(letter);
       if (zoneId && selectedIds.size > 0 && selectionSource) {
         e.preventDefault();
+
+        if (zoneId.startsWith("opponent-hand-")) {
+          // PLAY_CARD_SET is blocked server-side for cross-player hand moves; use PASS_CARD per card
+          const targetPlayerId = zoneId.slice("opponent-hand-".length);
+          const fromZone: "hand" | "pile" | "canvas" =
+            selectionSource.zone === "canvas" ? "canvas"
+            : selectionSource.zone === "pile" ? "pile"
+            : "hand";
+          const fromId =
+            selectionSource.zone === "canvas" ? "canvas"
+            : selectionSource.zone === "pile" ? selectionSource.zoneId
+            : myPlayerId;
+          for (const cardId of selectedIds) {
+            sendAction({ type: "PASS_CARD", cardId, targetPlayerId, fromZone, fromId });
+          }
+          setSelectedIds(new Set());
+          setSelectionSource(null);
+          setCursorPos(null);
+          return;
+        }
+
         const action = buildAltShortcutAction({
           zoneId,
           selectedIds,
@@ -514,16 +552,35 @@ export function buildKeyDownHandler(
       return;
     }
 
-    // F — flip cursor card (pile/spread zones only)
+    // F — toggle pile / spread zone face-up / face-down (same as zone face button)
     if (e.key === "f" && !e.repeat && cursorPos !== null) {
       if (!cursorPos.zoneId.startsWith("pile-")) return;
-      const cardId = computeCursorCardId(cursorPos, tabStops);
-      if (!cardId) return;
       const pileId = cursorPos.zoneId.slice("pile-".length);
+      const pile = gameState.piles.find((p) => p.id === pileId);
+      if (!pile) return;
       e.preventDefault();
-      sendAction({ type: "FLIP_CARD", pileId, cardId });
+      sendAction({ type: "SET_PILE_FACE", pileId, faceUp: !pile.faceUp });
       return;
     }
+
+    // S — shuffle pile (non-spread) or cycle hand sort
+    if (e.key === "s" && !e.repeat && cursorPos !== null) {
+      if (cursorPos.zoneId === "hand") {
+        e.preventDefault();
+        cycleSortMode?.();
+        return;
+      }
+      if (cursorPos.zoneId.startsWith("pile-")) {
+        const pileId = cursorPos.zoneId.slice("pile-".length);
+        const pile = gameState.piles.find((p) => p.id === pileId);
+        if (pile && (pile.region ?? "pile") !== "spread") {
+          e.preventDefault();
+          sendAction({ type: "SHUFFLE_PILE", pileId });
+        }
+        return;
+      }
+    }
+
   };
 }
 
