@@ -98,7 +98,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         data-card-id={card.id}
         className={cn(
           'relative',
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
+          isSelected && 'outline outline-1 outline-primary/30 outline-offset-1 rounded-md transition-transform duration-150',
           hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-md'
         )}
         {...listeners}
