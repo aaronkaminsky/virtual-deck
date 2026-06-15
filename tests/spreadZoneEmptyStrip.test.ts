@@ -46,7 +46,7 @@ describe("SpreadZone — non-empty slot uses intrinsic sizing (GAP-04)", () => {
 
   it("populated slot retains min-w and padding", () => {
     expect(SpreadZoneSrc).toContain(
-      "min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-3 overflow-x-auto bg-secondary"
+      "min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-secondary"
     );
   });
 });
