@@ -98,8 +98,8 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         data-card-id={card.id}
         className={cn(
           'relative',
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
-          hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-md'
+          isSelected && 'outline outline-1 outline-primary/30 outline-offset-1 rounded-md transition-transform duration-150',
+          hasCursor && 'outline outline-2 outline-white outline-offset-2 rounded-md'
         )}
         {...listeners}
         {...attributes}
@@ -266,7 +266,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         ref={setNodeRef}
         data-testid="hand-zone"
         className={cn(
-          'h-[100px] sm:h-[128px] flex items-center px-4 overflow-x-auto bg-card',
+          'h-[100px] sm:h-[128px] flex items-center px-4 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-card',
           isOver ? 'border-t-2 border-primary' : '',
           isRevealed ? 'ring-1 ring-primary/50 ring-inset' : ''
         )}

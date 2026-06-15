@@ -55,8 +55,8 @@ function SortableSpreadCard({ card, pileId, index, draggingCardId, isSelected, o
         data-card-id={card.id}
         className={cn(
           'relative',
-          isSelected && 'ring-1 ring-primary/30 ring-offset-1 ring-offset-background rounded-md transition-transform duration-150',
-          hasCursor && 'outline outline-2 outline-white outline-offset-1 rounded-md'
+          isSelected && 'outline outline-1 outline-primary/30 outline-offset-1 rounded-md transition-transform duration-150',
+          hasCursor && 'outline outline-2 outline-white outline-offset-2 rounded-md'
         )}
         {...listeners}
         {...attributes}
@@ -189,7 +189,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
               ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2 py-2'
               : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
             : cn(
-                'min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-2 overflow-x-auto bg-secondary',
+                'min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-secondary',
                 isEmpty ? 'border-dashed' : '',
                 isOver ? 'border-primary' : 'border-border'
               ),
