@@ -34,7 +34,18 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     });
     wsRef.current = ws;
 
+    const connectTimeoutId = setTimeout(() => {
+      if (!ws.OPEN) {
+        setError(
+          import.meta.env.DEV
+            ? "Can't reach the game server — restart `npm run dev`"
+            : "Can't reach the game server — try refreshing the page"
+        );
+      }
+    }, 8000);
+
     ws.addEventListener('open', () => {
+      clearTimeout(connectTimeoutId);
       setConnected(true);
       setError(null);
     });
@@ -87,6 +98,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     });
 
     return () => {
+      clearTimeout(connectTimeoutId);
       ws.close();
       wsRef.current = null;
       for (const t of shuffleTimersRef.current.values()) clearTimeout(t);
