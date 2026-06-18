@@ -200,8 +200,8 @@
 }
 
 @keyframes last-move-pulse {
-  0%   { box-shadow: 0 0 0 2px #9ad0ec, 0 0 18px 6px rgba(154,208,236,0.6); }
-  20%  { box-shadow: 0 0 0 3px #9ad0ec, 0 0 22px 8px rgba(154,208,236,0.5); }
+  0%   { box-shadow: 0 0 0 2px var(--color-ice), 0 0 18px 6px rgba(154,208,236,0.6); }
+  20%  { box-shadow: 0 0 0 3px var(--color-ice), 0 0 22px 8px rgba(154,208,236,0.5); }
   100% { box-shadow: 0 0 0 2px rgba(154,208,236,0); opacity: 0; }
 }
 
@@ -212,7 +212,7 @@
 @media (prefers-reduced-motion: reduce) {
   .last-move-highlight {
     animation: none;
-    box-shadow: 0 0 0 2px #9ad0ec;
+    box-shadow: 0 0 0 2px var(--color-ice);
   }
 }
 
