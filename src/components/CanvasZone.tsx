@@ -312,7 +312,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
       onPointerCancel={onViewportPointerCancel}
       style={{ touchAction: touchActionForOverflow(hasOverflow) }}
       className={cn(
-        'relative flex-1 min-w-0 self-stretch overflow-hidden bg-felt',
+        'relative flex-1 min-w-0 self-stretch overflow-hidden felt-surface',
         isOver && 'ring-1 ring-primary/30'
       )}
     >
