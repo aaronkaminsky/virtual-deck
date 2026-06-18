@@ -225,3 +225,16 @@
       linear-gradient(180deg, var(--color-felt) 0%, var(--color-felt-dark) 100%);
   }
 }
+
+@layer components {
+  .elev-2 { box-shadow: 0 10px 26px rgba(0,0,0,0.45); }
+}
+
+@media (hover: hover) {
+  [data-card-id] { transition: transform 150ms ease, box-shadow 150ms ease; }
+  [data-card-id]:hover { transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-card-id] { transition: none; }
+  [data-card-id]:hover { transform: none; }
+}

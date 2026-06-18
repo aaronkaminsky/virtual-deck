@@ -34,8 +34,8 @@ describe("coversMajority", () => {
 });
 
 describe("STACK_SHADOW", () => {
-  it("equals the spec string from Spike002", () => {
-    expect(STACK_SHADOW).toBe("2px 2px 0 0 #fff, 2px 2px 0 1px #d1d5db");
+  it("is the soft elevation shadow used for stacked/covering cards", () => {
+    expect(STACK_SHADOW).toBe("0 6px 16px rgba(0,0,0,0.45)");
   });
 });
 
