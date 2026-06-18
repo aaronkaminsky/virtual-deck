@@ -226,7 +226,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
   });
 
   return (
-    <div>
+    <div className="zone-hover">
       <div className="flex items-center gap-2 px-4 mb-1">
         <span className={cn('rounded-full inline-block w-2 h-2', connected ? 'bg-green-500' : 'bg-gray-500')} />
         <span className="text-sm text-muted-foreground">
@@ -242,25 +242,27 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             {selectedIds.size} selected
           </span>
         )}
-        <Button
-          variant="ghost"
-          className="h-7 w-7 p-0"
-          onClick={onToggleReveal}
-          title={isRevealed ? 'Hide hand from opponents' : 'Show hand to opponents'}
-          aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
-          aria-pressed={isRevealed}
-        >
-          {isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-7 w-7 p-0"
-          onClick={handleSort}
-          title={SORT_TITLES[sortMode]}
-          aria-label={SORT_ARIA_LABELS[sortMode]}
-        >
-          <ArrowUpDown className={cn('w-4 h-4', sortMode !== 'original' ? 'text-primary' : 'text-muted-foreground')} />
-        </Button>
+        <span className="flex gap-1 zone-controls">
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={onToggleReveal}
+            title={isRevealed ? 'Hide hand from opponents' : 'Show hand to opponents'}
+            aria-label={isRevealed ? 'Hide hand' : 'Show hand'}
+            aria-pressed={isRevealed}
+          >
+            {isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={handleSort}
+            title={SORT_TITLES[sortMode]}
+            aria-label={SORT_ARIA_LABELS[sortMode]}
+          >
+            <ArrowUpDown className={cn('w-4 h-4', sortMode !== 'original' ? 'text-primary' : 'text-muted-foreground')} />
+          </Button>
+        </span>
       </div>
       <div
         ref={setNodeRef}

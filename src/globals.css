@@ -237,3 +237,21 @@
   [data-card-id] { transition: none; }
   [data-card-id]:hover { transform: none; }
 }
+
+/* Hover/focus-reveal for per-zone action controls.
+   On pointer devices, controls are hidden until the zone is hovered or
+   anything inside it is focused. On touch (no hover), they stay visible
+   (tap-to-use), so they're never unreachable. Always in the DOM either way. */
+@media (hover: hover) {
+  .zone-controls {
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+  .zone-hover:hover .zone-controls,
+  .zone-hover:focus-within .zone-controls {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-controls { transition: none; }
+}

@@ -62,7 +62,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   }
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-0.5 zone-hover">
       <div className="flex justify-between items-center">
         <span className="text-xs text-muted-foreground hidden sm:inline">
           {pile.name}
@@ -72,7 +72,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
             </kbd>
           )}
         </span>
-        <div className="flex gap-1">
+        <div className="flex gap-1 zone-controls">
           <Button
             variant="ghost"
             className="h-7 w-7 p-0"
