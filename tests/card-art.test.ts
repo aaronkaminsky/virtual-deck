@@ -8,7 +8,7 @@ describe('card-art (DECK-03)', () => {
   });
 
   it('CARD_BACK_URL points to the jumbo back', () => {
-    expect(CARD_BACK_URL).toBe('/cards/jumbo/back.png');
+    expect(CARD_BACK_URL).toBe('/cards/jumbo/back.svg');
   });
 
   it('exports CARD_FACE_URL as a function', () => {

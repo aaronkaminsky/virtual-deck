@@ -5,7 +5,7 @@ import type { Card, Rank, Suit } from './shared/types';
 // sizes. Source: https://opengameart.org/content/jumbo-index-playing-cards
 const DECK = 'jumbo';
 
-export const CARD_BACK_URL: string = `${import.meta.env.BASE_URL}cards/${DECK}/back.png`;
+export const CARD_BACK_URL: string = `${import.meta.env.BASE_URL}cards/${DECK}/back.svg`;
 
 const RANK_MAP: Record<Rank, string> = {
   A: 'Ace',
