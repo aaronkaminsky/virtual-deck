@@ -64,7 +64,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   return (
     <div className="flex flex-col gap-0.5 zone-hover">
       <div className="flex justify-between items-center">
-        <span className="text-xs text-muted-foreground hidden sm:inline">
+        <span className="zone-label hidden sm:inline">
           {pile.name}
           {shortcutKey && (
             <kbd className="ml-1 inline-flex items-center text-[10px] bg-primary text-primary-foreground rounded px-1 font-mono uppercase leading-tight">

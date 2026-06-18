@@ -229,6 +229,17 @@
   .elev-2 { box-shadow: 0 10px 26px rgba(0,0,0,0.45); }
 }
 
+@layer components {
+  .zone-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.6875rem; /* 11px */
+    color: var(--muted-foreground);
+  }
+}
+/* counts/badges should not jitter as numbers change width */
+[data-slot="badge"] { font-variant-numeric: tabular-nums; }
+
 @media (hover: hover) {
   [data-card-id] { transition: transform 150ms ease, box-shadow 150ms ease; }
   [data-card-id]:hover { transform: translateY(-2px); }
