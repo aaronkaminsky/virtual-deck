@@ -131,6 +131,12 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
                 max={maxCards}
                 value={dealCount}
                 onChange={e => onDealCountChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleDeal();
+                  }
+                }}
                 className="flex-1"
               />
               <Button
