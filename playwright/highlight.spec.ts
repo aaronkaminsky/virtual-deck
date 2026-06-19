@@ -27,9 +27,12 @@ test.describe('highlight last move', () => {
     // P2 should see the last-move-highlight overlay inside the discard pile
     await expect(p2.getByTestId('pile-discard').locator('.last-move-highlight')).toBeVisible({ timeout: 3000 });
 
-    // P1 undoes the move
-    await p1.getByRole('button', { name: /open controls/i }).click();
-    await p1.getByRole('button', { name: /undo/i }).click();
+    // P1 also processes the move (LAST_MOVE fires right after the canUndo state
+    // update), so this also confirms canUndo is true before the keyboard undo.
+    await expect(p1.getByTestId('pile-discard').locator('.last-move-highlight')).toBeVisible({ timeout: 3000 });
+
+    // P1 undoes the move (keyboard undo avoids the flaky popover-open race)
+    await p1.keyboard.press('Meta+z');
 
     // P2's highlight should now be absent
     await expect(p2.getByTestId('pile-discard').locator('.last-move-highlight')).not.toBeVisible({ timeout: 3000 });
