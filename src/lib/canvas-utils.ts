@@ -1,6 +1,6 @@
 export const CARD_W = 60;
 export const CARD_H = 90;
-export const STACK_SHADOW = '2px 2px 0 0 #fff, 2px 2px 0 1px #d1d5db';
+export const STACK_SHADOW = '0 6px 16px rgba(0,0,0,0.45)';
 
 export function getCardDimensions(): { w: number; h: number } {
   if (typeof window !== 'undefined' && window.innerWidth < 640) {

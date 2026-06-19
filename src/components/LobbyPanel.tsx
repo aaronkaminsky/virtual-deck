@@ -37,8 +37,8 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
     : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-card rounded-xl p-8 w-full max-w-[480px] border border-border">
+    <div className="min-h-screen flex items-center justify-center p-4 felt-surface">
+      <div className="bg-card rounded-xl p-8 w-full max-w-[480px] border border-border elev-2">
         <h1 className="text-[1.75rem] font-semibold leading-[1.2] mb-6">Virtual Deck</h1>
 
         <div className="mb-6">

@@ -169,7 +169,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   const isEmpty = pile.cards.length === 0;
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 zone-hover">
       {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
         <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
           {selectedIds.size} selected
@@ -241,7 +241,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         )}
       </div>
       {interactive !== false && !isEmpty && (
-        <div className="flex gap-1">
+        <div className="flex gap-1 zone-controls">
           <Button
             variant="ghost"
             className="h-7 w-7 p-0"

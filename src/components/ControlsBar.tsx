@@ -90,7 +90,7 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
           </Button>
         } />
       </div>
-      <PopoverContent side="bottom" align="end" className="w-56 p-4">
+      <PopoverContent side="bottom" align="end" className="w-56 p-4 elev-2">
         <div className="flex flex-col gap-3">
           {/* Copy link */}
           <Button variant="outline" size="sm" className="w-full" onClick={handleCopy} aria-label="Copy room link">
@@ -131,6 +131,12 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
                 max={maxCards}
                 value={dealCount}
                 onChange={e => onDealCountChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleDeal();
+                  }
+                }}
                 className="flex-1"
               />
               <Button
