@@ -14,4 +14,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
 | 999.49 | On chrome on PC click to drag canvas seems not to be working |
-| 999.54 | Additional visual polish, investigate improvements to make the look more modern, clean, and professional.  Perhaps a different highlighting treatment, or maybe the small buttons near each zone can instead be invisible and only appear on hover (or focus) to save room and reduce visible clutter |
+| 1000 | Consider possible changes to selection behavior. When I select multiple cards and drag them to the canvas, for example, I find my expectation is that those cards are still selected until I select something else or click away.  Instead what currently happens is the selection goes away as soon as the drop occurs.  That might be better, but this item is to consider if changing this would improve the UX |
