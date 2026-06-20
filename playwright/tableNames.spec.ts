@@ -20,10 +20,16 @@ test.describe('custom table names', () => {
   });
 
   test('warns when the chosen name is already occupied', async ({ browser }) => {
-    // Context A occupies "poker" by joining the room.
+    // Per-run-unique room name avoids accumulating player tokens in a fixed
+    // room across repeated local runs (partykit dev persists DO state on
+    // disk — see CLAUDE.md e2e flakiness notes). Stays a valid slug so
+    // slugify(room) === room.
+    const room = `poker-${Math.random().toString(36).slice(2, 8)}`;
+
+    // Context A occupies the room by joining it.
     const ctxA = await browser.newContext();
     const a = await ctxA.newPage();
-    await a.goto('/?room=poker');
+    await a.goto('/?room=' + room);
     await a.getByPlaceholder('Your name').fill('Alice');
     await a.getByRole('button', { name: 'Join Game' }).click();
     await expect(a.getByTestId('hand-zone')).toBeVisible();
@@ -31,11 +37,11 @@ test.describe('custom table names', () => {
     // before B probes (project convention — see CLAUDE.md e2e flakiness notes).
     await a.waitForTimeout(250);
 
-    // Context B tries to create "poker" from the landing screen and is warned.
+    // Context B tries to create the same room from the landing screen and is warned.
     const ctxB = await browser.newContext();
     const b = await ctxB.newPage();
     await b.goto('/');
-    await b.getByTestId('table-name-input').fill('poker');
+    await b.getByTestId('table-name-input').fill(room);
     await b.getByTestId('create-table').click();
 
     await expect(b.getByTestId('occupied-warning')).toBeVisible();
