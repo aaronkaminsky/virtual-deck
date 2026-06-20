@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { slugify } from '@/lib/slug';
 import { probeOccupancy } from '@/lib/occupancy';
+import { markAutojoin } from '@/lib/autojoin';
+import { getDisplayName, saveDisplayName } from '@/hooks/usePlayerId';
 
 function navigateToRoom(slug: string) {
   window.location.assign(`${window.location.pathname}?room=${slug}`);
@@ -12,14 +14,25 @@ function navigateToRoom(slug: string) {
 
 export default function HomeView() {
   const [name, setName] = useState('');
+  const [playerName, setPlayerName] = useState(() => getDisplayName());
   const [probing, setProbing] = useState(false);
   const [occupied, setOccupied] = useState<{ slug: string; playerCount: number } | null>(null);
 
   const slug = slugify(name);
-  const canCreate = slug.length > 0 && !probing;
+  const hasPlayerName = playerName.trim().length > 0;
+  const canCreate = slug.length > 0 && hasPlayerName && !probing;
+  const canQuick = hasPlayerName;
+
+  // Save the name and mark a one-shot auto-join intent, then navigate — RoomView
+  // consumes the intent and drops the player straight onto the board.
+  const enterRoom = (target: string) => {
+    saveDisplayName(playerName.trim());
+    markAutojoin();
+    navigateToRoom(target);
+  };
 
   const handleCreate = async () => {
-    if (!slug || probing) return;
+    if (!canCreate) return;
     setProbing(true);
     setOccupied(null);
     const result = await probeOccupancy(slug);
@@ -28,15 +41,29 @@ export default function HomeView() {
       setOccupied({ slug, playerCount: result.playerCount });
       return;
     }
-    navigateToRoom(slug);
+    enterRoom(slug);
   };
 
-  const handleQuick = () => navigateToRoom(nanoid(8));
+  const handleQuick = () => {
+    if (!canQuick) return;
+    enterRoom(nanoid(8));
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 felt-surface">
       <div className="bg-card rounded-xl p-8 w-full max-w-[480px] border border-border elev-2">
         <h1 className="text-[1.75rem] font-semibold leading-[1.2] mb-6">Virtual Deck</h1>
+
+        <div className="mb-4">
+          <p className="text-sm text-muted-foreground mb-1">Your name</p>
+          <Input
+            value={playerName}
+            onChange={e => setPlayerName(e.target.value.slice(0, 20))}
+            placeholder="Your name"
+            maxLength={20}
+            data-testid="player-name-input"
+          />
+        </div>
 
         <div className="mb-2">
           <p className="text-sm text-muted-foreground mb-1">Table name</p>
@@ -62,7 +89,7 @@ export default function HomeView() {
             <Button
               variant="outline"
               className="min-h-[44px] mr-2"
-              onClick={() => navigateToRoom(occupied.slug)}
+              onClick={() => enterRoom(occupied.slug)}
               data-testid="join-occupied"
             >
               Join them
@@ -83,6 +110,7 @@ export default function HomeView() {
         <Button
           variant="outline"
           className="w-full min-h-[44px]"
+          disabled={!canQuick}
           onClick={handleQuick}
           data-testid="quick-table"
         >
