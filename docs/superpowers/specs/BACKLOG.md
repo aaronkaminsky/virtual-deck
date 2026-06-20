@@ -15,3 +15,4 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
 | 999.49 | On chrome on PC click to drag canvas seems not to be working |
 | 1000 | Consider possible changes to selection behavior. When I select multiple cards and drag them to the canvas, for example, I find my expectation is that those cards are still selected until I select something else or click away.  Instead what currently happens is the selection goes away as soon as the drop occurs.  That might be better, but this item is to consider if changing this would improve the UX |
+| 1002 | Lobby redesign for the join-by-URL focus — table creators now skip the lobby, so it is only seen by people arriving via a shared `?room=` URL. De-emphasize the table name/code and the copy-link button; prioritize the "Your name" field and the Join control. |
