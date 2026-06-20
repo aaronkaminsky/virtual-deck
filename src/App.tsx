@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getOrCreatePlayerId, saveDisplayName } from './hooks/usePlayerId';
+import { getOrCreatePlayerId, saveDisplayName, getDisplayName } from './hooks/usePlayerId';
 import { usePartySocket } from './hooks/usePartySocket';
 import LobbyPanel from './components/LobbyPanel';
 import HomeView from './components/HomeView';
@@ -7,6 +7,7 @@ import { BoardDragLayer } from './components/BoardDragLayer';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { createDoubleKeyDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
+import { consumeAutojoin } from './lib/autojoin';
 
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
@@ -23,6 +24,17 @@ function RoomView({ roomId }: { roomId: string }) {
     preloadSounds(); // warm audio inside the join gesture so first shuffle/deal plays instantly
     setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
   };
+
+  // One-shot auto-join: if we arrived from HomeView's create/quick action, skip
+  // the lobby and join straight onto the board with the saved name. A direct URL
+  // visit or refresh has no intent flag and falls through to the lobby.
+  useEffect(() => {
+    if (!consumeAutojoin()) return;
+    const savedName = getDisplayName();
+    if (savedName) handleJoin(savedName);
+    // run once on mount; consumeAutojoin is one-shot so re-runs are no-ops anyway
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Re-running on reconnect intentionally resets the double-press detector.
   useEffect(() => {
