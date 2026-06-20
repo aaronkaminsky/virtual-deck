@@ -2,9 +2,7 @@ import PartySocket from 'partysocket';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientAction, ClientGameState, LastMoveHighlight, ServerEvent } from '../shared/types';
 import { playSound } from '../lib/sound';
-
-const PARTYKIT_HOST = import.meta.env.VITE_PARTYKIT_HOST
-  ?? (import.meta.env.DEV ? 'localhost:1999' : 'virtual-deck.aaronkaminsky.partykit.dev');
+import { PARTYKIT_HOST } from '../lib/partyHost';
 
 export function usePartySocket(roomId: string, playerId: string, displayName: string, options?: { enabled?: boolean }) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null);

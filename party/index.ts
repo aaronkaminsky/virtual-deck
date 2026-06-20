@@ -1,6 +1,25 @@
 import type * as Party from "partykit/server";
 import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "https://aaronkaminsky.github.io",
+];
+const PROD_ORIGIN = "https://aaronkaminsky.github.io";
+
+export function corsHeaders(origin: string | null): Record<string, string> {
+  const allow = origin && ALLOWED_ORIGINS.includes(origin) ? origin : PROD_ORIGIN;
+  return {
+    "Access-Control-Allow-Origin": allow,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+export function occupancyBody(connectionCount: number): { occupied: boolean; playerCount: number } {
+  return { occupied: connectionCount > 0, playerCount: connectionCount };
+}
+
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
@@ -147,6 +166,19 @@ export default class GameRoom implements Party.Server {
     if (!Array.isArray((this.gameState as any).canvasCards)) {
       (this.gameState as unknown as GameState).canvasCards = [];
     }
+  }
+
+  async onRequest(req: Party.Request): Promise<Response> {
+    const origin = req.headers.get("Origin");
+    const headers = { ...corsHeaders(origin), "Content-Type": "application/json" };
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers });
+    }
+    if (req.method !== "GET") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
+    }
+    const count = [...this.room.getConnections()].length;
+    return new Response(JSON.stringify(occupancyBody(count)), { status: 200, headers });
   }
 
   async onConnect(connection: Party.Connection, ctx: Party.ConnectionContext) {

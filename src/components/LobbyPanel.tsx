@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,10 @@ interface LobbyPanelProps {
 export default function LobbyPanel({ roomId, onJoin, connected, error, joining }: LobbyPanelProps) {
   const [copied, setCopied] = useState(false);
   const [name, setName] = useState(() => getDisplayName());
+
+  useEffect(() => {
+    document.title = `${roomId} · Virtual Deck`;
+  }, [roomId]);
 
   const handleCopy = () => {
     const base = import.meta.env.BASE_URL || '/virtual-deck/';
@@ -42,9 +46,9 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
         <h1 className="text-[1.75rem] font-semibold leading-[1.2] mb-6">Virtual Deck</h1>
 
         <div className="mb-6">
-          <p className="text-sm text-muted-foreground mb-1">Room code</p>
+          <p className="text-sm text-muted-foreground mb-1">Table</p>
           <p className="text-[1.25rem] font-semibold text-primary mb-1">{roomId}</p>
-          <p className="text-sm text-muted-foreground mb-3">Share this code with friends to play</p>
+          <p className="text-sm text-muted-foreground mb-3">Share this table with friends to play</p>
           <Button
             variant="outline"
             className="min-h-[44px] border-primary text-primary hover:bg-primary/10"
