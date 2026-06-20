@@ -48,7 +48,7 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
         <div className="mb-6">
           <p className="text-sm text-muted-foreground mb-1">Table</p>
           <p className="text-[1.25rem] font-semibold text-primary mb-1">{roomId}</p>
-          <p className="text-sm text-muted-foreground mb-3">Share this code with friends to play</p>
+          <p className="text-sm text-muted-foreground mb-3">Share this table with friends to play</p>
           <Button
             variant="outline"
             className="min-h-[44px] border-primary text-primary hover:bg-primary/10"
