@@ -35,7 +35,7 @@ function makeMockConnection(id: string): Party.Connection & { send: ReturnType<t
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = cards;
   return state;
 }
@@ -175,7 +175,7 @@ describe("MOVE_CARD handler", () => {
   it("sends UNAUTHORIZED_MOVE when fromZone=hand and fromId != sender.id", async () => {
     const card = makeCard("A-s");
     room.gameState = makeStateWithPlayerAndCards("player-2", [card]);
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
 
     const msg = JSON.stringify({
@@ -200,7 +200,7 @@ describe("MOVE_CARD handler", () => {
     const card = makeCard("A-s");
     room.gameState = makeStateWithPlayerAndCards("player-1", []);
     room.gameState.piles.find(p => p.id === "discard")!.cards.push(card);
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-2"] = [];
 
     const msg = JSON.stringify({
@@ -227,7 +227,7 @@ describe("MOVE_CARD handler", () => {
   it("regression: MOVE_CARD fromZone=hand rejected when fromId does not match sender token", async () => {
     const card = makeCard("7-s");
     room.gameState = makeStateWithPlayerAndCards("player-2", [card]);
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
 
     const msg = JSON.stringify({
@@ -304,7 +304,7 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
     const conn1 = helpMakeMockConnection("player-1");
     const conn2 = helpMakeMockConnection("player-2");
     const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s")];
 
     await room.onMessage(JSON.stringify({
@@ -325,7 +325,7 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
   it("emits LAST_MOVE with toZoneType=hand after pile→hand move", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.piles.find(p => p.id === "discard")!.cards.push(makeCard("K-h"));
 
@@ -346,7 +346,7 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
     const conn1 = helpMakeMockConnection("player-1");
     const conn2 = helpMakeMockConnection("player-2");
     const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.canvasCards.push({ card: { id: "7-d", suit: "diamonds", rank: "7", faceUp: true }, x: 100, y: 100, z: 1 });
 
@@ -368,7 +368,7 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
   it("does not emit LAST_MOVE when MOVE_CARD fails (card not found)", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
 
     await room.onMessage(JSON.stringify({
@@ -385,7 +385,7 @@ describe("Non-qualifying actions do not emit LAST_MOVE", () => {
   it("SHUFFLE_PILE does not emit LAST_MOVE", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
 
     await room.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);
 
@@ -395,7 +395,7 @@ describe("Non-qualifying actions do not emit LAST_MOVE", () => {
   it("RESET_TABLE does not emit LAST_MOVE", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.phase = "playing";
 
@@ -409,7 +409,7 @@ describe("Non-qualifying actions do not emit LAST_MOVE", () => {
     try {
       const conn1 = helpMakeMockConnection("player-1");
       const room = new GameRoom(helpMakeMockRoom([conn1]));
-      room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+      room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
       room.gameState.hands["player-1"] = [];
 
       const pending = room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), conn1);

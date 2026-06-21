@@ -48,7 +48,7 @@ describe("Phase 31 — grid removal regression", () => {
     const mockRoom = makeMockRoom();
     const room = new GameRoom(mockRoom);
     const sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
 
     const beforePileIds = room.gameState.piles.map(p => p.id);
     const beforePileLengths = room.gameState.piles.map(p => p.cards.length);

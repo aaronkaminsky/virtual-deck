@@ -104,7 +104,7 @@ describe("FLIP_CARD LAST_MOVE broadcast", () => {
   it("emits LAST_MOVE with toZoneType=pile after flipping a card", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     const discardPile = room.gameState.piles.find(p => p.id === "discard")!;
     discardPile.faceUp = true;
     discardPile.cards.push({ id: "Q-d", suit: "diamonds", rank: "Q", faceUp: true });

@@ -67,8 +67,8 @@ describe("UNDO_MOVE handler", () => {
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
     player2 = makeMockConnection("player-2");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
@@ -231,7 +231,7 @@ describe("UNDO_MOVE CLEAR_LAST_MOVE broadcast", () => {
     const conn1 = helpMakeMockConnection("player-1");
     const conn2 = helpMakeMockConnection("player-2");
     const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [{ id: "A-s", suit: "spades", rank: "A", faceUp: true }];
     takeSnapshot(room.gameState);
 
@@ -246,7 +246,7 @@ describe("UNDO_MOVE CLEAR_LAST_MOVE broadcast", () => {
   it("does not emit CLEAR_LAST_MOVE when there is nothing to undo", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     // No snapshots
 
     await room.onMessage(JSON.stringify({ type: "UNDO_MOVE" }), conn1);

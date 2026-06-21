@@ -12,7 +12,7 @@ describe("EFFECT broadcasts", () => {
     const conn1 = makeMockConnection("p1");
     const conn2 = makeMockConnection("p2");
     const room = new GameRoom(makeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["p1"] = [];
 
     await room.onMessage(JSON.stringify({ type: "CELEBRATE" }), conn1);
@@ -29,7 +29,7 @@ describe("EFFECT broadcasts", () => {
   it("CELEBRATE takes no undo snapshot", async () => {
     const conn1 = makeMockConnection("p1");
     const room = new GameRoom(makeMockRoom([conn1]));
-    room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["p1"] = [];
 
     await room.onMessage(JSON.stringify({ type: "CELEBRATE" }), conn1);
@@ -43,8 +43,8 @@ describe("EFFECT broadcasts", () => {
       const conn1 = makeMockConnection("p1");
       const conn2 = makeMockConnection("p2");
       const room = new GameRoom(makeMockRoom([conn1, conn2]));
-      room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false });
-      room.gameState.players.push({ id: "p2", connected: true, displayName: "", handRevealed: false });
+      room.gameState.players.push({ id: "p1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+      room.gameState.players.push({ id: "p2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
       room.gameState.hands["p1"] = [];
       room.gameState.hands["p2"] = [];
 

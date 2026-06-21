@@ -159,8 +159,8 @@ describe("computeZoneLetterMap", () => {
   it("assigns first unique letter to opponent hand from their display name", () => {
     const state = makeState({
       players: [
-        { id: "player1", displayName: "Alice", connected: true, handRevealed: false },
-        { id: "player2", displayName: "Bob", connected: true, handRevealed: false },
+        { id: "player1", displayName: "Alice", connected: true, handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player2", displayName: "Bob", connected: true, handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
       ],
       opponentHandCounts: { player2: 3 },
     });

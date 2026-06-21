@@ -41,8 +41,8 @@ describe("DEAL_CARDS handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
@@ -80,7 +80,7 @@ describe("DEAL_CARDS handler", () => {
   });
 
   it("deals only to connected players (skips disconnected)", async () => {
-    room.gameState.players.push({ id: "player-3", connected: false, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-3", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-3"] = [];
 
     const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
@@ -150,7 +150,7 @@ describe("DEAL_CARDS handler", () => {
     await room.onMessage(JSON.stringify({ type: "RESET_TABLE" }), sender);
 
     // Late joiner: add player-3 after initial deal cycle, before re-deal
-    room.gameState.players.push({ id: "player-3", connected: true, displayName: "Late", handRevealed: false });
+    room.gameState.players.push({ id: "player-3", connected: true, displayName: "Late", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     // Do NOT set room.gameState.hands["player-3"] — simulate the gap scenario
 
     await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 2 }), sender);
@@ -162,7 +162,7 @@ describe("DEAL_CARDS handler", () => {
 
   it("DEAL_CARDS initializes missing hand entry for connected player before dealing", async () => {
     // Manually add a player who is connected but has no hands entry
-    room.gameState.players.push({ id: "orphan-player", connected: true, displayName: "Orphan", handRevealed: false });
+    room.gameState.players.push({ id: "orphan-player", connected: true, displayName: "Orphan", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     // Deliberately omit: room.gameState.hands["orphan-player"] = []
 
     await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 1 }), sender);
@@ -179,8 +179,8 @@ describe("DEAL_CARDS handler", () => {
       getConnections: (() => connections[Symbol.iterator]()) as unknown as Party.Room["getConnections"],
     });
     const roomWithConnections = new GameRoom(roomWithConns);
-    roomWithConnections.gameState.players.push({ id: "conn-1", connected: true, displayName: "", handRevealed: false });
-    roomWithConnections.gameState.players.push({ id: "conn-2", connected: true, displayName: "", handRevealed: false });
+    roomWithConnections.gameState.players.push({ id: "conn-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    roomWithConnections.gameState.players.push({ id: "conn-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     roomWithConnections.gameState.hands["conn-1"] = [];
     roomWithConnections.gameState.hands["conn-2"] = [];
 

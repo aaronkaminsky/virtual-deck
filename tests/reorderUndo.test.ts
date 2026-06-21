@@ -10,7 +10,7 @@ describe("REORDER_PILE_SPREAD undo", () => {
   beforeEach(() => {
     room = new GameRoom(makeMockRoom());
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -65,7 +65,7 @@ describe("REORDER_HAND undo", () => {
   beforeEach(() => {
     room = new GameRoom(makeMockRoom());
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
