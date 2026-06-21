@@ -1060,6 +1060,44 @@ export default class GameRoom implements Party.Server {
         // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with RESET_TABLE/SET_HAND_REVEALED)
         break;
       }
+      case "TRANSFER_CHIPS": {
+        const { from, to, playerId, amount } = action;
+        if (!this.gameState.chipsEnabled || from === to || !Number.isInteger(amount) || amount <= 0) {
+          break;
+        }
+        if ((from !== "pot" || to !== "pot") && playerId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_CHIP_TRANSFER",
+            message: "Cannot move another player's chips",
+          } satisfies ServerEvent));
+          break;
+        }
+        const chipPlayer = this.gameState.players.find(p => p.id === playerId);
+        if (!chipPlayer) break;
+        const sourceAmount = from === "hand" ? chipPlayer.chipsInHand : from === "spread" ? chipPlayer.chipsInSpread : this.gameState.pot;
+        if (sourceAmount < amount) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CHIPS",
+            message: "Not enough chips at the source",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        if (from === "hand") chipPlayer.chipsInHand -= amount;
+        else if (from === "spread") chipPlayer.chipsInSpread -= amount;
+        else this.gameState.pot -= amount;
+        if (to === "hand") chipPlayer.chipsInHand += amount;
+        else if (to === "spread") chipPlayer.chipsInSpread += amount;
+        else this.gameState.pot += amount;
+        if (from === "hand" && to === "spread") {
+          this.broadcastEffect("chip-bet");
+        } else if (to === "pot" || from === "pot") {
+          this.broadcastEffect("chip-collect");
+        }
+        break;
+      }
       case "PING":
         break;
     }
@@ -1120,7 +1158,7 @@ export default class GameRoom implements Party.Server {
     }
   }
 
-  private broadcastEffect(kind: "deal" | "celebrate") {
+  private broadcastEffect(kind: "deal" | "celebrate" | "chip-bet" | "chip-collect") {
     for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "EFFECT",

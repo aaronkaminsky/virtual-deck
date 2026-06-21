@@ -93,6 +93,7 @@ export type ClientAction =
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "SET_CHIPS_MODE"; enabled: boolean; startingChips: number }
+  | { type: "TRANSFER_CHIPS"; from: "hand" | "spread" | "pot"; to: "hand" | "spread" | "pot"; playerId: string; amount: number }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
@@ -116,6 +117,6 @@ export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
   | { type: "PILE_SHUFFLED"; pileId: string }
-  | { type: "EFFECT"; kind: "deal" | "celebrate" }
+  | { type: "EFFECT"; kind: "deal" | "celebrate" | "chip-bet" | "chip-collect" }
   | { type: "LAST_MOVE"; toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] }
   | { type: "CLEAR_LAST_MOVE" };
