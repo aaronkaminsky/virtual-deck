@@ -74,6 +74,9 @@ export interface ClientGameState {
   canUndo: boolean;
   myPlayZoneId: string;
   canvasCards: ClientCanvasCard[];
+  pot: number;
+  chipsEnabled: boolean;
+  startingChips: number;
 }
 
 export type ClientAction =

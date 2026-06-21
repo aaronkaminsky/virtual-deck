@@ -117,6 +117,9 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
       }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
+    pot: state.pot,
+    chipsEnabled: state.chipsEnabled,
+    startingChips: state.startingChips,
     myPlayZoneId: `spread-${playerToken}`,
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
   };
@@ -221,7 +224,7 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false, chipsInHand: this.gameState.chipsEnabled ? this.gameState.startingChips : 0, chipsInSpread: 0 });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);
