@@ -68,6 +68,10 @@ export function defaultGameState(roomId: string): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 
@@ -166,6 +170,27 @@ export default class GameRoom implements Party.Server {
     if (!Array.isArray((this.gameState as any).canvasCards)) {
       (this.gameState as unknown as GameState).canvasCards = [];
     }
+    // Migrate state: Phase 999.17 adds chip fields to Player and GameState
+    for (const player of this.gameState.players) {
+      if (!('chipsInHand' in player)) {
+        (player as any).chipsInHand = 0;
+      }
+      if (!('chipsInSpread' in player)) {
+        (player as any).chipsInSpread = 0;
+      }
+    }
+    if (!('chipsEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).chipsEnabled = false;
+    }
+    if (!('startingChips' in this.gameState)) {
+      (this.gameState as unknown as GameState).startingChips = 1000;
+    }
+    if (!('pot' in this.gameState)) {
+      (this.gameState as unknown as GameState).pot = 0;
+    }
+    if (!('chipsInitialized' in this.gameState)) {
+      (this.gameState as unknown as GameState).chipsInitialized = false;
+    }
   }
 
   async onRequest(req: Party.Request): Promise<Response> {
@@ -196,7 +221,7 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);

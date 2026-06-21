@@ -13,6 +13,8 @@ export interface Player {
   connected: boolean;
   displayName: string;
   handRevealed: boolean;
+  chipsInHand: number;
+  chipsInSpread: number;
 }
 
 export interface Pile {
@@ -53,6 +55,10 @@ export interface GameState {
   piles: Pile[];
   undoSnapshots: GameState[];
   canvasCards: CanvasCard[];
+  chipsEnabled: boolean;
+  startingChips: number;
+  pot: number;
+  chipsInitialized: boolean;
 }
 
 export interface ClientGameState {
