@@ -1043,6 +1043,23 @@ export default class GameRoom implements Party.Server {
         this.broadcastEffect("celebrate");
         break;
       }
+      case "SET_CHIPS_MODE": {
+        const wasInitialized = this.gameState.chipsInitialized;
+        this.gameState.chipsEnabled = action.enabled === true;
+        if (Number.isFinite(action.startingChips) && action.startingChips >= 0) {
+          this.gameState.startingChips = Math.floor(action.startingChips);
+        }
+        if (this.gameState.chipsEnabled && !wasInitialized) {
+          for (const player of this.gameState.players) {
+            player.chipsInHand = this.gameState.startingChips;
+            player.chipsInSpread = 0;
+          }
+          this.gameState.pot = 0;
+          this.gameState.chipsInitialized = true;
+        }
+        // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with RESET_TABLE/SET_HAND_REVEALED)
+        break;
+      }
       case "PING":
         break;
     }

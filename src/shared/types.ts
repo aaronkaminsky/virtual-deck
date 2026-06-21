@@ -92,6 +92,7 @@ export type ClientAction =
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string }
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
+  | { type: "SET_CHIPS_MODE"; enabled: boolean; startingChips: number }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
