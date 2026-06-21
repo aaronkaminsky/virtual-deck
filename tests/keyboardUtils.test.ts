@@ -30,6 +30,9 @@ function makeState(overrides: Partial<ClientGameState> = {}): ClientGameState {
     canUndo: false,
     myPlayZoneId: "spread-player1",
     canvasCards: [],
+    pot: 0,
+    chipsEnabled: false,
+    startingChips: 1000,
     ...overrides,
   };
 }
