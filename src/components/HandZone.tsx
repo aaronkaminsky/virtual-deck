@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
 import type { Card, ClientAction, Suit, Rank, SelectionSource, LastMoveHighlight } from '@/shared/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
+import { ChipBadge } from './ChipBadge';
 import { cn } from '@/lib/utils';
 
 // --- Sort mode types and constants ---
@@ -137,14 +140,26 @@ interface HandZoneProps {
   sortMode: SortMode;
   setSortMode: (m: SortMode) => void;
   onCursorChange?: (index: number) => void;
+  chipsEnabled: boolean;
+  chipsInHand: number;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange, chipsEnabled, chipsInHand }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
     data: { toZone: 'hand' as const, toId: playerId },
   });
+
+  const [betAmount, setBetAmount] = useState(10);
+
+  function handleBet() {
+    if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'spread', playerId, amount: betAmount });
+  }
+
+  function handleHandToPot() {
+    if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'pot', playerId, amount: betAmount });
+  }
 
 
   const { active, over } = useDndContext();
@@ -264,6 +279,20 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           </Button>
         </span>
       </div>
+      {chipsEnabled && (
+        <div className="flex items-center gap-2 px-4 mb-1">
+          <ChipBadge amount={chipsInHand} />
+          <Input
+            type="number"
+            min={1}
+            value={betAmount}
+            onChange={e => setBetAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            className="w-20 h-7"
+          />
+          <Button variant="outline" size="sm" onClick={handleBet}>Bet {betAmount}</Button>
+          <Button variant="ghost" size="sm" onClick={handleHandToPot}>To pot</Button>
+        </div>
+      )}
       <div
         ref={setNodeRef}
         data-testid="hand-zone"

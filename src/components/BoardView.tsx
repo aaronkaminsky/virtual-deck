@@ -50,6 +50,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
+  const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
   const allOpponentIds = Array.from(new Set([
     ...Object.keys(gameState.opponentHandCounts),
     ...Object.keys(gameState.opponentRevealedHands),
@@ -141,7 +142,6 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         )}
 
         {(() => {
-          const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
           return (
             <HandZone
               cards={gameState.myHand}
@@ -161,6 +161,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               sortMode={sortMode}
               setSortMode={setSortMode}
               onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
+              chipsEnabled={gameState.chipsEnabled}
+              chipsInHand={myPlayer?.chipsInHand ?? 0}
             />
           );
         })()}
