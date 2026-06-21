@@ -112,13 +112,38 @@ player while `chipsEnabled` is true gets `startingChips` for their
 - All chip UI (menu controls aside) is hidden entirely when `chipsEnabled` is
   false.
 
-### Stacked chip graphic
+### Chip visuals
 
-Built with CSS/SVG — no image assets. A small column of overlapping circular
-"coin" shapes; color/height tier picked from the amount (e.g. a handful of
-thresholds like under 100 / 100–499 / 500+, mapped to a couple of distinct
-chip colors and a stack height that grows with magnitude, capped at a fixed
-max visual height). Purely cosmetic — never read back into game logic.
+Built from the app's existing theme tokens (`--primary` gold, `--accent` felt
+green, `--muted`, `--border`, `--radius`) — no new colors, no gradients or
+embossing, no image assets. Deliberately small so chips never compete with
+the cards for visual weight:
+
+- **Hand and spread** (`HandZone.tsx`, `OpponentHand.tsx`, spread zone): a
+  **badge** — one small dot (`--primary`) + the number, same visual weight as
+  the existing card-count pill (`bg-primary text-primary-foreground
+  rounded-full`). No stack graphic here; space is tight and the number is the
+  signal.
+- **Pot** (rail): a **compact flat stack capped at exactly 3 discs**
+  regardless of amount — flat single-color circles (felt/gold/muted), thin
+  border matching `PileZone`'s style. Stack height never grows with amount;
+  only the adjacent number does. A little more visual presence is appropriate
+  here since the rail already houses the draw/discard piles.
+
+### Sound effects
+
+Two new sounds, added to the existing `SoundName` union in `src/lib/sound.ts`
+alongside `"shuffle" | "deal" | "celebrate"`:
+
+- `"chip-bet"` — plays on `TRANSFER_CHIPS` where `from === 'hand'`.
+- `"chip-collect"` — plays on `TRANSFER_CHIPS` where `to === 'pot'` or
+  `from === 'pot'` (i.e. any pot-involving transfer other than a bet).
+
+Both are real mp3 files dropped in `public/sounds/` (`chip-bet.mp3`,
+`chip-collect.mp3`), matching how `deal.mp3`/`shuffle.mp3` already work — not
+synthesized audio. **These two files must be supplied before this feature can
+ship**; sourcing them is tracked as a prerequisite, not part of the
+implementation plan's code changes.
 
 ## Out of scope (YAGNI)
 
@@ -127,6 +152,7 @@ max visual height). Purely cosmetic — never read back into game logic.
 - Side pots or multi-pot tracking — one shared `pot` per room.
 - Host-only gating of the chips toggle (no host role exists in this app).
 - Image-asset chip art.
+- Synthesized (Web Audio API) chip sounds — real mp3 assets instead.
 
 ## Testing
 
@@ -141,6 +167,8 @@ max visual height). Purely cosmetic — never read back into game logic.
   amounts; late joiner while enabled gets `startingChips`.
 - Undo: a `TRANSFER_CHIPS` snapshot reverses correctly and interleaves with a
   `MOVE_CARD` snapshot in the same stack.
+- Sound dispatch: hand→spread triggers `"chip-bet"`; spread→pot and pot→hand
+  both trigger `"chip-collect"`.
 
 **Playwright (e2e):**
 
