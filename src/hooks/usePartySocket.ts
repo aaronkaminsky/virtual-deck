@@ -84,6 +84,10 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         } else if (event.kind === 'celebrate') {
           playSound('celebrate');
           setCelebrationNonce((n) => n + 1);
+        } else if (event.kind === 'chip-bet') {
+          playSound('chip-bet');
+        } else if (event.kind === 'chip-collect') {
+          playSound('chip-collect');
         }
       } else if (event.type === 'LAST_MOVE') {
         if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
