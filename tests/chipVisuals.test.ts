@@ -14,13 +14,16 @@ describe("ChipBadge", () => {
 });
 
 describe("ChipStack", () => {
-  it("renders exactly 3 discs regardless of amount, using only existing theme utility classes", () => {
-    const discMatches = [...ChipStackSrc.matchAll(/rounded-full/g)];
-    expect(discMatches.length).toBe(3);
-    expect(ChipStackSrc).toMatch(/bg-primary/);
-    expect(ChipStackSrc).toMatch(/bg-muted/);
-    expect(ChipStackSrc).toMatch(/bg-secondary/);
+  it("renders exactly 3 absolutely-positioned coins with a fixed 5px gap, no inline amount text", () => {
+    const coinMatches = [...ChipStackSrc.matchAll(/rounded-full/g)];
+    expect(coinMatches.length).toBe(3);
+    expect(ChipStackSrc).toMatch(/position:\s*['"]absolute['"]|className=.*absolute/);
+    expect(ChipStackSrc).toMatch(/top:\s*10/);
+    expect(ChipStackSrc).toMatch(/top:\s*5/);
+    expect(ChipStackSrc).toMatch(/top:\s*0/);
     expect(ChipStackSrc).not.toMatch(/amount\s*>\s*\d+.*rounded-full/); // height must not scale with amount
-    expect(ChipStackSrc).toMatch(/\{amount\}/);
+    expect(ChipStackSrc).not.toMatch(/>\{amount\}</); // no inline visible number — consumers render it themselves
+    expect(ChipStackSrc).toMatch(/aria-label=\{`\$\{amount\}/);
+    expect(ChipStackSrc).toMatch(/bg-gradient-to-br/);
   });
 });

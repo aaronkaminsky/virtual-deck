@@ -5,17 +5,27 @@ interface ChipStackProps {
   className?: string;
 }
 
-const DISC_COLOR_CLASSES = ['bg-secondary', 'bg-primary', 'bg-muted'];
+const COIN_OFFSETS = [10, 5, 0];
 
 export function ChipStack({ amount, className }: ChipStackProps) {
   return (
-    <div className={cn('flex flex-col items-center gap-1', className)} data-testid="chip-stack">
-      <div className="flex flex-col-reverse items-center">
-        <div className={cn('w-[22px] h-[22px] rounded-full border-2 border-card', DISC_COLOR_CLASSES[2])} />
-        <div className={cn('w-[22px] h-[22px] rounded-full border-2 border-card -mt-[13px]', DISC_COLOR_CLASSES[1])} />
-        <div className={cn('w-[22px] h-[22px] rounded-full border-2 border-card -mt-[13px]', DISC_COLOR_CLASSES[0])} />
-      </div>
-      <span className="text-xs font-semibold font-mono">{amount}</span>
+    <div
+      className={cn('relative w-[18px] h-[28px]', className)}
+      data-testid="chip-stack"
+      aria-label={`${amount} chips`}
+    >
+      <div
+        className="absolute left-0 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#f5d77a] via-primary to-[#9a7416] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.45),0_0_0_1px_rgba(0,0,0,0.3)]"
+        style={{ top: 10, zIndex: 0 }}
+      />
+      <div
+        className="absolute left-0 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#f5d77a] via-primary to-[#9a7416] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.45),0_0_0_1px_rgba(0,0,0,0.3)]"
+        style={{ top: 5, zIndex: 1 }}
+      />
+      <div
+        className="absolute left-0 w-[18px] h-[18px] rounded-full bg-gradient-to-br from-[#f5d77a] via-primary to-[#9a7416] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.45),0_0_0_1px_rgba(0,0,0,0.3)]"
+        style={{ top: 0, zIndex: 2 }}
+      />
     </div>
   );
 }
