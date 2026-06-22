@@ -5,7 +5,7 @@ import type { CursorPos } from '@/lib/keyboardUtils';
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
 import { SpreadZone } from './SpreadZone';
-import { HandZone, type SortMode } from './HandZone';
+import { HandZone, getHandOrderSyncAction, type SortMode } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
@@ -57,6 +57,15 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
     ...Object.keys(gameState.opponentRevealedHands),
   ]));
   const opponentCount = allOpponentIds.length;
+
+  function handleToggleReveal() {
+    const next = !gameState.myHandRevealed;
+    sendAction({ type: 'SET_HAND_REVEALED', revealed: next });
+    if (next) {
+      const syncAction = getHandOrderSyncAction(sortMode, gameState.myHand);
+      if (syncAction) sendAction(syncAction);
+    }
+  }
 
   return (
     <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-background">
@@ -165,7 +174,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onToggleSelect={onToggleSelect}
               selectionSource={selectionSource}
               isRevealed={gameState.myHandRevealed}
-              onToggleReveal={() => sendAction({ type: 'SET_HAND_REVEALED', revealed: !gameState.myHandRevealed })}
+              onToggleReveal={handleToggleReveal}
               highlightedMove={highlightedMove}
               cursorCardId={cursorCardId ?? undefined}
               shortcutKey={altHeld ? zoneLetterMap.get('hand') : undefined}
