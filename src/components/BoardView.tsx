@@ -10,6 +10,7 @@ import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
 import { ShortcutsOverlay } from './ShortcutsOverlay';
+import { PotZone } from './PotZone';
 
 interface BoardViewProps {
   gameState: ClientGameState;
@@ -121,6 +122,9 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             {pilePiles.map((pile) => (
               <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} />
             ))}
+            {gameState.chipsEnabled && (
+              <PotZone pot={gameState.pot} myPlayerId={gameState.myPlayerId} sendAction={sendAction} />
+            )}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
             <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.x - b.x); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} />
