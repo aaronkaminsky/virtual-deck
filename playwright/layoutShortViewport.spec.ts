@@ -11,7 +11,7 @@ test.describe('short-viewport layout', () => {
 
     // Deal so the hand and rail piles are populated
     await p1.getByRole('button', { name: /open controls/i }).click();
-    await p1.locator('input[type="number"]').fill('5');
+    await p1.locator('input[type="number"][max]').fill('5');
     await p1.getByRole('button', { name: 'Deal' }).click();
     await expect(p1.getByTestId('hand-zone').locator('[aria-pressed]')).toHaveCount(5);
 

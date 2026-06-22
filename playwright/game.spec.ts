@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 
 async function dealCards(page: Page, count = 5) {
   await page.getByRole('button', { name: /open controls/i }).click();
-  await page.locator('input[type="number"]').fill(String(count));
+  await page.locator('input[type="number"][max]').fill(String(count));
   await page.getByRole('button', { name: 'Deal' }).click();
 }
 
