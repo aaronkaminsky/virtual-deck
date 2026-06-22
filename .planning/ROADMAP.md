@@ -15,6 +15,13 @@
 - ✅ **v1.10 Sound Effects & Celebration** — 999.23, 999.43 (shipped 2026-06-02)
 - ✅ **v1.11 Deal Next Hand & Shuffle Motion Polish** — 999.48, 999.44 (shipped 2026-06-03)
 - ✅ **v1.12 Highlight Last Move** — 999.38 (shipped 2026-06-05)
+- ✅ **v1.13 Keyboard Commands** — cursor, Alt+letter, undo, cheat sheet — 999.46 (shipped 2026-06-13)
+- ✅ **v1.14 Keyboard Zone Controls & Reset Button Removal** — 999.50, 999.51 (shipped 2026-06-14)
+- ✅ **v1.15 Selection Ring & Highlight Fixes** — 999.52, 999.53 (shipped 2026-06-15)
+- ✅ **v1.16 Visual Polish** — modern felt/charcoal/gold system — 999.54 (shipped 2026-06-19)
+- ✅ **v1.17 Custom Table Names** — phase 1001 (shipped 2026-06-20)
+- ✅ **v1.18 Visual Cleanup** — opponent spread full width + even canvas gap — 1003, 1004 (shipped 2026-06-21)
+- ✅ **v1.19 Poker Chips** — betting chip support + visual/layout polish — 999.17 (shipped 2026-06-22)
 
 ## Phases
 
