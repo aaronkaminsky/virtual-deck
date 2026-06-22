@@ -33,14 +33,15 @@ function myHandChipBadge(page: Page) {
 }
 
 test.describe('poker chips', () => {
-  test('enabling chips from the menu shows the starting amount on both hands and a zero pot', async ({ twoPlayerRoom }) => {
+  test('enabling chips from the menu shows the starting amount on both hands and hides the empty pot', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
     await enableChips(p1);
 
     await expect(p1.getByTestId('chip-badge').first()).toContainText('1000');
     await expect(p2.getByTestId('chip-badge').first()).toContainText('1000');
-    await expect(p1.getByTestId('pot-zone')).toContainText('0');
+    // PotZone renders nothing at all while the pot is empty (pot === 0).
+    await expect(p1.getByTestId('pot-zone')).toHaveCount(0);
   });
 
   test("bet quick action moves chips from hand to the betting player's own spread only", async ({ twoPlayerRoom }) => {
@@ -85,9 +86,10 @@ test.describe('poker chips', () => {
     await p1.getByTestId('pot-zone').hover();
     await p1.getByRole('button', { name: /take all/i }).click();
 
-    await expect(p1.getByTestId('pot-zone')).toContainText('0');
+    // PotZone disappears entirely once the pot is emptied back out.
+    await expect(p1.getByTestId('pot-zone')).toHaveCount(0);
     // P2 sees the same pot state in real time
-    await expect(p2.getByTestId('pot-zone')).toContainText('0');
+    await expect(p2.getByTestId('pot-zone')).toHaveCount(0);
   });
 
   test("a player cannot move another player's hand or spread chips", async ({ twoPlayerRoom }) => {

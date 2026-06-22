@@ -30,7 +30,7 @@ describe("SpreadZone chip support", () => {
   });
 
   it("orders chip controls before the eye/select-all controls with a divider between", () => {
-    const controlsRowMatch = SpreadZoneSrc.match(/<div className="flex gap-1 zone-controls">[\s\S]*?<\/div>\s*\)\}\s*<\/div>\s*\);/);
+    const controlsRowMatch = SpreadZoneSrc.match(/<div\s+className="flex gap-1 zone-controls"[\s\S]{0,100}>[\s\S]*?<\/div>\s*\)\}\s*<\/div>\s*\);/);
     expect(controlsRowMatch).not.toBeNull();
     const row = controlsRowMatch![0];
     const arrowIdx = row.indexOf('ArrowRight');

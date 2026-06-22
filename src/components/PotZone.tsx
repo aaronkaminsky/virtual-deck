@@ -36,11 +36,13 @@ export function PotZone({ pot, myPlayerId, sendAction }: PotZoneProps) {
     setPopoverOpen(false);
   }
 
+  if (pot === 0) return null;
+
   return (
     <div className="flex flex-col gap-0.5 zone-hover" data-testid="pot-zone">
       <div className="flex justify-between items-center">
         <span className="zone-label hidden sm:inline">Pot</span>
-        <div className="flex gap-1 zone-controls">
+        <div className="flex gap-1 zone-controls" style={popoverOpen ? { opacity: 1 } : undefined}>
           <Popover open={popoverOpen} onOpenChange={handlePopoverOpenChange}>
             <PopoverTrigger render={
               <Button variant="ghost" className="h-7 w-7 p-0" aria-label="More chip actions">
@@ -68,8 +70,8 @@ export function PotZone({ pot, myPlayerId, sendAction }: PotZoneProps) {
         <ChipStack amount={pot} />
         <Badge className="absolute -bottom-2 -right-2">{pot}</Badge>
       </div>
-      <div className="zone-controls">
-        <Button variant="outline" size="sm" className="w-full" onClick={handleTakeAll} disabled={pot === 0}>Take all</Button>
+      <div className="zone-controls" style={popoverOpen ? { opacity: 1 } : undefined}>
+        <Button variant="outline" size="sm" className="w-full" onClick={handleTakeAll}>Take all</Button>
       </div>
     </div>
   );

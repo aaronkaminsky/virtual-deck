@@ -260,8 +260,11 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             {selectedIds.size} selected
           </span>
         )}
-        {chipsEnabled && <ChipBadge amount={chipsInHand} className="ml-auto" />}
-        <span className="flex items-center gap-1 zone-controls">
+        {chipsEnabled && <ChipBadge amount={chipsInHand} />}
+        <span
+          className="flex items-center gap-1 zone-controls"
+          style={chipPopoverOpen ? { opacity: 1 } : undefined}
+        >
           {chipsEnabled && (
             <>
               <Input
