@@ -109,13 +109,15 @@ describe("celebrate variant selection", () => {
 describe("preloadSounds", () => {
   it("warms shuffle, deal, and every celebrate variant", () => {
     preloadSounds();
-    expect(MockAudio.instances).toHaveLength(2 + CELEBRATE_VARIANT_COUNT);
+    expect(MockAudio.instances).toHaveLength(4 + CELEBRATE_VARIANT_COUNT);
     for (const a of MockAudio.instances) {
       expect(a.load).toHaveBeenCalledTimes(1);
     }
     const srcs = MockAudio.instances.map(a => a.src);
     expect(srcs.some(s => s.endsWith("sounds/shuffle.mp3"))).toBe(true);
     expect(srcs.some(s => s.endsWith("sounds/deal.mp3"))).toBe(true);
+    expect(srcs.some(s => s.endsWith("sounds/chip-bet.mp3"))).toBe(true);
+    expect(srcs.some(s => s.endsWith("sounds/chip-collect.mp3"))).toBe(true);
     for (let i = 1; i <= CELEBRATE_VARIANT_COUNT; i++) {
       expect(srcs.some(s => s.endsWith(`sounds/celebrate${i}.mp3`))).toBe(true);
     }
@@ -129,5 +131,28 @@ describe("preloadSounds", () => {
     expect(MockAudio.instances).toHaveLength(countAfterPreload); // reused, not recreated
     const shuffleEl = MockAudio.instances.find(a => a.src.endsWith("sounds/shuffle.mp3"))!;
     expect(shuffleEl.play).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("chip sounds", () => {
+  it("playSound('chip-bet') resolves to chip-bet.mp3", () => {
+    setMuted(false);
+    playSound("chip-bet");
+    expect(MockAudio.instances).toHaveLength(1);
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/chip-bet\.mp3$/);
+  });
+
+  it("playSound('chip-collect') resolves to chip-collect.mp3", () => {
+    setMuted(false);
+    playSound("chip-collect");
+    expect(MockAudio.instances).toHaveLength(1);
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/chip-collect\.mp3$/);
+  });
+
+  it("preloadSounds loads chip-bet.mp3 and chip-collect.mp3", () => {
+    preloadSounds();
+    const srcs = MockAudio.instances.map(a => a.src);
+    expect(srcs.some(s => s.endsWith("chip-bet.mp3"))).toBe(true);
+    expect(srcs.some(s => s.endsWith("chip-collect.mp3"))).toBe(true);
   });
 });

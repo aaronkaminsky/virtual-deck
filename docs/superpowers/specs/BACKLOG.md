@@ -6,7 +6,6 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 
 | ID | Goal |
 |------|------|
-| 999.17 | Chips — poker/betting chip support |
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit `onBeforeConnect` rejects connections without the correct password (passed in URL query string) |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message |
 | 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features |

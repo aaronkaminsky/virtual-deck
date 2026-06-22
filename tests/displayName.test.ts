@@ -19,6 +19,10 @@ function makeTestState(): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 

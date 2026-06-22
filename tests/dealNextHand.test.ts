@@ -13,8 +13,8 @@ describe("DEAL_NEXT_HAND handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     // Start in playing phase with cards dealt to hands
     room.gameState.phase = "playing";
     room.gameState.hands["player-1"] = [makeCard("A-s", true), makeCard("K-h", true)];
@@ -98,8 +98,8 @@ describe("DEAL_NEXT_HAND handler", () => {
     const connections = [conn1, conn2];
     const roomWithConns = makeMockRoom(connections);
     const r = new GameRoom(roomWithConns);
-    r.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    r.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    r.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    r.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     r.gameState.hands["player-1"] = [makeCard("A-s", true)];
     r.gameState.hands["player-2"] = [];
     r.gameState.phase = "playing";
@@ -175,7 +175,7 @@ describe("DEAL_NEXT_HAND handler", () => {
   });
 
   it("skips disconnected players when dealing", async () => {
-    room.gameState.players.push({ id: "player-3", connected: false, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-3", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-3"] = [];
 
     await room.onMessage(JSON.stringify({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 2 }), sender);

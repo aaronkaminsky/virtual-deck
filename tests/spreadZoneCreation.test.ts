@@ -22,7 +22,7 @@ function makeOldShapeState(): GameState {
   return {
     roomId: "test-room",
     phase: "playing",
-    players: [{ id: "alice", connected: true, displayName: "Alice", handRevealed: false }],
+    players: [{ id: "alice", connected: true, displayName: "Alice", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 }],
     hands: { alice: [] },
     piles: [
       // region and ownerId INTENTIONALLY absent — onStart migration must add them
@@ -32,6 +32,10 @@ function makeOldShapeState(): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 
@@ -39,7 +43,7 @@ function makeTestState(): GameState {
   return {
     roomId: "test-room",
     phase: "playing",
-    players: [{ id: "player-1", connected: true, displayName: "Alice", handRevealed: false }],
+    players: [{ id: "player-1", connected: true, displayName: "Alice", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 }],
     hands: { "player-1": [] },
     piles: [
       { id: "draw", name: "Draw", cards: [], faceUp: false, region: "pile", ownerId: null },
@@ -47,6 +51,10 @@ function makeTestState(): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 

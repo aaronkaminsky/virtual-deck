@@ -33,8 +33,8 @@ describe("SpreadZone — D-06: isOver expanded drop-target unchanged", () => {
 });
 
 describe("SpreadZone — D-07: controls guard unchanged", () => {
-  it("still has the interactive !== false && !isEmpty controls guard", () => {
-    expect(SpreadZoneSrc).toContain("interactive !== false && !isEmpty");
+  it("still has the interactive !== false && !isReallyEmpty controls guard", () => {
+    expect(SpreadZoneSrc).toContain("interactive !== false && !isReallyEmpty");
   });
 });
 

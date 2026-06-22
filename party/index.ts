@@ -68,6 +68,10 @@ export function defaultGameState(roomId: string): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 
@@ -113,6 +117,9 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
       }),
     })) satisfies ClientPile[],
     canUndo: state.undoSnapshots.length > 0,
+    pot: state.pot,
+    chipsEnabled: state.chipsEnabled,
+    startingChips: state.startingChips,
     myPlayZoneId: `spread-${playerToken}`,
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
   };
@@ -166,6 +173,27 @@ export default class GameRoom implements Party.Server {
     if (!Array.isArray((this.gameState as any).canvasCards)) {
       (this.gameState as unknown as GameState).canvasCards = [];
     }
+    // Migrate state: Phase 999.17 adds chip fields to Player and GameState
+    for (const player of this.gameState.players) {
+      if (!('chipsInHand' in player)) {
+        (player as any).chipsInHand = 0;
+      }
+      if (!('chipsInSpread' in player)) {
+        (player as any).chipsInSpread = 0;
+      }
+    }
+    if (!('chipsEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).chipsEnabled = false;
+    }
+    if (!('startingChips' in this.gameState)) {
+      (this.gameState as unknown as GameState).startingChips = 1000;
+    }
+    if (!('pot' in this.gameState)) {
+      (this.gameState as unknown as GameState).pot = 0;
+    }
+    if (!('chipsInitialized' in this.gameState)) {
+      (this.gameState as unknown as GameState).chipsInitialized = false;
+    }
   }
 
   async onRequest(req: Party.Request): Promise<Response> {
@@ -196,7 +224,7 @@ export default class GameRoom implements Party.Server {
     connection.setState({ playerToken });
 
     if (!this.gameState.players.find(p => p.id === playerToken)) {
-      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false });
+      this.gameState.players.push({ id: playerToken, connected: true, displayName, handRevealed: false, chipsInHand: this.gameState.chipsEnabled ? this.gameState.startingChips : 0, chipsInSpread: 0 });
       this.gameState.hands[playerToken] = [];
     } else {
       const player = this.gameState.players.find(p => p.id === playerToken);
@@ -1015,6 +1043,61 @@ export default class GameRoom implements Party.Server {
         this.broadcastEffect("celebrate");
         break;
       }
+      case "SET_CHIPS_MODE": {
+        const wasInitialized = this.gameState.chipsInitialized;
+        this.gameState.chipsEnabled = action.enabled === true;
+        if (Number.isFinite(action.startingChips) && action.startingChips >= 0) {
+          this.gameState.startingChips = Math.floor(action.startingChips);
+        }
+        if (this.gameState.chipsEnabled && !wasInitialized) {
+          for (const player of this.gameState.players) {
+            player.chipsInHand = this.gameState.startingChips;
+            player.chipsInSpread = 0;
+          }
+          this.gameState.pot = 0;
+          this.gameState.chipsInitialized = true;
+        }
+        // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with RESET_TABLE/SET_HAND_REVEALED)
+        break;
+      }
+      case "TRANSFER_CHIPS": {
+        const { from, to, playerId, amount } = action;
+        if (!this.gameState.chipsEnabled || from === to || !Number.isInteger(amount) || amount <= 0) {
+          break;
+        }
+        if ((from !== "pot" || to !== "pot") && playerId !== senderToken) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "UNAUTHORIZED_CHIP_TRANSFER",
+            message: "Cannot move another player's chips",
+          } satisfies ServerEvent));
+          break;
+        }
+        const chipPlayer = this.gameState.players.find(p => p.id === playerId);
+        if (!chipPlayer) break;
+        const sourceAmount = from === "hand" ? chipPlayer.chipsInHand : from === "spread" ? chipPlayer.chipsInSpread : this.gameState.pot;
+        if (sourceAmount < amount) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CHIPS",
+            message: "Not enough chips at the source",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        if (from === "hand") chipPlayer.chipsInHand -= amount;
+        else if (from === "spread") chipPlayer.chipsInSpread -= amount;
+        else this.gameState.pot -= amount;
+        if (to === "hand") chipPlayer.chipsInHand += amount;
+        else if (to === "spread") chipPlayer.chipsInSpread += amount;
+        else this.gameState.pot += amount;
+        if (from === "hand" && to === "spread") {
+          this.broadcastEffect("chip-bet");
+        } else if (to === "pot" || from === "pot") {
+          this.broadcastEffect("chip-collect");
+        }
+        break;
+      }
       case "PING":
         break;
     }
@@ -1075,7 +1158,7 @@ export default class GameRoom implements Party.Server {
     }
   }
 
-  private broadcastEffect(kind: "deal" | "celebrate") {
+  private broadcastEffect(kind: "deal" | "celebrate" | "chip-bet" | "chip-collect") {
     for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "EFFECT",

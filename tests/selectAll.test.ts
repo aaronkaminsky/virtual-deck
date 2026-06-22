@@ -5,14 +5,14 @@ import { makeMockRoom, makeMockConnection, makeCard } from "./helpers";
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = cards;
   return state;
 }
 
 function makeStateWithPileCards(playerId: string, pileId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = [];
   state.piles.push({ id: `spread-${playerId}`, name: "Spread", cards: [], faceUp: true, region: "spread", ownerId: playerId });
   const pile = state.piles.find(p => p.id === pileId);

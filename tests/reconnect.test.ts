@@ -19,6 +19,10 @@ function makeTestState(): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 
@@ -86,7 +90,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const gameRoom = new GameRoom(room);
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 }],
       hands: { "stable-player-id": [makeCard("A-s")] },
     };
 
@@ -105,7 +109,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const existingHand = [makeCard("A-s"), makeCard("K-h")];
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 }],
       hands: { "stable-player-id": existingHand },
     };
 
@@ -123,7 +127,7 @@ describe("onConnect: reconnecting player restores state", () => {
     const gameRoom = new GameRoom(room);
     gameRoom.gameState = {
       ...makeTestState(),
-      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false }],
+      players: [{ id: "stable-player-id", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 }],
       hands: { "stable-player-id": [makeCard("A-s")] },
     };
 
@@ -144,10 +148,10 @@ describe("onConnect: slot-based 4-player cap", () => {
     gameRoom.gameState = {
       ...makeTestState(),
       players: [
-        { id: "player-1", connected: true, displayName: "", handRevealed: false },
-        { id: "player-2", connected: true, displayName: "", handRevealed: false },
-        { id: "player-3", connected: false, displayName: "", handRevealed: false },
-        { id: "player-4", connected: false, displayName: "", handRevealed: false },
+        { id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-3", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-4", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
       ],
       hands: {
         "player-1": [],
@@ -172,10 +176,10 @@ describe("onConnect: slot-based 4-player cap", () => {
     gameRoom.gameState = {
       ...makeTestState(),
       players: [
-        { id: "player-1", connected: true, displayName: "", handRevealed: false },
-        { id: "player-2", connected: true, displayName: "", handRevealed: false },
-        { id: "player-3", connected: false, displayName: "", handRevealed: false },
-        { id: "player-4", connected: false, displayName: "", handRevealed: false },
+        { id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-3", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+        { id: "player-4", connected: false, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
       ],
       hands: {
         "player-1": [],

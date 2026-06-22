@@ -42,8 +42,8 @@ describe("PASS_CARD handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
     room.gameState.hands["player-2"] = [];
   });
@@ -93,7 +93,7 @@ describe("PASS_CARD handler", () => {
 
   it("viewFor after PASS_CARD shows card in recipient's myHand, not in sender's; third player sees opponentHandCounts change", async () => {
     const player3 = makeMockConnection("player-3");
-    room.gameState.players.push({ id: "player-3", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-3", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-3"] = [];
 
     const card = makeCard("A-s");
@@ -129,8 +129,8 @@ describe("PASS_CARD LAST_MOVE broadcast", () => {
     const conn1 = helpMakeMockConnection("player-1");
     const conn2 = helpMakeMockConnection("player-2");
     const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [{ id: "J-c", suit: "clubs", rank: "J", faceUp: true }];
     room.gameState.hands["player-2"] = [];
 

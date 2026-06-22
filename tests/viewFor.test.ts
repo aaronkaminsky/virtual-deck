@@ -11,9 +11,9 @@ function makeTestState(): GameState {
     roomId: "test-room",
     phase: "playing",
     players: [
-      { id: "player-1", connected: true, displayName: "", handRevealed: false },
-      { id: "player-2", connected: true, displayName: "", handRevealed: false },
-      { id: "player-3", connected: true, displayName: "", handRevealed: false },
+      { id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+      { id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
+      { id: "player-3", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 },
     ],
     hands: {
       "player-1": [makeCard("A-s"), makeCard("K-s")],
@@ -26,6 +26,10 @@ function makeTestState(): GameState {
     ],
     undoSnapshots: [],
     canvasCards: [],
+    chipsEnabled: false,
+    startingChips: 1000,
+    pot: 0,
+    chipsInitialized: false,
   };
 }
 

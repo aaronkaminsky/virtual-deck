@@ -25,6 +25,7 @@ export function makeMockConnection(
     id,
     send: vi.fn(),
     close: vi.fn(),
+    setState: vi.fn(),
     socket: {} as WebSocket,
     uri: "",
     state: { playerToken: id },

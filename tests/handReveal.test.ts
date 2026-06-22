@@ -17,7 +17,7 @@ describe("SET_HAND_REVEALED handler", () => {
   it("HAND-01: SET_HAND_REVEALED revealed:true sets player.handRevealed=true in GameState", async () => {
     const conn1 = makeMockConnection("player-1");
     const room = new GameRoom(makeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s")];
 
     await room.onMessage(JSON.stringify({ type: "SET_HAND_REVEALED", revealed: true }), conn1);
@@ -29,7 +29,7 @@ describe("SET_HAND_REVEALED handler", () => {
   it("HAND-02: SET_HAND_REVEALED revealed:false sets player.handRevealed=false in GameState", async () => {
     const conn1 = makeMockConnection("player-1");
     const room = new GameRoom(makeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: true });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: true, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s")];
 
     await room.onMessage(JSON.stringify({ type: "SET_HAND_REVEALED", revealed: false }), conn1);
@@ -42,8 +42,8 @@ describe("SET_HAND_REVEALED handler", () => {
     const conn1 = makeMockConnection("player-1");
     const conn2 = makeMockConnection("player-2");
     const room = new GameRoom(makeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
     room.gameState.hands["player-2"] = [makeCard("Q-d")];
 
@@ -68,8 +68,8 @@ describe("SET_HAND_REVEALED handler", () => {
     const conn2 = makeMockConnection("player-2");
     const room = new GameRoom(makeMockRoom([conn1, conn2]));
     // Simulate state that was persisted with handRevealed:true (e.g. after reconnect)
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: true });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: true, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s"), makeCard("K-h")];
     room.gameState.hands["player-2"] = [makeCard("Q-d")];
 
@@ -91,8 +91,8 @@ describe("SET_HAND_REVEALED handler", () => {
     const conn1 = makeMockConnection("player-1");
     const conn2 = makeMockConnection("player-2");
     const room = new GameRoom(makeMockRoom([conn1, conn2]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s")];
     room.gameState.hands["player-2"] = [makeCard("Q-d")];
 
@@ -110,7 +110,7 @@ describe("SET_HAND_REVEALED handler", () => {
   it("V5 input validation: revealed:'true' (string) is treated as false (strict boolean check)", async () => {
     const conn1 = makeMockConnection("player-1");
     const room = new GameRoom(makeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [makeCard("A-s")];
 
     // Send revealed as a string "true" instead of boolean true

@@ -5,14 +5,14 @@ import { makeMockRoom, makeMockConnection, makeCard } from "./helpers";
 
 function makeStateWithPlayerAndCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = cards;
   return state;
 }
 
 function makeStateWithPileCards(playerId: string, pileId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = [];
   // Personal spread zone for the player (mirrors onConnect creation)
   state.piles.push({ id: `spread-${playerId}`, name: "Spread", cards: [], faceUp: true, region: "spread", ownerId: playerId });
@@ -249,7 +249,7 @@ describe("PLAY_CARD_SET handler", () => {
 
 function makeStateWithCanvasCards(playerId: string, cards: Card[]): GameState {
   const state = defaultGameState("test-room");
-  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false });
+  state.players.push({ id: playerId, connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
   state.hands[playerId] = [];
   state.canvasCards = cards.map((card, i): CanvasCard => ({ card, x: 10 + i * 20, y: 10, z: i + 1 }));
   return state;
@@ -349,7 +349,7 @@ describe("PLAY_CARD_SET LAST_MOVE broadcast", () => {
   it("emits LAST_MOVE with all cardIds after multi-card play", async () => {
     const conn1 = makeMockConnection("player-1");
     const room = new GameRoom(makeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [
       { id: "A-s", suit: "spades", rank: "A", faceUp: true },
       { id: "2-s", suit: "spades", rank: "2", faceUp: true },

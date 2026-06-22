@@ -13,6 +13,8 @@ export interface Player {
   connected: boolean;
   displayName: string;
   handRevealed: boolean;
+  chipsInHand: number;
+  chipsInSpread: number;
 }
 
 export interface Pile {
@@ -53,6 +55,10 @@ export interface GameState {
   piles: Pile[];
   undoSnapshots: GameState[];
   canvasCards: CanvasCard[];
+  chipsEnabled: boolean;
+  startingChips: number;
+  pot: number;
+  chipsInitialized: boolean;
 }
 
 export interface ClientGameState {
@@ -68,6 +74,9 @@ export interface ClientGameState {
   canUndo: boolean;
   myPlayZoneId: string;
   canvasCards: ClientCanvasCard[];
+  pot: number;
+  chipsEnabled: boolean;
+  startingChips: number;
 }
 
 export type ClientAction =
@@ -83,6 +92,8 @@ export type ClientAction =
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string }
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
+  | { type: "SET_CHIPS_MODE"; enabled: boolean; startingChips: number }
+  | { type: "TRANSFER_CHIPS"; from: "hand" | "spread" | "pot"; to: "hand" | "spread" | "pot"; playerId: string; amount: number }
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
@@ -106,6 +117,6 @@ export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
   | { type: "PILE_SHUFFLED"; pileId: string }
-  | { type: "EFFECT"; kind: "deal" | "celebrate" }
+  | { type: "EFFECT"; kind: "deal" | "celebrate" | "chip-bet" | "chip-collect" }
   | { type: "LAST_MOVE"; toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] }
   | { type: "CLEAR_LAST_MOVE" };

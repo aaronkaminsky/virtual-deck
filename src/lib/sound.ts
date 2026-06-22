@@ -1,6 +1,6 @@
 const MUTE_KEY = "vd-muted";
 
-export type SoundName = "shuffle" | "deal" | "celebrate";
+export type SoundName = "shuffle" | "deal" | "celebrate" | "chip-bet" | "chip-collect";
 
 let mutedCache: boolean | null = null;
 const audioCache = new Map<string, HTMLAudioElement>(); // keyed by resolved filename
@@ -15,6 +15,8 @@ const VARIANT_COUNTS: Record<SoundName, number> = {
   shuffle: 1,
   deal: 1,
   celebrate: CELEBRATE_VARIANT_COUNT,
+  "chip-bet": 1,
+  "chip-collect": 1,
 };
 
 function resolveFile(name: SoundName): string {
@@ -72,7 +74,7 @@ export function playSound(name: SoundName): void {
 // room) so the first shuffle/deal/celebrate doesn't pay fetch/decode latency on first play.
 export function preloadSounds(): void {
   if (typeof Audio === "undefined") return;
-  const files = ["shuffle.mp3", "deal.mp3"];
+  const files = ["shuffle.mp3", "deal.mp3", "chip-bet.mp3", "chip-collect.mp3"];
   for (let i = 1; i <= CELEBRATE_VARIANT_COUNT; i++) files.push(`celebrate${i}.mp3`);
   for (const file of files) {
     getAudio(file)?.load();

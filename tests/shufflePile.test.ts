@@ -37,7 +37,7 @@ describe("SHUFFLE_PILE handler", () => {
     mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -77,7 +77,7 @@ describe("SHUFFLE_PILE handler", () => {
       getConnections: (() => connections[Symbol.iterator]()) as unknown as Party.Room["getConnections"],
     });
     const connectedRoom = new GameRoom(roomWithConns);
-    connectedRoom.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    connectedRoom.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     connectedRoom.gameState.hands["player-1"] = [];
 
     await connectedRoom.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);

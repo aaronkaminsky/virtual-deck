@@ -24,11 +24,25 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
   const [copied, setCopied] = useState(false);
 
   const [muted, setMutedState] = useState(getMuted());
+  const [startingChipsInput, setStartingChipsInput] = useState(String(gameState.startingChips));
 
   function handleToggleMute() {
     const next = !muted;
     setMuted(next);
     setMutedState(next);
+  }
+
+  function handleToggleChips() {
+    const parsed = parseInt(startingChipsInput, 10);
+    const startingChips = Number.isFinite(parsed) && parsed >= 0 ? parsed : gameState.startingChips;
+    sendAction({ type: 'SET_CHIPS_MODE', enabled: !gameState.chipsEnabled, startingChips });
+  }
+
+  function handleStartingChipsBlur() {
+    const parsed = parseInt(startingChipsInput, 10);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      sendAction({ type: 'SET_CHIPS_MODE', enabled: gameState.chipsEnabled, startingChips: parsed });
+    }
   }
 
   const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
@@ -118,6 +132,33 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
               <><Volume2 className="mr-2 size-4" /> Sound on</>
             )}
           </Button>
+
+          <Separator />
+
+          {/* Poker chips */}
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleToggleChips}
+              aria-pressed={gameState.chipsEnabled}
+              aria-label={gameState.chipsEnabled ? 'Disable poker chips' : 'Enable poker chips'}
+            >
+              Poker Chips {gameState.chipsEnabled ? 'on' : 'off'}
+            </Button>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground flex-1">Starting amount</label>
+              <Input
+                type="number"
+                min={0}
+                value={startingChipsInput}
+                onChange={e => setStartingChipsInput(e.target.value)}
+                onBlur={handleStartingChipsBlur}
+                className="w-24"
+              />
+            </div>
+          </div>
 
           <Separator />
 

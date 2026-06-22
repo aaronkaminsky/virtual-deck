@@ -59,7 +59,7 @@ describe("PLACE_ON_CANVAS handler", () => {
     const mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -155,7 +155,7 @@ describe("PLACE_ON_CANVAS handler", () => {
   });
 
   it("rejects hand source with mismatched senderToken (UNAUTHORIZED_MOVE)", async () => {
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-2"] = [makeCard("A-s")];
 
     await room.onMessage(
@@ -211,7 +211,7 @@ describe("MOVE_CARD with fromZone: 'canvas'", () => {
     const mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -284,7 +284,7 @@ describe("RESET_TABLE canvas sweep", () => {
     const mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -326,8 +326,8 @@ describe("viewFor canvas broadcast", () => {
 
   beforeEach(() => {
     state = defaultGameState("test-room");
-    state.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
-    state.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    state.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    state.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     state.hands["player-1"] = [];
     state.hands["player-2"] = [];
   });
@@ -418,7 +418,7 @@ describe("GROUP_PLACE_ON_CANVAS handler", () => {
     const mockRoom = makeMockRoom();
     room = new GameRoom(mockRoom);
     sender = makeMockConnection("player-1");
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [];
   });
 
@@ -549,7 +549,7 @@ describe("GROUP_PLACE_ON_CANVAS handler", () => {
 
   // --- Auth guard ---
   it("auth guard: hand source with fromId !== senderToken → UNAUTHORIZED_MOVE, no mutation", async () => {
-    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-2", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-2"] = [makeCard("A-s"), makeCard("K-h")];
     const canvasLengthBefore = room.gameState.canvasCards.length;
 
@@ -729,7 +729,7 @@ describe("PLACE_ON_CANVAS LAST_MOVE broadcast", () => {
   it("emits LAST_MOVE with toZoneType=canvas after placing a card on canvas", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [{ id: "5-h", suit: "hearts", rank: "5", faceUp: true }];
 
     await room.onMessage(JSON.stringify({
@@ -750,7 +750,7 @@ describe("GROUP_PLACE_ON_CANVAS LAST_MOVE broadcast", () => {
   it("emits LAST_MOVE with all cardIds after group place", async () => {
     const conn1 = helpMakeMockConnection("player-1");
     const room = new GameRoom(helpMakeMockRoom([conn1]));
-    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false });
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
     room.gameState.hands["player-1"] = [
       { id: "5-h", suit: "hearts", rank: "5", faceUp: true },
       { id: "6-h", suit: "hearts", rank: "6", faceUp: true },
