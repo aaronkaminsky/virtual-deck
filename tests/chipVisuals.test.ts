@@ -3,9 +3,12 @@ import ChipBadgeSrc from "../src/components/ChipBadge.tsx?raw";
 import ChipStackSrc from "../src/components/ChipStack.tsx?raw";
 
 describe("ChipBadge", () => {
-  it("renders the amount inside a Badge with a primary-colored dot", () => {
+  it("renders the amount inside a Badge with a gradient gold-coin dot", () => {
     expect(ChipBadgeSrc).toMatch(/import\s*\{\s*Badge\s*\}\s*from\s*['"]@\/components\/ui\/badge['"]/);
-    expect(ChipBadgeSrc).toMatch(/bg-primary/);
+    expect(ChipBadgeSrc).toMatch(/bg-gradient-to-br/);
+    expect(ChipBadgeSrc).toMatch(/from-\[#f5d77a\]/);
+    expect(ChipBadgeSrc).toMatch(/via-primary/);
+    expect(ChipBadgeSrc).toMatch(/to-\[#9a7416\]/);
     expect(ChipBadgeSrc).toMatch(/\{amount\}/);
   });
 });
