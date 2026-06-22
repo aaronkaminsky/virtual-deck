@@ -3,12 +3,14 @@ import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction, SelectionSource, LastMoveHighlight } from '@/shared/types';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, SquareCheck } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Eye, EyeOff, SquareCheck, MoreVertical, ArrowRight } from 'lucide-react';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
-import { ChipBadge } from './ChipBadge';
+import { ChipStack } from './ChipStack';
 import { cn } from '@/lib/utils';
 
 interface SortableSpreadCardProps {
@@ -107,7 +109,13 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
   const sentinelId = `__sentinel-pile-${pile.id}__`;
 
-  const [toHandAmount, setToHandAmount] = useState(10);
+  const [chipMoveAmount, setChipMoveAmount] = useState(chipsInSpread);
+  const [chipPopoverOpen, setChipPopoverOpen] = useState(false);
+
+  function handleChipPopoverOpenChange(open: boolean) {
+    setChipPopoverOpen(open);
+    if (open) setChipMoveAmount(chipsInSpread);
+  }
 
   function handleMoveToPot() {
     if (chipsInSpread > 0 && pile.ownerId) {
@@ -115,10 +123,18 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
     }
   }
 
-  function handleToHand() {
-    if (toHandAmount > 0 && pile.ownerId) {
-      sendAction({ type: 'TRANSFER_CHIPS', from: 'spread', to: 'hand', playerId: pile.ownerId, amount: toHandAmount });
+  function handlePopoverToPot() {
+    if (chipMoveAmount > 0 && pile.ownerId) {
+      sendAction({ type: 'TRANSFER_CHIPS', from: 'spread', to: 'pot', playerId: pile.ownerId, amount: chipMoveAmount });
     }
+    setChipPopoverOpen(false);
+  }
+
+  function handlePopoverToHand() {
+    if (chipMoveAmount > 0 && pile.ownerId) {
+      sendAction({ type: 'TRANSFER_CHIPS', from: 'spread', to: 'hand', playerId: pile.ownerId, amount: chipMoveAmount });
+    }
+    setChipPopoverOpen(false);
   }
 
   useDndMonitor({
@@ -186,26 +202,11 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   }
 
   const isEmpty = pile.cards.length === 0;
+  const hasBet = chipsEnabled && chipsInSpread > 0;
+  const isReallyEmpty = isEmpty && !hasBet;
 
   return (
     <div className="flex flex-col gap-1 zone-hover">
-      {chipsEnabled && interactive !== false && (
-        <div className="flex items-center gap-2">
-          <ChipBadge amount={chipsInSpread} />
-          <Button variant="outline" size="sm" onClick={handleMoveToPot} disabled={chipsInSpread === 0}>Move to pot</Button>
-          <Input
-            type="number"
-            min={1}
-            value={toHandAmount}
-            onChange={e => setToHandAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            className="w-20 h-7"
-          />
-          <Button variant="ghost" size="sm" onClick={handleToHand}>To hand</Button>
-        </div>
-      )}
-      {chipsEnabled && interactive === false && (
-        <ChipBadge amount={chipsInSpread} />
-      )}
       {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
         <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
           {selectedIds.size} selected
@@ -220,64 +221,113 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
         className={cn(
-          isEmpty
+          isReallyEmpty
             ? isOver
               ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2 py-2'
               : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
             : cn(
                 'min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-secondary',
-                isEmpty ? 'border-dashed' : '',
                 isOver ? 'border-primary' : 'border-border'
               ),
           className
         )}
       >
-        {!isEmpty && interactive !== false ? (
-          <SortableContext items={[...faceUpCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
-            <div className="flex items-center">
-              {pile.cards.map((card, i) => (
-                <div key={'id' in card ? (card as Card).id : `masked-${i}`}>
-                  {'id' in card ? (
-                    <SortableSpreadCard
-                      card={card as Card}
-                      pileId={pile.id}
-                      index={i}
-                      draggingCardId={draggingCardId}
-                      isSelected={selectedIds?.has((card as Card).id) ?? false}
-                      onToggleSelect={onToggleSelect ?? (() => {})}
-                      onCursorChange={onCursorChange ? () => { const idx = faceUpCards.findIndex(c => c.id === (card as Card).id); if (idx !== -1) onCursorChange(idx); } : undefined}
-                      isHighlighted={
-                        highlightedMove?.toZoneType === "pile" &&
-                        highlightedMove.toZoneId === pile.id &&
-                        highlightedMove.cardIds.includes((card as Card).id)
-                      }
-                      highlightNonce={highlightedMove?.nonce}
-                      hasCursor={cursorCardId === (card as Card).id}
-                    />
-                  ) : (
-                    <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
-                      <CardBack />
-                    </div>
-                  )}
+        {!isReallyEmpty && (
+          <>
+            {hasBet && (
+              <>
+                <div className="relative flex-shrink-0 w-[40px] sm:w-[56px] h-[60px] sm:h-[90px] flex items-center justify-center mr-2">
+                  <ChipStack amount={chipsInSpread} />
+                  <Badge className="absolute -bottom-2 -right-2">{chipsInSpread}</Badge>
                 </div>
-              ))}
-              <SortableSentinel id={sentinelId} />
-            </div>
-          </SortableContext>
-        ) : (
-          <div className="flex items-center">
-            {pile.cards.map((card, i) => (
-              <div key={'id' in card ? (card as Card).id : `masked-${i}`} className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
-                {'id' in card
-                  ? ((card as Card).faceUp ? <CardFace card={card as Card} /> : <CardBack />)
-                  : <CardBack />}
+                <div className="w-px self-stretch bg-border mr-2" />
+              </>
+            )}
+            {!isEmpty && interactive !== false ? (
+              <SortableContext items={[...faceUpCards.map(c => c.id), sentinelId]} strategy={horizontalListSortingStrategy}>
+                <div className="flex items-center">
+                  {pile.cards.map((card, i) => (
+                    <div key={'id' in card ? (card as Card).id : `masked-${i}`}>
+                      {'id' in card ? (
+                        <SortableSpreadCard
+                          card={card as Card}
+                          pileId={pile.id}
+                          index={i}
+                          draggingCardId={draggingCardId}
+                          isSelected={selectedIds?.has((card as Card).id) ?? false}
+                          onToggleSelect={onToggleSelect ?? (() => {})}
+                          onCursorChange={onCursorChange ? () => { const idx = faceUpCards.findIndex(c => c.id === (card as Card).id); if (idx !== -1) onCursorChange(idx); } : undefined}
+                          isHighlighted={
+                            highlightedMove?.toZoneType === "pile" &&
+                            highlightedMove.toZoneId === pile.id &&
+                            highlightedMove.cardIds.includes((card as Card).id)
+                          }
+                          highlightNonce={highlightedMove?.nonce}
+                          hasCursor={cursorCardId === (card as Card).id}
+                        />
+                      ) : (
+                        <div className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
+                          <CardBack />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <SortableSentinel id={sentinelId} />
+                </div>
+              </SortableContext>
+            ) : (
+              <div className="flex items-center">
+                {pile.cards.map((card, i) => (
+                  <div key={'id' in card ? (card as Card).id : `masked-${i}`} className={cn('flex-shrink-0', i > 0 ? '-ml-3 sm:-ml-5' : '')}>
+                    {'id' in card
+                      ? ((card as Card).faceUp ? <CardFace card={card as Card} /> : <CardBack />)
+                      : <CardBack />}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
-      {interactive !== false && !isEmpty && (
+      {interactive !== false && !isReallyEmpty && (
         <div className="flex gap-1 zone-controls">
+          {chipsEnabled && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMoveToPot}
+                disabled={chipsInSpread === 0}
+                className="gap-1"
+              >
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#f5d77a] via-primary to-[#9a7416]" aria-hidden />
+                <ArrowRight className="w-3 h-3" />
+                Pot
+              </Button>
+              <Popover open={chipPopoverOpen} onOpenChange={handleChipPopoverOpenChange}>
+                <PopoverTrigger render={
+                  <Button variant="ghost" className="h-7 w-7 p-0" aria-label="More chip actions">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                } />
+                <PopoverContent side="bottom" align="start" className="w-48 p-2.5">
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      type="number"
+                      min={1}
+                      value={chipMoveAmount}
+                      onChange={e => setChipMoveAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={handlePopoverToPot}>To pot</Button>
+                      <Button variant="outline" size="sm" className="flex-1" onClick={handlePopoverToHand}>To hand</Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <div className="w-px h-5 bg-border mx-1 self-center" />
+            </>
+          )}
           <Button
             variant="ghost"
             className="h-7 w-7 p-0"
