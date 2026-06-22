@@ -47,7 +47,7 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
   const undoDisabled = !gameState.canUndo;
 
   function handleCopy() {
-    const base = import.meta.env.BASE_URL || '/virtual-deck/';
+    const base = import.meta.env.BASE_URL || '/';
     const url = `${window.location.origin}${base}?room=${roomId}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
