@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, ArrowUpDown } from 'lucide-react';
+import { Eye, EyeOff, ArrowUpDown, MoreVertical } from 'lucide-react';
 import type { Card, ClientAction, Suit, Rank, SelectionSource, LastMoveHighlight } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { ChipBadge } from './ChipBadge';
@@ -152,6 +153,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
   });
 
   const [betAmount, setBetAmount] = useState(10);
+  const [chipPopoverOpen, setChipPopoverOpen] = useState(false);
 
   function handleBet() {
     if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'spread', playerId, amount: betAmount });
@@ -159,6 +161,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
 
   function handleHandToPot() {
     if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'pot', playerId, amount: betAmount });
+    setChipPopoverOpen(false);
   }
 
 
@@ -257,7 +260,30 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             {selectedIds.size} selected
           </span>
         )}
-        <span className="flex gap-1 zone-controls">
+        {chipsEnabled && <ChipBadge amount={chipsInHand} className="ml-auto" />}
+        <span className="flex items-center gap-1 zone-controls">
+          {chipsEnabled && (
+            <>
+              <Input
+                type="number"
+                min={1}
+                value={betAmount}
+                onChange={e => setBetAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                className="w-16 h-7"
+              />
+              <Button variant="outline" size="sm" onClick={handleBet}>Bet {betAmount}</Button>
+              <Popover open={chipPopoverOpen} onOpenChange={setChipPopoverOpen}>
+                <PopoverTrigger render={
+                  <Button variant="ghost" className="h-7 w-7 p-0" aria-label="More chip actions">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                } />
+                <PopoverContent side="bottom" align="end" className="w-48 p-2.5">
+                  <Button variant="outline" size="sm" className="w-full" onClick={handleHandToPot}>To pot</Button>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
           <Button
             variant="ghost"
             className="h-7 w-7 p-0"
@@ -279,20 +305,6 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
           </Button>
         </span>
       </div>
-      {chipsEnabled && (
-        <div className="flex items-center gap-2 px-4 mb-1">
-          <ChipBadge amount={chipsInHand} />
-          <Input
-            type="number"
-            min={1}
-            value={betAmount}
-            onChange={e => setBetAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            className="w-20 h-7"
-          />
-          <Button variant="outline" size="sm" onClick={handleBet}>Bet {betAmount}</Button>
-          <Button variant="ghost" size="sm" onClick={handleHandToPot}>To pot</Button>
-        </div>
-      )}
       <div
         ref={setNodeRef}
         data-testid="hand-zone"
