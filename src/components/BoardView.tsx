@@ -77,6 +77,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   revealedCards={revealedCards}
                   highlightedMove={highlightedMove}
                   shortcutKey={altHeld ? zoneLetterMap.get(`opponent-hand-${id}`) : undefined}
+                  chipsEnabled={gameState.chipsEnabled}
+                  chipsInHand={player?.chipsInHand ?? 0}
                 />
               </div>
             );

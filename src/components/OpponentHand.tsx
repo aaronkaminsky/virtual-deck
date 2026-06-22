@@ -1,6 +1,7 @@
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
+import { ChipBadge } from './ChipBadge';
 import { cn } from '@/lib/utils';
 import type { Card, ClientAction, LastMoveHighlight } from '@/shared/types';
 
@@ -15,9 +16,11 @@ interface OpponentHandProps {
   revealedCards?: Card[];
   highlightedMove?: LastMoveHighlight | null;
   shortcutKey?: string;
+  chipsEnabled: boolean;
+  chipsInHand: number;
 }
 
-export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove, shortcutKey }: OpponentHandProps) {
+export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove, shortcutKey, chipsEnabled, chipsInHand }: OpponentHandProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `opponent-hand-${playerId}`,
     data: { toZone: 'opponent-hand' as const, toId: playerId },
@@ -50,6 +53,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
             </kbd>
           )}
         </span>
+        {chipsEnabled && <ChipBadge amount={chipsInHand} />}
       </div>
       <div className="flex items-center gap-1">
         <div className="flex items-center overflow-x-auto">
