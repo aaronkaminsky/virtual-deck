@@ -94,6 +94,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           <div className="flex items-start gap-4 flex-1 overflow-hidden">
             {allOpponentIds.map((id) => {
               const opponentSpread = spreadPiles.find(p => p.id === `spread-${id}`);
+              const opponentPlayer = gameState.players.find(p => p.id === id);
               return (
                 <div key={id} className={`flex flex-col ${opponentCount === 1 ? 'flex-1 max-w-none' : 'flex-1 min-w-0'} sm:max-w-none overflow-x-hidden`}>
                   {opponentSpread && (
@@ -105,6 +106,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                       highlightedMove={highlightedMove}
                       cursorCardId={cursorCardId ?? undefined}
                       shortcutKey={altHeld ? zoneLetterMap.get(`pile-${opponentSpread.id}`) : undefined}
+                      chipsEnabled={gameState.chipsEnabled}
+                      chipsInSpread={opponentPlayer?.chipsInSpread ?? 0}
                     />
                   )}
                 </div>
@@ -139,6 +142,8 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               cursorCardId={cursorCardId ?? undefined}
               shortcutKey={altHeld ? zoneLetterMap.get(`pile-${mySpreadZone.id}`) : undefined}
               onCursorChange={(index) => setCursorPos({ zoneId: `pile-${mySpreadZone.id}`, index })}
+              chipsEnabled={gameState.chipsEnabled}
+              chipsInSpread={myPlayer?.chipsInSpread ?? 0}
             />
           </div>
         )}

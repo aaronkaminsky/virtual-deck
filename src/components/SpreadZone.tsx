@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useDroppable, useDndMonitor } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Card, ClientPile, ClientAction, SelectionSource, LastMoveHighlight } from '@/shared/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, SquareCheck } from 'lucide-react';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
+import { ChipBadge } from './ChipBadge';
 import { cn } from '@/lib/utils';
 
 interface SortableSpreadCardProps {
@@ -90,9 +93,11 @@ interface SpreadZoneProps {
   cursorCardId?: string;
   shortcutKey?: string;
   onCursorChange?: (index: number) => void;
+  chipsEnabled?: boolean;
+  chipsInSpread?: number;
 }
 
-export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove, cursorCardId, shortcutKey, onCursorChange }: SpreadZoneProps) {
+export function SpreadZone({ pile, sendAction, draggingCardId, className, interactive, selectedIds, onToggleSelect, onSelectAll, selectionSource, highlightedMove, cursorCardId, shortcutKey, onCursorChange, chipsEnabled, chipsInSpread = 0 }: SpreadZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -101,6 +106,20 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   // Detect intra-spread card reorder
   const faceUpCards = pile.cards.filter((c): c is Card => 'id' in c);
   const sentinelId = `__sentinel-pile-${pile.id}__`;
+
+  const [toHandAmount, setToHandAmount] = useState(10);
+
+  function handleMoveToPot() {
+    if (chipsInSpread > 0 && pile.ownerId) {
+      sendAction({ type: 'TRANSFER_CHIPS', from: 'spread', to: 'pot', playerId: pile.ownerId, amount: chipsInSpread });
+    }
+  }
+
+  function handleToHand() {
+    if (toHandAmount > 0 && pile.ownerId) {
+      sendAction({ type: 'TRANSFER_CHIPS', from: 'spread', to: 'hand', playerId: pile.ownerId, amount: toHandAmount });
+    }
+  }
 
   useDndMonitor({
     onDragEnd(event) {
@@ -170,6 +189,23 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
 
   return (
     <div className="flex flex-col gap-1 zone-hover">
+      {chipsEnabled && interactive !== false && (
+        <div className="flex items-center gap-2">
+          <ChipBadge amount={chipsInSpread} />
+          <Button variant="outline" size="sm" onClick={handleMoveToPot} disabled={chipsInSpread === 0}>Move to pot</Button>
+          <Input
+            type="number"
+            min={1}
+            value={toHandAmount}
+            onChange={e => setToHandAmount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            className="w-20 h-7"
+          />
+          <Button variant="ghost" size="sm" onClick={handleToHand}>To hand</Button>
+        </div>
+      )}
+      {chipsEnabled && interactive === false && (
+        <ChipBadge amount={chipsInSpread} />
+      )}
       {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
         <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
           {selectedIds.size} selected
