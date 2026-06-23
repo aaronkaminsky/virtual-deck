@@ -11,7 +11,7 @@ interface PileZoneProps {
   pile: ClientPile;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
-  shufflingPileIds?: Set<string>;
+  shufflingPileIds?: Map<string, "normal" | "flourish">;
   onSelectAll?: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onCursorChange?: () => void;
@@ -21,7 +21,7 @@ interface PileZoneProps {
   shortcutKey?: string;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Set(), onSelectAll, onToggleSelect, onCursorChange, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Map(), onSelectAll, onToggleSelect, onCursorChange, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -32,7 +32,8 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
   const topCardId = topCard && 'id' in topCard ? (topCard as Card).id : null;
   const isTopCardSelected = topCardId !== null && (selectedIds?.has(topCardId) ?? false);
   const isDraggingTopCard = !!draggingCardId && !!topCard && 'id' in topCard && draggingCardId === (topCard as Card).id;
-  const isShuffling = shufflingPileIds.has(pile.id);
+  const shuffleAnimationType = shufflingPileIds.get(pile.id);
+  const isShuffling = shuffleAnimationType !== undefined;
   const isPileHighlighted =
     highlightedMove?.toZoneType === "pile" &&
     highlightedMove.toZoneId === pile.id &&
@@ -117,13 +118,16 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         {isPileHighlighted && (
           <div key={highlightedMove!.nonce} className="last-move-highlight absolute inset-0 rounded-lg pointer-events-none" />
         )}
-        {isShuffling && (['shuffle-cut-right-1', 'shuffle-cut-right-2', 'shuffle-cut-mid', 'shuffle-cut-left-4', 'shuffle-cut-left-5'] as const).map((animName, i) => (
+        {isShuffling && (shuffleAnimationType === 'flourish'
+          ? ['flourish-cut-right-1', 'flourish-cut-right-2', 'flourish-cut-mid', 'flourish-cut-left-4', 'flourish-cut-left-5'] as const
+          : ['shuffle-cut-right-1', 'shuffle-cut-right-2', 'shuffle-cut-mid', 'shuffle-cut-left-4', 'shuffle-cut-left-5'] as const
+        ).map((animName, i) => (
           <div
             key={i}
             className={`absolute inset-0 pointer-events-none flex items-center justify-center shuffle-card-${i + 1}`}
             style={{
               animationName: animName,
-              animationDuration: '600ms',
+              animationDuration: shuffleAnimationType === 'flourish' ? '900ms' : '600ms',
               animationFillMode: 'forwards',
               animationTimingFunction: 'ease-in-out',
             } as React.CSSProperties}

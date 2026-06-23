@@ -156,6 +156,42 @@
   100% { transform: translateX(0px)   translateY(4px)   rotate(0deg);    z-index: 2; }
 }
 
+@keyframes flourish-cut-right-1 {
+  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 10; }
+  20%  { transform: translateX(110px) translateY(-36px) rotate(28deg);   z-index: 15; }
+  55%  { transform: translateX(10px)  translateY(24px)  rotate(4deg);    z-index: 1; }
+  100% { transform: translateX(10px)  translateY(24px)  rotate(4deg);    z-index: 1; }
+}
+
+@keyframes flourish-cut-right-2 {
+  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 9; }
+  25%  { transform: translateX(110px) translateY(-36px) rotate(28deg);   z-index: 14; }
+  60%  { transform: translateX(4px)   translateY(24px)  rotate(2deg);    z-index: 1; }
+  100% { transform: translateX(4px)   translateY(24px)  rotate(2deg);    z-index: 1; }
+}
+
+@keyframes flourish-cut-mid {
+  0%   { transform: translateX(0) translateY(0)    rotate(0deg);  z-index: 8; }
+  40%  { transform: translateX(0) translateY(12px) rotate(0deg);  z-index: 8; }
+  100% { transform: translateX(0) translateY(4px)  rotate(0deg);  z-index: 8; }
+}
+
+@keyframes flourish-cut-left-4 {
+  0%   { transform: translateX(0)      translateY(0)     rotate(0deg);    z-index: 7; }
+  10%  { transform: translateX(-18px)  translateY(-10px) rotate(-8deg);   z-index: 13; }
+  45%  { transform: translateX(-110px) translateY(-36px) rotate(-28deg);  z-index: 13; }
+  75%  { transform: translateX(-8px)   translateY(16px)  rotate(-4deg);   z-index: 2; }
+  100% { transform: translateX(-8px)   translateY(16px)  rotate(-4deg);   z-index: 2; }
+}
+
+@keyframes flourish-cut-left-5 {
+  0%   { transform: translateX(0)      translateY(0)     rotate(0deg);    z-index: 6; }
+  15%  { transform: translateX(-18px)  translateY(-10px) rotate(-8deg);   z-index: 12; }
+  50%  { transform: translateX(-110px) translateY(-36px) rotate(-28deg);  z-index: 12; }
+  85%  { transform: translateX(0px)    translateY(8px)   rotate(0deg);    z-index: 2; }
+  100% { transform: translateX(0px)    translateY(8px)   rotate(0deg);    z-index: 2; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shuffle-card-1,
   .shuffle-card-2,

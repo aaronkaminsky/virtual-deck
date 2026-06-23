@@ -19,7 +19,7 @@ interface BoardViewProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
-  shufflingPileIds: Set<string>;
+  shufflingPileIds: Map<string, "normal" | "flourish">;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;

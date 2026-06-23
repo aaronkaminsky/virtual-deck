@@ -77,7 +77,7 @@ interface BoardDragLayerProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   setDragging: (d: boolean) => void;
-  shufflingPileIds: Set<string>;
+  shufflingPileIds: Map<string, "normal" | "flourish">;
   highlightedMove: LastMoveHighlight | null;
 }
 

@@ -8,8 +8,13 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shufflingPileIds, setShufflingPileIds] = useState<Set<string>>(new Set());
+  const [shufflingPileIds, setShufflingPileIds] = useState<Map<string, "normal" | "flourish">>(new Map());
   const [celebrationNonce, setCelebrationNonce] = useState(0);
+  const [rickrollNonce, setRickrollNonce] = useState(0);
+  const [tableFlipNonce, setTableFlipNonce] = useState(0);
+  const [jeerNonce, setJeerNonce] = useState(0);
+  const [konamiActive, setKonamiActive] = useState(false);
+  const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
@@ -65,13 +70,13 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       } else if (event.type === 'PILE_SHUFFLED') {
         // Fires for both explicit shuffles and deal-shuffles; deal sound follows via EFFECT.
         playSound('shuffle');
-        const { pileId } = event;
+        const { pileId, animationType } = event;
         const existing = shuffleTimersRef.current.get(pileId);
         if (existing !== undefined) clearTimeout(existing);
-        setShufflingPileIds(prev => new Set([...prev, pileId]));
+        setShufflingPileIds(prev => new Map(prev).set(pileId, animationType));
         const timer = setTimeout(() => {
           setShufflingPileIds(prev => {
-            const next = new Set(prev);
+            const next = new Map(prev);
             next.delete(pileId);
             return next;
           });
@@ -88,6 +93,17 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
           playSound('chip-bet');
         } else if (event.kind === 'chip-collect') {
           playSound('chip-collect');
+        } else if (event.kind === 'rickroll') {
+          setRickrollNonce((n) => n + 1);
+        } else if (event.kind === 'tableflip') {
+          setTableFlipNonce((n) => n + 1);
+        } else if (event.kind === 'jeer') {
+          playSound('jeer');
+          setJeerNonce((n) => n + 1);
+        } else if (event.kind === 'konami') {
+          if (konamiTimerRef.current) clearTimeout(konamiTimerRef.current);
+          setKonamiActive(true);
+          konamiTimerRef.current = setTimeout(() => setKonamiActive(false), 3000);
         }
       } else if (event.type === 'LAST_MOVE') {
         if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
@@ -106,6 +122,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       for (const t of shuffleTimersRef.current.values()) clearTimeout(t);
       shuffleTimersRef.current.clear();
       if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+      if (konamiTimerRef.current) clearTimeout(konamiTimerRef.current);
     };
   }, [roomId, playerId, enabled]);
 
@@ -121,5 +138,5 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     }
   }, []);
 
-  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, highlightedMove };
+  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove };
 }
