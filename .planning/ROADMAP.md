@@ -22,6 +22,7 @@
 - ✅ **v1.17 Custom Table Names** — phase 1001 (shipped 2026-06-20)
 - ✅ **v1.18 Visual Cleanup** — opponent spread full width + even canvas gap — 1003, 1004 (shipped 2026-06-21)
 - ✅ **v1.19 Poker Chips** — betting chip support + visual/layout polish — 999.17 (shipped 2026-06-22)
+- ✅ **v1.20 Hand Reveal/Sort Sync** — 1009 (shipped 2026-06-22)
 
 ## Phases
 
