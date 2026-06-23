@@ -68,10 +68,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   }
 
   return (
-    <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-background">
+    <div className="h-screen w-screen min-w-[320px] min-h-[560px] flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card border-b border-border">
-        <div className="flex items-start gap-4 flex-1 overflow-hidden p-1">
+        <div className="flex items-start gap-4 flex-1 overflow-hidden">
           {allOpponentIds.map((id) => {
             const player = gameState.players.find(p => p.id === id);
             const revealedCards = gameState.opponentRevealedHands[id];
@@ -99,7 +99,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
+      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
         <div className="flex items-start gap-4 px-4 flex-shrink-0">
           <div className="flex items-start gap-4 flex-1 overflow-hidden">
             {allOpponentIds.map((id) => {
@@ -126,7 +126,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
           </div>
         </div>
 
-        <div className="flex-1 flex items-start mt-1 pr-2 gap-2">
+        <div className="flex-1 flex items-start mt-1 pr-4 gap-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 bg-card">
             {pilePiles.map((pile) => (
               <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} />
