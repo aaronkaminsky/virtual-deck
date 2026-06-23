@@ -1,5 +1,5 @@
 import type * as Party from "partykit/server";
-import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
+import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -658,7 +658,9 @@ export default class GameRoom implements Party.Server {
         }
         takeSnapshot(this.gameState);
         shufflePile.cards = shuffle(shufflePile.cards);
-        this.broadcastShuffleEvent(action.pileId);   // D-05, D-07: broadcast to all clients
+        // 1013: occasionally (~1-in-10) flourish instead of the plain cut.
+        const animationType = Math.random() < 0.1 ? "flourish" : "normal";
+        this.broadcastShuffleEvent(action.pileId, animationType);   // D-05, D-07: broadcast to all clients
         break;
       }
       case "SET_HAND_REVEALED": {
@@ -1040,7 +1042,7 @@ export default class GameRoom implements Party.Server {
         break;
       }
       case "CELEBRATE": {
-        this.broadcastEffect("celebrate");
+        this.broadcastEffect(action.kind ?? "celebrate");
         break;
       }
       case "SET_CHIPS_MODE": {
@@ -1149,16 +1151,17 @@ export default class GameRoom implements Party.Server {
     }
   }
 
-  private broadcastShuffleEvent(pileId: string) {
+  private broadcastShuffleEvent(pileId: string, animationType: "normal" | "flourish" = "normal") {
     for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "PILE_SHUFFLED",
         pileId,
+        animationType,
       } satisfies ServerEvent));
     }
   }
 
-  private broadcastEffect(kind: "deal" | "celebrate" | "chip-bet" | "chip-collect") {
+  private broadcastEffect(kind: EffectKind) {
     for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "EFFECT",

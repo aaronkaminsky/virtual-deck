@@ -93,4 +93,40 @@ describe("SHUFFLE_PILE handler", () => {
     expect(shuffleEvents2).toHaveLength(1);
     expect((shuffleEvents2[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
   });
+
+  it("includes animationType 'normal' on the broadcast when the flourish roll misses", async () => {
+    const conn1 = makeMockConnection("conn-1");
+    const roomWithConns = makeMockRoom({
+      getConnections: (() => [conn1][Symbol.iterator]()) as unknown as Party.Room["getConnections"],
+    });
+    const connectedRoom = new GameRoom(roomWithConns);
+    connectedRoom.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    connectedRoom.gameState.hands["player-1"] = [];
+
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99); // misses the 1-in-10 roll
+    await connectedRoom.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);
+    randomSpy.mockRestore();
+
+    const messages = conn1.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
+    const shuffleEvent = messages.find(e => e.type === "PILE_SHUFFLED") as { type: "PILE_SHUFFLED"; animationType: string };
+    expect(shuffleEvent.animationType).toBe("normal");
+  });
+
+  it("includes animationType 'flourish' on the broadcast when the flourish roll hits", async () => {
+    const conn1 = makeMockConnection("conn-1");
+    const roomWithConns = makeMockRoom({
+      getConnections: (() => [conn1][Symbol.iterator]()) as unknown as Party.Room["getConnections"],
+    });
+    const connectedRoom = new GameRoom(roomWithConns);
+    connectedRoom.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    connectedRoom.gameState.hands["player-1"] = [];
+
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.01); // hits the 1-in-10 roll
+    await connectedRoom.onMessage(JSON.stringify({ type: "SHUFFLE_PILE", pileId: "draw" }), conn1);
+    randomSpy.mockRestore();
+
+    const messages = conn1.send.mock.calls.map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent);
+    const shuffleEvent = messages.find(e => e.type === "PILE_SHUFFLED") as { type: "PILE_SHUFFLED"; animationType: string };
+    expect(shuffleEvent.animationType).toBe("flourish");
+  });
 });
