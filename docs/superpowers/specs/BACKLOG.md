@@ -19,7 +19,6 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 1006 | On an ipad (ipad air) the table on load requires vertical scrolling, even though the canvas has room to be shorter and fill the screen without scrolling. It looks like this happens in safari when the browser tabs appear at the top, when the tabs are not visible the screen height is correct |
 | 1007 | To plan games like "egyptian war" we should add a way to "slap" the deck, to reward quick reactions, it could have a fun hand animation |
 | 1008 | For some games you need to make multiple sets in your hand, like 7-card stud, we could maybe add a spacer feature in the hand to separate multiple card sets while still in your hand |
-| 1011 | User feedback is that the spread zone is not very discoverable.  I don't want to make it always visible because it will take too much vertical space when not needed.  Maybe making the collapsed version slightly more visible, or adding some subtle text in the box like (player area) might help?  Worth some brainstorming. |
 | 1012 | Easter egg: `rr` double-tap (same trigger pattern as `gg`) shows a brief floating Rickroll YouTube embed that auto-dismisses after ~10s or on click |
 | 1013 | Easter egg: on an explicit shuffle action, occasionally (~1-in-10) play an exaggerated riffle/cut flourish animation instead of the plain shuffle |
 | 1014 | Easter egg: Konami code (↑↑↓↓←→←→) deals every player all-jokers or all-aces with a brief "CHEATER DETECTED" banner, then self-reverts |
