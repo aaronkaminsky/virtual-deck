@@ -204,6 +204,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   const isEmpty = pile.cards.length === 0;
   const hasBet = chipsEnabled && chipsInSpread > 0;
   const isReallyEmpty = isEmpty && !hasBet;
+  const showTableauLabel = isReallyEmpty && interactive !== false;
 
   return (
     <div className="flex flex-col gap-1 zone-hover">
@@ -224,7 +225,9 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           isReallyEmpty
             ? isOver
               ? 'min-w-[56px] sm:min-w-[80px] h-[40px] sm:h-[56px] border border-dashed border-primary rounded-lg flex items-center px-2 py-2'
-              : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
+              : showTableauLabel
+                ? 'h-5 border border-dashed border-muted-foreground/30 rounded-md flex items-center justify-center'
+                : 'h-4 border border-dashed border-muted-foreground/30 rounded-md'
             : cn(
                 'min-w-[56px] sm:min-w-[80px] rounded-lg border flex items-center px-2 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-secondary',
                 isOver ? 'border-primary' : 'border-border'
@@ -232,6 +235,9 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           className
         )}
       >
+        {showTableauLabel && !isOver && (
+          <span className="text-[10px] text-muted-foreground/90 tracking-wide">Tableau</span>
+        )}
         {!isReallyEmpty && (
           <>
             {hasBet && (
