@@ -19,10 +19,12 @@ test.describe('hand reveal/sort sync', () => {
     // P2 (opponent) should see P1's revealed cards
     const opponentHand = p2.getByTestId('opponent-hand');
     const revealedImgs = opponentHand.locator('img');
-    await expect(revealedImgs).not.toHaveCount(0);
+    await expect(revealedImgs).toHaveCount(5);
 
     // Read P1's own displayed order (same sort applied locally) and P2's observed order — must match
-    const p1Order = await p1.getByTestId('hand-zone').locator('img').evaluateAll(
+    const ownHandImgs = p1.getByTestId('hand-zone').locator('img');
+    await expect(ownHandImgs).toHaveCount(5);
+    const p1Order = await ownHandImgs.evaluateAll(
       els => els.map(el => (el as HTMLImageElement).alt)
     );
     const p2Order = await revealedImgs.evaluateAll(
