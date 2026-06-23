@@ -99,7 +99,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
+      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col">
         <div className="flex items-start gap-4 px-4 flex-shrink-0">
           <div className="flex items-start gap-4 flex-1 overflow-hidden">
             {allOpponentIds.map((id) => {
