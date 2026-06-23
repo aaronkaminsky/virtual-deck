@@ -68,7 +68,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   }
 
   return (
-    <div className="h-screen w-screen min-w-[320px] min-h-[480px] flex flex-col bg-background">
+    <div className="h-screen w-screen min-w-[320px] min-h-[560px] flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card border-b border-border">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
@@ -99,7 +99,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col">
+      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
         <div className="flex items-start gap-4 px-4 flex-shrink-0">
           <div className="flex items-start gap-4 flex-1 overflow-hidden">
             {allOpponentIds.map((id) => {

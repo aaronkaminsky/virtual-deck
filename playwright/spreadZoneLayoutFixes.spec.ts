@@ -27,11 +27,15 @@ test.describe('board layout alignment and scroll fixes', () => {
     expect(Math.round(canvasRight)).toBe(Math.round(spreadRight));
   });
 
-  test('content can be scrolled into view when it overflows a short desktop-width viewport', async ({ twoPlayerRoom }) => {
+  test('content fits without internal overflow at the board\'s declared minimum desktop-width viewport', async ({ twoPlayerRoom }) => {
     const { p1 } = twoPlayerRoom;
-    // Wide enough to be a "desktop" viewport (>= Tailwind's 640px sm breakpoint),
-    // short enough that the five-band layout cannot fit without scrolling.
-    await p1.setViewportSize({ width: 1024, height: 280 });
+    // Wide enough to be a "desktop" viewport (>= Tailwind's 640px sm breakpoint), where
+    // board-scroll-area is sm:overflow-hidden (drag-to-pan owns the canvas; there is no
+    // page scroll for it to fall through to — see canvas-pan-discoverability-design.md).
+    // 560px tall matches the root container's min-h-[560px] floor, which is sized so the
+    // five-band layout (header, opponent spread, rail+canvas, own spread, hand) fits
+    // without overflowing board-scroll-area at exactly this minimum.
+    await p1.setViewportSize({ width: 1024, height: 560 });
 
     await p1.getByRole('button', { name: /open controls/i }).click();
     await p1.locator('input[type="number"][max]').fill('5');
@@ -43,11 +47,7 @@ test.describe('board layout alignment and scroll fixes', () => {
       scrollHeight: el.scrollHeight,
       clientHeight: el.clientHeight,
     }));
-    expect(scrollHeight).toBeGreaterThan(clientHeight);
-
-    await scrollArea.evaluate((el) => { el.scrollTop = el.scrollHeight; });
-    const scrollTopAfter = await scrollArea.evaluate((el) => el.scrollTop);
-    expect(scrollTopAfter).toBeGreaterThan(0);
+    expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
     await expect(p1.getByTestId('hand-zone')).toBeInViewport();
   });
 });
