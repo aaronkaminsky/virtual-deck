@@ -39,6 +39,19 @@ export function sortCards(cards: Card[], mode: 'bySuit' | 'byRank'): Card[] {
   });
 }
 
+// Returns the REORDER_HAND action needed to make the server's stored hand order
+// match the locally sorted display order, or null if no sync is needed (original
+// order already matches server order). skipSnapshot:true — this is a display-
+// preference sync, not a player-initiated move.
+export function getHandOrderSyncAction(sortMode: SortMode, cards: Card[]): ClientAction | null {
+  if (sortMode === 'original') return null;
+  return {
+    type: 'REORDER_HAND',
+    orderedCardIds: sortCards(cards, sortMode).map(c => c.id),
+    skipSnapshot: true,
+  };
+}
+
 // --- Tooltip copy per D-06 ---
 
 const SORT_TITLES: Record<SortMode, string> = {
