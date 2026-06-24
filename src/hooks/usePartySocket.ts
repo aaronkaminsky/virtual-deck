@@ -69,12 +69,12 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         setError(event.message);
       } else if (event.type === 'PILE_SHUFFLED') {
         // Fires for both explicit shuffles and deal-shuffles; deal sound follows via EFFECT.
-        playSound('shuffle');
         const { pileId, animationType } = event;
+        playSound(animationType === 'flourish' ? 'shuffle-flourish' : 'shuffle');
         const existing = shuffleTimersRef.current.get(pileId);
         if (existing !== undefined) clearTimeout(existing);
         setShufflingPileIds(prev => new Map(prev).set(pileId, animationType));
-        const clearDelay = animationType === 'flourish' ? 950 : 650;
+        const clearDelay = animationType === 'flourish' ? 1150 : 650;
         const timer = setTimeout(() => {
           setShufflingPileIds(prev => {
             const next = new Map(prev);

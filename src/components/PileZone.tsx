@@ -127,7 +127,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
             className={`absolute inset-0 pointer-events-none flex items-center justify-center shuffle-card-${i + 1}`}
             style={{
               animationName: animName,
-              animationDuration: shuffleAnimationType === 'flourish' ? '900ms' : '600ms',
+              animationDuration: shuffleAnimationType === 'flourish' ? '1100ms' : '600ms',
               animationFillMode: 'forwards',
               animationTimingFunction: 'ease-in-out',
             } as React.CSSProperties}
