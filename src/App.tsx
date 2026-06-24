@@ -5,14 +5,18 @@ import LobbyPanel from './components/LobbyPanel';
 import HomeView from './components/HomeView';
 import { BoardDragLayer } from './components/BoardDragLayer';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
-import { createDoubleKeyDetector, isEditableTarget } from './lib/celebrationHotkey';
+import { RickrollOverlay } from './components/RickrollOverlay';
+import { TableFlipWrapper } from './components/TableFlipWrapper';
+import { JeerOverlay } from './components/JeerOverlay';
+import { KonamiBanner } from './components/KonamiBanner';
+import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
 import { consumeAutojoin } from './lib/autojoin';
 
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, highlightedMove } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -51,20 +55,90 @@ function RoomView({ roomId }: { roomId: string }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [connected, sendAction]);
 
+  // 1012: rr double-tap triggers a rickroll.
+  useEffect(() => {
+    if (!connected) return;
+    const detect = createDoubleKeyDetector(500);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key.toLowerCase() !== 'r' || e.repeat) return;
+      if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
+      if (detect(performance.now())) {
+        sendAction({ type: 'CELEBRATE', kind: 'rickroll' });
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [connected, sendAction]);
+
+  // 1015: 99 double-tap triggers a table-flip.
+  useEffect(() => {
+    if (!connected) return;
+    const detect = createDoubleKeyDetector(500);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== '9' || e.repeat) return;
+      if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
+      if (detect(performance.now())) {
+        sendAction({ type: 'CELEBRATE', kind: 'tableflip' });
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [connected, sendAction]);
+
+  // 1016: bg triggers the bad-game jeer.
+  useEffect(() => {
+    if (!connected) return;
+    const detect = createSequenceDetector(['b', 'g'], 500);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.repeat) return;
+      if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
+      const key = e.key.toLowerCase();
+      if (key !== 'b' && key !== 'g') return;
+      if (detect(key, performance.now())) {
+        sendAction({ type: 'CELEBRATE', kind: 'jeer' });
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [connected, sendAction]);
+
+  // 1014: Konami code (up up down down left right left right) triggers the all-aces cheat.
+  useEffect(() => {
+    if (!connected) return;
+    const sequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+    const detect = createSequenceDetector(sequence, 2000);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.repeat) return;
+      if (isEditableTarget(e.target as { tagName?: string; isContentEditable?: boolean } | null)) return;
+      if (!sequence.includes(e.key)) return;
+      if (detect(e.key, performance.now())) {
+        sendAction({ type: 'CELEBRATE', kind: 'konami' });
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [connected, sendAction]);
+
   if (joinState && gameState) {
     return (
       <>
-        <BoardDragLayer
-          gameState={gameState}
-          playerId={joinState.playerId}
-          roomId={roomId}
-          connected={connected}
-          sendAction={sendAction}
-          setDragging={setDragging}
-          shufflingPileIds={shufflingPileIds}
-          highlightedMove={highlightedMove}
-        />
+        <TableFlipWrapper nonce={tableFlipNonce}>
+          <BoardDragLayer
+            gameState={gameState}
+            playerId={joinState.playerId}
+            roomId={roomId}
+            connected={connected}
+            sendAction={sendAction}
+            setDragging={setDragging}
+            shufflingPileIds={shufflingPileIds}
+            highlightedMove={highlightedMove}
+            konamiActive={konamiActive}
+          />
+        </TableFlipWrapper>
         <CelebrationOverlay nonce={celebrationNonce} />
+        <RickrollOverlay nonce={rickrollNonce} />
+        <JeerOverlay nonce={jeerNonce} />
+        <KonamiBanner active={konamiActive} />
       </>
     );
   }

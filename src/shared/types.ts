@@ -1,6 +1,8 @@
 export type Suit = "spades" | "hearts" | "diamonds" | "clubs";
 export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K";
 
+export type EffectKind = "deal" | "celebrate" | "chip-bet" | "chip-collect" | "rickroll" | "tableflip" | "jeer" | "konami";
+
 export interface Card {
   id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"
   suit: Suit;
@@ -97,7 +99,7 @@ export type ClientAction =
   | { type: "RESET_TABLE" }
   | { type: "UNDO_MOVE" }
   | { type: "PING" }
-  | { type: "CELEBRATE" }
+  | { type: "CELEBRATE"; kind?: EffectKind }
   | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number }
   | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] };
 
@@ -116,7 +118,7 @@ export type LastMoveHighlight = {
 export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
-  | { type: "PILE_SHUFFLED"; pileId: string }
-  | { type: "EFFECT"; kind: "deal" | "celebrate" | "chip-bet" | "chip-collect" }
+  | { type: "PILE_SHUFFLED"; pileId: string; animationType: "normal" | "flourish" }
+  | { type: "EFFECT"; kind: EffectKind }
   | { type: "LAST_MOVE"; toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] }
   | { type: "CLEAR_LAST_MOVE" };

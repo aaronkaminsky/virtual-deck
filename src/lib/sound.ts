@@ -1,6 +1,6 @@
 const MUTE_KEY = "vd-muted";
 
-export type SoundName = "shuffle" | "deal" | "celebrate" | "chip-bet" | "chip-collect";
+export type SoundName = "shuffle" | "shuffle-flourish" | "deal" | "celebrate" | "chip-bet" | "chip-collect" | "jeer";
 
 let mutedCache: boolean | null = null;
 const audioCache = new Map<string, HTMLAudioElement>(); // keyed by resolved filename
@@ -13,10 +13,12 @@ export const CELEBRATE_VARIANT_COUNT = 4;
 // celebrate1.mp3 .. celebrateN.mp3; when 1, the file is the bare name (shuffle.mp3).
 const VARIANT_COUNTS: Record<SoundName, number> = {
   shuffle: 1,
+  "shuffle-flourish": 1,
   deal: 1,
   celebrate: CELEBRATE_VARIANT_COUNT,
   "chip-bet": 1,
   "chip-collect": 1,
+  jeer: 1,
 };
 
 function resolveFile(name: SoundName): string {

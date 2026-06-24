@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createDoubleKeyDetector, isEditableTarget } from "../src/lib/celebrationHotkey";
+import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from "../src/lib/celebrationHotkey";
 
 describe("createDoubleKeyDetector", () => {
   it("fires only on a second press within the window", () => {
@@ -20,6 +20,51 @@ describe("createDoubleKeyDetector", () => {
     expect(detect(1000)).toBe(false);
     expect(detect(1100)).toBe(true);  // pair fires
     expect(detect(1200)).toBe(false); // third press is a fresh first press
+  });
+});
+
+describe("createSequenceDetector", () => {
+  it("fires when the full sequence is typed in order within the window", () => {
+    const detect = createSequenceDetector(["b", "g"], 500);
+    expect(detect("b", 1000)).toBe(false);
+    expect(detect("g", 1300)).toBe(true);
+  });
+
+  it("does not fire if a step exceeds the window", () => {
+    const detect = createSequenceDetector(["b", "g"], 500);
+    expect(detect("b", 1000)).toBe(false);
+    expect(detect("g", 1600)).toBe(false); // 600ms gap — too slow
+  });
+
+  it("resets on a non-matching key", () => {
+    const detect = createSequenceDetector(["b", "g"], 500);
+    expect(detect("b", 1000)).toBe(false);
+    expect(detect("x", 1100)).toBe(false); // mismatch resets
+    expect(detect("g", 1200)).toBe(false); // sequence restarted, "g" alone doesn't match "b"
+  });
+
+  it("treats a matching restart key as a fresh first step instead of losing it", () => {
+    const detect = createSequenceDetector(["b", "g"], 500);
+    expect(detect("b", 1000)).toBe(false);
+    expect(detect("b", 1100)).toBe(false); // second "b" restarts position 1, not a mismatch-to-zero
+    expect(detect("g", 1200)).toBe(true);
+  });
+
+  it("supports longer sequences (Konami-style)", () => {
+    const seq = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown"];
+    const detect = createSequenceDetector(seq, 2000);
+    expect(detect("ArrowUp", 0)).toBe(false);
+    expect(detect("ArrowUp", 200)).toBe(false);
+    expect(detect("ArrowDown", 400)).toBe(false);
+    expect(detect("ArrowDown", 600)).toBe(true);
+  });
+
+  it("consumes the sequence so it can fire again on a fresh repeat", () => {
+    const detect = createSequenceDetector(["b", "g"], 500);
+    expect(detect("b", 1000)).toBe(false);
+    expect(detect("g", 1100)).toBe(true);
+    expect(detect("b", 1200)).toBe(false);
+    expect(detect("g", 1300)).toBe(true);
   });
 });
 

@@ -79,9 +79,10 @@ interface SortableHandCardProps {
   isHighlighted: boolean;
   highlightNonce?: number;
   hasCursor?: boolean;
+  konamiActive: boolean;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, onCursorChange, isHighlighted, highlightNonce, hasCursor }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, onCursorChange, isHighlighted, highlightNonce, hasCursor, konamiActive }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -125,7 +126,7 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
         {isHighlighted && (
           <div key={highlightNonce} className="last-move-highlight absolute inset-0 rounded-md pointer-events-none" />
         )}
-        {card.faceUp ? <CardFace card={card} /> : <CardBack />}
+        {card.faceUp ? <CardFace card={konamiActive ? { ...card, rank: 'A' } : card} /> : <CardBack />}
       </div>
     </div>
   );
@@ -156,9 +157,10 @@ interface HandZoneProps {
   onCursorChange?: (index: number) => void;
   chipsEnabled: boolean;
   chipsInHand: number;
+  konamiActive: boolean;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange, chipsEnabled, chipsInHand }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange, chipsEnabled, chipsInHand, konamiActive }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
@@ -348,6 +350,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
               }
               highlightNonce={highlightedMove?.nonce}
               hasCursor={cursorCardId === card.id}
+              konamiActive={konamiActive}
             />
           ))}
           <SortableSentinel id={sentinelId} />

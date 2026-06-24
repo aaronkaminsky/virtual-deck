@@ -29,12 +29,12 @@ test.describe('board layout alignment and scroll fixes', () => {
 
   test('content fits without internal overflow at the board\'s declared minimum desktop-width viewport', async ({ twoPlayerRoom }) => {
     const { p1 } = twoPlayerRoom;
-    // Wide enough to be a "desktop" viewport (>= Tailwind's 640px sm breakpoint), where
-    // board-scroll-area is sm:overflow-hidden (drag-to-pan owns the canvas; there is no
-    // page scroll for it to fall through to — see canvas-pan-discoverability-design.md).
+    // Wide enough to be a "desktop" viewport (>= Tailwind's 640px sm breakpoint).
     // 560px tall matches the root container's min-h-[560px] floor, which is sized so the
     // five-band layout (header, opponent spread, rail+canvas, own spread, hand) fits
-    // without overflowing board-scroll-area at exactly this minimum.
+    // without overflowing board-scroll-area at exactly this minimum — i.e. scrolling
+    // should not be needed at this size, even though it's now always available as a
+    // backstop (see the overflow test below for when content needs more room than this).
     await p1.setViewportSize({ width: 1024, height: 560 });
 
     await p1.getByRole('button', { name: /open controls/i }).click();
@@ -48,6 +48,42 @@ test.describe('board layout alignment and scroll fixes', () => {
       clientHeight: el.clientHeight,
     }));
     expect(scrollHeight).toBeLessThanOrEqual(clientHeight);
+    await expect(p1.getByTestId('hand-zone')).toBeInViewport();
+  });
+
+  test('board scrolls to reveal content that genuinely exceeds the available height, instead of clipping it', async ({ twoPlayerRoom }) => {
+    const { p1 } = twoPlayerRoom;
+    // A desktop-width viewport (>= 640px sm breakpoint) where board-scroll-area was
+    // sm:overflow-hidden. The 560px floor only covers one specific minimal content
+    // case; any content that needs more room (more opponents, larger hands, chips,
+    // a populated spread zone, etc.) must still be reachable via scroll, not clipped.
+    await p1.setViewportSize({ width: 1024, height: 700 });
+
+    // Simulate content that needs more vertical room than is actually available,
+    // independent of which game feature happens to cause it.
+    await p1.evaluate(() => {
+      const rail = document.querySelector('[data-testid^="pile-"]')?.parentElement;
+      if (rail) (rail as HTMLElement).style.minHeight = '900px';
+    });
+    await p1.waitForTimeout(100);
+
+    const scrollArea = p1.getByTestId('board-scroll-area');
+    const { scrollHeight, clientHeight } = await scrollArea.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(scrollHeight).toBeGreaterThan(clientHeight);
+
+    await expect(p1.getByTestId('hand-zone')).not.toBeInViewport();
+
+    // A real user scrolls with the mouse wheel, not via scrollTo(). overflow:hidden
+    // blocks wheel/scrollbar/keyboard scrolling even though the element remains
+    // programmatically scrollable — so this is the gesture that must actually work.
+    const box = (await scrollArea.boundingBox())!;
+    await p1.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await p1.mouse.wheel(0, 2000);
+    await p1.waitForTimeout(100);
+
     await expect(p1.getByTestId('hand-zone')).toBeInViewport();
   });
 });

@@ -23,6 +23,8 @@
 - ✅ **v1.18 Visual Cleanup** — opponent spread full width + even canvas gap — 1003, 1004 (shipped 2026-06-21)
 - ✅ **v1.19 Poker Chips** — betting chip support + visual/layout polish — 999.17 (shipped 2026-06-22)
 - ✅ **v1.20 Hand Reveal/Sort Sync** — 1009 (shipped 2026-06-22)
+- ✅ **v1.21 Spread Zone Discoverability** — Tableau label on own spread zone — 1011 (shipped 2026-06-22)
+- ✅ **v1.22 Easter Eggs** — rickroll, shuffle flourish, Konami all-aces cheat, table-flip, bad-game jeer + short-viewport scroll fix — 1012, 1013, 1014, 1015, 1016 (shipped 2026-06-23)
 
 ## Phases
 

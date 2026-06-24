@@ -18,9 +18,10 @@ interface OpponentHandProps {
   shortcutKey?: string;
   chipsEnabled: boolean;
   chipsInHand: number;
+  konamiActive: boolean;
 }
 
-export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove, shortcutKey, chipsEnabled, chipsInHand }: OpponentHandProps) {
+export function OpponentHand({ playerId, cardCount, displayName, connected, sendAction: _sendAction, revealedCards, highlightedMove, shortcutKey, chipsEnabled, chipsInHand, konamiActive }: OpponentHandProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `opponent-hand-${playerId}`,
     data: { toZone: 'opponent-hand' as const, toId: playerId },
@@ -61,7 +62,7 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
             ? revealedCards.map((card, i) => (
                 <CardFace
                   key={card.id}
-                  card={card}
+                  card={konamiActive ? { ...card, rank: 'A' } : card}
                   className={cn('w-[40px] h-[60px]', i > 0 ? '-ml-3' : undefined)}
                 />
               ))

@@ -19,7 +19,7 @@ interface BoardViewProps {
   connected: boolean;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
-  shufflingPileIds: Set<string>;
+  shufflingPileIds: Map<string, "normal" | "flourish">;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string) => void;
@@ -45,9 +45,10 @@ interface BoardViewProps {
   lastDealCount: string;
   onDealCountChange: (v: string) => void;
   setCursorPos: (pos: CursorPos | null) => void;
+  konamiActive: boolean;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -89,6 +90,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   shortcutKey={altHeld ? zoneLetterMap.get(`opponent-hand-${id}`) : undefined}
                   chipsEnabled={gameState.chipsEnabled}
                   chipsInHand={player?.chipsInHand ?? 0}
+                  konamiActive={konamiActive}
                 />
               </div>
             );
@@ -99,7 +101,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         </div>
       </div>
 
-      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto sm:overflow-hidden flex flex-col">
+      <div data-testid="board-scroll-area" className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col">
         <div className="flex items-start gap-4 px-4 flex-shrink-0">
           <div className="flex items-start gap-4 flex-1 overflow-hidden">
             {allOpponentIds.map((id) => {
@@ -183,6 +185,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
               chipsEnabled={gameState.chipsEnabled}
               chipsInHand={myPlayer?.chipsInHand ?? 0}
+              konamiActive={konamiActive}
             />
           );
         })()}
