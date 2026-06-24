@@ -27,4 +27,17 @@ test.describe('easter eggs', () => {
 
     await expect(p1.getByTestId('table-flip-wrapper')).not.toHaveClass(/table-flip/, { timeout: 2000 });
   });
+
+  test('bg triggers the bad-game jeer overlay on both players and it clears', async ({ twoPlayerRoom }) => {
+    const { p1, p2 } = twoPlayerRoom;
+
+    await p1.locator('body').click();
+    await p1.keyboard.press('b');
+    await p1.keyboard.press('g');
+
+    await expect(p1.getByTestId('jeer-overlay')).toBeVisible();
+    await expect(p2.getByTestId('jeer-overlay')).toBeVisible();
+
+    await expect(p2.getByTestId('jeer-overlay')).toHaveCount(0, { timeout: 8000 });
+  });
 });

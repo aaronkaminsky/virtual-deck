@@ -218,6 +218,23 @@
   }
 }
 
+@keyframes jeer-droop {
+  0%   { transform: translateY(0) rotate(0deg);              opacity: 1; }
+  100% { transform: translateY(var(--jy)) rotate(var(--jr));  opacity: 0; }
+}
+
+.jeer-droop {
+  animation: jeer-droop 1.7s ease-in forwards;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jeer-droop {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 @keyframes canvas-edge-pulse {
   0%, 100% { opacity: 0.5; }
   50%      { opacity: 1; }
