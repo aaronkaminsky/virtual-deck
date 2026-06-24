@@ -74,6 +74,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         const existing = shuffleTimersRef.current.get(pileId);
         if (existing !== undefined) clearTimeout(existing);
         setShufflingPileIds(prev => new Map(prev).set(pileId, animationType));
+        const clearDelay = animationType === 'flourish' ? 950 : 650;
         const timer = setTimeout(() => {
           setShufflingPileIds(prev => {
             const next = new Map(prev);
@@ -81,7 +82,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
             return next;
           });
           shuffleTimersRef.current.delete(pileId);
-        }, 650);
+        }, clearDelay);
         shuffleTimersRef.current.set(pileId, timer);
       } else if (event.type === 'EFFECT') {
         if (event.kind === 'deal') {
