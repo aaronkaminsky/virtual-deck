@@ -64,4 +64,28 @@ test.describe('easter eggs', () => {
 
     await expect(p1.getByTestId('konami-banner')).toHaveCount(0, { timeout: 4000 });
   });
+
+  test('an explicit shuffle occasionally plays the exaggerated flourish animation', async ({ twoPlayerRoom }) => {
+    test.setTimeout(60000); // up to 40 retries x ~700ms wait can exceed the 30s default
+    const { p1 } = twoPlayerRoom;
+
+    await p1.locator('body').click();
+    let sawFlourish = false;
+
+    // The shuffle button lives in a sibling controls row above the `pile-draw`
+    // drop-zone div, not inside it — climb to their shared wrapper to scope the query.
+    const drawPileWrapper = p1.getByTestId('pile-draw').locator('xpath=..');
+
+    for (let i = 0; i < 40 && !sawFlourish; i++) {
+      await drawPileWrapper.getByRole('button', { name: /shuffle/i }).click();
+      // Give the server roundtrip (broadcast -> client state update -> render) a moment to land
+      // before checking — checking immediately after click() races the WebSocket response.
+      await p1.waitForTimeout(100);
+      const flourishCard = p1.locator('.shuffle-card-1[style*="flourish-cut-right-1"]');
+      sawFlourish = await flourishCard.isVisible().catch(() => false);
+      if (!sawFlourish) await p1.waitForTimeout(600); // let the 650ms shuffle animation clear before the next click
+    }
+
+    expect(sawFlourish).toBe(true);
+  });
 });
