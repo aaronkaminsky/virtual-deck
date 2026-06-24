@@ -18,18 +18,17 @@ export function RickrollOverlay({ nonce }: { nonce: number }) {
     <div
       key={run}
       data-testid="rickroll-overlay"
-      onClick={() => setRun(0)}
       style={{
         position: 'fixed',
-        bottom: 24,
-        right: 24,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
         zIndex: 9999,
         width: 320,
         height: 200,
         borderRadius: 12,
         overflow: 'hidden',
         boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-        cursor: 'pointer',
       }}
     >
       <iframe
@@ -39,8 +38,28 @@ export function RickrollOverlay({ nonce }: { nonce: number }) {
         title="Rickroll"
         frameBorder="0"
         allow="autoplay"
-        style={{ pointerEvents: 'none' }}
       />
+      <button
+        type="button"
+        aria-label="Dismiss"
+        data-testid="rickroll-dismiss"
+        onClick={() => setRun(0)}
+        style={{
+          position: 'absolute',
+          top: 4,
+          right: 4,
+          width: 24,
+          height: 24,
+          borderRadius: '50%',
+          border: 'none',
+          background: 'rgba(0,0,0,0.6)',
+          color: '#fff',
+          cursor: 'pointer',
+          lineHeight: 1,
+        }}
+      >
+        ✕
+      </button>
     </div>
   );
 }

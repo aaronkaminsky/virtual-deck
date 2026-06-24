@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 
 test.describe('easter eggs', () => {
-  test('rr double-tap shows a rickroll overlay on both players, dismissable by click', async ({ twoPlayerRoom }) => {
+  test('rr double-tap shows a rickroll overlay on both players, dismissable via its close button', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
     await p1.locator('body').click();
@@ -11,7 +11,7 @@ test.describe('easter eggs', () => {
     await expect(p1.getByTestId('rickroll-overlay')).toBeVisible();
     await expect(p2.getByTestId('rickroll-overlay')).toBeVisible();
 
-    await p1.getByTestId('rickroll-overlay').click();
+    await p1.getByTestId('rickroll-dismiss').click();
     await expect(p1.getByTestId('rickroll-overlay')).toHaveCount(0);
   });
 
