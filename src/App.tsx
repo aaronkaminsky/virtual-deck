@@ -8,6 +8,7 @@ import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { RickrollOverlay } from './components/RickrollOverlay';
 import { TableFlipWrapper } from './components/TableFlipWrapper';
 import { JeerOverlay } from './components/JeerOverlay';
+import { KonamiBanner } from './components/KonamiBanner';
 import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
 import { consumeAutojoin } from './lib/autojoin';
@@ -15,7 +16,7 @@ import { consumeAutojoin } from './lib/autojoin';
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, highlightedMove } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -131,11 +132,13 @@ function RoomView({ roomId }: { roomId: string }) {
             setDragging={setDragging}
             shufflingPileIds={shufflingPileIds}
             highlightedMove={highlightedMove}
+            konamiActive={konamiActive}
           />
         </TableFlipWrapper>
         <CelebrationOverlay nonce={celebrationNonce} />
         <RickrollOverlay nonce={rickrollNonce} />
         <JeerOverlay nonce={jeerNonce} />
+        <KonamiBanner active={konamiActive} />
       </>
     );
   }

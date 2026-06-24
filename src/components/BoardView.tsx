@@ -45,9 +45,10 @@ interface BoardViewProps {
   lastDealCount: string;
   onDealCountChange: (v: string) => void;
   setCursorPos: (pos: CursorPos | null) => void;
+  konamiActive: boolean;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
@@ -89,6 +90,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   shortcutKey={altHeld ? zoneLetterMap.get(`opponent-hand-${id}`) : undefined}
                   chipsEnabled={gameState.chipsEnabled}
                   chipsInHand={player?.chipsInHand ?? 0}
+                  konamiActive={konamiActive}
                 />
               </div>
             );
@@ -183,6 +185,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
               chipsEnabled={gameState.chipsEnabled}
               chipsInHand={myPlayer?.chipsInHand ?? 0}
+              konamiActive={konamiActive}
             />
           );
         })()}
