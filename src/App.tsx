@@ -6,6 +6,7 @@ import HomeView from './components/HomeView';
 import { BoardDragLayer } from './components/BoardDragLayer';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { RickrollOverlay } from './components/RickrollOverlay';
+import { TableFlipWrapper } from './components/TableFlipWrapper';
 import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
 import { consumeAutojoin } from './lib/autojoin';
@@ -13,7 +14,7 @@ import { consumeAutojoin } from './lib/autojoin';
 function RoomView({ roomId }: { roomId: string }) {
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, highlightedMove } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, highlightedMove } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -119,16 +120,18 @@ function RoomView({ roomId }: { roomId: string }) {
   if (joinState && gameState) {
     return (
       <>
-        <BoardDragLayer
-          gameState={gameState}
-          playerId={joinState.playerId}
-          roomId={roomId}
-          connected={connected}
-          sendAction={sendAction}
-          setDragging={setDragging}
-          shufflingPileIds={shufflingPileIds}
-          highlightedMove={highlightedMove}
-        />
+        <TableFlipWrapper nonce={tableFlipNonce}>
+          <BoardDragLayer
+            gameState={gameState}
+            playerId={joinState.playerId}
+            roomId={roomId}
+            connected={connected}
+            sendAction={sendAction}
+            setDragging={setDragging}
+            shufflingPileIds={shufflingPileIds}
+            highlightedMove={highlightedMove}
+          />
+        </TableFlipWrapper>
         <CelebrationOverlay nonce={celebrationNonce} />
         <RickrollOverlay nonce={rickrollNonce} />
       </>
