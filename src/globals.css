@@ -156,44 +156,71 @@
   100% { transform: translateX(0px)   translateY(4px)   rotate(0deg);    z-index: 2; }
 }
 
+/*
+ * Flourish "spiral-in": fan out from the deck (0%-25%), then three full
+ * rotations in the same direction the card already fanned toward, each loop
+ * taking less time than the last (25%->58%->81%->92%) so it visibly speeds
+ * up loop-to-loop while the radius (translateY magnitude) shrinks at each
+ * checkpoint, landing exactly back on the deck at 100%. The pivot is the
+ * card's own center (transform-origin set in PileZone.tsx's wrapper), which
+ * is the deck position — so the first move reads as up-and-out, never down.
+ * Designed and tuned live in a browser preview; see PR discussion for the
+ * five-card fan-angle mapping (right-1/2 = +50/+25deg, mid = 0, left-4/5 =
+ * -25/-50deg) before changing these percentages or degree values.
+ */
 @keyframes flourish-cut-right-1 {
-  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 10; }
-  22%  { transform: translateX(150px) translateY(-44px) rotate(30deg);   z-index: 15; }
-  60%  { transform: translateX(150px) translateY(-44px) rotate(390deg);  z-index: 15; }
-  85%  { transform: translateX(12px)  translateY(26px)  rotate(364deg);  z-index: 1; }
-  100% { transform: translateX(12px)  translateY(26px)  rotate(364deg);  z-index: 1; }
+  0%   { transform: rotate(0deg)     translateY(0);     z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  25%  { transform: rotate(50deg)    translateY(-16px);  z-index: 15; filter: drop-shadow(0 16px 11px rgba(0,0,0,0.58)); }
+  58%  { transform: rotate(410deg)   translateY(-10px);  z-index: 15; filter: drop-shadow(0 11px 8px rgba(0,0,0,0.52)); }
+  81%  { transform: rotate(770deg)   translateY(-5px);   z-index: 15; filter: drop-shadow(0 6px 5px rgba(0,0,0,0.46)); }
+  92%  { transform: rotate(1080deg)  translateY(-1.5px); z-index: 1;  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42)); }
+  100% { transform: rotate(1080deg)  translateY(0);      z-index: 1;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
 }
 
 @keyframes flourish-cut-right-2 {
-  0%   { transform: translateX(0)     translateY(0)     rotate(0deg);    z-index: 9; }
-  28%  { transform: translateX(150px) translateY(-44px) rotate(30deg);   z-index: 14; }
-  62%  { transform: translateX(150px) translateY(-44px) rotate(30deg);   z-index: 14; }
-  90%  { transform: translateX(5px)   translateY(26px)  rotate(2deg);    z-index: 1; }
-  100% { transform: translateX(5px)   translateY(26px)  rotate(2deg);    z-index: 1; }
+  0%   { transform: rotate(0deg)     translateY(0);     z-index: 9;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  25%  { transform: rotate(25deg)    translateY(-16px);  z-index: 14; filter: drop-shadow(0 16px 11px rgba(0,0,0,0.58)); }
+  58%  { transform: rotate(407deg)   translateY(-10px);  z-index: 14; filter: drop-shadow(0 11px 8px rgba(0,0,0,0.52)); }
+  81%  { transform: rotate(743deg)   translateY(-5px);   z-index: 14; filter: drop-shadow(0 6px 5px rgba(0,0,0,0.46)); }
+  92%  { transform: rotate(1080deg)  translateY(-1.5px); z-index: 1;  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42)); }
+  100% { transform: rotate(1080deg)  translateY(0);      z-index: 1;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
 }
 
 @keyframes flourish-cut-mid {
-  0%   { transform: translateX(0) translateY(0)    rotate(0deg);  z-index: 8; }
-  40%  { transform: translateX(0) translateY(18px) rotate(0deg);  z-index: 8; }
-  65%  { transform: translateX(0) translateY(18px) rotate(0deg);  z-index: 8; }
-  100% { transform: translateX(0) translateY(5px)  rotate(0deg);  z-index: 8; }
+  0%   { transform: rotate(0deg)    translateY(0);     z-index: 8; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  25%  { transform: rotate(0deg)    translateY(-16px);  z-index: 8; filter: drop-shadow(0 16px 11px rgba(0,0,0,0.58)); }
+  58%  { transform: rotate(360deg)  translateY(-10px);  z-index: 8; filter: drop-shadow(0 11px 8px rgba(0,0,0,0.52)); }
+  81%  { transform: rotate(720deg)  translateY(-5px);   z-index: 8; filter: drop-shadow(0 6px 5px rgba(0,0,0,0.46)); }
+  92%  { transform: rotate(1080deg) translateY(-1.5px); z-index: 8; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42)); }
+  100% { transform: rotate(1080deg) translateY(0);      z-index: 8; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
 }
 
 @keyframes flourish-cut-left-4 {
-  0%   { transform: translateX(0)      translateY(0)     rotate(0deg);    z-index: 7; }
-  10%  { transform: translateX(-20px)  translateY(-12px) rotate(-10deg);  z-index: 13; }
-  48%  { transform: translateX(-150px) translateY(-44px) rotate(-30deg);  z-index: 13; }
-  68%  { transform: translateX(-150px) translateY(-44px) rotate(-390deg); z-index: 13; }
-  92%  { transform: translateX(-10px)  translateY(18px)  rotate(-364deg); z-index: 2; }
-  100% { transform: translateX(-10px)  translateY(18px)  rotate(-364deg); z-index: 2; }
+  0%   { transform: rotate(0deg)     translateY(0);     z-index: 7;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  25%  { transform: rotate(-25deg)   translateY(-16px);  z-index: 13; filter: drop-shadow(0 16px 11px rgba(0,0,0,0.58)); }
+  58%  { transform: rotate(-407deg)  translateY(-10px);  z-index: 13; filter: drop-shadow(0 11px 8px rgba(0,0,0,0.52)); }
+  81%  { transform: rotate(-743deg)  translateY(-5px);   z-index: 13; filter: drop-shadow(0 6px 5px rgba(0,0,0,0.46)); }
+  92%  { transform: rotate(-1080deg) translateY(-1.5px); z-index: 2;  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42)); }
+  100% { transform: rotate(-1080deg) translateY(0);      z-index: 2;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
 }
 
 @keyframes flourish-cut-left-5 {
-  0%   { transform: translateX(0)      translateY(0)     rotate(0deg);    z-index: 6; }
-  15%  { transform: translateX(-20px)  translateY(-12px) rotate(-10deg);  z-index: 12; }
-  52%  { transform: translateX(-150px) translateY(-44px) rotate(-30deg);  z-index: 12; }
-  78%  { transform: translateX(-150px) translateY(-44px) rotate(-30deg);  z-index: 12; }
-  100% { transform: translateX(0px)    translateY(10px)  rotate(0deg);    z-index: 2; }
+  0%   { transform: rotate(0deg)     translateY(0);     z-index: 6;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  25%  { transform: rotate(-50deg)   translateY(-16px);  z-index: 12; filter: drop-shadow(0 16px 11px rgba(0,0,0,0.58)); }
+  58%  { transform: rotate(-410deg)  translateY(-10px);  z-index: 12; filter: drop-shadow(0 11px 8px rgba(0,0,0,0.52)); }
+  81%  { transform: rotate(-770deg)  translateY(-5px);   z-index: 12; filter: drop-shadow(0 6px 5px rgba(0,0,0,0.46)); }
+  92%  { transform: rotate(-1080deg) translateY(-1.5px); z-index: 2;  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.42)); }
+  100% { transform: rotate(-1080deg) translateY(0);      z-index: 2;  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+}
+
+/* Diagonal light gleam sweeping across each flourish card — paired 1:1 with
+ * the flourish-cut-* keyframes above via the same animationDuration/Delay. */
+@keyframes flourish-gleam {
+  0%   { background-position: 140% 0%; }
+  25%  { background-position: 70% 0%; }
+  58%  { background-position: 10% 0%; }
+  81%  { background-position: -70% 0%; }
+  100% { background-position: -200% 0%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -201,7 +228,8 @@
   .shuffle-card-2,
   .shuffle-card-3,
   .shuffle-card-4,
-  .shuffle-card-5 {
+  .shuffle-card-5,
+  .flourish-gleam-overlay {
     animation: none;
   }
 }

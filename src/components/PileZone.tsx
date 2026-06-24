@@ -127,12 +127,30 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
             className={`absolute inset-0 pointer-events-none flex items-center justify-center shuffle-card-${i + 1}`}
             style={{
               animationName: animName,
-              animationDuration: shuffleAnimationType === 'flourish' ? '1100ms' : '600ms',
+              animationDuration: shuffleAnimationType === 'flourish' ? '2200ms' : '600ms',
+              animationDelay: shuffleAnimationType === 'flourish' ? `${i * 40}ms` : '0ms',
               animationFillMode: 'forwards',
-              animationTimingFunction: 'ease-in-out',
+              animationTimingFunction: shuffleAnimationType === 'flourish' ? 'linear' : 'ease-in-out',
             } as React.CSSProperties}
           >
-            <CardBack />
+            <div className="relative w-[40px] h-[60px] sm:w-[60px] sm:h-[90px]">
+              <CardBack />
+              {shuffleAnimationType === 'flourish' && (
+                <div
+                  className="absolute inset-0 rounded-md flourish-gleam-overlay"
+                  style={{
+                    animationName: 'flourish-gleam',
+                    animationDuration: '2200ms',
+                    animationDelay: `${i * 40}ms`,
+                    animationFillMode: 'forwards',
+                    animationTimingFunction: 'linear',
+                    background: 'linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.85) 48%, transparent 66%)',
+                    backgroundSize: '300% 300%',
+                    mixBlendMode: 'screen',
+                  } as React.CSSProperties}
+                />
+              )}
+            </div>
           </div>
         ))}
         {isDraggingTopCard && (

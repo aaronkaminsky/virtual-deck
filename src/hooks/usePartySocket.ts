@@ -74,7 +74,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         const existing = shuffleTimersRef.current.get(pileId);
         if (existing !== undefined) clearTimeout(existing);
         setShufflingPileIds(prev => new Map(prev).set(pileId, animationType));
-        const clearDelay = animationType === 'flourish' ? 1150 : 650;
+        // Flourish: 2200ms animation + up to 160ms stagger (4 cards * 40ms delay) + 50ms margin.
+        const clearDelay = animationType === 'flourish' ? 2410 : 650;
         const timer = setTimeout(() => {
           setShufflingPileIds(prev => {
             const next = new Map(prev);
