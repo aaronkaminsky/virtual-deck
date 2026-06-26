@@ -129,8 +129,10 @@ Planning artifacts live in `.planning/` (shipped milestone history) and `docs/su
 
 ### Shipping changes
 1. Commit work on the feature branch
-2. `git push -u origin <branch>` — push the feature branch to remote
-3. `gh pr create` — open a PR; GitHub merges into `main`
+2. Update `docs/superpowers/specs/BACKLOG.md` — remove shipped items
+3. Update `.planning/ROADMAP.md` — add a new milestone entry (vX.Y) for the shipped work
+4. `git push -u origin <branch>` — push the feature branch to remote
+5. `gh pr create` — open a PR; GitHub merges into `main`
 
 ### Before committing
 Both enforced by `.git/hooks/pre-commit`:
