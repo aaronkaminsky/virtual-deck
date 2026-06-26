@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Copy, Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { getDisplayName } from '@/hooks/usePlayerId';
 
 interface LobbyPanelProps {
@@ -14,23 +13,11 @@ interface LobbyPanelProps {
 }
 
 export default function LobbyPanel({ roomId, onJoin, connected, error, joining }: LobbyPanelProps) {
-  const [copied, setCopied] = useState(false);
   const [name, setName] = useState(() => getDisplayName());
 
   useEffect(() => {
     document.title = `${roomId} · Virtual Deck`;
   }, [roomId]);
-
-  const handleCopy = () => {
-    const base = import.meta.env.BASE_URL || '/';
-    const url = `${window.location.origin}${base}?room=${roomId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      // Clipboard write failed (e.g., permission denied or non-HTTPS context)
-    });
-  };
 
   const errorMessage = error
     ? error.toLowerCase().includes('full')
@@ -43,32 +30,8 @@ export default function LobbyPanel({ roomId, onJoin, connected, error, joining }
   return (
     <div className="min-h-screen flex items-center justify-center p-4 felt-surface">
       <div className="bg-card rounded-xl p-8 w-full max-w-[480px] border border-border elev-2">
-        <h1 className="text-[1.75rem] font-semibold leading-[1.2] mb-6">Virtual Deck</h1>
-
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground mb-1">Table</p>
-          <p className="text-[1.25rem] font-semibold text-primary mb-1">{roomId}</p>
-          <p className="text-sm text-muted-foreground mb-3">Share this table with friends to play</p>
-          <Button
-            variant="outline"
-            className="min-h-[44px] border-primary text-primary hover:bg-primary/10"
-            onClick={handleCopy}
-          >
-            {copied ? (
-              <>
-                <Check className="mr-2 size-4" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="mr-2 size-4" />
-                Copy link
-              </>
-            )}
-          </Button>
-        </div>
-
-        <Separator className="my-6" />
+        <h1 className="text-[1.75rem] font-semibold leading-[1.2] mb-1">Virtual Deck</h1>
+        <p className="text-sm text-muted-foreground mb-6">Joining: {roomId}</p>
 
         <div className="mb-6">
           <p className="text-sm text-muted-foreground mb-1">Your name</p>
