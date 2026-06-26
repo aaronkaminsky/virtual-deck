@@ -163,25 +163,27 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
 
   // Dynamic inner canvas size — derived from card positions + padding (D-02)
   // Uses getCardDimensions() so mobile card sizes (42×59) are accounted for
-  const { innerW, innerH } = useMemo(() => {
+  const { innerW, innerH, contentMaxX, contentMaxY } = useMemo(() => {
     const { w: cardW, h: cardH } = getCardDimensions();
     if (canvasCards.length === 0) {
-      return { innerW: viewportSize.w, innerH: viewportSize.h };
+      return { innerW: viewportSize.w, innerH: viewportSize.h, contentMaxX: 0, contentMaxY: 0 };
     }
     const maxX = Math.max(...canvasCards.map(c => c.x + cardW));
     const maxY = Math.max(...canvasCards.map(c => c.y + cardH));
     return {
       innerW: Math.max(viewportSize.w, maxX + CANVAS_PADDING),
       innerH: Math.max(viewportSize.h, maxY + CANVAS_PADDING),
+      contentMaxX: maxX,
+      contentMaxY: maxY,
     };
   }, [canvasCards, viewportSize.w, viewportSize.h]);
 
   // Overflow detection — which edges have content beyond the current viewport? (D-06)
   const hasOverflow = {
     left:  scroll.x > 0,
-    right: scroll.x < innerW - viewportSize.w,
+    right: contentMaxX > scroll.x + viewportSize.w,
     up:    scroll.y > 0,
-    down:  scroll.y < innerH - viewportSize.h,
+    down:  contentMaxY > scroll.y + viewportSize.h,
   };
 
   // Latest pan bounds in a ref so the running pan interval clamps against current values,

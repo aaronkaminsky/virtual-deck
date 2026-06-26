@@ -11,10 +11,25 @@ import { JeerOverlay } from './components/JeerOverlay';
 import { KonamiBanner } from './components/KonamiBanner';
 import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
-import { consumeAutojoin } from './lib/autojoin';
+import { peekAutojoin, consumeAutojoin } from './lib/autojoin';
 
 function RoomView({ roomId }: { roomId: string }) {
-  const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(null);
+  // peekAutojoin is side-effect-free so it survives React 18 StrictMode's double-invoke.
+  // consumeAutojoin clears the flag; runs in a one-time effect after mount.
+  const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(() => {
+    if (peekAutojoin()) {
+      const savedName = getDisplayName();
+      if (savedName) {
+        return { playerId: getOrCreatePlayerId(), displayName: savedName };
+      }
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    consumeAutojoin(); // clears the flag; joinState already set by useState above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove } = usePartySocket(
     roomId,
@@ -25,20 +40,9 @@ function RoomView({ roomId }: { roomId: string }) {
 
   const handleJoin = (name: string) => {
     saveDisplayName(name);
-    preloadSounds(); // warm audio inside the join gesture so first shuffle/deal plays instantly
+    preloadSounds();
     setJoinState({ playerId: getOrCreatePlayerId(), displayName: name });
   };
-
-  // One-shot auto-join: if we arrived from HomeView's create/quick action, skip
-  // the lobby and join straight onto the board with the saved name. A direct URL
-  // visit or refresh has no intent flag and falls through to the lobby.
-  useEffect(() => {
-    if (!consumeAutojoin()) return;
-    const savedName = getDisplayName();
-    if (savedName) handleJoin(savedName);
-    // run once on mount; consumeAutojoin is one-shot so re-runs are no-ops anyway
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Re-running on reconnect intentionally resets the double-press detector.
   useEffect(() => {
