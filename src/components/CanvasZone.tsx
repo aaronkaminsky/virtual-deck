@@ -310,7 +310,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
       onPointerMove={onViewportPointerMove}
       onPointerUp={onViewportPointerUp}
       onPointerCancel={onViewportPointerCancel}
-      style={{ touchAction: touchActionForOverflow(hasOverflow) }}
+      style={{ touchAction: touchActionForOverflow(hasOverflow), userSelect: 'none' }}
       className={cn(
         'relative flex-1 min-w-0 self-stretch overflow-hidden felt-surface zone-hover rounded-2xl',
         isOver && 'ring-1 ring-primary/30'
