@@ -7,6 +7,11 @@ export function markAutojoin(): void {
   sessionStorage.setItem(AUTOJOIN_FLAG, '1');
 }
 
+// Read-only check — safe in a useState initializer (no side effects, survives StrictMode double-invoke).
+export function peekAutojoin(): boolean {
+  return sessionStorage.getItem(AUTOJOIN_FLAG) === '1';
+}
+
 export function consumeAutojoin(): boolean {
   const marked = sessionStorage.getItem(AUTOJOIN_FLAG) === '1';
   sessionStorage.removeItem(AUTOJOIN_FLAG);

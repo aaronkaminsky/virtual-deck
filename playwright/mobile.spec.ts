@@ -35,27 +35,36 @@ test.describe('Phase 35 mobile edge pan', () => {
     await joinRoom(page, roomCode);
     await dealCards(page, 5);
 
-    // Wait for cards to appear in hand
     await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
-    // Drag a hand card to near the right edge of the canvas to create right overflow
-    // At <640px viewport, card width is 42px (getCardDimensions), so placing at x~350 causes overflow
-    const handZone = page.getByTestId('hand-zone');
-    const firstCard = handZone.locator('[role="button"]').first();
-    await expect(firstCard).toBeVisible();
+    // Inject a card past the right viewport edge. UI drops are clamped to innerW-cardW so
+    // they can't produce contentMaxX > viewportW — WS injection is required.
+    const canvasBox = await page.getByTestId('canvas-zone').boundingBox();
+    if (!canvasBox) throw new Error('no canvas');
+    const wsParams = await page.evaluate(() => {
+      const playerId = localStorage.getItem('playerId') ?? '';
+      const name = localStorage.getItem('displayName') ?? '';
+      const room = new URLSearchParams(window.location.search).get('room') ?? '';
+      const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement | null;
+      const cardId = cardEl?.getAttribute('data-card-id') ?? '';
+      return { playerId, name, room, cardId };
+    });
+    if (!wsParams.cardId) throw new Error('MOBILE-01: no hand card to inject');
+    // mobile cardW=40; right edge (x+40) lands 20px past viewport right edge
+    const injectX = Math.round(canvasBox.width - 20);
+    await page.evaluate(async ({ playerId, name, room, cardId, x }) => {
+      const ws = new WebSocket(`ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`);
+      await new Promise<void>((resolve, reject) => {
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ type: 'PLACE_ON_CANVAS', cardId, fromZone: 'hand', fromId: playerId, x, y: 200 }));
+          setTimeout(() => { ws.close(); resolve(); }, 100);
+        };
+        ws.onerror = () => reject(new Error('ws error'));
+        setTimeout(() => reject(new Error('ws timeout')), 3000);
+      });
+    }, { ...wsParams, x: injectX });
+    await page.waitForTimeout(300);
 
-    await expect(page.getByTestId('canvas-zone')).toBeVisible();
-
-    const srcBox = await firstCard.boundingBox();
-    if (srcBox) {
-      await page.mouse.move(srcBox.x + srcBox.width / 2, srcBox.y + srcBox.height / 2);
-      await page.mouse.down();
-      // Move to near right edge of 375px viewport — card x + 42px width exceeds viewportW
-      await page.mouse.move(350, 200, { steps: 15 });
-      await page.mouse.up();
-    }
-
-    // After placing a card near the right edge, the right arrow should appear
     await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
   });
 
@@ -66,18 +75,31 @@ test.describe('Phase 35 mobile edge pan', () => {
     await dealCards(page, 5);
     await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
-    // Place a card near the right edge to create overflow and make the right arrow appear
-    const handZone = page.getByTestId('hand-zone');
-    const firstCard = handZone.locator('[role="button"]').first();
-    await expect(firstCard).toBeVisible();
-
-    const srcBox = await firstCard.boundingBox();
-    if (srcBox) {
-      await page.mouse.move(srcBox.x + srcBox.width / 2, srcBox.y + srcBox.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(350, 200, { steps: 15 });
-      await page.mouse.up();
-    }
+    // Inject a card past the right viewport edge (same pattern as MOBILE-01 overflow test above).
+    const canvasBox = await page.getByTestId('canvas-zone').boundingBox();
+    if (!canvasBox) throw new Error('no canvas');
+    const wsParams2 = await page.evaluate(() => {
+      const playerId = localStorage.getItem('playerId') ?? '';
+      const name = localStorage.getItem('displayName') ?? '';
+      const room = new URLSearchParams(window.location.search).get('room') ?? '';
+      const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement | null;
+      const cardId = cardEl?.getAttribute('data-card-id') ?? '';
+      return { playerId, name, room, cardId };
+    });
+    if (!wsParams2.cardId) throw new Error('MOBILE-01 hold: no hand card to inject');
+    const injectX2 = Math.round(canvasBox.width - 20);
+    await page.evaluate(async ({ playerId, name, room, cardId, x }) => {
+      const ws = new WebSocket(`ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`);
+      await new Promise<void>((resolve, reject) => {
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ type: 'PLACE_ON_CANVAS', cardId, fromZone: 'hand', fromId: playerId, x, y: 200 }));
+          setTimeout(() => { ws.close(); resolve(); }, 100);
+        };
+        ws.onerror = () => reject(new Error('ws error'));
+        setTimeout(() => reject(new Error('ws timeout')), 3000);
+      });
+    }, { ...wsParams2, x: injectX2 });
+    await page.waitForTimeout(300);
 
     // Wait for right arrow to appear
     await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
@@ -115,16 +137,34 @@ test.describe('Phase 35 mobile edge pan', () => {
     await dealCards(page, 5);
     await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
 
-    // Place a card near the right edge to create overflow and make the arrow appear
-    const handZone = page.getByTestId('hand-zone');
-    const firstCard = handZone.locator('[role="button"]').first();
-    const srcBox = await firstCard.boundingBox();
-    if (srcBox) {
-      await page.mouse.move(srcBox.x + srcBox.width / 2, srcBox.y + srcBox.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(350, 200, { steps: 15 });
-      await page.mouse.up();
-    }
+    // Inject a card past the right viewport edge to create real overflow.
+    // UI drops are clamped to canvas bounds so they can never place a card's right
+    // edge beyond viewportSize.w — WS injection is required (same pattern as canvasPan.spec.ts).
+    const canvasBox = await page.getByTestId('canvas-zone').boundingBox();
+    if (!canvasBox) throw new Error('no canvas');
+    const wsParams = await page.evaluate(() => {
+      const playerId = localStorage.getItem('playerId') ?? '';
+      const name = localStorage.getItem('displayName') ?? '';
+      const room = new URLSearchParams(window.location.search).get('room') ?? '';
+      const cardEl = document.querySelector('[data-testid="hand-zone"] [data-card-id]') as HTMLElement | null;
+      const cardId = cardEl?.getAttribute('data-card-id') ?? '';
+      return { playerId, name, room, cardId };
+    });
+    if (!wsParams.cardId) throw new Error('MOBILE-02: no hand card to inject');
+    // mobile cardW=40; x chosen so right edge (x+40) lands ~20px past viewport right edge
+    const injectX = Math.round(canvasBox.width - 20);
+    await page.evaluate(async ({ playerId, name, room, cardId, x }) => {
+      const ws = new WebSocket(`ws://localhost:1999/party/${room}?player=${playerId}&name=${encodeURIComponent(name)}`);
+      await new Promise<void>((resolve, reject) => {
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ type: 'PLACE_ON_CANVAS', cardId, fromZone: 'hand', fromId: playerId, x, y: 200 }));
+          setTimeout(() => { ws.close(); resolve(); }, 100);
+        };
+        ws.onerror = () => reject(new Error('ws error'));
+        setTimeout(() => reject(new Error('ws timeout')), 3000);
+      });
+    }, { ...wsParams, x: injectX });
+    await page.waitForTimeout(300);
 
     await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
 

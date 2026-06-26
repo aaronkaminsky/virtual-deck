@@ -11,19 +11,25 @@ import { JeerOverlay } from './components/JeerOverlay';
 import { KonamiBanner } from './components/KonamiBanner';
 import { createDoubleKeyDetector, createSequenceDetector, isEditableTarget } from './lib/celebrationHotkey';
 import { preloadSounds } from './lib/sound';
-import { consumeAutojoin } from './lib/autojoin';
+import { peekAutojoin, consumeAutojoin } from './lib/autojoin';
 
 function RoomView({ roomId }: { roomId: string }) {
+  // peekAutojoin is side-effect-free so it survives React 18 StrictMode's double-invoke.
+  // consumeAutojoin clears the flag; runs in a one-time effect after mount.
   const [joinState, setJoinState] = useState<{ playerId: string; displayName: string } | null>(() => {
-    if (consumeAutojoin()) {
+    if (peekAutojoin()) {
       const savedName = getDisplayName();
       if (savedName) {
-        preloadSounds();
         return { playerId: getOrCreatePlayerId(), displayName: savedName };
       }
     }
     return null;
   });
+
+  useEffect(() => {
+    consumeAutojoin(); // clears the flag; joinState already set by useState above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove } = usePartySocket(
     roomId,

@@ -14,20 +14,17 @@ async function dealCards(page: Page, count = 5) {
   await page.getByRole('button', { name: 'Deal' }).click();
 }
 
-// Place a hand card near the right edge of the canvas so the canvas overflows right.
-// The drop lands clear of the right edge arrow; the edge-arrow-right visibility assertion
-// confirms overflow was actually created.
+// Place a visible card on the canvas and inject a second card past the right viewport edge.
+// Two-step: (1) a card at x=100 that tests can click without the edge arrow intercepting;
+// (2) a card fully past the right edge (x = canvasWidth+50) that creates real overflow.
+// UI drops are clamped to canvas bounds by BoardDragLayer so they can never place a card's
+// right edge beyond viewportSize.w — WS injection is required for the off-screen card.
 async function createRightOverflow(page: Page) {
   await expect(page.getByTestId('hand-zone').locator('[aria-pressed]')).not.toHaveCount(0);
-  const firstCard = page.getByTestId('hand-zone').locator('[role="button"]').first();
-  const srcBox = await firstCard.boundingBox();
-  if (!srcBox) throw new Error('no hand card');
   const canvasBox = await page.getByTestId('canvas-zone').boundingBox();
   if (!canvasBox) throw new Error('no canvas');
-  await page.mouse.move(srcBox.x + srcBox.width / 2, srcBox.y + srcBox.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(canvasBox.x + canvasBox.width - 70, canvasBox.y + canvasBox.height / 2, { steps: 15 });
-  await page.mouse.up();
+  await injectCardOnCanvas(page, 100); // visible card for tests to interact with
+  await injectCardOnCanvas(page, Math.round(canvasBox.width + 50)); // off-screen overflow trigger
   await expect(page.locator('[data-testid="edge-arrow-right"]')).toBeVisible();
 }
 
