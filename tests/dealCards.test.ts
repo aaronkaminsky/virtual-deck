@@ -11,6 +11,9 @@ function makeMockRoom(overrides: Partial<Party.Room> = {}): Party.Room {
   const storage = {
     get: vi.fn().mockResolvedValue(undefined),
     put: vi.fn().mockResolvedValue(undefined),
+    setAlarm: vi.fn().mockResolvedValue(undefined),
+    getAlarm: vi.fn().mockResolvedValue(null),
+    deleteAlarm: vi.fn().mockResolvedValue(undefined),
   };
   const connections: Party.Connection[] = [];
   return {
