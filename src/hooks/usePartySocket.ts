@@ -1,8 +1,10 @@
 import PartySocket from 'partysocket';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientAction, ClientGameState, LastMoveHighlight, ServerEvent } from '../shared/types';
+import type { AttractAntic, ClientAction, ClientGameState, LastMoveHighlight, ServerEvent } from '../shared/types';
 import { playSound } from '../lib/sound';
 import { PARTYKIT_HOST } from '../lib/partyHost';
+
+export type AttractState = { antic: AttractAntic; nonce: number; leaving: boolean };
 
 export function usePartySocket(roomId: string, playerId: string, displayName: string, options?: { enabled?: boolean }) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
@@ -15,6 +17,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const [jeerNonce, setJeerNonce] = useState(0);
   const [konamiActive, setKonamiActive] = useState(false);
   const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [attract, setAttract] = useState<AttractState | null>(null);
+  const attractNonceRef = useRef(0);
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
@@ -30,10 +34,12 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   useEffect(() => {
     if (!enabled) return;
 
+    const attractIdleMs = new URLSearchParams(window.location.search).get('attractIdleMs');
+
     const ws = new PartySocket({
       host: PARTYKIT_HOST,
       room: roomId,
-      query: { player: playerId, name: displayNameRef.current },
+      query: { player: playerId, name: displayNameRef.current, ...(attractIdleMs ? { attractIdleMs } : {}) },
     });
     wsRef.current = ws;
 
@@ -60,6 +66,8 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     ws.addEventListener('message', (e: MessageEvent) => {
       const event: ServerEvent = JSON.parse(e.data as string);
       if (event.type === 'STATE_UPDATE') {
+        // Any state change means someone acted — the critter flees on every screen.
+        setAttract(prev => (prev && !prev.leaving ? { ...prev, leaving: true } : prev));
         if (isDraggingRef.current) {
           bufferRef.current = event.state;
         } else {
@@ -106,6 +114,13 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
           if (konamiTimerRef.current) clearTimeout(konamiTimerRef.current);
           setKonamiActive(true);
           konamiTimerRef.current = setTimeout(() => setKonamiActive(false), 3000);
+        } else if (event.kind === 'attract') {
+          const reducedMotion = typeof window.matchMedia === 'function'
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (event.antic && !reducedMotion) {
+            playSound('attract');
+            setAttract({ antic: event.antic, nonce: ++attractNonceRef.current, leaving: false });
+          }
         }
       } else if (event.type === 'LAST_MOVE') {
         if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
@@ -140,5 +155,11 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     }
   }, []);
 
-  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove };
+  const dismissAttract = useCallback(() => {
+    setAttract(prev => (prev && !prev.leaving ? { ...prev, leaving: true } : prev));
+  }, []);
+
+  const clearAttract = useCallback(() => setAttract(null), []);
+
+  return { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove, attract, dismissAttract, clearAttract };
 }
