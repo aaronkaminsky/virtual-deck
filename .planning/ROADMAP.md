@@ -27,6 +27,7 @@
 - ✅ **v1.22 Easter Eggs** — rickroll, shuffle flourish, Konami all-aces cheat, table-flip, bad-game jeer + short-viewport scroll fix — 1012, 1013, 1014, 1015, 1016 (shipped 2026-06-23)
 - ✅ **v1.23 Platform Bug Fixes** — canvas pan on Chrome/Windows (`userSelect:none`), iPad Safari scroll (`h-dvh`) — 999.49, 1006 (shipped 2026-06-25)
 - ✅ **v1.24 Lobby & Overflow Polish** — join-by-URL lobby redesign, canvas overflow false-positive fix, autojoin flash fix — 1002, 1005 (shipped 2026-06-26)
+- ✅ **v1.25 Idle Attract Mode** — Server idle alarm (3min / 5min repeat), synced critter broadcast via EFFECT, three antics (peek-a-boo, nap, house of cards) with Lottie + CSS overlay, attract sound, e2e verified — 1017 (shipped 2026-07-02)
 
 ## Phases
 
