@@ -19,7 +19,7 @@ const VARIANT_COUNTS: Record<SoundName, number> = {
   "chip-bet": 1,
   "chip-collect": 1,
   jeer: 1,
-  attract: 1,
+  attract: 2,
 };
 
 function resolveFile(name: SoundName): string {

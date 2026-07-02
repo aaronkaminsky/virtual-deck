@@ -158,11 +158,16 @@ describe("chip sounds", () => {
 });
 
 describe("attract sound", () => {
-  it("plays attract.mp3 for the attract sound", () => {
+  it("plays a random numbered attract variant", () => {
+    const rand = vi.spyOn(Math, "random");
+    rand.mockReturnValue(0);
     playSound("attract");
-    expect(MockAudio.instances).toHaveLength(1);
-    expect(MockAudio.instances[0].src).toMatch(/sounds\/attract\.mp3$/);
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/attract1\.mp3$/);
     expect(MockAudio.instances[0].play).toHaveBeenCalled();
+    rand.mockReturnValue(0.999);
+    playSound("attract");
+    expect(MockAudio.instances[1].src).toMatch(/sounds\/attract2\.mp3$/);
+    rand.mockRestore();
   });
 
   it("does not preload attract.mp3 (it fires minutes into a session)", () => {
