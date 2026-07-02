@@ -156,3 +156,17 @@ describe("chip sounds", () => {
     expect(srcs.some(s => s.endsWith("chip-collect.mp3"))).toBe(true);
   });
 });
+
+describe("attract sound", () => {
+  it("plays attract.mp3 for the attract sound", () => {
+    playSound("attract");
+    expect(MockAudio.instances).toHaveLength(1);
+    expect(MockAudio.instances[0].src).toMatch(/sounds\/attract\.mp3$/);
+    expect(MockAudio.instances[0].play).toHaveBeenCalled();
+  });
+
+  it("does not preload attract.mp3 (it fires minutes into a session)", () => {
+    preloadSounds();
+    expect(MockAudio.instances.some(a => a.src.includes("attract"))).toBe(false);
+  });
+});
