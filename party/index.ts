@@ -148,7 +148,11 @@ export default class GameRoom implements Party.Server {
   attractIdleMsOverride: number | null = null;
 
   constructor(readonly room: Party.Room) {
-    this.gameState = defaultGameState(room.id);
+    // Alarm wake on a hibernated room has no Party.id; the real state is
+    // rehydrated from storage in onStart before any handler runs.
+    let roomId = "";
+    try { roomId = room.id; } catch { /* alarm-context wake */ }
+    this.gameState = defaultGameState(roomId);
   }
 
   async onStart() {
@@ -1139,6 +1143,7 @@ export default class GameRoom implements Party.Server {
 
   // Room-wide idle: fires only when no message has re-armed the alarm for the
   // full idle window. Empty rooms stop the cycle; the next onConnect restarts it.
+  // NB: alarm context has no Party.id — nothing in this method (or the constructor) may read room.id.
   async onAlarm() {
     const connections = [...this.room.getConnections()];
     if (connections.length === 0) return;

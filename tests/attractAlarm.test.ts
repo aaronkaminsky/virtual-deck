@@ -107,6 +107,22 @@ describe("idle attract alarm", () => {
     expect(room.storage.put).not.toHaveBeenCalledWith("lastAttractAntic", expect.anything());
   });
 
+  it("survives alarm wake on a hibernated room where Party.id is uninitialized", async () => {
+    const conn = makeMockConnection("p1");
+    const base = makeMockRoom([conn]);
+    const room = new Proxy(base, {
+      get(target, prop, receiver) {
+        if (prop === "id") throw new Error("Party.id is not yet initialized.");
+        return Reflect.get(target, prop, receiver);
+      },
+    }) as typeof base;
+
+    const gr = new GameRoom(room);
+    await gr.onAlarm();
+
+    expect(attractEffectsOf(conn)).toHaveLength(1);
+  });
+
   it("onAlarm never repeats the stored previous antic", async () => {
     const conn = makeMockConnection("p1");
     const room = makeMockRoom([conn]);
