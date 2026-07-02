@@ -4,6 +4,7 @@ import { usePartySocket } from './hooks/usePartySocket';
 import LobbyPanel from './components/LobbyPanel';
 import HomeView from './components/HomeView';
 import { BoardDragLayer } from './components/BoardDragLayer';
+import { AttractOverlay } from './components/AttractOverlay';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { RickrollOverlay } from './components/RickrollOverlay';
 import { TableFlipWrapper } from './components/TableFlipWrapper';
@@ -31,7 +32,7 @@ function RoomView({ roomId }: { roomId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove } = usePartySocket(
+  const { gameState, connected, error, sendAction, setDragging, shufflingPileIds, celebrationNonce, rickrollNonce, tableFlipNonce, jeerNonce, konamiActive, highlightedMove, attract, dismissAttract, clearAttract } = usePartySocket(
     roomId,
     joinState?.playerId ?? '',
     joinState?.displayName ?? '',
@@ -143,6 +144,7 @@ function RoomView({ roomId }: { roomId: string }) {
         <RickrollOverlay nonce={rickrollNonce} />
         <JeerOverlay nonce={jeerNonce} />
         <KonamiBanner active={konamiActive} />
+        <AttractOverlay attract={attract} onLocalDismiss={dismissAttract} onExited={clearAttract} />
       </>
     );
   }

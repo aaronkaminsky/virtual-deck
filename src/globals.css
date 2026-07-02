@@ -367,3 +367,86 @@
 @media (prefers-reduced-motion: reduce) {
   .zone-controls { transition: none; }
 }
+
+/* Idle attract mode (1017) — critter choreography */
+.attract-critter {
+  will-change: transform;
+  transform: translateY(105%);
+}
+.attract-peekaboo {
+  animation: attract-peekaboo 16s ease-in-out forwards;
+}
+@keyframes attract-peekaboo {
+  0%   { transform: translateX(0) translateY(105%); }
+  5%   { transform: translateX(0) translateY(26%); }
+  8%   { transform: translateX(0) translateY(32%); }
+  30%  { transform: translateX(0) translateY(28%); }
+  35%  { transform: translateX(0) translateY(105%); }
+  47%  { transform: translateX(0) translateY(105%); }
+  48%  { transform: translateX(70%) translateY(105%); }
+  54%  { transform: translateX(70%) translateY(22%); }
+  57%  { transform: translateX(70%) translateY(30%); }
+  88%  { transform: translateX(70%) translateY(26%); }
+  95%  { transform: translateX(70%) translateY(105%); }
+  100% { transform: translateX(70%) translateY(105%); }
+}
+.attract-nap {
+  animation: attract-nap 20s ease-in-out forwards;
+}
+@keyframes attract-nap {
+  0%   { transform: translateY(105%); }
+  6%   { transform: translateY(30%); }
+  10%  { transform: translateY(42%); }
+  92%  { transform: translateY(42%); }
+  100% { transform: translateY(105%); }
+}
+.attract-houseOfCards {
+  animation: attract-house 22s ease-in-out forwards;
+}
+@keyframes attract-house {
+  0%   { transform: translateY(105%); }
+  5%   { transform: translateY(26%); }
+  93%  { transform: translateY(26%); }
+  100% { transform: translateY(105%); }
+}
+.attract-scurry {
+  animation: attract-scurry 0.6s ease-in forwards !important;
+}
+@keyframes attract-scurry {
+  0%   { transform: translateY(26%); }
+  25%  { transform: translateY(18%) rotate(-6deg); }
+  100% { transform: translateY(110%); }
+}
+.attract-zzz {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.9);
+  opacity: 0;
+  animation: attract-zzz 2.7s ease-out infinite;
+}
+@keyframes attract-zzz {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.7); }
+  25%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(12px, -26px) scale(1.2); }
+}
+.attract-house-card {
+  position: absolute;
+  width: 22px;
+  height: 31px;
+  opacity: 0;
+  animation: attract-card-pop 0.5s ease-out both;
+}
+@keyframes attract-card-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.6) rotate(var(--card-rot)); }
+  to   { opacity: 1; transform: translateY(0) scale(1) rotate(var(--card-rot)); }
+}
+.attract-leaving .attract-house-card {
+  animation: attract-card-tumble 0.6s ease-in both;
+}
+@keyframes attract-card-tumble {
+  from { opacity: 1; transform: translateY(0) rotate(var(--card-rot)); }
+  to   { opacity: 0; transform: translateY(30px) rotate(calc(var(--card-rot) + 70deg)); }
+}
