@@ -1146,6 +1146,7 @@ export default class GameRoom implements Party.Server {
     const antic = pickAttractAntic(previous, Math.random());
     await this.room.storage.put("lastAttractAntic", antic);
     this.broadcastEffect("attract", antic);
+    // The attractIdleMs override intentionally governs the repeat cadence too (see design spec).
     await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_REPEAT_MS);
   }
 

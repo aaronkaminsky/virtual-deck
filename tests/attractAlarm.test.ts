@@ -86,6 +86,17 @@ describe("idle attract alarm", () => {
     expect(room.storage.setAlarm).toHaveBeenCalledWith(NOW + ATTRACT_REPEAT_MS);
   });
 
+  it("onAlarm re-arms with the override delay when one is set (spec: override governs both cadences)", async () => {
+    const conn = makeMockConnection("p1");
+    const room = makeMockRoom([conn]);
+    const gr = new GameRoom(room);
+    gr.attractIdleMsOverride = 5_000;
+
+    await gr.onAlarm();
+
+    expect(room.storage.setAlarm).toHaveBeenCalledWith(NOW + 5_000);
+  });
+
   it("onAlarm in an empty room neither broadcasts nor re-arms", async () => {
     const room = makeMockRoom([]);
     const gr = new GameRoom(room);
