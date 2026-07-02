@@ -19,6 +19,11 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
   const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [attract, setAttract] = useState<AttractState | null>(null);
   const attractNonceRef = useRef(0);
+  const attractRef = useRef<AttractState | null>(null);
+  attractRef.current = attract;
+  // Armed on load and by any action (STATE_UPDATE); disarmed after one play, so
+  // looped attract re-fires stay silent until someone acts again.
+  const attractSoundArmedRef = useRef(true);
   const wsRef = useRef<PartySocket | null>(null);
   const isDraggingRef = useRef(false);
   const bufferRef = useRef<ClientGameState | null>(null);
@@ -66,7 +71,9 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
     ws.addEventListener('message', (e: MessageEvent) => {
       const event: ServerEvent = JSON.parse(e.data as string);
       if (event.type === 'STATE_UPDATE') {
-        // Any state change means someone acted — the critter flees on every screen.
+        // Any state change means someone acted — the critter flees on every screen
+        // and the attract sound re-arms for the next first fire.
+        attractSoundArmedRef.current = true;
         setAttract(prev => (prev && !prev.leaving ? { ...prev, leaving: true } : prev));
         if (isDraggingRef.current) {
           bufferRef.current = event.state;
@@ -117,8 +124,15 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
         } else if (event.kind === 'attract') {
           const reducedMotion = typeof window.matchMedia === 'function'
             && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (event.antic && !reducedMotion) {
-            playSound('attract');
+          // A re-fire mid-performance would restart the critter from its hidden
+          // position while the new antic's props render immediately — let the
+          // running performance finish instead.
+          const performing = attractRef.current !== null && !attractRef.current.leaving;
+          if (event.antic && !reducedMotion && !performing) {
+            if (attractSoundArmedRef.current) {
+              attractSoundArmedRef.current = false;
+              playSound('attract');
+            }
             setAttract({ antic: event.antic, nonce: ++attractNonceRef.current, leaving: false });
           }
         }

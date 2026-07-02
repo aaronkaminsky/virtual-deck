@@ -7,8 +7,22 @@ describe("usePartySocket attract handling", () => {
   });
 
   it("sets attract state and plays the sound on kind 'attract'", () => {
-    expect(src).toMatch(/kind === 'attract'[\s\S]{0,400}playSound\('attract'\)/);
-    expect(src).toMatch(/kind === 'attract'[\s\S]{0,400}setAttract/);
+    expect(src).toMatch(/kind === 'attract'[\s\S]{0,700}playSound\('attract'\)/);
+    expect(src).toMatch(/kind === 'attract'[\s\S]{0,700}setAttract/);
+  });
+
+  it("ignores attract re-fires while a performance is active", () => {
+    expect(src).toMatch(/const attractRef = useRef<AttractState \| null>\(null\)/);
+    expect(src).toMatch(/attractRef\.current = attract;/);
+    expect(src).toMatch(/const performing = attractRef\.current !== null && !attractRef\.current\.leaving;/);
+    expect(src).toMatch(/!reducedMotion && !performing/);
+  });
+
+  it("plays the attract sound only on the first fire after an action", () => {
+    expect(src).toMatch(/const attractSoundArmedRef = useRef\(true\)/);
+    expect(src).toMatch(/if \(attractSoundArmedRef\.current\) \{[\s\S]{0,120}playSound\('attract'\)/);
+    expect(src).toMatch(/attractSoundArmedRef\.current = false;/);
+    expect(src).toMatch(/type === 'STATE_UPDATE'\)[\s\S]{0,300}attractSoundArmedRef\.current = true;/);
   });
 
   it("suppresses the whole effect under prefers-reduced-motion", () => {

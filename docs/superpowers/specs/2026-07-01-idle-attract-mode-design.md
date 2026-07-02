@@ -39,7 +39,8 @@ The server honors an optional `attractIdleMs` connection query param (from the l
 ### `usePartySocket`
 
 - New state `attract: { antic: AttractAntic, nonce: number } | null`, following the existing nonce pattern (`nonce` increments per fire so back-to-back same-antic fires still restart the overlay).
-- On `EFFECT` with `kind === "attract"`: if `prefers-reduced-motion` is set, ignore the event entirely (no state, no sound); otherwise set the state and call `playSound("attract")`. This single check at effect receipt is what suppresses the whole feature for reduced-motion users.
+- On `EFFECT` with `kind === "attract"`: if `prefers-reduced-motion` is set, ignore the event entirely (no state, no sound); if a performance is already running (attract state non-null and not leaving), ignore the re-fire — interrupting a 16–25s antic mid-flight restarts the critter from its hidden position and looks broken (visible under short `attractIdleMs` overrides where the repeat cadence is shorter than a performance). Otherwise set the state and play the sound per the arming rule below.
+- **Sound arming**: the attract sound plays only on the first fire after an action. An armed-flag ref starts true, is re-armed by any `STATE_UPDATE` (someone acted), and disarms after one play — so a room left idle hears the sound once, then repeat fires are animation-only.
 - On any `STATE_UPDATE` while attract is non-null: clear it (someone acted → critter flees on all screens). Clearing sets a transient `dismissed` flag rather than instantly nulling, so the overlay can play its scurry exit (see below); the hook exposes `dismissAttract()` for the overlay's local-input path too.
 
 Implementation shape: `attract` state carries `{ antic, nonce, leaving: boolean }`; "clear" flips `leaving: true`; the overlay nulls the state via callback when its exit animation completes (with a safety timeout).
