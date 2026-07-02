@@ -1,5 +1,6 @@
 import type * as Party from "partykit/server";
-import type { CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
+import type { AttractAntic, CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
+import { ATTRACT_ANTICS } from "../src/shared/types";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -125,6 +126,15 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
   };
 }
 
+export const ATTRACT_IDLE_MS = 180_000;
+export const ATTRACT_REPEAT_MS = 300_000;
+export const ATTRACT_MIN_OVERRIDE_MS = 5_000;
+
+export function pickAttractAntic(previous: AttractAntic | undefined, rand: number): AttractAntic {
+  const candidates = ATTRACT_ANTICS.filter(a => a !== previous);
+  return candidates[Math.min(candidates.length - 1, Math.floor(rand * candidates.length))];
+}
+
 type ConnectionState = { playerToken: string };
 
 function getPlayerToken(connection: Party.Connection): string {
@@ -135,6 +145,7 @@ function getPlayerToken(connection: Party.Connection): string {
 export default class GameRoom implements Party.Server {
   static options = { hibernate: true };
   gameState: GameState;
+  attractIdleMsOverride: number | null = null;
 
   constructor(readonly room: Party.Room) {
     this.gameState = defaultGameState(room.id);
@@ -194,6 +205,8 @@ export default class GameRoom implements Party.Server {
     if (!('chipsInitialized' in this.gameState)) {
       (this.gameState as unknown as GameState).chipsInitialized = false;
     }
+    this.attractIdleMsOverride =
+      (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;
   }
 
   async onRequest(req: Party.Request): Promise<Response> {
@@ -247,6 +260,16 @@ export default class GameRoom implements Party.Server {
         ownerId: playerToken,
       });
     }
+
+    const attractParam = url.searchParams.get("attractIdleMs");
+    if (attractParam !== null) {
+      const parsed = Number(attractParam);
+      if (Number.isFinite(parsed)) {
+        this.attractIdleMsOverride = Math.max(ATTRACT_MIN_OVERRIDE_MS, Math.floor(parsed));
+        await this.room.storage.put("attractIdleMsOverride", this.attractIdleMsOverride);
+      }
+    }
+    await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_IDLE_MS);
 
     await this.persist();
     this.broadcastState();
@@ -1104,6 +1127,7 @@ export default class GameRoom implements Party.Server {
         break;
     }
 
+    await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_IDLE_MS);
     await this.persist();
     this.broadcastState();
     if (lastMoveArgs) {
@@ -1111,6 +1135,22 @@ export default class GameRoom implements Party.Server {
     } else if (clearLastMove) {
       this.broadcastClearLastMove();
     }
+  }
+
+  // Room-wide idle: fires only when no message has re-armed the alarm for the
+  // full idle window. Empty rooms stop the cycle; the next onConnect restarts it.
+  async onAlarm() {
+    const connections = [...this.room.getConnections()];
+    if (connections.length === 0) return;
+    const previous = await this.room.storage.get<AttractAntic>("lastAttractAntic");
+    const antic = pickAttractAntic(previous, Math.random());
+    await this.room.storage.put("lastAttractAntic", antic);
+    this.broadcastEffect("attract", antic);
+    await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_REPEAT_MS);
+  }
+
+  private async armAttractAlarm(delayMs: number) {
+    await this.room.storage.setAlarm(Date.now() + delayMs);
   }
 
   async onClose(connection: Party.Connection) {
@@ -1161,11 +1201,12 @@ export default class GameRoom implements Party.Server {
     }
   }
 
-  private broadcastEffect(kind: EffectKind) {
+  private broadcastEffect(kind: EffectKind, antic?: AttractAntic) {
     for (const conn of [...this.room.getConnections()]) {
       conn.send(JSON.stringify({
         type: "EFFECT",
         kind,
+        ...(antic !== undefined ? { antic } : {}),
       } satisfies ServerEvent));
     }
   }
