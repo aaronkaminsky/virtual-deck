@@ -221,6 +221,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
       <div
         ref={setNodeRef}
         data-testid={`spread-zone-${pile.id}`}
+        data-attract-anchor={interactive !== false && !isReallyEmpty ? '' : undefined}
         className={cn(
           isReallyEmpty
             ? isOver

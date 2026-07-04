@@ -9,9 +9,26 @@ describe("AttractOverlay", () => {
     expect(overlaySrc).toMatch(/data-antic=\{antic\}/);
   });
 
-  it("anchors to the pile via the data-attract-anchor hook and skips the fire when absent", () => {
-    expect(overlaySrc).toMatch(/querySelector\('\[data-attract-anchor\]'\)/);
-    expect(overlaySrc).toMatch(/if \(!el\) \{ onExited\(\); return; \}/);
+  it("collects candidate anchors via the data-attract-anchor hook and skips the fire when none exist", () => {
+    expect(overlaySrc).toMatch(/querySelectorAll\('\[data-attract-anchor\]'\)/);
+    expect(overlaySrc).toMatch(/onExited\(\); return;/);
+  });
+
+  it("peek-a-boo visits a sequence of hiding spots that have headroom above them", () => {
+    expect(overlaySrc).toMatch(/PEEK_COUNT = 3/);
+    expect(overlaySrc).toMatch(/r\.top >= CRITTER_SIZE/);
+    expect(overlaySrc).toMatch(/attract-peek-once/);
+    expect(overlaySrc).toMatch(/setPeekIndex/);
+  });
+
+  it("selects the critter art variant per antic", () => {
+    expect(overlaySrc).toMatch(/antic === 'nap' \? 'sleepy' : antic === 'houseOfCards' \? 'gaze' : 'idle'/);
+  });
+
+  it("collapses the house at the natural end instead of vanishing", () => {
+    expect(overlaySrc).toMatch(/ATTRACT_HOUSE_COLLAPSE_MS = 20_500/);
+    expect(overlaySrc).toMatch(/setHouseCollapsed\(true\)/);
+    expect(overlaySrc).toMatch(/attract-collapse/);
   });
 
   it("dismisses on real input only — pointerdown, keydown, wheel, never mousemove", () => {
@@ -30,8 +47,12 @@ describe("AttractOverlay", () => {
   it("defines per-antic performance durations and a scurry exit", () => {
     expect(overlaySrc).toMatch(/peekaboo: 16000/);
     expect(overlaySrc).toMatch(/nap: 20000/);
-    expect(overlaySrc).toMatch(/houseOfCards: 22000/);
+    expect(overlaySrc).toMatch(/houseOfCards: 24000/);
     expect(overlaySrc).toMatch(/ATTRACT_LEAVE_MS = 600/);
+  });
+
+  it("unmounts after the scurry exit completes (leave timer actually scheduled)", () => {
+    expect(overlaySrc).toMatch(/if \(!leaving\) return;\s*\n\s*const t = setTimeout\(onExited, ATTRACT_LEAVE_MS\);/);
   });
 
   it("slows the lottie loop for the nap antic", () => {
@@ -42,6 +63,15 @@ describe("AttractOverlay", () => {
 describe("attract wiring", () => {
   it("PileZone renders the anchor attribute", () => {
     expect(pileZoneSrc).toMatch(/data-attract-anchor/);
+  });
+
+  it("PotZone, HandZone, and SpreadZone offer peek hiding spots", async () => {
+    const potZoneSrc = (await import("../src/components/PotZone.tsx?raw")).default as unknown as string;
+    const handZoneSrc = (await import("../src/components/HandZone.tsx?raw")).default as unknown as string;
+    const spreadZoneSrc = (await import("../src/components/SpreadZone.tsx?raw")).default as unknown as string;
+    expect(potZoneSrc).toMatch(/data-attract-anchor/);
+    expect(handZoneSrc).toMatch(/data-attract-anchor/);
+    expect(spreadZoneSrc).toMatch(/data-attract-anchor/);
   });
 
   it("App mounts the overlay with hook callbacks", () => {

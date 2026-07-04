@@ -59,13 +59,15 @@ Follows the `CelebrationOverlay` pattern: `position: fixed`, `inset: 0`, `pointe
 
 Each antic is a choreographed sequence (~15–25s total) sharing one framework: emerge (~1s) → perform → retreat (~1s). CSS keyframes drive the critter container's position/clip; the Lottie instance switches loop segments per phase.
 
-1. **Peek-a-boo** (`peekaboo`): peeks out from behind the pile, looks around, ducks back, re-peeks from the other side of the pile. The simplest — and the shared emerge/retreat choreography every antic needs.
-2. **Nap time** (`nap`): settles beside/atop the pile, sleep loop, drifting "z z z" (CSS-animated DOM elements). Mostly still — cheap to make flawless.
-3. **House of cards** (`houseOfCards`): stacks a tiny card pyramid next to the pile (miniature card-back sprites reusing `back.svg`), admires it, retreats. If startled mid-build, the pyramid tumbles (CSS fall/fade) as the critter flees.
+1. **Peek-a-boo** (`peekaboo`): three peeks, each from behind a *different* board object chosen at random per client from all `[data-attract-anchor]` elements with enough headroom above them (piles, pot, non-empty hand, non-empty own tableau). Rise, look around, duck, re-emerge elsewhere. Hiding spots are per-client (each player's layout differs); the antic and timing stay synced.
+2. **Nap time** (`nap`): settles atop the pile with the *sleepy* art variant — eyelids squashed to slits — plus drifting "z z z" (CSS-animated DOM elements) and a slowed body-bob loop.
+3. **House of cards** (`houseOfCards`, 24s): builds a two-story A-frame structure of six miniature white card faces beside the pile (styled divs — the real card back is near-black and invisible at 24px on the dark board), watching the build with the *gaze* art variant (pupils turned toward the house). At the natural end the house **collapses** in a staggered tumble while the critter does a startled hop, then retreats; a startle mid-build tumbles it the same way.
+
+**Critter art variants**: three hand-authored bodymovin files sharing one body — `critter.json` (idle: blink loop), `critter-sleepy.json` (lid slits), `critter-gaze.json` (pupils offset toward the build site). Eyes are sclera + pupil for expressiveness at 72px. `loadCritter(container, speed, variant)` picks the file; all remain lazy-loaded.
 
 ### Sound (`src/lib/sound.ts`)
 
-- `SoundName` gains `"attract"`; `VARIANT_COUNTS` entry `attract: 1`; file `public/sounds/attract.mp3`.
+- `SoundName` gains `"attract"`; `VARIANT_COUNTS` entry `attract: 2`; files `public/sounds/attract1.mp3` / `attract2.mp3` (random variant per play).
 - Asset: a soft, quiet "huh?"-style curiosity sound (CC0). Deliberately low volume — a nudge to look up, not an alert. `playSound` already respects mute and fails silently on a missing file, so the wiring ships even if the asset lands in a follow-up.
 - Not added to `preloadSounds()` — it fires minutes into a session at the earliest; first-play fetch latency is irrelevant.
 

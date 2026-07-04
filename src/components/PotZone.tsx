@@ -66,7 +66,7 @@ export function PotZone({ pot, myPlayerId, sendAction }: PotZoneProps) {
           </Popover>
         </div>
       </div>
-      <div className="w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border border-border flex items-center justify-center relative bg-secondary py-2">
+      <div data-attract-anchor="" className="w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border border-border flex items-center justify-center relative bg-secondary py-2">
         <ChipStack amount={pot} />
         <Badge className="absolute -bottom-2 -right-2">{pot}</Badge>
       </div>
