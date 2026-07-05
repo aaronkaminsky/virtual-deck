@@ -34,6 +34,9 @@ function makeMockRoom(roomId = "room-abc") {
     storage: {
       get: vi.fn().mockResolvedValue(undefined),
       put: vi.fn().mockResolvedValue(undefined),
+      setAlarm: vi.fn().mockResolvedValue(undefined),
+      getAlarm: vi.fn().mockResolvedValue(null),
+      deleteAlarm: vi.fn().mockResolvedValue(undefined),
     },
   } as any;
 }

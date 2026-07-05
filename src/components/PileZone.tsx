@@ -106,6 +106,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
       </div>
       <div
         ref={setNodeRef}
+        data-attract-anchor=""
         data-testid={`pile-${pile.id}`}
         className={cn(
           'w-[56px] sm:w-[80px] min-h-[75px] sm:min-h-[104px] rounded-lg border flex flex-col items-center justify-center relative bg-secondary py-2',

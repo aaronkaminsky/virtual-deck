@@ -1,7 +1,10 @@
 export type Suit = "spades" | "hearts" | "diamonds" | "clubs";
 export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K";
 
-export type EffectKind = "deal" | "celebrate" | "chip-bet" | "chip-collect" | "rickroll" | "tableflip" | "jeer" | "konami";
+export type EffectKind = "deal" | "celebrate" | "chip-bet" | "chip-collect" | "rickroll" | "tableflip" | "jeer" | "konami" | "attract";
+
+export type AttractAntic = "peekaboo" | "nap" | "houseOfCards";
+export const ATTRACT_ANTICS: readonly AttractAntic[] = ["peekaboo", "nap", "houseOfCards"];
 
 export interface Card {
   id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"
@@ -119,6 +122,6 @@ export type ServerEvent =
   | { type: "STATE_UPDATE"; state: ClientGameState }
   | { type: "ERROR"; code: string; message: string }
   | { type: "PILE_SHUFFLED"; pileId: string; animationType: "normal" | "flourish" }
-  | { type: "EFFECT"; kind: EffectKind }
+  | { type: "EFFECT"; kind: EffectKind; antic?: AttractAntic }
   | { type: "LAST_MOVE"; toZoneType: "hand" | "pile" | "canvas"; toZoneId: string; cardIds: string[] }
   | { type: "CLEAR_LAST_MOVE" };

@@ -326,6 +326,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
       <div
         ref={setNodeRef}
         data-testid="hand-zone"
+        data-attract-anchor={displayedCards.length > 0 ? '' : undefined}
         className={cn(
           'h-[100px] sm:h-[128px] flex items-center px-4 py-3 overflow-x-auto [overflow-y:clip] [overflow-clip-margin:4px] bg-card',
           isOver ? 'border-t-2 border-primary' : '',
