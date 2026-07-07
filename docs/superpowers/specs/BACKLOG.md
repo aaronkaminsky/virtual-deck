@@ -8,14 +8,12 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 |------|------|
 | 999.20 | Password protection for rooms — host sets a password at room creation; PartyKit `onBeforeConnect` rejects connections without the correct password (passed in URL query string) |
 | 999.21 | Kick players — host can remove a player from the room; PartyKit server closes their connection on a kick message |
-| 999.27 | Physical deck gap review — structured analysis of what a real card table offers that Virtual Deck doesn't yet; produces a list of missing/improvable features |
 | 999.36 | Editable zone names — players can rename spread zones and piles inline |
 | 999.47 | Add multiple themes or art sets that can be chosen from the menu |
 | 999.48 | Add more customizations in the popup (eg. last move highlighting) |
 | 1000 | Consider possible changes to selection behavior. When I select multiple cards and drag them to the canvas, for example, I find my expectation is that those cards are still selected until I select something else or click away.  Instead what currently happens is the selection goes away as soon as the drop occurs.  That might be better, but this item is to consider if changing this would improve the UX |
 | 1007 | To plan games like "egyptian war" we should add a way to "slap" the deck, to reward quick reactions, it could have a fun hand animation |
 | 1008 | For some games you need to make multiple sets in your hand, like 7-card stud, we could maybe add a spacer feature in the hand to separate multiple card sets while still in your hand |
-| 1018 | Add Joker as a real card rank/art asset to the deck model — split out of 1014 (Konami cheat), which ships as "all-aces" instead since jokers aren't representable in the current 52-card `Rank` type without this |
 | 1019 | Attract antic: card thief — critter tip-toes out, steals a mini card off the draw pile, and drags it behind the pile; if startled mid-theft it drops the card, which slides back. New antic on the shipped 1017 framework (choreography + guilty-look art variant) |
 | 1020 | Attract antic: tic-tac-toe — critter chalk-draws a tiny grid on the felt, plays both sides against itself (gaze variant alternating), loses, and scribbles it out before leaving |
 | 1021 | Attract antic: chip spinner (chips mode only) — anchored to the pot: critter sets a chip spinning like a coin, watches hypnotized; the chip wobble-clatters flat as the critter retreats. Reuses the pot's data-attract-anchor |
@@ -27,3 +25,9 @@ The `999.x` IDs are carried over from the previous planning system; they're just
 | 1027 | Attract antic: card dominoes — a row of mini white cards sets itself up along the canvas edge and topples in a wave; the critter appears at the end just in time for the last card to fall on it |
 | 1028 | Attract effect: lights out / curtain call — the critter tugs a pull-cord and the whole board dims to a soft dark (or a stage curtain lowers over the canvas), maybe with a faint spotlight following the critter as it tiptoes off. Must dim rather than black out, and any input snaps the lights back instantly so it never reads as the app breaking |
 | 1029 | Attract antic: critter herding — two or three half-size critters scatter and wander the board; the main critter emerges, exasperated, and chases them back behind the pile one by one — the last little one peeks back out for a beat before getting yanked away. Builds on 1023's multi-clip-window tech |
+| 1030 | Flip card in place on canvas — a face-down card on the table can be turned over where it lies (and back), without round-tripping through a pile or hand; canvas-scoped flip action + affordance on the card (from gap review A1) |
+| 1031 | Runtime piles — stack loose canvas cards into a real pile (with face/shuffle/insert semantics) and break a pile back into loose cards; covers trick piles, split decks, and side stacks that today stay as clutter (from gap review A2) |
+| 1032 | Browse pile contents — fan out any pile in an overlay to riffle through it and pull a card from the middle, without dumping it into a spread zone (from gap review A3) |
+| 1033 | Deck composition config — host chooses deck setup at table level: two decks (canasta), strip decks (pinochle/euchre 24–48 cards), and jokers; supersedes 1018 (Joker rank + art) (from gap review A4) |
+| 1034 | Score pad — shared scoreboard for cumulative points across hands (hearts, gin, rummy); editable by any player like a pad passed around the table (from gap review B1) |
+| 1035 | Dealer button & movable tokens — draggable marker(s) on the canvas for dealer/turn/trump tracking; players advance it themselves like a physical button (from gap review B2) |
