@@ -33,7 +33,7 @@ Rejected alternatives:
 ```
 
 - **CREATE_CANVAS_PILE** — requires ≥2 cardIds, all currently loose canvas cards. Removes them from `canvasCards`; creates the pile at (x, y) with `z = maxZ + 1`. Card order in the stack: ascending pre-stack z (visually buried stays buried; last element = top of stack, matching the existing convention).
-- **UNSTACK_CANVAS_PILE** — `region === "canvas"` guard. Fans the pile's cards out as loose canvas cards starting at `pos` with a 24px x offset per card (bottom→top becomes left→right), assigns fresh ascending z above current maxZ, deletes the pile. Face states preserved — unstacking a face-down pile reveals buried cards to everyone. **Intended**: physically spreading a stack does exactly this; do not "fix" later.
+- **UNSTACK_CANVAS_PILE** — `region === "canvas"` guard. Fans the pile's cards out as loose canvas cards starting at `pos` with a 24px x offset per card (bottom→top becomes left→right), assigns fresh ascending z above current maxZ, deletes the pile. Fanned cards land `faceUp: true` — loose canvas cards are always face-up (the invariant every existing to-canvas path enforces, and they're unmasked on the wire regardless). Unstacking a face-down pile therefore reveals buried cards to everyone. **Intended**: physically spreading a stack does exactly this; do not "fix" later.
 - **MOVE_CANVAS_PILE** — `region === "canvas"` guard; finite-coordinate validation; updates `pos` and bumps `z` to `maxZ + 1` (same top-bump as card placement).
 
 Validation order follows the house pattern: validate everything (cards exist, coordinates finite, pile exists, region guard) → `takeSnapshot` → mutate. Batch pre-validation makes CREATE atomic: if any selected card vanished mid-flight (another player moved it), the action errors with `CARD_NOT_IN_SOURCE` and nothing mutates.
@@ -76,7 +76,7 @@ Card-level interactions reuse existing paths verbatim:
 
 ### Keyboard layer
 
-Canvas piles participate in the Alt zone-letter map like column piles (the map derives from `state.piles`; verify wiring at planning time).
+Deferred for v1: `computeZoneLetterMap` includes only `region === "pile"` piles, and full keyboard participation (zone letters, tab stops, cursor movement) requires dedicated `keyboardUtils` work. Canvas piles are mouse/touch-only in v1; keyboard support is a follow-up if wanted.
 
 ## Edge cases
 
