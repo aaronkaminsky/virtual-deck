@@ -56,6 +56,11 @@ Card-level interactions reuse existing paths verbatim:
 - Droppable with `data: { toZone: 'pile', toId }` — dropping a card/selection onto it fires the existing MOVE_CARD / PLAY_CARD_SET client logic, including insert top/bottom/random.
 - Top card is a `DraggableCard` with `fromZone: "pile"` — identical to dragging off the discard pile.
 
+**Card drag vs. pile drag — pointer-down target decides.** Both gestures are supported on the same pile:
+- **On the top card's art**: a tap (no movement past the drag threshold) toggles selection of the top card, same as column piles today; a drag moves the top card off the pile. Never the whole pile.
+- **Anywhere else on the pile** — the frame rim (rendered ~6–8px larger than the card on all sides so there is always a grabbable edge) or the header strip (name + count badge): a drag moves the whole pile. The header strip is the primary touch target (full pile width); the rim mainly serves mouse users. Control buttons are excluded — they stay buttons.
+- Implementation: two nested dnd-kit draggables — the inner card `DraggableCard` and an outer frame draggable (`type: 'canvas-pile'`). The inner draggable's pointer-down stops propagation, so a card grab never also arms the pile drag. `cursor: grab` on the frame/header signals the pile-drag affordance.
+
 ### Stack button
 
 `CanvasControls` gains a **Stack** button, visible when `selectionSource.zone === 'canvas'` and ≥2 cards are selected. Sends `CREATE_CANVAS_PILE` at the selection's top-left corner (min x, min y across the selected cards); selection clears on success (consistent with post-drop behavior).
@@ -95,3 +100,4 @@ Canvas piles participate in the Alt zone-letter map like column piles (the map d
 - **Playwright e2e** (two `BrowserContext`s; dnd-kit drags via `mouse.move/down/move/up (steps:15)`):
   - A stacks three cards → B sees a pile with count 3 and only the top card; B drags a card onto the pile (nested-droppable: lands in pile, not on felt); A unstacks → both see three loose cards.
   - Whole-pile drag: reposition on canvas; drop pile frame onto discard moves all cards.
+  - Drag disambiguation: a drag starting on the top card's art moves only that card (pile count decrements, pile stays put); a drag starting on the frame/header moves the whole pile (count unchanged, position updates).
