@@ -1,12 +1,14 @@
-import { SquareCheck, Trash2 } from 'lucide-react';
+import { Layers, SquareCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CanvasControlsProps {
   onSelectAll: () => void;
   onDiscardAll: () => void;
+  onStack: () => void;
+  showStack: boolean;
 }
 
-export function CanvasControls({ onSelectAll, onDiscardAll }: CanvasControlsProps) {
+export function CanvasControls({ onSelectAll, onDiscardAll, onStack, showStack }: CanvasControlsProps) {
   return (
     <div
       data-testid="canvas-controls"
@@ -17,6 +19,18 @@ export function CanvasControls({ onSelectAll, onDiscardAll }: CanvasControlsProp
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
+      {showStack && (
+        <Button
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={onStack}
+          title="Stack selected cards into a pile"
+          aria-label="Stack selected cards"
+          data-testid="canvas-stack"
+        >
+          <Layers className="w-4 h-4" />
+        </Button>
+      )}
       <Button
         variant="ghost"
         className="h-7 w-7 p-0"

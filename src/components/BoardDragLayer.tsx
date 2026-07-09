@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
+import { computeStackOrigin } from '@/lib/canvasPileDrag';
 import {
   computeTabStops,
   computeZoneLetterMap,
@@ -202,6 +203,21 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       fromId: 'canvas',
       toZone: 'pile',
       toId: 'discard',
+    });
+  };
+
+  const handleStackSelected = () => {
+    if (selectionSource?.zone !== 'canvas' || selectedIds.size < 2) return;
+    const entries = gameState.canvasCards.filter(cc => selectedIds.has(cc.card.id));
+    if (entries.length < 2) return; // stale selection — cards left the canvas
+    const { x, y } = computeStackOrigin(entries);
+    setSelectedIds(new Set());
+    setSelectionSource(null);
+    sendAction({
+      type: 'CREATE_CANVAS_PILE',
+      cardIds: entries.map(cc => cc.card.id),
+      x,
+      y,
     });
   };
 
@@ -694,7 +710,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onStackSelected={handleStackSelected} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}

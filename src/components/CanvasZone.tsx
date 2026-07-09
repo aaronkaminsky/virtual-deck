@@ -108,6 +108,7 @@ interface CanvasZoneProps {
   onToggleSelectCanvas: (id: string) => void;
   onSelectAllCanvas: () => void;
   onDiscardAllCanvas: () => void;
+  onStackSelected: () => void;
   onDeselectAll: () => void;
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
@@ -121,7 +122,7 @@ interface CanvasZoneProps {
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -412,7 +413,12 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
       </div>
 
       {(canvasCards.length > 0 || canvasPiles.length > 0) && (
-        <CanvasControls onSelectAll={onSelectAllCanvas} onDiscardAll={onDiscardAllCanvas} />
+        <CanvasControls
+          onSelectAll={onSelectAllCanvas}
+          onDiscardAll={onDiscardAllCanvas}
+          onStack={onStackSelected}
+          showStack={selectionSource?.zone === 'canvas' && selectedIds.size >= 2}
+        />
       )}
 
       {/* EdgeArrows — inside outer viewport, outside inner canvas; stays mounted while pressed
