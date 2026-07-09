@@ -334,6 +334,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     if (maybePile?.type === 'canvas-pile' && maybePile.pileId) {
       activePileIdRef.current = maybePile.pileId;
       setActivePileId(maybePile.pileId);
+      setActiveCard(null);
       setDragging(true);
       return;
     }
