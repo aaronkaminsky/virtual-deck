@@ -111,6 +111,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
       faceUp: pile.faceUp,
       region: pile.region,
       ownerId: pile.ownerId,
+      pos: pile.pos,
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;

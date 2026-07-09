@@ -22,13 +22,20 @@ export interface Player {
   chipsInSpread: number;
 }
 
+export interface PilePos {
+  x: number;
+  y: number;
+  z: number;   // shares the loose canvas-card z-space
+}
+
 export interface Pile {
   id: string;        // "draw" | "discard" | custom
   name: string;
   cards: Card[];     // top of stack = last element
   faceUp?: boolean;  // whether the pile shows face-up by default
-  region?: "pile" | "spread";
+  region?: "pile" | "spread" | "canvas";
   ownerId?: string | null;
+  pos?: PilePos;     // present iff region === "canvas"
 }
 
 export type MaskedCard = { faceUp: false };
@@ -38,8 +45,9 @@ export interface ClientPile {
   name: string;
   cards: (Card | MaskedCard)[];
   faceUp?: boolean;
-  region?: "pile" | "spread";
+  region?: "pile" | "spread" | "canvas";
   ownerId?: string | null;
+  pos?: PilePos;
 }
 
 export interface CanvasCard {
@@ -95,7 +103,7 @@ export type ClientAction =
   | { type: "DEAL_NEXT_HAND"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
   | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string }
-  | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string }
+  | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string; toZone?: "pile" | "hand" }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "SET_CHIPS_MODE"; enabled: boolean; startingChips: number }
   | { type: "TRANSFER_CHIPS"; from: "hand" | "spread" | "pot"; to: "hand" | "spread" | "pot"; playerId: string; amount: number }
@@ -104,7 +112,10 @@ export type ClientAction =
   | { type: "PING" }
   | { type: "CELEBRATE"; kind?: EffectKind }
   | { type: "PLACE_ON_CANVAS"; cardId: string; fromZone: "hand" | "pile" | "canvas"; fromId: string; x: number; y: number }
-  | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] };
+  | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] }
+  | { type: "CREATE_CANVAS_PILE"; cardIds: string[]; x: number; y: number }
+  | { type: "UNSTACK_CANVAS_PILE"; pileId: string }
+  | { type: "MOVE_CANVAS_PILE"; pileId: string; x: number; y: number };
 
 export type SelectionSource =
   | { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean }
