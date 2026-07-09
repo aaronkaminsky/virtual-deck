@@ -85,6 +85,11 @@ export function takeSnapshot(state: GameState): void {
   }
 }
 
+export function maxCanvasZ(state: GameState): number {
+  const cardMax = state.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+  return state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+}
+
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
   if (!playerToken) throw new Error("viewFor requires a non-null playerToken");
   return {
@@ -907,6 +912,67 @@ export default class GameRoom implements Party.Server {
         });
         lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: resolvedGroupCards.map(r => r.card.id) };
 
+        break;
+      }
+      case "CREATE_CANVAS_PILE": {
+        const { cardIds, x, y } = action;
+        if (!Array.isArray(cardIds) || cardIds.length < 2) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_CARD_SET",
+            message: "Stacking requires at least 2 cards",
+          } satisfies ServerEvent));
+          break;
+        }
+        const stackIdSet = new Set(cardIds);
+        if (stackIdSet.size !== cardIds.length) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "DUPLICATE_CARD_IDS",
+            message: "cardIds must be unique",
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+        // Pre-validate all cards are loose on the canvas (before takeSnapshot)
+        const entries: CanvasCard[] = [];
+        let missingStackCardId: string | null = null;
+        for (const id of cardIds) {
+          const found = this.gameState.canvasCards.find(cc => cc.card.id === id);
+          if (!found) { missingStackCardId = id; break; }
+          entries.push(found);
+        }
+        if (missingStackCardId !== null) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: `Card ${missingStackCardId} not found on canvas`,
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        const newPileZ = maxCanvasZ(this.gameState) + 1;
+        // Ascending pre-stack z: what looked buried stays buried; last element = top of stack
+        const stacked = [...entries].sort((a, b) => a.z - b.z);
+        this.gameState.canvasCards = this.gameState.canvasCards.filter(cc => !stackIdSet.has(cc.card.id));
+        const newPileId = `canvas-pile-${crypto.randomUUID().slice(0, 8)}`;
+        this.gameState.piles.push({
+          id: newPileId,
+          name: "Stack",
+          cards: stacked.map(e => e.card),
+          faceUp: stacked[stacked.length - 1].card.faceUp,
+          region: "canvas",
+          ownerId: null,
+          pos: { x, y, z: newPileZ },
+        });
+        lastMoveArgs = { toZoneType: "pile", toZoneId: newPileId, cardIds: [...cardIds] };
         break;
       }
       case "UNDO_MOVE": {
