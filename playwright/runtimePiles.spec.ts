@@ -41,8 +41,10 @@ async function placeAndSelectOnCanvas(page: Page, n: number) {
   }
   const canvasCards = page.locator('[data-testid="canvas-inner"] > [data-card-id]');
   await expect(canvasCards).toHaveCount(n);
+  await page.waitForTimeout(400); // let drag settle and didDragRef reset
   for (let i = 0; i < n; i++) {
     await canvasCards.nth(i).click();
+    await page.waitForTimeout(50); // give click handler time to process
   }
   await expect(page.locator('[data-testid="canvas-inner"] [aria-pressed="true"]')).toHaveCount(n);
 }
