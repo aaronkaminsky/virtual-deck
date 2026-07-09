@@ -975,6 +975,37 @@ export default class GameRoom implements Party.Server {
         lastMoveArgs = { toZoneType: "pile", toZoneId: newPileId, cardIds: [...cardIds] };
         break;
       }
+      case "UNSTACK_CANVAS_PILE": {
+        const unstackIdx = this.gameState.piles.findIndex(p => p.id === action.pileId);
+        if (unstackIdx === -1) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const unstackPile = this.gameState.piles[unstackIdx];
+        if (unstackPile.region !== "canvas" || !unstackPile.pos) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_PILE_REGION",
+            message: "Only canvas piles can be unstacked",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        const fanBaseZ = maxCanvasZ(this.gameState);
+        const { x: fanX, y: fanY } = unstackPile.pos;
+        const fannedIds = unstackPile.cards.map(c => c.id);
+        unstackPile.cards.forEach((card, i) => {
+          card.faceUp = true;
+          this.gameState.canvasCards.push({ card, x: fanX + i * 24, y: fanY, z: fanBaseZ + 1 + i });
+        });
+        this.gameState.piles.splice(unstackIdx, 1);
+        lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: fannedIds };
+        break;
+      }
       case "UNDO_MOVE": {
         const remainingSnapshots = [...this.gameState.undoSnapshots];
         const snap = remainingSnapshots.pop();
