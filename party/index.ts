@@ -1179,13 +1179,40 @@ export default class GameRoom implements Party.Server {
       }
       case "MOVE_ALL_PILE_CARDS": {
         const { fromId, toId } = action;
+        const moveAllToZone = action.toZone ?? "pile";
         const srcPile = this.gameState.piles.find(p => p.id === fromId);
-        const destPile = this.gameState.piles.find(p => p.id === toId);
-        if (!srcPile || !destPile) {
+        if (!srcPile) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "PILE_NOT_FOUND",
-            message: `Pile not found: ${!srcPile ? fromId : toId}`,
+            message: `Pile not found: ${fromId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (moveAllToZone === "hand") {
+          // V4 Access Control: sender may only fill their own hand (mirrors MOVE_CARD)
+          if (toId !== senderToken) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "UNAUTHORIZED_MOVE",
+              message: "Cannot place cards in another player's hand",
+            } satisfies ServerEvent));
+            break;
+          }
+          if (srcPile.cards.length === 0) break;
+          takeSnapshot(this.gameState);
+          const movingToHand = srcPile.cards.splice(0);
+          movingToHand.forEach(card => { card.faceUp = true; });
+          (this.gameState.hands[toId] ?? (this.gameState.hands[toId] = [])).push(...movingToHand);
+          lastMoveArgs = { toZoneType: "hand", toZoneId: toId, cardIds: movingToHand.map(c => c.id) };
+          break;
+        }
+        const destPile = this.gameState.piles.find(p => p.id === toId);
+        if (!destPile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `Pile not found: ${toId}`,
           } satisfies ServerEvent));
           break;
         }
