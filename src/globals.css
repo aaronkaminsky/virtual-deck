@@ -375,15 +375,21 @@
    grip strip/click-to-select area, so it also needs pointer-events gated off
    while hidden — otherwise an invisible button silently eats the frame click. */
 @media (hover: hover) {
+  /* Hidden steady-state: fade out only starts after a 250ms grace period (so a momentary
+     exit while crossing the hover bridge doesn't cost the reveal), then a 150ms fade.
+     pointer-events flips to none on the same delayed schedule (400ms = 250ms grace + 150ms
+     fade) via a zero-duration transition, so the controls stay clickable for the entire
+     time they're still visibly fading out (1031). */
   .canvas-pile-controls {
     opacity: 0;
     pointer-events: none;
-    transition: opacity 150ms ease;
+    transition: opacity 150ms ease 250ms, pointer-events 0s linear 400ms;
   }
   [data-canvas-pile]:hover .canvas-pile-controls,
   [data-canvas-pile]:focus-within .canvas-pile-controls {
     opacity: 1;
     pointer-events: auto;
+    transition: opacity 150ms ease, pointer-events 0s linear;
   }
 }
 @media (prefers-reduced-motion: reduce) {

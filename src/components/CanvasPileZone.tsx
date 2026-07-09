@@ -171,42 +171,50 @@ export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPile
             : undefined}
         />
       </div>
-      {/* Floating controls: absolutely positioned so they don't widen the frame; revealed on pile hover/focus only (globals.css). */}
+      {/* Floating controls: absolutely positioned so they don't widen the frame; revealed on pile
+          hover/focus only (globals.css). This outer div is an invisible hover bridge — the
+          padding-bottom extends its (pointer-events-gated) hit area down to the frame's top edge,
+          so moving the pointer from the frame up into the toolbar never leaves a hovered element
+          mid-crossing (frame -> bridge -> buttons), which previously dropped :hover on
+          [data-canvas-pile] and faded the controls before the pointer arrived (1031). The visible
+          toolbar chrome (bg, blur, rounding) lives on the inner div so the bridge stays invisible. */}
       <div
-        className="absolute -top-9 -right-2 flex gap-0.5 rounded-md bg-card/80 backdrop-blur-sm p-0.5 canvas-pile-controls"
+        className="absolute -top-9 -right-2 pb-2 canvas-pile-controls"
         // Sits fully above the frame (clear of the grip strip) so a revealed-on-hover button
         // never shadows the frame's own click-to-select area. Buttons still stop propagation
         // so they never arm the whole-pile drag or bubble clicks to the frame/canvas.
         onPointerDown={e => e.stopPropagation()}
         onClick={e => e.stopPropagation()}
       >
-        <Button
-          variant="ghost"
-          className="h-6 w-6 p-0"
-          onClick={() => sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp })}
-          title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
-          aria-label={pile.faceUp !== false ? 'Face up' : 'Face down'}
-        >
-          {pile.faceUp !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-6 w-6 p-0"
-          onClick={() => sendAction({ type: 'SHUFFLE_PILE', pileId: pile.id })}
-          title="Shuffle pile"
-          aria-label="Shuffle pile"
-        >
-          <Shuffle className="w-3.5 h-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          className="h-6 w-6 p-0"
-          onClick={() => sendAction({ type: 'UNSTACK_CANVAS_PILE', pileId: pile.id })}
-          title="Unstack pile onto the canvas"
-          aria-label="Unstack pile"
-        >
-          <Ungroup className="w-3.5 h-3.5" />
-        </Button>
+        <div className="flex gap-0.5 rounded-md bg-card/80 backdrop-blur-sm p-0.5">
+          <Button
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={() => sendAction({ type: 'SET_PILE_FACE', pileId: pile.id, faceUp: !pile.faceUp })}
+            title={pile.faceUp !== false ? 'Cards land face-up (click to flip)' : 'Cards land face-down (click to flip)'}
+            aria-label={pile.faceUp !== false ? 'Face up' : 'Face down'}
+          >
+            {pile.faceUp !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          </Button>
+          <Button
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={() => sendAction({ type: 'SHUFFLE_PILE', pileId: pile.id })}
+            title="Shuffle pile"
+            aria-label="Shuffle pile"
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            className="h-6 w-6 p-0"
+            onClick={() => sendAction({ type: 'UNSTACK_CANVAS_PILE', pileId: pile.id })}
+            title="Unstack pile onto the canvas"
+            aria-label="Unstack pile"
+          >
+            <Ungroup className="w-3.5 h-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );
