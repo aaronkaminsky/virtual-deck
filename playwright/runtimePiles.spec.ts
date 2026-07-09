@@ -84,8 +84,19 @@ test.describe('runtime piles (1031)', () => {
     );
     // Non-empty pile drop → insert-position dialog
     await expect(pageB.getByText('Insert card where?')).toBeVisible();
-    await pageB.waitForTimeout(300); // let dialog open/focus settle before clicking (avoids a dismiss race)
-    await pageB.getByRole('button', { name: 'Top' }).click();
+    // Dialog.Popup's initialFocus targets the Top button; focus landing there is deterministic
+    // proof the popup mounted. But Base UI's FloatingFocusManager commits focus in a layout
+    // effect while its own interaction wiring (outside-press/click handling) attaches in a
+    // passive effect that runs a frame later — clicking in that gap gets silently swallowed
+    // (verified via WS frame capture: no MOVE_CARD is ever sent when the click misses).
+    // Waiting two animation frames after focus lands, instead of a raw sleep, ties the wait to
+    // that passive-effect flush rather than an arbitrary duration.
+    const topButton = pageB.getByRole('button', { name: 'Top' });
+    await expect(topButton).toBeFocused();
+    await pageB.evaluate(() => new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    }));
+    await topButton.click();
     await expect(pileB.locator('[data-testid^="canvas-pile-count-"]')).toHaveText('4');
     await expect(pileA.locator('[data-testid^="canvas-pile-count-"]')).toHaveText('4');
 
