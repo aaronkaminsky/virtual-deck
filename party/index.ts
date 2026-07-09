@@ -1259,6 +1259,8 @@ export default class GameRoom implements Party.Server {
         break;
     }
 
+    this.pruneEmptyCanvasPiles();
+
     await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_IDLE_MS);
     await this.persist();
     this.broadcastState();
@@ -1299,6 +1301,12 @@ export default class GameRoom implements Party.Server {
 
   private async persist() {
     await this.room.storage.put("gameState", this.gameState);
+  }
+
+  private pruneEmptyCanvasPiles(): void {
+    this.gameState.piles = this.gameState.piles.filter(
+      p => p.region !== "canvas" || p.cards.length > 0
+    );
   }
 
   private gatherAllCardsToDraw(): void {
