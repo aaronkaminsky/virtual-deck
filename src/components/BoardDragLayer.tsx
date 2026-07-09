@@ -5,10 +5,9 @@ import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } 
 import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
-import { CardBack } from './CardBack';
+import { CanvasPileVisual } from './CanvasPileZone';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
 import { computeStackOrigin, resolvePileDrop } from '@/lib/canvasPileDrag';
 import {
@@ -765,9 +764,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
             {/* Shadow wrapper is outside the opacity div so it renders at full opacity (CSS opacity composites box-shadow) */}
             {activePile ? (
-              <div className="relative" style={{ opacity: 0.7 }}>
-                <CardBack />
-                <Badge className="absolute -bottom-2 -right-2">{activePile.cards.length}</Badge>
+              <div style={{ opacity: 0.7 }}>
+                <CanvasPileVisual pile={activePile} />
               </div>
             ) : activeCard ? (
               <div style={{ boxShadow: dragCoversSomeCard ? STACK_SHADOW : undefined, borderRadius: dragCoversSomeCard ? 6 : undefined }}>

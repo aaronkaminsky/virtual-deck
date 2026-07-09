@@ -122,14 +122,23 @@ test.describe('runtime piles (1031)', () => {
     const pile = page.locator('[data-canvas-pile]');
     await expect(pile).toHaveCount(1);
 
-    // Frame-handle drag repositions the pile (count unchanged).
-    // The handle is targeted by coordinates: the header row's label area (left side),
-    // clear of the control buttons on the right.
+    // Clicking the grip strip selects the whole stack (frame-click select, req #4).
+    // The top-card DraggableCard has no aria-pressed attribute (unlike CanvasDraggableCard),
+    // so the observable signal is the frame's selection ring class instead.
+    const handle = pile.locator('[data-testid^="canvas-pile-handle-"]');
+    await handle.click();
+    await expect(pile).toHaveClass(/ring-primary/);
+    // Clicking again toggles the selection off (select-all toggle behavior).
+    await handle.click();
+    await expect(pile).not.toHaveClass(/ring-primary/);
+
+    // Frame-handle drag repositions the pile (count unchanged). Target the handle's
+    // own boundingBox center — robust to the slimmer grip-strip geometry.
     const before = await pile.boundingBox();
-    if (!before) throw new Error('no pile box');
-    // Grab the handle's label area (left side), clear of the control buttons
+    const handleBox = await handle.boundingBox();
+    if (!before || !handleBox) throw new Error('no pile/handle box');
     await pointerDrag(page,
-      { x: before.x + 12, y: before.y + 10 },
+      { x: handleBox.x + handleBox.width / 2, y: handleBox.y + handleBox.height / 2 },
       { x: before.x + 200, y: before.y + 120 },
     );
     await expect(async () => {

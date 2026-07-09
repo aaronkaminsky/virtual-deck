@@ -173,9 +173,9 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
   // Uses getCardDimensions() so mobile card sizes (42×59) are accounted for
   const { innerW, innerH, contentMaxX, contentMaxY } = useMemo(() => {
     const { w: cardW, h: cardH } = getCardDimensions();
-    // Pile frames render slightly larger than a card: padding + header strip.
-    const PILE_FRAME_W = cardW + 16;
-    const PILE_FRAME_H = cardH + 40;
+    // Pile frames render slightly larger than a card: padding + grip strip + stacked-edge overhang.
+    const PILE_FRAME_W = cardW + 12;
+    const PILE_FRAME_H = cardH + 28;
     const xs = [
       ...canvasCards.map(c => c.x + cardW),
       ...canvasPiles.map(p => (p.pos?.x ?? 0) + PILE_FRAME_W),

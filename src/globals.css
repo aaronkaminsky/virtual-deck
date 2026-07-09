@@ -368,6 +368,28 @@
   .zone-controls { transition: none; }
 }
 
+/* Same hover/focus-reveal pattern as .zone-controls, scoped to the pile frame
+   itself (not the whole canvas felt) — canvas-pile controls only reveal when
+   the pile is hovered/focused, not on any canvas hover (1031 polish).
+   Unlike .zone-controls, this floating toolbar overhangs the frame's own
+   grip strip/click-to-select area, so it also needs pointer-events gated off
+   while hidden — otherwise an invisible button silently eats the frame click. */
+@media (hover: hover) {
+  .canvas-pile-controls {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+  [data-canvas-pile]:hover .canvas-pile-controls,
+  [data-canvas-pile]:focus-within .canvas-pile-controls {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-pile-controls { transition: none; }
+}
+
 /* Idle attract mode (1017) — critter choreography */
 .attract-critter {
   will-change: transform;
