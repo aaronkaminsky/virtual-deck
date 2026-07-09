@@ -744,7 +744,7 @@ export default class GameRoom implements Party.Server {
         // Pre-validate source contains cardId (before takeSnapshot)
         let canvasCard: Card | undefined;
         // Compute maxZ before any splice so canvas→canvas repositioning always increments z
-        const maxZBeforeSplice = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        const maxZBeforeSplice = maxCanvasZ(this.gameState);
         if (fromZone === "hand") {
           const hand = this.gameState.hands[fromId];
           const idx = hand?.findIndex(c => c.id === cardId) ?? -1;
@@ -843,7 +843,7 @@ export default class GameRoom implements Party.Server {
 
         // V5: resolve all cardIds in source (read-only — no mutation yet)
         // Compute maxZ BEFORE any splice so pre-splice z values are captured
-        const maxZGroup = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        const maxZGroup = maxCanvasZ(this.gameState);
 
         type ResolvedGroupCard = { card: Card; preDragZ: number; x: number; y: number };
         const resolvedGroupCards: ResolvedGroupCard[] = [];
@@ -1004,6 +1004,36 @@ export default class GameRoom implements Party.Server {
         });
         this.gameState.piles.splice(unstackIdx, 1);
         lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: fannedIds };
+        break;
+      }
+      case "MOVE_CANVAS_PILE": {
+        const movePile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!movePile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (movePile.region !== "canvas" || !movePile.pos) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_PILE_REGION",
+            message: "Only canvas piles can be repositioned",
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isFinite(action.x) || !Number.isFinite(action.y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        movePile.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
         break;
       }
       case "UNDO_MOVE": {
