@@ -142,7 +142,12 @@ export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPile
         cursor: 'grab',
       }}
       className={cn(
-        'rounded-lg border bg-secondary/60 p-1',
+        // Asymmetric padding: the stacked-edge layers peek 6px bottom-right of the card, and the
+        // count badge overhangs a further 2px beyond that (-bottom-2/-right-2 vs. the edges' 6px
+        // offset) — pr-3/pb-3 (12px) exactly compensates (pl-1/pt-1's 4px + 6px edge + 2px badge)
+        // so the frame outline reads as a uniform margin around the full composite, not just the
+        // card (1031 follow-up).
+        'rounded-lg border bg-secondary/60 pl-1 pt-1 pr-3 pb-3',
         isOver ? 'border-primary' : 'border-border',
         isTopCardSelected && 'ring-2 ring-primary ring-offset-2'
       )}
