@@ -63,6 +63,7 @@ export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPile
       data-testid={`canvas-pile-${pile.id}`}
       {...listeners}
       {...attributes}
+      aria-label={`Move ${pile.name} pile (${pile.cards.length} cards)`}
       style={{
         position: 'absolute',
         left: pile.pos.x,
