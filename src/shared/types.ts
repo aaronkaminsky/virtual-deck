@@ -102,7 +102,7 @@ export type ClientAction =
   | { type: "DEAL_CARDS"; cardsPerPlayer: number }
   | { type: "DEAL_NEXT_HAND"; cardsPerPlayer: number }
   | { type: "SHUFFLE_PILE"; pileId: string }
-  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string }
+  | { type: "PLAY_CARD_SET"; cardIds: string[]; fromZone?: "hand" | "pile" | "canvas"; fromId: string; toZone: "pile" | "hand"; toId: string; insertPosition?: 'top' | 'bottom' | 'random' }
   | { type: "MOVE_ALL_PILE_CARDS"; fromId: string; toId: string; toZone?: "pile" | "hand" }
   | { type: "SET_HAND_REVEALED"; revealed: boolean }
   | { type: "SET_CHIPS_MODE"; enabled: boolean; startingChips: number }

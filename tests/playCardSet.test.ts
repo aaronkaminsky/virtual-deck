@@ -369,3 +369,85 @@ describe("PLAY_CARD_SET LAST_MOVE broadcast", () => {
     expect(msgs[0].cardIds).toEqual(["A-s", "2-s"]);
   });
 });
+
+describe("PLAY_CARD_SET insertPosition (1039)", () => {
+  let mockRoom: ReturnType<typeof makeMockRoom>;
+  let room: GameRoom;
+  let sender: ReturnType<typeof makeMockConnection>;
+
+  beforeEach(() => {
+    mockRoom = makeMockRoom();
+    room = new GameRoom(mockRoom);
+    sender = makeMockConnection("player-1");
+  });
+
+  // Hand holds the set; discard pile pre-seeded with existing cards.
+  function setupHandAndDiscard(setIds: string[], existingIds: string[]): void {
+    room.gameState = makeStateWithPileCards("player-1", "discard", existingIds.map(id => makeCard(id)));
+    room.gameState.hands["player-1"] = setIds.map(id => makeCard(id));
+  }
+
+  async function playSet(cardIds: string[], insertPosition?: "top" | "bottom" | "random") {
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds,
+      fromId: "player-1",
+      toZone: "pile",
+      toId: "discard",
+      ...(insertPosition ? { insertPosition } : {}),
+    }), sender);
+  }
+
+  it("bottom inserts the set at the bottom preserving cardIds order", async () => {
+    setupHandAndDiscard(["A-s", "K-h"], ["2-c", "3-d"]);
+    await playSet(["A-s", "K-h"], "bottom");
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards.map(c => c.id)).toEqual(["A-s", "K-h", "2-c", "3-d"]);
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+  });
+
+  it("random places every card and preserves relative order of pre-existing cards", async () => {
+    setupHandAndDiscard(["A-s", "K-h", "Q-d"], ["2-c", "3-d", "4-h"]);
+    await playSet(["A-s", "K-h", "Q-d"], "random");
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards).toHaveLength(6);
+    expect(new Set(discard.cards.map(c => c.id))).toEqual(
+      new Set(["A-s", "K-h", "Q-d", "2-c", "3-d", "4-h"])
+    );
+    // splice-insert never reorders what was already there
+    const existingInOrder = discard.cards.map(c => c.id).filter(id => ["2-c", "3-d", "4-h"].includes(id));
+    expect(existingInOrder).toEqual(["2-c", "3-d", "4-h"]);
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+  });
+
+  it("random onto an empty pile places all cards (no crash on length 0)", async () => {
+    setupHandAndDiscard(["A-s", "K-h"], []);
+    await playSet(["A-s", "K-h"], "random");
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(new Set(discard.cards.map(c => c.id))).toEqual(new Set(["A-s", "K-h"]));
+  });
+
+  it("omitted insertPosition appends to the top (existing behavior)", async () => {
+    setupHandAndDiscard(["A-s"], ["2-c"]);
+    await playSet(["A-s"]);
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards.map(c => c.id)).toEqual(["2-c", "A-s"]);
+  });
+
+  it("insertPosition is ignored for hand destinations", async () => {
+    setupHandAndDiscard([], ["2-c", "3-d"]);
+    await room.onMessage(JSON.stringify({
+      type: "PLAY_CARD_SET",
+      cardIds: ["2-c"],
+      fromZone: "pile",
+      fromId: "discard",
+      toZone: "hand",
+      toId: "player-1",
+      insertPosition: "bottom",
+    }), sender);
+    // Appended to the hand end, not unshifted
+    expect(room.gameState.hands["player-1"].map(c => c.id)).toEqual(["2-c"]);
+    const discard = room.gameState.piles.find(p => p.id === "discard")!;
+    expect(discard.cards.map(c => c.id)).toEqual(["3-d"]);
+  });
+});

@@ -8,6 +8,7 @@ import { DraggableCard } from './DraggableCard';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { PileShuffleAnimation } from './PileShuffleAnimation';
+import { PileDropFlaps } from './PileDropFlaps';
 import { cn } from '@/lib/utils';
 
 interface CanvasPileZoneProps {
@@ -19,6 +20,7 @@ interface CanvasPileZoneProps {
   onToggleSelect?: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   selectedIds?: Set<string>;
   highlightedMove?: LastMoveHighlight | null;
+  flapDragActive?: boolean;
 }
 
 // Two buried-card layers peeking out bottom-right of the top card — reads as "stack"
@@ -62,7 +64,7 @@ export function CanvasPileVisual({ pile, topCard }: { pile: ClientPile; topCard?
   );
 }
 
-export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Map(), onSelectAll, onToggleSelect, selectedIds, highlightedMove }: CanvasPileZoneProps) {
+export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Map(), onSelectAll, onToggleSelect, selectedIds, highlightedMove, flapDragActive = false }: CanvasPileZoneProps) {
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -221,6 +223,7 @@ export function CanvasPileZone({ pile, sendAction, draggingCardId, shufflingPile
           </Button>
         </div>
       </div>
+      <PileDropFlaps pileId={pile.id} pileIsOver={isOver} dragEligible={flapDragActive} />
     </div>
   );
 }

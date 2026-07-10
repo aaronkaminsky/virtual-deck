@@ -47,9 +47,10 @@ interface BoardViewProps {
   onDealCountChange: (v: string) => void;
   setCursorPos: (pos: CursorPos | null) => void;
   konamiActive: boolean;
+  flapDragActive: boolean;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive, flapDragActive }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const canvasPiles = gameState.piles.filter(p => p.region === 'canvas');
@@ -133,14 +134,14 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
         <div className="flex-1 flex items-start mt-1 pr-4 gap-2">
           <div className="flex-shrink-0 self-stretch flex flex-col justify-center gap-2 py-2 px-2 bg-card">
             {pilePiles.map((pile) => (
-              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} />
+              <PileZone key={pile.id} pile={pile} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onSelectAll={onSelectAll} onToggleSelect={onToggleSelect} selectedIds={selectedIds} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get(`pile-${pile.id}`) : undefined} onCursorChange={() => setCursorPos({ zoneId: `pile-${pile.id}`, index: 0 })} flapDragActive={flapDragActive} />
             ))}
             {gameState.chipsEnabled && (
               <PotZone pot={gameState.pot} myPlayerId={gameState.myPlayerId} sendAction={sendAction} />
             )}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
-            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onStackSelected={onStackSelected} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.x - b.x); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} canvasPiles={canvasPiles} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onToggleSelect={onToggleSelect} onSelectAll={onSelectAll} />
+            <CanvasZone canvasCards={gameState.canvasCards} canvasRef={canvasRef} selectedIds={selectedIds} selectionSource={selectionSource} groupIds={groupIds} activeCardId={activeCardId} dragDelta={dragDelta} onToggleSelectCanvas={onToggleSelectCanvas} onSelectAllCanvas={onSelectAllCanvas} onDiscardAllCanvas={onDiscardAllCanvas} onStackSelected={onStackSelected} onDeselectAll={onDeselectAll} highlightedMove={highlightedMove} cursorCardId={cursorCardId ?? undefined} shortcutKey={altHeld ? zoneLetterMap.get('canvas') : undefined} onCursorChange={(cardId) => { const sorted = [...gameState.canvasCards].sort((a, b) => a.x - b.x); const idx = sorted.findIndex(cc => cc.card.id === cardId); if (idx !== -1) setCursorPos({ zoneId: 'canvas', index: idx }); }} canvasPiles={canvasPiles} sendAction={sendAction} draggingCardId={draggingCardId} shufflingPileIds={shufflingPileIds} onToggleSelect={onToggleSelect} onSelectAll={onSelectAll} flapDragActive={flapDragActive} />
           </div>
         </div>
 

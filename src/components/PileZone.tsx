@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DraggableCard } from './DraggableCard';
 import { CardBack } from './CardBack';
 import { PileShuffleAnimation } from './PileShuffleAnimation';
+import { PileDropFlaps } from './PileDropFlaps';
 import { cn } from '@/lib/utils';
 
 interface PileZoneProps {
@@ -20,9 +21,10 @@ interface PileZoneProps {
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
+  flapDragActive?: boolean;
 }
 
-export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Map(), onSelectAll, onToggleSelect, onCursorChange, selectedIds, highlightedMove, cursorCardId, shortcutKey }: PileZoneProps) {
+export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = new Map(), onSelectAll, onToggleSelect, onCursorChange, selectedIds, highlightedMove, cursorCardId, shortcutKey, flapDragActive = false }: PileZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `pile-${pile.id}`,
     data: { toZone: 'pile' as const, toId: pile.id },
@@ -126,6 +128,7 @@ export function PileZone({ pile, sendAction, draggingCardId, shufflingPileIds = 
         )}
         {'id' in (topCard ?? {}) ? <DraggableCard card={topCard as Card} fromZone="pile" fromId={pile.id} isSelected={selectedIds?.has((topCard as Card).id) ?? false} hasCursor={cursorCardId !== undefined && 'id' in (topCard ?? {}) && cursorCardId === (topCard as Card).id} /> : topCard && <CardBack />}
         {!isEmpty && <Badge className="absolute -bottom-2 -right-2">{pile.cards.length}</Badge>}
+        {!isEmpty && <PileDropFlaps pileId={pile.id} pileIsOver={isOver} dragEligible={flapDragActive} />}
       </div>
     </div>
   );
