@@ -586,6 +586,9 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           selectionSource?.zone === 'canvas' ? 'canvas'
           : selectionSource?.zone === 'pile' ? selectionSource.zoneId
           : playerId;
+        // Spread zones always insert at top (GAP-02) — mirror resolvePileDropAction's
+        // single-card guard so a flap position can't sneak through on the set path.
+        const targetIsSpread = gameState.piles.find(p => p.id === overData!.toId)?.region === 'spread';
         sendAction({
           type: 'PLAY_CARD_SET',
           cardIds: [...selectedIds],
@@ -593,8 +596,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           fromId: setFromId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
-          // 1039: flap drops carry bottom/random; undefined (plain drop / hand dest) = top
-          insertPosition: overData!.insertPosition,
+          // 1039: flap drops carry bottom/random; undefined (plain drop / hand dest / spread) = top
+          insertPosition: targetIsSpread ? undefined : overData!.insertPosition,
         });
       }
       return;

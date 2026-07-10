@@ -84,6 +84,16 @@ describe("resolvePileDropAction", () => {
     });
     expect(action).toEqual(expect.objectContaining({ insertPosition: "top" }));
   });
+
+  it("non-spread pile with isIntraSpreadReorder set: flag is ignored outside spread region (pins the early-return to spread only, not to the flag alone)", () => {
+    const action = resolvePileDropAction({
+      ...baseArgs,
+      targetPile: { cards: [makeCard("2-c")] },
+      insertPosition: "bottom",
+      isIntraSpreadReorder: true,
+    });
+    expect(action).toEqual(expect.objectContaining({ type: "MOVE_CARD", insertPosition: "bottom" }));
+  });
 });
 
 describe("isFlapEligibleDrag", () => {
@@ -131,11 +141,29 @@ describe("isFlapEligibleDrag", () => {
 });
 
 describe("flapPlacement", () => {
-  it("renders below when the row fits above the viewport bottom", () => {
-    expect(flapPlacement(600, 720)).toBe("below");
+  it("renders below when the row fits within the bounds", () => {
+    expect(flapPlacement({ anchorTop: 500, anchorBottom: 600, boundsTop: 0, boundsBottom: 720 })).toBe("below");
   });
 
-  it("flips above when the row would overflow the viewport bottom", () => {
-    expect(flapPlacement(720 - FLAP_ROW_HEIGHT, 720)).toBe("above");
+  it("flips above when below is clipped by a bounds bottom above the viewport (e.g. overflow-hidden canvas)", () => {
+    // Row would fit against window.innerHeight (720) but not against the clipping
+    // ancestor's bottom edge (620) — must flip to 'above' rather than render clipped-invisible.
+    expect(flapPlacement({ anchorTop: 500, anchorBottom: 600, boundsTop: 0, boundsBottom: 620 })).toBe("above");
+  });
+
+  it("returns 'none' when the row fits in neither direction", () => {
+    expect(flapPlacement({ anchorTop: 30, anchorBottom: 600, boundsTop: 0, boundsBottom: 620 })).toBe("none");
+  });
+
+  it("exact-fit boundary counts as fitting below", () => {
+    expect(flapPlacement({
+      anchorTop: 500, anchorBottom: 680, boundsTop: 0, boundsBottom: 680 + FLAP_ROW_HEIGHT,
+    })).toBe("below");
+  });
+
+  it("exact-fit boundary counts as fitting above", () => {
+    expect(flapPlacement({
+      anchorTop: FLAP_ROW_HEIGHT, anchorBottom: 600, boundsTop: 0, boundsBottom: 600,
+    })).toBe("above");
   });
 });

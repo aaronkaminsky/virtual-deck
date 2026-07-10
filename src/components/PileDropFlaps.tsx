@@ -36,6 +36,27 @@ function Flap({
   );
 }
 
+// Walks up from a clipping-check starting element to find the tightest vertical bounds
+// imposed by clipping ancestors (any ancestor whose computed overflowY/overflow isn't
+// 'visible' — e.g. CanvasZone's overflow-hidden viewport). getBoundingClientRect() ignores
+// CSS clipping, so flapPlacement needs these bounds explicitly rather than trusting the
+// anchor's own rect against the raw viewport.
+function computeClipBounds(start: HTMLElement): { top: number; bottom: number } {
+  let top = 0;
+  let bottom = window.innerHeight;
+  let ancestor: HTMLElement | null = start.parentElement;
+  while (ancestor) {
+    const style = window.getComputedStyle(ancestor);
+    if (style.overflowY !== 'visible' || style.overflow !== 'visible') {
+      const rect = ancestor.getBoundingClientRect();
+      bottom = Math.min(bottom, rect.bottom);
+      top = Math.max(top, rect.top);
+    }
+    ancestor = ancestor.parentElement;
+  }
+  return { top, bottom };
+}
+
 // Drag-over placement flaps (1039): while an eligible card drag hovers the pile,
 // Bottom/Random drop targets slide out against it; a plain drop on the pile
 // itself inserts at top. `armed` keeps the flaps mounted while the pointer crosses
@@ -46,7 +67,13 @@ function Flap({
 // Overlap is safe: isOver derives from the single collision result, so exactly one
 // of pile/flap is over at any point in the band. Flap rects are re-measured on every
 // arm/disarm transition (see the measure effect below), so a disarmed flap's rect is
-// cleared and can never swallow a drop the player didn't aim at.
+// cleared and can never swallow a drop the player didn't aim at. Belt-and-braces:
+// both droppables are also `disabled` unless armed, so dnd-kit excludes them from
+// collision detection entirely while disarmed — a phantom rect swallowing a drop is
+// impossible by construction, not just by the re-measure cleanup. Placement is
+// clip-aware (see computeClipBounds/flapPlacement): if neither below nor above fits
+// within the nearest clipping ancestor's bounds, the flaps do not arm at all, since an
+// armed-but-fully-clipped row would be an invisible yet still-active drop target.
 export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlapsProps) {
   const [armed, setArmed] = useState(false);
   const [placement, setPlacement] = useState<'below' | 'above'>('below');
@@ -56,10 +83,12 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
   const bottomFlap = useDroppable({
     id: `pile-flap-${pileId}-bottom`,
     data: { toZone: 'pile' as const, toId: pileId, insertPosition: 'bottom' as const },
+    disabled: !armed,
   });
   const randomFlap = useDroppable({
     id: `pile-flap-${pileId}-random`,
     data: { toZone: 'pile' as const, toId: pileId, insertPosition: 'random' as const },
+    disabled: !armed,
   });
   const flapIsOver = bottomFlap.isOver || randomFlap.isOver;
 
@@ -69,9 +98,21 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
     } else if (pileIsOver) {
       const anchor = wrapperRef.current?.parentElement;
       if (anchor) {
-        setPlacement(flapPlacement(anchor.getBoundingClientRect().bottom, window.innerHeight));
+        const anchorRect = anchor.getBoundingClientRect();
+        const bounds = computeClipBounds(anchor);
+        const nextPlacement = flapPlacement({
+          anchorTop: anchorRect.top,
+          anchorBottom: anchorRect.bottom,
+          boundsTop: bounds.top,
+          boundsBottom: bounds.bottom,
+        });
+        if (nextPlacement === 'none') {
+          setArmed(false);
+        } else {
+          setPlacement(nextPlacement);
+          setArmed(true);
+        }
       }
-      setArmed(true);
     } else if (!flapIsOver) {
       setArmed(false);
     }

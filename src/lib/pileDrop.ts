@@ -51,7 +51,20 @@ export function isFlapEligibleDrag(args: {
   return true;
 }
 
-// Flap row sits below the pile unless it would overflow the viewport bottom.
-export function flapPlacement(pileBottom: number, viewportHeight: number): 'below' | 'above' {
-  return pileBottom + FLAP_ROW_HEIGHT >= viewportHeight ? 'above' : 'below';
+// Flap row sits below the pile unless that would clip it against the nearest clipping
+// ancestor (e.g. the overflow-hidden canvas viewport) — getBoundingClientRect() ignores
+// CSS clipping, so an off-viewport-only check would leave the row invisible yet still an
+// active drop target. 'above' is tried next; 'none' means neither placement fits, so the
+// caller must not arm (no invisible drop target). Boundary touch (fits exactly) counts as
+// fitting in both directions — hence the inclusive <=/>=.
+export function flapPlacement(args: {
+  anchorTop: number;
+  anchorBottom: number;
+  boundsTop: number;
+  boundsBottom: number;
+}): 'below' | 'above' | 'none' {
+  const { anchorTop, anchorBottom, boundsTop, boundsBottom } = args;
+  if (anchorBottom + FLAP_ROW_HEIGHT <= boundsBottom) return 'below';
+  if (anchorTop - FLAP_ROW_HEIGHT >= boundsTop) return 'above';
+  return 'none';
 }

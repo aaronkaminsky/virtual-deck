@@ -103,6 +103,15 @@ test.describe('pile drop placement flaps (1039)', () => {
     // dnd-kit's live-region announcement before releasing: collision updates are
     // rAF-throttled, so an immediate mouse.up can race ahead of the phantom
     // becoming `over` and mask the regression.
+    //
+    // Stability assumptions for this gate: (a) it asserts dnd-kit's DEFAULT
+    // announcement wording — this breaks into a timeout, not a false pass, if a
+    // custom `announcements` prop is ever added or the wording changes on a
+    // dnd-kit upgrade; (b) the away-point (mid-canvas) must be over a droppable
+    // so "no longer over" can only fire after the phantom position has actually
+    // been processed, not just because the pointer left everything; (c) the
+    // return path back to the flap's old position must not cross the pile rect
+    // itself, which would re-arm the flaps and defeat the phantom-rect check.
     await page.mouse.move(flapBox.x + flapBox.width / 2, flapBox.y + flapBox.height / 2, { steps: 15 });
     await expect(page.getByRole('status')).toContainText('no longer over a droppable area');
     await page.mouse.up();
