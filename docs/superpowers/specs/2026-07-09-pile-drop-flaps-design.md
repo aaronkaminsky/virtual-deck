@@ -7,7 +7,8 @@
 ## Interaction
 
 - Dropping a card on a non-empty pile sends `MOVE_CARD` with `insertPosition: 'top'` immediately — no dialog, ever. The dialog is removed entirely.
-- While a single-card drag hovers over a non-empty, non-spread pile, two labeled flaps slide out flush against the pile: **Bottom** and **Random**. Dropping on a flap sends the move with that `insertPosition`.
+- While a card drag (single card or multi-card set) hovers over a non-empty, non-spread pile, two labeled flaps slide out flush against the pile: **Bottom** and **Random**. Dropping on a flap places the card(s) at that position.
+- Multi-card set semantics: **Bottom** inserts the set at the bottom preserving its order (mirror of top); **Random** inserts each card independently at a random position ("shuffle them in").
 - Flaps render below the pile by default, flipped above when the pile is too close to its container's bottom edge for the flap row to fit.
 - Flaps are touch-friendly: ≥40px tall, the row slightly wider than the pile, centered on it.
 - Because the card drops directly to its position, it is never momentarily revealed on top of a face-up pile — the hidden-information semantics of the current dialog are preserved.
@@ -23,22 +24,23 @@
 
 - Flap droppable IDs: `pile-flap-{pileId}-bottom` and `pile-flap-{pileId}-random`, with data `{ toZone: 'pile', toId: pileId, insertPosition }`.
 - The IDs start with `pile-`, so the existing `customCollision` pile tier in `BoardDragLayer.tsx` picks them up with no filter changes.
-- In `handleDragEnd`, the non-empty-pile branch sends `MOVE_CARD` with `overData.insertPosition ?? 'top'` instead of setting `pendingMove`.
+- In `handleDragEnd`, the non-empty-pile branch sends `MOVE_CARD` with `overData.insertPosition ?? 'top'` instead of setting `pendingMove`; the `isMultiCardSet` branch passes `overData.insertPosition` through on `PLAY_CARD_SET` the same way.
 - Delete: `pendingMove` state, `PendingMove` type, `sendPendingMove`, `topButtonRef`, and the Base UI `Dialog.Root` block.
-- The flap UI is a shared component rendered by both `PileZone` (pile column) and `CanvasPileZone` (canvas piles). `BoardDragLayer` passes down whether the active drag is a single-card drag (flaps are not shown for whole-pile drags or multi-select group drags).
-- No server changes: `MOVE_CARD.insertPosition` handling (including Fisher-Yates random insert) already exists.
+- The flap UI is a shared component rendered by both `PileZone` (pile column) and `CanvasPileZone` (canvas piles). `BoardDragLayer` passes down whether the active drag is flap-eligible (flaps are not shown for whole-pile drags or masked-pile group drags).
+- Server: `MOVE_CARD.insertPosition` handling (including random insert) already exists. `PLAY_CARD_SET` gains an optional `insertPosition?: 'top' | 'bottom' | 'random'` field (default `'top'`), changing only the final insertion step: bottom = unshift the set in order; random = independent random index per card. Validation, snapshot/undo, and faceUp logic are position-agnostic and unchanged.
 
 ## Scope guards (unchanged behavior)
 
 - **Empty piles:** instant top, no flaps (bottom/random are meaningless).
 - **Spread zones:** always insert at top, no flaps (GAP-02 behavior preserved).
-- **Multi-card group drops:** still `PLAY_CARD_SET` with no position choice — the dialog never applied to group drops either.
+- **Masked-pile group drops:** dragging a fully-selected face-down pile (client lacks card IDs) still goes through `MOVE_ALL_PILE_CARDS` with no position choice; flaps stay hidden for this path.
 - **Keyboard moves:** already send `MOVE_CARD` without `insertPosition` (server defaults to top); unchanged.
 - **Intra-pile drops:** dropping a pile's own top card on its bottom/random flap sends a same-pile `MOVE_CARD`, which the server already handles (same as the dialog path today).
 
 ## Testing
 
-- Rewrite `tests/boardDragLayerDialog.test.ts` as flap-behavior tests (Wave 0 RED scaffolds before implementation, per TDD convention): plain drop sends top immediately; flap drop sends bottom/random; no dialog renders; flaps hidden for empty piles, spread zones, group drags, whole-pile drags.
+- Rewrite `tests/boardDragLayerDialog.test.ts` as flap-behavior tests (Wave 0 RED scaffolds before implementation, per TDD convention): plain drop sends top immediately; flap drop sends bottom/random (single card and multi-card set); no dialog renders; flaps hidden for empty piles, spread zones, whole-pile drags, masked-pile group drags.
+- Server tests for `PLAY_CARD_SET.insertPosition`: bottom preserves set order at the bottom; random places every card (deck size invariant) — extend `tests/playCardSet.test.ts`.
 - Update the dialog-clicking portions of `tests/canvasCards.test.ts` and `playwright/runtimePiles.spec.ts`.
 - Add a Playwright case for drop-on-flap using the `mouse.move/down/move/up (steps:15)` convention.
 
