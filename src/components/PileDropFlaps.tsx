@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useDndContext, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import { FLAP_ROW_HEIGHT, flapPlacement } from '@/lib/pileDrop';
 
@@ -37,15 +37,20 @@ function Flap({
 }
 
 // Drag-over placement flaps (1039): while an eligible card drag hovers the pile,
-// Bottom/Random drop targets slide out flush against it; a plain drop on the pile
+// Bottom/Random drop targets slide out against it; a plain drop on the pile
 // itself inserts at top. `armed` keeps the flaps mounted while the pointer crosses
-// from the pile onto a flap (the row is flush, so there is no dead gap) and disarms
-// when the pointer leaves both. The refs only attach while armed, so an unarmed
-// flap has no rect and can never swallow a drop the player didn't aim at.
+// from the pile onto a flap and disarms when the pointer leaves both. The flap
+// rects deliberately overlap the pile edge by 2px so the isOver handoff has no
+// dead band — a merely-flush layout left a 1px sub-pixel-rounding gap where both
+// pileIsOver and flapIsOver read false for a tick, disarming the flaps mid-crossing.
+// Overlap is safe: isOver derives from the single collision result, so exactly one
+// of pile/flap is over at any point in the band. The refs only attach while armed,
+// so an unarmed flap has no rect and can never swallow a drop the player didn't aim at.
 export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlapsProps) {
   const [armed, setArmed] = useState(false);
   const [placement, setPlacement] = useState<'below' | 'above'>('below');
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { measureDroppableContainers } = useDndContext();
 
   const bottomFlap = useDroppable({
     id: `pile-flap-${pileId}-bottom`,
@@ -71,6 +76,15 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
     }
   }, [dragEligible, pileIsOver, flapIsOver]);
 
+  // The flap nodes only attach to their droppables after arming — mid-drag, after
+  // dnd-kit's registration/drag-start measurements have already run — so their rects
+  // stay null (and isOver can never fire) unless we explicitly request a measure.
+  useEffect(() => {
+    if (armed) {
+      measureDroppableContainers([`pile-flap-${pileId}-bottom`, `pile-flap-${pileId}-random`]);
+    }
+  }, [armed, measureDroppableContainers, pileId]);
+
   if (!dragEligible) return null;
 
   return (
@@ -80,7 +94,7 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
       ref={wrapperRef}
       className={cn(
         'absolute left-1/2 -translate-x-1/2 z-50 pointer-events-none',
-        placement === 'below' ? 'top-full' : 'bottom-full'
+        placement === 'below' ? 'top-[calc(100%-4px)]' : 'bottom-[calc(100%-4px)]'
       )}
     >
       {armed && (
