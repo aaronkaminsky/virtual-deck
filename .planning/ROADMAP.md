@@ -29,6 +29,7 @@
 - ✅ **v1.24 Lobby & Overflow Polish** — join-by-URL lobby redesign, canvas overflow false-positive fix, autojoin flash fix — 1002, 1005 (shipped 2026-06-26)
 - ✅ **v1.25 Idle Attract Mode** — Server idle alarm (3min / 5min repeat), synced critter broadcast via EFFECT, three antics (peek-a-boo, nap, house of cards) with Lottie + CSS overlay, attract sound, e2e verified — 1017 (shipped 2026-07-02)
 - ✅ **v1.26 Physical Deck Gap Review** — Structured analysis of physical-table affordances vs Virtual Deck; 24 gaps assessed, 6 new backlog items (1030–1035), 1018 folded into 1033 — 999.27 (shipped 2026-07-07)
+- ✅ **v1.27 Runtime Piles** — Stack loose canvas cards into a real pile (`region: "canvas"` + pos) with full shuffle/face/insert/masking semantics; Stack button on canvas selection; unstack fans back to loose cards; whole-pile drag repositions on canvas or empties into pile/spread/own hand; emptied canvas piles auto-prune. Design: docs/superpowers/specs/2026-07-08-runtime-piles-design.md — 1031 (shipped 2026-07-09)
 
 ## Phases
 

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { ClientCanvasCard, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { ClientCanvasCard, ClientPile, ClientAction, LastMoveHighlight, SelectionSource } from '@/shared/types';
 import { CanvasControls } from './CanvasControls';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
+import { CanvasPileZone } from './CanvasPileZone';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
@@ -107,14 +108,21 @@ interface CanvasZoneProps {
   onToggleSelectCanvas: (id: string) => void;
   onSelectAllCanvas: () => void;
   onDiscardAllCanvas: () => void;
+  onStackSelected: () => void;
   onDeselectAll: () => void;
   highlightedMove?: LastMoveHighlight | null;
   cursorCardId?: string;
   shortcutKey?: string;
   onCursorChange?: (cardId: string) => void;
+  canvasPiles: ClientPile[];
+  sendAction: (action: ClientAction) => void;
+  draggingCardId: string | null;
+  shufflingPileIds: Map<string, 'normal' | 'flourish'>;
+  onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
+  onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -165,18 +173,30 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
   // Uses getCardDimensions() so mobile card sizes (42×59) are accounted for
   const { innerW, innerH, contentMaxX, contentMaxY } = useMemo(() => {
     const { w: cardW, h: cardH } = getCardDimensions();
-    if (canvasCards.length === 0) {
+    // Pile frames render slightly larger than a card: padding + grip strip + stacked-edge/badge overhang.
+    // Measured actual rendered frame at desktop card size (60x90): 78×122 (1031 frame-margin fix).
+    const PILE_FRAME_W = cardW + 18;
+    const PILE_FRAME_H = cardH + 32;
+    const xs = [
+      ...canvasCards.map(c => c.x + cardW),
+      ...canvasPiles.map(p => (p.pos?.x ?? 0) + PILE_FRAME_W),
+    ];
+    const ys = [
+      ...canvasCards.map(c => c.y + cardH),
+      ...canvasPiles.map(p => (p.pos?.y ?? 0) + PILE_FRAME_H),
+    ];
+    if (xs.length === 0) {
       return { innerW: viewportSize.w, innerH: viewportSize.h, contentMaxX: 0, contentMaxY: 0 };
     }
-    const maxX = Math.max(...canvasCards.map(c => c.x + cardW));
-    const maxY = Math.max(...canvasCards.map(c => c.y + cardH));
+    const maxX = Math.max(...xs);
+    const maxY = Math.max(...ys);
     return {
       innerW: Math.max(viewportSize.w, maxX + CANVAS_PADDING),
       innerH: Math.max(viewportSize.h, maxY + CANVAS_PADDING),
       contentMaxX: maxX,
       contentMaxY: maxY,
     };
-  }, [canvasCards, viewportSize.w, viewportSize.h]);
+  }, [canvasCards, canvasPiles, viewportSize.w, viewportSize.h]);
 
   // Overflow detection — which edges have content beyond the current viewport? (D-06)
   const hasOverflow = {
@@ -249,7 +269,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
   // Drag-to-pan: only when the press lands on empty felt (not a card or a control).
   // Edge arrows stopPropagation on pointerdown, so they never reach here.
   const onViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('[data-card-id], button')) return;
+    if ((e.target as HTMLElement).closest('[data-card-id], [data-canvas-pile], button')) return;
     dragPanRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
@@ -362,6 +382,19 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
             hasCursor={cursorCardId === cc.card.id}
           />
         ))}
+        {canvasPiles.map(pile => (
+          <CanvasPileZone
+            key={pile.id}
+            pile={pile}
+            sendAction={sendAction}
+            draggingCardId={draggingCardId}
+            shufflingPileIds={shufflingPileIds}
+            onSelectAll={onSelectAll}
+            onToggleSelect={onToggleSelect}
+            selectedIds={selectedIds}
+            highlightedMove={highlightedMove}
+          />
+        ))}
         {passengerGhosts.map(cc => (
           <div
             key={`ghost-${cc.card.id}`}
@@ -380,8 +413,13 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
         ))}
       </div>
 
-      {canvasCards.length > 0 && (
-        <CanvasControls onSelectAll={onSelectAllCanvas} onDiscardAll={onDiscardAllCanvas} />
+      {(canvasCards.length > 0 || canvasPiles.length > 0) && (
+        <CanvasControls
+          onSelectAll={onSelectAllCanvas}
+          onDiscardAll={onDiscardAllCanvas}
+          onStack={onStackSelected}
+          showStack={selectionSource?.zone === 'canvas' && selectedIds.size >= 2}
+        />
       )}
 
       {/* EdgeArrows — inside outer viewport, outside inner canvas; stays mounted while pressed

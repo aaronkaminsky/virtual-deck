@@ -7,7 +7,9 @@ import type { Card, ClientAction, ClientGameState, LastMoveHighlight, SelectionS
 import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
+import { CanvasPileVisual } from './CanvasPileZone';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
+import { computeStackOrigin, resolvePileDrop } from '@/lib/canvasPileDrag';
 import {
   computeTabStops,
   computeZoneLetterMap,
@@ -92,6 +94,8 @@ type PendingMove = {
 
 export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds, highlightedMove, konamiActive }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [activePileId, setActivePileId] = useState<string | null>(null);
+  const activePileIdRef = useRef<string | null>(null);
   const activeDragOriginRef = useRef<{ x: number; y: number } | null>(null);
   const [dragCoversSomeCard, setDragCoversSomeCard] = useState(false);
   const dragDeltaRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -205,6 +209,21 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     });
   };
 
+  const handleStackSelected = () => {
+    if (selectionSource?.zone !== 'canvas' || selectedIds.size < 2) return;
+    const entries = gameState.canvasCards.filter(cc => selectedIds.has(cc.card.id));
+    if (entries.length < 2) return; // stale selection — cards left the canvas
+    const { x, y } = computeStackOrigin(entries);
+    setSelectedIds(new Set());
+    setSelectionSource(null);
+    sendAction({
+      type: 'CREATE_CANVAS_PILE',
+      cardIds: entries.map(cc => cc.card.id),
+      x,
+      y,
+    });
+  };
+
   const groupIds = useMemo(() => {
     if (activeCard === null) return new Set<string>();
     return new Set([...selectedIds, activeCard.id]);
@@ -310,6 +329,14 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       clearTimeout(snapBackTimerRef.current);
       snapBackTimerRef.current = null;
     }
+    const maybePile = event.active.data.current as { type?: string; pileId?: string } | undefined;
+    if (maybePile?.type === 'canvas-pile' && maybePile.pileId) {
+      activePileIdRef.current = maybePile.pileId;
+      setActivePileId(maybePile.pileId);
+      setActiveCard(null);
+      setDragging(true);
+      return;
+    }
     const data = event.active.data.current as { card?: Card; fromZone?: string; fromId?: string; toId?: string } | undefined;
     if (!data?.card || !data.fromZone || !data.fromId) return; // guard against unexpected drag sources
     dragDataRef.current = data as { card: Card; fromZone: string; fromId: string };
@@ -377,6 +404,39 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     setDragCoversSomeCard(false);
     activeDragOriginRef.current = null;
+
+    // WHOLE-PILE DRAG BRANCH: reposition on canvas, merge into a pile/spread, or empty into own hand.
+    if (activePileIdRef.current !== null) {
+      const pileId = activePileIdRef.current;
+      activePileIdRef.current = null;
+      setActivePileId(null);
+      setDragging(false);
+      dropSuccessRef.current = true; // pile ghost clears immediately; skip snap-back animation
+      const pile = gameState.piles.find(p => p.id === pileId);
+      if (!pile?.pos) return;
+      const canvasBounds = canvasRef.current?.getBoundingClientRect();
+      const { w: CARD_W, h: CARD_H } = getCardDimensions();
+      const resolution = resolvePileDrop({
+        pileId,
+        pos: { x: pile.pos.x, y: pile.pos.y },
+        delta: { x: event.delta.x, y: event.delta.y },
+        overId: event.over ? String(event.over.id) : null,
+        overData: event.over?.data.current as { toZone?: string; toId?: string } | undefined,
+        canvasW: canvasBounds?.width ?? 0,
+        canvasH: canvasBounds?.height ?? 0,
+        cardW: CARD_W,
+        cardH: CARD_H,
+      });
+      if (resolution.kind === 'reposition') {
+        sendAction({ type: 'MOVE_CANVAS_PILE', pileId, x: resolution.x, y: resolution.y });
+      } else if (resolution.kind === 'mergeIntoPile') {
+        sendAction({ type: 'MOVE_ALL_PILE_CARDS', fromId: pileId, toId: resolution.toId });
+      } else if (resolution.kind === 'moveToHand') {
+        sendAction({ type: 'MOVE_ALL_PILE_CARDS', fromId: pileId, toId: playerId, toZone: 'hand' });
+      }
+      return;
+    }
+
     // CANVAS BRANCH: drop on canvas → GROUP_PLACE_ON_CANVAS or PLACE_ON_CANVAS (D-08, D-15)
     if (event.over?.id === 'canvas' && dragDataRef.current) {
       const { card, fromZone, fromId } = dragDataRef.current;
@@ -670,6 +730,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   }
 
   function handleDragCancel() {
+    activePileIdRef.current = null;
+    setActivePileId(null);
     dropSuccessRef.current = false;
     setDragging(false);
     dragDataRef.current = null;
@@ -683,6 +745,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     }, defaultDropAnimation.duration + 50);
   }
 
+  const activePile = activePileId ? gameState.piles.find(p => p.id === activePileId) ?? null : null;
+
   return (
     <div className="contents">
       <DndContext
@@ -694,12 +758,16 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
         onDragCancel={handleDragCancel}
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
+        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onStackSelected={handleStackSelected} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
             {/* Shadow wrapper is outside the opacity div so it renders at full opacity (CSS opacity composites box-shadow) */}
-            {activeCard ? (
+            {activePile ? (
+              <div style={{ opacity: 0.7 }}>
+                <CanvasPileVisual pile={activePile} />
+              </div>
+            ) : activeCard ? (
               <div style={{ boxShadow: dragCoversSomeCard ? STACK_SHADOW : undefined, borderRadius: dragCoversSomeCard ? 6 : undefined }}>
                 <div style={{ opacity: 0.5, transform: 'scale(1.05)' }}>
                   <CardOverlay card={activeCard} />

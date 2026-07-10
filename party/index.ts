@@ -85,6 +85,11 @@ export function takeSnapshot(state: GameState): void {
   }
 }
 
+export function maxCanvasZ(state: GameState): number {
+  const cardMax = state.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+  return state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+}
+
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
   if (!playerToken) throw new Error("viewFor requires a non-null playerToken");
   return {
@@ -111,6 +116,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
       faceUp: pile.faceUp,
       region: pile.region,
       ownerId: pile.ownerId,
+      pos: pile.pos,
       cards: pile.cards.map((card, i, arr): Card | MaskedCard => {
         if (pile.region === 'spread') return card; // spread zones: all cards always visible
         const isTop = i === arr.length - 1;
@@ -738,7 +744,7 @@ export default class GameRoom implements Party.Server {
         // Pre-validate source contains cardId (before takeSnapshot)
         let canvasCard: Card | undefined;
         // Compute maxZ before any splice so canvas→canvas repositioning always increments z
-        const maxZBeforeSplice = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        const maxZBeforeSplice = maxCanvasZ(this.gameState);
         if (fromZone === "hand") {
           const hand = this.gameState.hands[fromId];
           const idx = hand?.findIndex(c => c.id === cardId) ?? -1;
@@ -837,7 +843,7 @@ export default class GameRoom implements Party.Server {
 
         // V5: resolve all cardIds in source (read-only — no mutation yet)
         // Compute maxZ BEFORE any splice so pre-splice z values are captured
-        const maxZGroup = this.gameState.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
+        const maxZGroup = maxCanvasZ(this.gameState);
 
         type ResolvedGroupCard = { card: Card; preDragZ: number; x: number; y: number };
         const resolvedGroupCards: ResolvedGroupCard[] = [];
@@ -906,6 +912,128 @@ export default class GameRoom implements Party.Server {
         });
         lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: resolvedGroupCards.map(r => r.card.id) };
 
+        break;
+      }
+      case "CREATE_CANVAS_PILE": {
+        const { cardIds, x, y } = action;
+        if (!Array.isArray(cardIds) || cardIds.length < 2) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_CARD_SET",
+            message: "Stacking requires at least 2 cards",
+          } satisfies ServerEvent));
+          break;
+        }
+        const stackIdSet = new Set(cardIds);
+        if (stackIdSet.size !== cardIds.length) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "DUPLICATE_CARD_IDS",
+            message: "cardIds must be unique",
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+        // Pre-validate all cards are loose on the canvas (before takeSnapshot)
+        const entries: CanvasCard[] = [];
+        let missingStackCardId: string | null = null;
+        for (const id of cardIds) {
+          const found = this.gameState.canvasCards.find(cc => cc.card.id === id);
+          if (!found) { missingStackCardId = id; break; }
+          entries.push(found);
+        }
+        if (missingStackCardId !== null) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "CARD_NOT_IN_SOURCE",
+            message: `Card ${missingStackCardId} not found on canvas`,
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        const newPileZ = maxCanvasZ(this.gameState) + 1;
+        // Ascending pre-stack z: what looked buried stays buried; last element = top of stack
+        const stacked = [...entries].sort((a, b) => a.z - b.z);
+        this.gameState.canvasCards = this.gameState.canvasCards.filter(cc => !stackIdSet.has(cc.card.id));
+        const newPileId = `canvas-pile-${crypto.randomUUID().slice(0, 8)}`;
+        this.gameState.piles.push({
+          id: newPileId,
+          name: "Stack",
+          cards: stacked.map(e => e.card),
+          faceUp: stacked[stacked.length - 1].card.faceUp,
+          region: "canvas",
+          ownerId: null,
+          pos: { x, y, z: newPileZ },
+        });
+        lastMoveArgs = { toZoneType: "pile", toZoneId: newPileId, cardIds: [...cardIds] };
+        break;
+      }
+      case "UNSTACK_CANVAS_PILE": {
+        const unstackIdx = this.gameState.piles.findIndex(p => p.id === action.pileId);
+        if (unstackIdx === -1) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const unstackPile = this.gameState.piles[unstackIdx];
+        if (unstackPile.region !== "canvas" || !unstackPile.pos) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_PILE_REGION",
+            message: "Only canvas piles can be unstacked",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        const fanBaseZ = maxCanvasZ(this.gameState);
+        const { x: fanX, y: fanY } = unstackPile.pos;
+        const fannedIds = unstackPile.cards.map(c => c.id);
+        unstackPile.cards.forEach((card, i) => {
+          card.faceUp = true;
+          this.gameState.canvasCards.push({ card, x: fanX + i * 24, y: fanY, z: fanBaseZ + 1 + i });
+        });
+        this.gameState.piles.splice(unstackIdx, 1);
+        lastMoveArgs = { toZoneType: "canvas", toZoneId: "canvas", cardIds: fannedIds };
+        break;
+      }
+      case "MOVE_CANVAS_PILE": {
+        const movePile = this.gameState.piles.find(p => p.id === action.pileId);
+        if (!movePile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `No pile found with id: ${action.pileId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (movePile.region !== "canvas" || !movePile.pos) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_PILE_REGION",
+            message: "Only canvas piles can be repositioned",
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isFinite(action.x) || !Number.isFinite(action.y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+        takeSnapshot(this.gameState);
+        movePile.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
         break;
       }
       case "UNDO_MOVE": {
@@ -1051,13 +1179,40 @@ export default class GameRoom implements Party.Server {
       }
       case "MOVE_ALL_PILE_CARDS": {
         const { fromId, toId } = action;
+        const moveAllToZone = action.toZone ?? "pile";
         const srcPile = this.gameState.piles.find(p => p.id === fromId);
-        const destPile = this.gameState.piles.find(p => p.id === toId);
-        if (!srcPile || !destPile) {
+        if (!srcPile) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "PILE_NOT_FOUND",
-            message: `Pile not found: ${!srcPile ? fromId : toId}`,
+            message: `Pile not found: ${fromId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (moveAllToZone === "hand") {
+          // V4 Access Control: sender may only fill their own hand (mirrors MOVE_CARD)
+          if (toId !== senderToken) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "UNAUTHORIZED_MOVE",
+              message: "Cannot place cards in another player's hand",
+            } satisfies ServerEvent));
+            break;
+          }
+          if (srcPile.cards.length === 0) break;
+          takeSnapshot(this.gameState);
+          const movingToHand = srcPile.cards.splice(0);
+          movingToHand.forEach(card => { card.faceUp = true; });
+          (this.gameState.hands[toId] ?? (this.gameState.hands[toId] = [])).push(...movingToHand);
+          lastMoveArgs = { toZoneType: "hand", toZoneId: toId, cardIds: movingToHand.map(c => c.id) };
+          break;
+        }
+        const destPile = this.gameState.piles.find(p => p.id === toId);
+        if (!destPile) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "PILE_NOT_FOUND",
+            message: `Pile not found: ${toId}`,
           } satisfies ServerEvent));
           break;
         }
@@ -1131,6 +1286,8 @@ export default class GameRoom implements Party.Server {
         break;
     }
 
+    this.pruneEmptyCanvasPiles();
+
     await this.armAttractAlarm(this.attractIdleMsOverride ?? ATTRACT_IDLE_MS);
     await this.persist();
     this.broadcastState();
@@ -1171,6 +1328,12 @@ export default class GameRoom implements Party.Server {
 
   private async persist() {
     await this.room.storage.put("gameState", this.gameState);
+  }
+
+  private pruneEmptyCanvasPiles(): void {
+    this.gameState.piles = this.gameState.piles.filter(
+      p => p.region !== "canvas" || p.cards.length > 0
+    );
   }
 
   private gatherAllCardsToDraw(): void {
