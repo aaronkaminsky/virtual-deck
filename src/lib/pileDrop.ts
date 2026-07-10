@@ -2,8 +2,13 @@ import type { ClientAction, ClientPile, SelectionSource } from '@/shared/types';
 
 export type InsertPosition = 'top' | 'bottom' | 'random';
 
-// Height of the flap row in px — shared by PileDropFlaps (render) and flapPlacement (flip check).
+// Flap row dimensions in px — shared by PileDropFlaps (render) and the placement math
+// (flapPlacement flip check / flapShiftX horizontal clamp).
 export const FLAP_ROW_HEIGHT = 40;
+export const FLAP_ROW_WIDTH = 112;
+
+// Breathing room kept between the flap row and a clipping edge when shifting.
+const FLAP_EDGE_MARGIN = 4;
 
 // Decides the MOVE_CARD to dispatch for a single-card drop resolving to a pile (1039).
 // Returns null when nothing should be dispatched (intra-spread reorder — SpreadZone's
@@ -67,4 +72,26 @@ export function flapPlacement(args: {
   if (anchorBottom + FLAP_ROW_HEIGHT <= boundsBottom) return 'below';
   if (anchorTop - FLAP_ROW_HEIGHT >= boundsTop) return 'above';
   return 'none';
+}
+
+// Horizontal counterpart to flapPlacement: the row is wider than the pile, so when a
+// pile hugs a clipping edge (the pile rail at the window's left, a canvas pile at the
+// felt's right), a centered row pokes past it. Rather than shrinking the row (worse
+// touch targets, still clips on 56px mobile piles), shift it sideways just enough to
+// stay inside the bounds — the popover approach. Returns the px offset to add to the
+// row's centered position; 0 when centered already fits. If the bounds are narrower
+// than the row itself, best-effort: center the row within the bounds.
+export function flapShiftX(args: {
+  anchorCenterX: number;
+  boundsLeft: number;
+  boundsRight: number;
+}): number {
+  const { anchorCenterX, boundsLeft, boundsRight } = args;
+  const half = FLAP_ROW_WIDTH / 2;
+  const minCenter = boundsLeft + FLAP_EDGE_MARGIN + half;
+  const maxCenter = boundsRight - FLAP_EDGE_MARGIN - half;
+  if (minCenter > maxCenter) {
+    return (boundsLeft + boundsRight) / 2 - anchorCenterX;
+  }
+  return Math.min(Math.max(anchorCenterX, minCenter), maxCenter) - anchorCenterX;
 }

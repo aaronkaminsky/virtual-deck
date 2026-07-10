@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDndContext, useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
-import { FLAP_ROW_HEIGHT, flapPlacement } from '@/lib/pileDrop';
+import { FLAP_ROW_HEIGHT, FLAP_ROW_WIDTH, flapPlacement, flapShiftX } from '@/lib/pileDrop';
 
 interface PileDropFlapsProps {
   pileId: string;
@@ -36,25 +36,31 @@ function Flap({
   );
 }
 
-// Walks up from a clipping-check starting element to find the tightest vertical bounds
-// imposed by clipping ancestors (any ancestor whose computed overflowY/overflow isn't
-// 'visible' — e.g. CanvasZone's overflow-hidden viewport). getBoundingClientRect() ignores
-// CSS clipping, so flapPlacement needs these bounds explicitly rather than trusting the
-// anchor's own rect against the raw viewport.
-function computeClipBounds(start: HTMLElement): { top: number; bottom: number } {
+// Walks up from a clipping-check starting element to find the tightest bounds imposed
+// by clipping ancestors (any ancestor whose computed overflow isn't 'visible' on either
+// axis — e.g. CanvasZone's overflow-hidden viewport, or the board scroll area's
+// overflow-x-hidden; per CSS, a non-visible overflow on one axis forces the other to
+// clip too). getBoundingClientRect() ignores CSS clipping, so the placement/shift math
+// needs these bounds explicitly rather than trusting the anchor's own rect against the
+// raw viewport.
+function computeClipBounds(start: HTMLElement): { top: number; bottom: number; left: number; right: number } {
   let top = 0;
+  let left = 0;
   let bottom = window.innerHeight;
+  let right = window.innerWidth;
   let ancestor: HTMLElement | null = start.parentElement;
   while (ancestor) {
     const style = window.getComputedStyle(ancestor);
-    if (style.overflowY !== 'visible' || style.overflow !== 'visible') {
+    if (style.overflowY !== 'visible' || style.overflowX !== 'visible') {
       const rect = ancestor.getBoundingClientRect();
       bottom = Math.min(bottom, rect.bottom);
       top = Math.max(top, rect.top);
+      right = Math.min(right, rect.right);
+      left = Math.max(left, rect.left);
     }
     ancestor = ancestor.parentElement;
   }
-  return { top, bottom };
+  return { top, bottom, left, right };
 }
 
 // Drag-over placement flaps (1039): while an eligible card drag hovers the pile,
@@ -74,9 +80,13 @@ function computeClipBounds(start: HTMLElement): { top: number; bottom: number } 
 // clip-aware (see computeClipBounds/flapPlacement): if neither below nor above fits
 // within the nearest clipping ancestor's bounds, the flaps do not arm at all, since an
 // armed-but-fully-clipped row would be an invisible yet still-active drop target.
+// Horizontally the row shifts sideways (flapShiftX) instead of clipping — the row is
+// wider than the pile, so piles hugging a clipping edge (the pile rail at the window's
+// left) would otherwise poke past it.
 export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlapsProps) {
   const [armed, setArmed] = useState(false);
   const [placement, setPlacement] = useState<'below' | 'above'>('below');
+  const [shiftX, setShiftX] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { measureDroppableContainers } = useDndContext();
 
@@ -110,6 +120,11 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
           setArmed(false);
         } else {
           setPlacement(nextPlacement);
+          setShiftX(flapShiftX({
+            anchorCenterX: (anchorRect.left + anchorRect.right) / 2,
+            boundsLeft: bounds.left,
+            boundsRight: bounds.right,
+          }));
           setArmed(true);
         }
       }
@@ -137,15 +152,17 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
     <div
       ref={wrapperRef}
       className={cn(
-        'absolute left-1/2 -translate-x-1/2 z-50 pointer-events-none',
+        'absolute z-50 pointer-events-none',
         placement === 'below' ? 'top-[calc(100%-4px)]' : 'bottom-[calc(100%-4px)]'
       )}
+      // Centered on the pile, then shifted sideways to stay inside clipping bounds.
+      style={{ left: '50%', transform: `translateX(calc(-50% + ${shiftX}px))` }}
     >
       {/* No gap between the flaps: a gap column at the pile's center X would sit exactly
           on a straight-down drag path and momentarily disarm the row; the dashed borders
           provide the visual separation instead. */}
       {armed && (
-        <div className="flex w-28 p-0.5 rounded-md bg-popover/90 backdrop-blur-sm shadow-md" style={{ height: FLAP_ROW_HEIGHT }}>
+        <div className="flex p-0.5 rounded-md bg-popover/90 backdrop-blur-sm shadow-md" style={{ height: FLAP_ROW_HEIGHT, width: FLAP_ROW_WIDTH }}>
           <Flap setNodeRef={bottomFlap.setNodeRef} isOver={bottomFlap.isOver} testId={`pile-flap-${pileId}-bottom`} label="Bottom" />
           <Flap setNodeRef={randomFlap.setNodeRef} isOver={randomFlap.isOver} testId={`pile-flap-${pileId}-random`} label="Random" />
         </div>

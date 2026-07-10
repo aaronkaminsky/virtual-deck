@@ -12,7 +12,9 @@ import {
   resolvePileDropAction,
   isFlapEligibleDrag,
   flapPlacement,
+  flapShiftX,
   FLAP_ROW_HEIGHT,
+  FLAP_ROW_WIDTH,
 } from "@/lib/pileDrop";
 
 function makeCard(id: string): Card {
@@ -165,5 +167,29 @@ describe("flapPlacement", () => {
     expect(flapPlacement({
       anchorTop: FLAP_ROW_HEIGHT, anchorBottom: 600, boundsTop: 0, boundsBottom: 600,
     })).toBe("above");
+  });
+});
+
+describe("flapShiftX", () => {
+  it("no shift when the centered row fits within the bounds", () => {
+    expect(flapShiftX({ anchorCenterX: 400, boundsLeft: 0, boundsRight: 800 })).toBe(0);
+  });
+
+  it("shifts right when a pile hugs the left clipping edge (e.g. the pile rail)", () => {
+    // Pile centered 40px from the left bound: centered row would start at 40 - 56 = -16.
+    // Expect a shift that puts the row's left edge at boundsLeft + 4px margin.
+    const shift = flapShiftX({ anchorCenterX: 40, boundsLeft: 0, boundsRight: 800 });
+    expect(shift).toBe(4 + FLAP_ROW_WIDTH / 2 - 40); // = 20
+    expect(40 + shift - FLAP_ROW_WIDTH / 2).toBe(4); // row left edge sits at the margin
+  });
+
+  it("shifts left when a pile hugs the right clipping edge", () => {
+    const shift = flapShiftX({ anchorCenterX: 780, boundsLeft: 0, boundsRight: 800 });
+    expect(780 + shift + FLAP_ROW_WIDTH / 2).toBe(800 - 4); // row right edge at the margin
+  });
+
+  it("centers within the bounds when they are narrower than the row", () => {
+    // Bounds 100px wide, row 112px: best effort is centering on the bounds' midpoint.
+    expect(flapShiftX({ anchorCenterX: 10, boundsLeft: 0, boundsRight: 100 })).toBe(40);
   });
 });
