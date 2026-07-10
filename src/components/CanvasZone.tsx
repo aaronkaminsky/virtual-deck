@@ -120,9 +120,10 @@ interface CanvasZoneProps {
   shufflingPileIds: Map<string, 'normal' | 'flourish'>;
   onToggleSelect: (id: string, zone: 'hand' | 'pile', zoneId: string) => void;
   onSelectAll: (cardIds: string[], zone: 'hand' | 'pile', zoneId: string, hasMaskedCards?: boolean) => void;
+  flapDragActive: boolean;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll, flapDragActive }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -393,6 +394,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
             onToggleSelect={onToggleSelect}
             selectedIds={selectedIds}
             highlightedMove={highlightedMove}
+            flapDragActive={flapDragActive}
           />
         ))}
         {passengerGhosts.map(cc => (
