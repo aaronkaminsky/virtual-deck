@@ -2,14 +2,13 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
-import { Dialog } from '@base-ui/react/dialog';
 import type { Card, ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
-import { Button } from '@/components/ui/button';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 import { CanvasPileVisual } from './CanvasPileZone';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
 import { computeStackOrigin, resolvePileDrop } from '@/lib/canvasPileDrag';
+import { resolvePileDropAction, type InsertPosition } from '@/lib/pileDrop';
 import {
   computeTabStops,
   computeZoneLetterMap,
@@ -84,14 +83,6 @@ interface BoardDragLayerProps {
   konamiActive: boolean;
 }
 
-type PendingMove = {
-  card: Card;
-  fromZone: 'hand' | 'pile' | 'canvas'; // D-11: widened to support canvas → pile dialog path
-  fromId: string;
-  toZone: 'hand' | 'pile';
-  toId: string;
-};
-
 export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAction, setDragging, shufflingPileIds, highlightedMove, konamiActive }: BoardDragLayerProps) {
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [activePileId, setActivePileId] = useState<string | null>(null);
@@ -99,7 +90,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const activeDragOriginRef = useRef<{ x: number; y: number } | null>(null);
   const [dragCoversSomeCard, setDragCoversSomeCard] = useState(false);
   const dragDeltaRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionSource, setSelectionSource] = useState<SelectionSource>(null);
   const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null);
@@ -110,7 +100,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const dragDataRef = useRef<{ card: Card; fromZone: string; fromId: string } | null>(null);
   const passengerOffsetsRef = useRef<Record<string, { offsetX: number; offsetY: number }>>({});
   const dropSuccessRef = useRef(false);
-  const topButtonRef = useRef<HTMLButtonElement>(null);
   const snapBackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [sortMode, setSortMode] = useState<SortMode>('original');
@@ -303,25 +292,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       setSelectionSource(null);
     }
   }, [gameState.myHand, gameState.piles, gameState.canvasCards, selectedIds, selectionSource]);
-
-  function sendPendingMove(insertPosition: 'top' | 'bottom' | 'random') {
-    if (!pendingMove) {
-      if (import.meta.env.DEV) {
-        console.error('sendPendingMove called with no pendingMove — this is a bug');
-      }
-      return;
-    }
-    sendAction({
-      type: 'MOVE_CARD',
-      cardId: pendingMove.card.id,
-      fromZone: pendingMove.fromZone,
-      fromId: pendingMove.fromId,
-      toZone: pendingMove.toZone,
-      toId: pendingMove.toId,
-      insertPosition,
-    });
-    setPendingMove(null);
-  }
 
   function handleDragStart(event: DragStartEvent) {
     // Cancel any in-flight snap-back timer from a previous failed drop
@@ -575,7 +545,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       return;
     }
 
-    const overData = event.over?.data.current as { toZone: string; toId: string } | undefined;
+    const overData = event.over?.data.current as { toZone: string; toId: string; insertPosition?: InsertPosition } | undefined;
     const activeId = String(event.active.id);
     // D-02 (Phase 21): compute intra-zone reorder flags ONCE, before any branch.
     const fromZoneAtEnd = dragDataRef.current?.fromZone;
@@ -623,6 +593,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           fromId: setFromId,
           toZone: overData!.toZone === 'opponent-hand' ? 'hand' : overData!.toZone as 'pile' | 'hand',
           toId: overData!.toId,
+          // 1039: flap drops carry bottom/random; undefined (plain drop / hand dest) = top
+          insertPosition: overData!.insertPosition,
         });
       }
       return;
@@ -661,42 +633,17 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       const toId = overData!.toId;
 
       if (toZone === 'pile') {
-        const targetPile = gameState.piles.find(p => p.id === toId);
-        const isEmpty = !targetPile || targetPile.cards.length === 0;
-        if (isEmpty) {
-          // Empty zone: bypass dialog, place at top immediately (D-02, D-03)
-          sendAction({
-            type: 'MOVE_CARD',
-            cardId: card.id,
-            fromZone: fromZone as 'hand' | 'pile' | 'canvas',
-            fromId,
-            toZone,
-            toId,
-            insertPosition: 'top',
-          });
-        } else {
-          // Check if destination is a spread zone — spread zones always insert at top, no dialog (GAP-02)
-          const isSpread = targetPile?.region === 'spread';
-          if (isSpread) {
-            // GAP-06: intra-spread reorder — skip MOVE_CARD so SpreadZone's useDndMonitor
-            // REORDER_PILE_SPREAD handler can fire without BoardDragLayer racing it.
-            // Reuse outer isIntraSpreadReorder (computed at top of handleDragEnd, D-02 Phase 21).
-            if (!isIntraSpreadReorder) {
-              sendAction({
-                type: 'MOVE_CARD',
-                cardId: card.id,
-                fromZone: fromZone as 'hand' | 'pile' | 'canvas',
-                fromId,
-                toZone,
-                toId,
-                insertPosition: 'top',
-              });
-            }
-          } else {
-            // Non-empty pile (non-spread): intercept and show position dialog (D-01, D-11)
-            setPendingMove({ card, fromZone: fromZone as 'hand' | 'pile' | 'canvas', fromId, toZone, toId });
-          }
-        }
+        // 1039: plain drop = top immediately; drag-over flaps supply bottom/random via overData.
+        const action = resolvePileDropAction({
+          cardId: card.id,
+          fromZone: fromZone as 'hand' | 'pile' | 'canvas',
+          fromId,
+          toId,
+          targetPile: gameState.piles.find(p => p.id === toId),
+          insertPosition: overData!.insertPosition,
+          isIntraSpreadReorder,
+        });
+        if (action) sendAction(action);
       } else {
         // Hand drop: send immediately, no position dialog needed
         sendAction({
@@ -748,17 +695,16 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const activePile = activePileId ? gameState.piles.find(p => p.id === activePileId) ?? null : null;
 
   return (
-    <div className="contents">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={customCollision}
-        onDragStart={handleDragStart}
-        onDragMove={handleDragMove}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-      >
-        <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onStackSelected={handleStackSelected} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
+    <DndContext
+      sensors={sensors}
+      collisionDetection={customCollision}
+      onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+    >
+      <BoardView gameState={gameState} playerId={playerId} roomId={roomId} connected={connected} sendAction={sendAction} draggingCardId={activeCard?.id ?? null} shufflingPileIds={shufflingPileIds} selectedIds={selectedIds} onToggleSelect={handleToggleSelect} onSelectAll={handleSelectAll} selectionSource={selectionSource} canvasRef={canvasRef} onToggleSelectCanvas={handleToggleSelectCanvas} onSelectAllCanvas={handleSelectAllCanvas} onDiscardAllCanvas={handleDiscardAllCanvas} onStackSelected={handleStackSelected} onDeselectAll={handleDeselectAll} groupIds={groupIds} activeCardId={activeCard?.id ?? null} dragDelta={dragDelta} highlightedMove={highlightedMove} cursorCardId={cursorCardId} altHeld={altHeld} zoneLetterMap={zoneLetterMap} menuFocused={menuFocused} menuTriggerRef={menuTriggerRef} showShortcuts={showShortcuts} onCloseShortcuts={() => setShowShortcuts(false)} sortMode={sortMode} setSortMode={handleSetSortMode} lastDealCount={lastDealCount} onDealCountChange={setLastDealCount} setCursorPos={setCursorPos} konamiActive={konamiActive} />
         {createPortal(
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
@@ -777,50 +723,6 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           </DragOverlay>,
           document.body
         )}
-      </DndContext>
-
-      {/* Insert-position dialog — appears after non-empty pile drop (D-01) */}
-      <Dialog.Root
-        open={pendingMove !== null}
-        onOpenChange={(_open) => {
-          // Any dismissal cancels the move (D-01, D-02, D-03) — card stays at server origin
-          if (!_open) setPendingMove(null);
-        }}
-      >
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 bg-black/20" />
-          <Dialog.Popup
-            initialFocus={topButtonRef}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-popover p-4 shadow-md ring-1 ring-foreground/10 max-w-xs w-full"
-          >
-            <p className="text-sm font-medium mb-3">Insert card where?</p>
-            <div className="flex gap-2">
-              <Button
-                ref={topButtonRef}
-                variant="default"
-                className="flex-1"
-                onClick={() => sendPendingMove('top')}
-              >
-                Top
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => sendPendingMove('bottom')}
-              >
-                Bottom
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => sendPendingMove('random')}
-              >
-                Random
-              </Button>
-            </div>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </div>
+    </DndContext>
   );
 }
