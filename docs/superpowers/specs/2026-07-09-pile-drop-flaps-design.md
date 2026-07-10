@@ -41,7 +41,7 @@
 
 - Rewrite `tests/boardDragLayerDialog.test.ts` as flap-behavior tests (Wave 0 RED scaffolds before implementation, per TDD convention): plain drop sends top immediately; flap drop sends bottom/random (single card and multi-card set); no dialog renders; flaps hidden for empty piles, spread zones, whole-pile drags, masked-pile group drags.
 - Server tests for `PLAY_CARD_SET.insertPosition`: bottom preserves set order at the bottom; random places every card (deck size invariant) — extend `tests/playCardSet.test.ts`.
-- Update the dialog-clicking portions of `tests/canvasCards.test.ts` and `playwright/runtimePiles.spec.ts`.
+- Update the dialog-clicking portion of `playwright/runtimePiles.spec.ts`. (`tests/canvasCards.test.ts` needs no changes — its `insertPosition` tests exercise the server directly.)
 - Add a Playwright case for drop-on-flap using the `mouse.move/down/move/up (steps:15)` convention.
 
 ## Alternatives considered
