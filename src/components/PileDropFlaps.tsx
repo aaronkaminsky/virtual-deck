@@ -44,8 +44,9 @@ function Flap({
 // dead band — a merely-flush layout left a 1px sub-pixel-rounding gap where both
 // pileIsOver and flapIsOver read false for a tick, disarming the flaps mid-crossing.
 // Overlap is safe: isOver derives from the single collision result, so exactly one
-// of pile/flap is over at any point in the band. The refs only attach while armed,
-// so an unarmed flap has no rect and can never swallow a drop the player didn't aim at.
+// of pile/flap is over at any point in the band. Flap rects are re-measured on every
+// arm/disarm transition (see the measure effect below), so a disarmed flap's rect is
+// cleared and can never swallow a drop the player didn't aim at.
 export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlapsProps) {
   const [armed, setArmed] = useState(false);
   const [placement, setPlacement] = useState<'below' | 'above'>('below');
@@ -76,13 +77,15 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
     }
   }, [dragEligible, pileIsOver, flapIsOver]);
 
-  // The flap nodes only attach to their droppables after arming — mid-drag, after
-  // dnd-kit's registration/drag-start measurements have already run — so their rects
-  // stay null (and isOver can never fire) unless we explicitly request a measure.
+  // Re-measure the flap rects on every arm/disarm transition. Arming: the flap
+  // nodes only attach after arming — mid-drag, after dnd-kit's registration/
+  // drag-start measurements have already run — so without an explicit measure
+  // their rects stay null and isOver can never fire. Disarming: dnd-kit keeps a
+  // droppable's last-measured rect when its node unmounts, so without a
+  // re-measure (detached nodes measure to null) a phantom flap rect at the old
+  // screen position could silently swallow a later drop.
   useEffect(() => {
-    if (armed) {
-      measureDroppableContainers([`pile-flap-${pileId}-bottom`, `pile-flap-${pileId}-random`]);
-    }
+    measureDroppableContainers([`pile-flap-${pileId}-bottom`, `pile-flap-${pileId}-random`]);
   }, [armed, measureDroppableContainers, pileId]);
 
   if (!dragEligible) return null;
@@ -97,8 +100,11 @@ export function PileDropFlaps({ pileId, pileIsOver, dragEligible }: PileDropFlap
         placement === 'below' ? 'top-[calc(100%-4px)]' : 'bottom-[calc(100%-4px)]'
       )}
     >
+      {/* No gap between the flaps: a gap column at the pile's center X would sit exactly
+          on a straight-down drag path and momentarily disarm the row; the dashed borders
+          provide the visual separation instead. */}
       {armed && (
-        <div className="flex w-28 gap-0.5 p-0.5 rounded-md bg-popover/90 backdrop-blur-sm shadow-md" style={{ height: FLAP_ROW_HEIGHT }}>
+        <div className="flex w-28 p-0.5 rounded-md bg-popover/90 backdrop-blur-sm shadow-md" style={{ height: FLAP_ROW_HEIGHT }}>
           <Flap setNodeRef={bottomFlap.setNodeRef} isOver={bottomFlap.isOver} testId={`pile-flap-${pileId}-bottom`} label="Bottom" />
           <Flap setNodeRef={randomFlap.setNodeRef} isOver={randomFlap.isOver} testId={`pile-flap-${pileId}-random`} label="Random" />
         </div>
