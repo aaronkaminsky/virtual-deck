@@ -1173,7 +1173,18 @@ export default class GameRoom implements Party.Server {
           const destPile = this.gameState.piles.find(p => p.id === toId)!;
           cardsToPlay.forEach(card => { card.faceUp = destPile.faceUp === true; });
         }
-        dest.push(...cardsToPlay);
+        // 1039: flap drops choose bottom/random; plain drops and hand destinations append (top).
+        const setPos = (toZone === "pile" ? action.insertPosition : undefined) ?? "top";
+        if (setPos === "bottom") {
+          dest.unshift(...cardsToPlay);
+        } else if (setPos === "random") {
+          for (const card of cardsToPlay) {
+            const idx = dest.length === 0 ? 0 : unbiasedRandom(dest.length + 1);
+            dest.splice(idx, 0, card);
+          }
+        } else {
+          dest.push(...cardsToPlay);
+        }
         lastMoveArgs = { toZoneType: toZone, toZoneId: toId, cardIds };
         break;
       }
