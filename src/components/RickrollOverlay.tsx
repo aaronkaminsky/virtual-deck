@@ -8,7 +8,7 @@ export function RickrollOverlay({ nonce }: { nonce: number }) {
     if (nonce <= 0) return;
     setRun(nonce);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setRun(0), 10_000);
+    timerRef.current = setTimeout(() => setRun(0), 30_000);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [nonce]);
 
