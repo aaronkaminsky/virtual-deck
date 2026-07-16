@@ -296,7 +296,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
           </>
         )}
       </div>
-      {interactive !== false && !isReallyEmpty && (
+      {interactive !== false && (
         <div
           className="flex gap-1 zone-controls"
           style={chipPopoverOpen ? { opacity: 1 } : undefined}
