@@ -2,12 +2,14 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, closestCenter, pointerWithin, getFirstCollision, defaultDropAnimation, useSensors, useSensor, PointerSensor, TouchSensor, MeasuringStrategy } from '@dnd-kit/core';
 import type { CollisionDetection, DragStartEvent, DragEndEvent, DragMoveEvent } from '@dnd-kit/core';
-import type { Card, ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { Card, ClientAction, ClientGameState, LastMoveHighlight, SelectionSource, TokenId } from '@/shared/types';
 import { BoardView } from './BoardView';
 import { CardOverlay } from './CardOverlay';
 import { CanvasPileVisual } from './CanvasPileZone';
+import { TokenDisc } from './TokenDisc';
 import { coversMajority, getCardDimensions, STACK_SHADOW } from '@/lib/canvas-utils';
 import { computeStackOrigin, resolvePileDrop } from '@/lib/canvasPileDrag';
+import { resolveTokenDrop, TOKEN_SIZE } from '@/lib/tokenDrag';
 import { resolvePileDropAction, isFlapEligibleDrag, type InsertPosition } from '@/lib/pileDrop';
 import {
   computeTabStops,
@@ -20,6 +22,14 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { type SortMode, SORT_CYCLE, getHandOrderSyncAction } from './HandZone';
 
 const customCollision: CollisionDetection = (args) => {
+  const tokenData = args.active.data.current as { type?: string } | undefined;
+  if (tokenData?.type === 'token') {
+    const trayContainers = args.droppableContainers.filter(c => String(c.id) === 'token-tray');
+    const trayCollisions = pointerWithin({ ...args, droppableContainers: trayContainers });
+    if (trayCollisions.length > 0) return trayCollisions;
+    const tokenCanvasContainers = args.droppableContainers.filter(c => String(c.id) === 'canvas');
+    return pointerWithin({ ...args, droppableContainers: tokenCanvasContainers });
+  }
   const zoneContainers = args.droppableContainers.filter(
     (c) => String(c.id) === 'hand' || String(c.id).startsWith('opponent-hand-')
   );
@@ -87,6 +97,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [activePileId, setActivePileId] = useState<string | null>(null);
   const activePileIdRef = useRef<string | null>(null);
+  const [activeTokenId, setActiveTokenId] = useState<TokenId | null>(null);
+  const activeTokenIdRef = useRef<TokenId | null>(null);
   const activeDragOriginRef = useRef<{ x: number; y: number } | null>(null);
   const [dragCoversSomeCard, setDragCoversSomeCard] = useState(false);
   const dragDeltaRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -299,6 +311,14 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       clearTimeout(snapBackTimerRef.current);
       snapBackTimerRef.current = null;
     }
+    const maybeToken = event.active.data.current as { type?: string; tokenId?: TokenId } | undefined;
+    if (maybeToken?.type === 'token' && maybeToken.tokenId) {
+      activeTokenIdRef.current = maybeToken.tokenId;
+      setActiveTokenId(maybeToken.tokenId);
+      setActiveCard(null);
+      setDragging(true);
+      return;
+    }
     const maybePile = event.active.data.current as { type?: string; pileId?: string } | undefined;
     if (maybePile?.type === 'canvas-pile' && maybePile.pileId) {
       activePileIdRef.current = maybePile.pileId;
@@ -374,6 +394,44 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragEnd(event: DragEndEvent) {
     setDragCoversSomeCard(false);
     activeDragOriginRef.current = null;
+
+    // TOKEN DRAG BRANCH (1035): place on canvas, move on canvas, or return to tray.
+    if (activeTokenIdRef.current !== null) {
+      const tokenId = activeTokenIdRef.current;
+      activeTokenIdRef.current = null;
+      setActiveTokenId(null);
+      setDragging(false);
+      dropSuccessRef.current = true; // token ghost clears immediately; skip snap-back animation
+      const token = gameState.tokens.find(t => t.id === tokenId);
+      if (!token) return;
+      const canvasBounds = canvasRef.current?.getBoundingClientRect();
+      let base: { x: number; y: number };
+      if (token.pos) {
+        // canvas → canvas: stored position + delta (MOVE_CANVAS_PILE pattern)
+        base = { x: token.pos.x + event.delta.x, y: token.pos.y + event.delta.y };
+      } else {
+        // tray → canvas: pointer position relative to the inner canvas (PLACE_ON_CANVAS pattern)
+        const activator = event.activatorEvent as PointerEvent;
+        base = {
+          x: activator.clientX + event.delta.x - (canvasBounds?.left ?? 0) - TOKEN_SIZE / 2,
+          y: activator.clientY + event.delta.y - (canvasBounds?.top ?? 0) - TOKEN_SIZE / 2,
+        };
+      }
+      const resolution = resolveTokenDrop({
+        overId: event.over ? String(event.over.id) : null,
+        fromTray: token.pos === null,
+        base,
+        canvasW: canvasBounds?.width ?? 0,
+        canvasH: canvasBounds?.height ?? 0,
+        tokenSize: TOKEN_SIZE,
+      });
+      if (resolution.kind === 'place') {
+        sendAction({ type: 'MOVE_TOKEN', tokenId, x: resolution.x, y: resolution.y });
+      } else if (resolution.kind === 'return') {
+        sendAction({ type: 'RETURN_TOKEN', tokenId });
+      }
+      return;
+    }
 
     // WHOLE-PILE DRAG BRANCH: reposition on canvas, merge into a pile/spread, or empty into own hand.
     if (activePileIdRef.current !== null) {
@@ -682,6 +740,8 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
   function handleDragCancel() {
     activePileIdRef.current = null;
     setActivePileId(null);
+    activeTokenIdRef.current = null;
+    setActiveTokenId(null);
     dropSuccessRef.current = false;
     setDragging(false);
     dragDataRef.current = null;
@@ -719,7 +779,11 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
           <DragOverlay dropAnimation={dropSuccessRef.current ? null : defaultDropAnimation}>
             {/* D-13: DragOverlay 0.5 opacity + scale 1.05 — applied globally for canvas drags; existing zone drags inherit the same */}
             {/* Shadow wrapper is outside the opacity div so it renders at full opacity (CSS opacity composites box-shadow) */}
-            {activePile ? (
+            {activeTokenId ? (
+              <div style={{ opacity: 0.7 }}>
+                <TokenDisc tokenId={activeTokenId} />
+              </div>
+            ) : activePile ? (
               <div style={{ opacity: 0.7 }}>
                 <CanvasPileVisual pile={activePile} />
               </div>
