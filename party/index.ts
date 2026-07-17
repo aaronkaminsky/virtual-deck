@@ -1402,7 +1402,10 @@ export default class GameRoom implements Party.Server {
 
   private broadcastLastMove(toZoneType: "hand" | "pile" | "canvas", toZoneId: string, cardIds: string[]) {
     for (const conn of [...this.room.getConnections()]) {
-      conn.send(JSON.stringify({ type: "LAST_MOVE", toZoneType, toZoneId, cardIds } satisfies ServerEvent));
+      // Hand-destination card ids never leave the owner's connection; opponents'
+      // highlight only reads toZoneType/toZoneId, so they lose nothing.
+      const maskedIds = toZoneType === "hand" && getPlayerToken(conn) !== toZoneId ? [] : cardIds;
+      conn.send(JSON.stringify({ type: "LAST_MOVE", toZoneType, toZoneId, cardIds: maskedIds } satisfies ServerEvent));
     }
   }
 

@@ -141,12 +141,16 @@ describe("PASS_CARD LAST_MOVE broadcast", () => {
       type: "PASS_CARD", cardId: "J-c", targetPlayerId: "player-2",
     }), conn1);
 
-    for (const conn of [conn1, conn2]) {
-      const msgs = lastMoveMessages(conn);
-      expect(msgs).toHaveLength(1);
-      expect(msgs[0].toZoneType).toBe("hand");
-      expect(msgs[0].toZoneId).toBe("player-2");
-      expect(msgs[0].cardIds).toEqual(["J-c"]);
-    }
+    const recipientMsgs = lastMoveMessages(conn2);
+    expect(recipientMsgs).toHaveLength(1);
+    expect(recipientMsgs[0].toZoneType).toBe("hand");
+    expect(recipientMsgs[0].toZoneId).toBe("player-2");
+    expect(recipientMsgs[0].cardIds).toEqual(["J-c"]);
+
+    const otherMsgs = lastMoveMessages(conn1);
+    expect(otherMsgs).toHaveLength(1);
+    expect(otherMsgs[0].toZoneType).toBe("hand");
+    expect(otherMsgs[0].toZoneId).toBe("player-2");
+    expect(otherMsgs[0].cardIds).toEqual([]);
   });
 });

@@ -368,6 +368,30 @@
   .zone-controls { transition: none; }
 }
 
+/* Floating variant for an empty zone's controls: absolutely positioned above
+   the zone (in the rail column's empty bottom space) so the row costs no flow
+   height. Like .canvas-pile-controls, it overhangs content outside its zone,
+   so pointer-events are gated off while hidden — an invisible button must not
+   eat clicks meant for what's underneath. The row is contiguous with the zone
+   (visual gap comes from its own padding), so no reveal grace period is
+   needed when crossing between strip and controls. */
+@media (hover: hover) {
+  .zone-controls-floating {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease, pointer-events 0s linear 150ms;
+  }
+  .zone-hover:hover .zone-controls-floating,
+  .zone-hover:focus-within .zone-controls-floating {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 150ms ease, pointer-events 0s linear;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-controls-floating { transition: none; }
+}
+
 /* Same hover/focus-reveal pattern as .zone-controls, scoped to the pile frame
    itself (not the whole canvas felt) — canvas-pile controls only reveal when
    the pile is hovered/focused, not on any canvas hover (1031 polish).

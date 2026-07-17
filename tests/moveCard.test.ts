@@ -382,6 +382,50 @@ describe("MOVE_CARD LAST_MOVE broadcast", () => {
 
     expect(lastMoveMessages(conn1)).toHaveLength(0);
   });
+
+  it("masks cardIds for non-recipient connections on hand-destination moves (1036)", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.piles.find(p => p.id === "discard")!.cards.push(makeCard("K-h"));
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "K-h",
+      fromZone: "pile", fromId: "discard",
+      toZone: "hand", toId: "player-1",
+    }), conn1);
+
+    const recipientMsgs = lastMoveMessages(conn1);
+    expect(recipientMsgs).toHaveLength(1);
+    expect(recipientMsgs[0].toZoneType).toBe("hand");
+    expect(recipientMsgs[0].toZoneId).toBe("player-1");
+    expect(recipientMsgs[0].cardIds).toEqual(["K-h"]);
+
+    const otherMsgs = lastMoveMessages(conn2);
+    expect(otherMsgs).toHaveLength(1);
+    expect(otherMsgs[0].toZoneType).toBe("hand");
+    expect(otherMsgs[0].toZoneId).toBe("player-1");
+    expect(otherMsgs[0].cardIds).toEqual([]);
+  });
+
+  it("masks cardIds even when the destination hand is revealed (1036)", async () => {
+    const conn1 = helpMakeMockConnection("player-1");
+    const conn2 = helpMakeMockConnection("player-2");
+    const room = new GameRoom(helpMakeMockRoom([conn1, conn2]));
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: true, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.piles.find(p => p.id === "discard")!.cards.push(makeCard("Q-c"));
+
+    await room.onMessage(JSON.stringify({
+      type: "MOVE_CARD", cardId: "Q-c",
+      fromZone: "pile", fromId: "discard",
+      toZone: "hand", toId: "player-1",
+    }), conn1);
+
+    expect(lastMoveMessages(conn2)[0].cardIds).toEqual([]);
+  });
 });
 
 describe("Non-qualifying actions do not emit LAST_MOVE", () => {

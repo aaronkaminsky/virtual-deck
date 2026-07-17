@@ -10,8 +10,8 @@ describe("RickrollOverlay", () => {
     expect(RickrollOverlaySrc).toMatch(/<iframe/);
   });
 
-  it("auto-dismisses after 10 seconds", () => {
-    expect(RickrollOverlaySrc).toMatch(/setTimeout\(\(\) => setRun\(0\),\s*10_?000\)/);
+  it("auto-dismisses after 30 seconds (long enough to reach the lyrics at ~18s)", () => {
+    expect(RickrollOverlaySrc).toMatch(/setTimeout\(\(\) => setRun\(0\),\s*30_?000\)/);
   });
 
   it("dismisses via a dedicated close button, not by clicking the panel", () => {
