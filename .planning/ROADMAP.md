@@ -32,6 +32,7 @@
 - ✅ **v1.27 Runtime Piles** — Stack loose canvas cards into a real pile (`region: "canvas"` + pos) with full shuffle/face/insert/masking semantics; Stack button on canvas selection; unstack fans back to loose cards; whole-pile drag repositions on canvas or empties into pile/spread/own hand; emptied canvas piles auto-prune. Design: docs/superpowers/specs/2026-07-08-runtime-piles-design.md — 1031 (shipped 2026-07-09)
 - ✅ **v1.28 Pile Drop Placement Flaps** — Removed the Top/Bottom/Random pile-drop dialog: plain drops insert at top instantly; drag-over Bottom/Random flaps beside the pile place cards directly (single cards and multi-card sets via `PLAY_CARD_SET.insertPosition`), never revealing the card on top. Design: docs/superpowers/specs/2026-07-09-pile-drop-flaps-design.md — 1039 (shipped 2026-07-09)
 - ✅ **v1.29 Quick Wins** — LAST_MOVE card-id masking for hand destinations, zone controls on empty tableau, 30s rickroll timer. Design: docs/superpowers/specs/2026-07-16-quick-wins-1036-1039-1040-design.md — 1036, 1039, 1040 (shipped 2026-07-16)
+- ✅ **v1.30 Dealer Button & Movable Tokens** — Toggle-able token tray (dealer puck + red/blue/green discs) with drag-to-canvas placement, shared z-space, undo-immune positioning, and toggle-off display gating. Design: docs/superpowers/specs/2026-07-16-dealer-button-tokens-design.md — 1035 (shipped 2026-07-17)
 
 ## Phases
 
