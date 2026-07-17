@@ -10,16 +10,20 @@ describe("CanvasToken", () => {
     expect(CanvasTokenSrc).toMatch(/`token-\$\{token\.id\}`/);
   });
 
-  it("positions absolutely at pos and hides while dragging", () => {
+  it("positions absolutely at the canvas placement and hides while dragging", () => {
     expect(CanvasTokenSrc).toMatch(/position:\s*'absolute'/);
-    expect(CanvasTokenSrc).toMatch(/left:\s*token\.pos\.x/);
-    expect(CanvasTokenSrc).toMatch(/zIndex:\s*token\.pos\.z/);
+    expect(CanvasTokenSrc).toMatch(/left:\s*token\.placement\.x/);
+    expect(CanvasTokenSrc).toMatch(/zIndex:\s*token\.placement\.z/);
     expect(CanvasTokenSrc).toMatch(/isDragging\s*\?\s*0\s*:\s*1/);
   });
 
   it("carries data-token and a canvas-token testid", () => {
     expect(CanvasTokenSrc).toMatch(/data-token=""/);
     expect(CanvasTokenSrc).toMatch(/canvas-token-/);
+  });
+
+  it("renders nothing for a non-canvas placement", () => {
+    expect(CanvasTokenSrc).toMatch(/placement\.kind !== 'canvas'/);
   });
 });
 
@@ -39,7 +43,7 @@ describe("CanvasZone token integration", () => {
 });
 
 describe("BoardView passes canvasTokens", () => {
-  it("filters to enabled + placed tokens", () => {
-    expect(BoardViewSrc).toMatch(/tokensEnabled\s*\?\s*gameState\.tokens\.filter\(t => t\.pos !== null\)\s*:\s*\[\]/);
+  it("filters to canvas-placement tokens only", () => {
+    expect(BoardViewSrc).toMatch(/tokensEnabled\s*\?\s*gameState\.tokens\.filter\(t => t\.placement\.kind === 'canvas'\)\s*:\s*\[\]/);
   });
 });

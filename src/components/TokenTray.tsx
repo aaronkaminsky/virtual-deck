@@ -38,7 +38,7 @@ export function TokenTray({ tokens }: { tokens: Token[] }) {
         )}
       >
         {tokens.map(t =>
-          t.pos === null ? (
+          t.placement.kind === 'tray' ? (
             <TrayToken key={t.id} tokenId={t.id} />
           ) : (
             <div

@@ -11,7 +11,7 @@ export function CanvasToken({ token }: { token: Token }) {
     data: { type: 'token' as const, tokenId: token.id },
   });
 
-  if (!token.pos) return null;
+  if (token.placement.kind !== 'canvas') return null;
 
   return (
     <div
@@ -24,9 +24,9 @@ export function CanvasToken({ token }: { token: Token }) {
       aria-label={TOKEN_LABELS[token.id]}
       style={{
         position: 'absolute',
-        left: token.pos.x,
-        top: token.pos.y,
-        zIndex: token.pos.z,
+        left: token.placement.x,
+        top: token.placement.y,
+        zIndex: token.placement.z,
         opacity: isDragging ? 0 : 1,
         transform: isDragging ? undefined : CSS.Translate.toString(transform),
         touchAction: 'none',

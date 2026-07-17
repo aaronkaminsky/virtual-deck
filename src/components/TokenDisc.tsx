@@ -16,15 +16,21 @@ export const TOKEN_LABELS: Record<TokenId, string> = {
   green: 'Green token',
 };
 
-// Presentational disc shared by the tray, the canvas, and the drag ghost.
-export function TokenDisc({ tokenId }: { tokenId: TokenId }) {
+// Anchored-in-a-name-row size (18px) fits the existing compact strip
+// (presence dot + name + chip badge); tray/canvas/drag-overlay use TOKEN_SIZE (32px).
+const SIZE_PX: Record<'sm' | 'md', number> = { sm: 18, md: TOKEN_SIZE };
+
+// Presentational disc shared by the tray, the canvas, name-row anchors, and the drag ghost.
+export function TokenDisc({ tokenId, size = 'md' }: { tokenId: TokenId; size?: 'sm' | 'md' }) {
+  const px = SIZE_PX[size];
   return (
     <div
       className={cn(
-        'rounded-full border-2 shadow-md flex items-center justify-center select-none font-bold text-sm',
+        'rounded-full border-2 shadow-md flex items-center justify-center select-none font-bold',
+        size === 'sm' ? 'text-[9px]' : 'text-sm',
         TOKEN_STYLES[tokenId]
       )}
-      style={{ width: TOKEN_SIZE, height: TOKEN_SIZE }}
+      style={{ width: px, height: px }}
     >
       {tokenId === 'dealer' ? 'D' : ''}
     </div>

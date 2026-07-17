@@ -184,12 +184,12 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
     const xs = [
       ...canvasCards.map(c => c.x + cardW),
       ...canvasPiles.map(p => (p.pos?.x ?? 0) + PILE_FRAME_W),
-      ...canvasTokens.map(t => (t.pos?.x ?? 0) + TOKEN_SIZE),
+      ...canvasTokens.map(t => (t.placement.kind === 'canvas' ? t.placement.x : 0) + TOKEN_SIZE),
     ];
     const ys = [
       ...canvasCards.map(c => c.y + cardH),
       ...canvasPiles.map(p => (p.pos?.y ?? 0) + PILE_FRAME_H),
-      ...canvasTokens.map(t => (t.pos?.y ?? 0) + TOKEN_SIZE),
+      ...canvasTokens.map(t => (t.placement.kind === 'canvas' ? t.placement.y : 0) + TOKEN_SIZE),
     ];
     if (xs.length === 0) {
       return { innerW: viewportSize.w, innerH: viewportSize.h, contentMaxX: 0, contentMaxY: 0 };

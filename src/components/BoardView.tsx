@@ -55,7 +55,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const canvasPiles = gameState.piles.filter(p => p.region === 'canvas');
-  const canvasTokens = gameState.tokensEnabled ? gameState.tokens.filter(t => t.pos !== null) : [];
+  const canvasTokens = gameState.tokensEnabled ? gameState.tokens.filter(t => t.placement.kind === 'canvas') : [];
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
   const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
   const allOpponentIds = Array.from(new Set([

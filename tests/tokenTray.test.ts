@@ -27,7 +27,7 @@ describe("TokenTray", () => {
   it("renders a draggable for tray tokens and an empty slot for placed ones", () => {
     expect(TokenTraySrc).toMatch(/tray-token-/);
     expect(TokenTraySrc).toMatch(/token-slot-/);
-    expect(TokenTraySrc).toMatch(/pos === null/);
+    expect(TokenTraySrc).toMatch(/placement\.kind === 'tray'/);
   });
 });
 
