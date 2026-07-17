@@ -28,6 +28,14 @@ export interface PilePos {
   z: number;   // shares the loose canvas-card z-space
 }
 
+export type TokenId = "dealer" | "red" | "blue" | "green";
+export const TOKEN_IDS: readonly TokenId[] = ["dealer", "red", "blue", "green"];
+
+export interface Token {
+  id: TokenId;
+  pos: PilePos | null;   // null = in tray; z shares the loose canvas z-space
+}
+
 export interface Pile {
   id: string;        // "draw" | "discard" | custom
   name: string;
@@ -72,6 +80,8 @@ export interface GameState {
   startingChips: number;
   pot: number;
   chipsInitialized: boolean;
+  tokens: Token[];
+  tokensEnabled: boolean;
 }
 
 export interface ClientGameState {
@@ -90,6 +100,8 @@ export interface ClientGameState {
   pot: number;
   chipsEnabled: boolean;
   startingChips: number;
+  tokens: Token[];
+  tokensEnabled: boolean;
 }
 
 export type ClientAction =
@@ -115,7 +127,10 @@ export type ClientAction =
   | { type: "GROUP_PLACE_ON_CANVAS"; fromZone: "hand" | "pile" | "canvas"; fromId: string; cards: { cardId: string; x: number; y: number }[] }
   | { type: "CREATE_CANVAS_PILE"; cardIds: string[]; x: number; y: number }
   | { type: "UNSTACK_CANVAS_PILE"; pileId: string }
-  | { type: "MOVE_CANVAS_PILE"; pileId: string; x: number; y: number };
+  | { type: "MOVE_CANVAS_PILE"; pileId: string; x: number; y: number }
+  | { type: "SET_TOKENS_MODE"; enabled: boolean }
+  | { type: "MOVE_TOKEN"; tokenId: TokenId; x: number; y: number }
+  | { type: "RETURN_TOKEN"; tokenId: TokenId };
 
 export type SelectionSource =
   | { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean }

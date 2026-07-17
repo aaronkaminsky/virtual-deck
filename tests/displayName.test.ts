@@ -23,6 +23,8 @@ function makeTestState(): GameState {
     startingChips: 1000,
     pot: 0,
     chipsInitialized: false,
+    tokens: [],
+    tokensEnabled: false,
   };
 }
 

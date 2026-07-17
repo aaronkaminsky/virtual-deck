@@ -30,6 +30,13 @@ function makeTestState(): GameState {
     startingChips: 1000,
     pot: 0,
     chipsInitialized: false,
+    tokens: [
+      { id: "dealer", pos: null },
+      { id: "red", pos: null },
+      { id: "blue", pos: null },
+      { id: "green", pos: null },
+    ],
+    tokensEnabled: false,
   };
 }
 

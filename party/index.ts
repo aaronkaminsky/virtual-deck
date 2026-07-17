@@ -1,6 +1,6 @@
 import type * as Party from "partykit/server";
-import type { AttractAntic, CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
-import { ATTRACT_ANTICS } from "../src/shared/types";
+import type { AttractAntic, CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank, Token } from "../src/shared/types";
+import { ATTRACT_ANTICS, TOKEN_IDS } from "../src/shared/types";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -57,6 +57,10 @@ export function shuffle<T>(arr: T[]): T[] {
   return result;
 }
 
+export function defaultTokens(): Token[] {
+  return TOKEN_IDS.map(id => ({ id, pos: null }));
+}
+
 export function defaultGameState(roomId: string): GameState {
   return {
     roomId,
@@ -73,6 +77,8 @@ export function defaultGameState(roomId: string): GameState {
     startingChips: 1000,
     pot: 0,
     chipsInitialized: false,
+    tokens: defaultTokens(),
+    tokensEnabled: false,
   };
 }
 
@@ -129,6 +135,8 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     startingChips: state.startingChips,
     myPlayZoneId: `spread-${playerToken}`,
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
+    tokens: state.tokens,
+    tokensEnabled: state.tokensEnabled,
   };
 }
 
@@ -214,6 +222,13 @@ export default class GameRoom implements Party.Server {
     }
     if (!('chipsInitialized' in this.gameState)) {
       (this.gameState as unknown as GameState).chipsInitialized = false;
+    }
+    // Migrate state: 1035 adds tokens and tokensEnabled to GameState
+    if (!Array.isArray((this.gameState as unknown as GameState).tokens)) {
+      (this.gameState as unknown as GameState).tokens = defaultTokens();
+    }
+    if (!('tokensEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).tokensEnabled = false;
     }
     this.attractIdleMsOverride =
       (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;

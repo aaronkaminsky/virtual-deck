@@ -33,6 +33,8 @@ function makeState(overrides: Partial<ClientGameState> = {}): ClientGameState {
     pot: 0,
     chipsEnabled: false,
     startingChips: 1000,
+    tokens: [],
+    tokensEnabled: false,
     ...overrides,
   };
 }
