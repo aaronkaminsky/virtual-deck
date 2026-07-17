@@ -18,10 +18,10 @@ describe("tokens vs RESET_TABLE and UNDO_MOVE", () => {
   }
 
   it("RESET_TABLE returns all tokens to the tray", async () => {
-    await send({ type: "MOVE_TOKEN", tokenId: "dealer", x: 10, y: 20 });
-    await send({ type: "MOVE_TOKEN", tokenId: "red", x: 30, y: 40 });
+    await send({ type: "MOVE_TOKEN", tokenId: "dealer", to: { kind: "canvas", x: 10, y: 20 } });
+    await send({ type: "MOVE_TOKEN", tokenId: "red", to: { kind: "player", playerId: "player-1" } });
     await send({ type: "RESET_TABLE" });
-    expect(room.gameState.tokens.every(t => t.pos === null)).toBe(true);
+    expect(room.gameState.tokens.every(t => t.placement.kind === "tray")).toBe(true);
   });
 
   it("UNDO_MOVE restores cards but never teleports tokens or flips the toggle", async () => {
@@ -32,14 +32,14 @@ describe("tokens vs RESET_TABLE and UNDO_MOVE", () => {
     });
     await send({ type: "MOVE_CANVAS_PILE", pileId: "canvas-pile-abc", x: 200, y: 150 });
     // Token moves AFTER the snapshot
-    await send({ type: "MOVE_TOKEN", tokenId: "dealer", x: 99, y: 88 });
+    await send({ type: "MOVE_TOKEN", tokenId: "dealer", to: { kind: "canvas", x: 99, y: 88 } });
 
     await send({ type: "UNDO_MOVE" });
 
     const pile = room.gameState.piles.find(p => p.id === "canvas-pile-abc")!;
     expect(pile.pos).toEqual({ x: 10, y: 10, z: 2 });          // card move undone
     const dealer = room.gameState.tokens.find(t => t.id === "dealer")!;
-    expect(dealer.pos).toMatchObject({ x: 99, y: 88 });          // token untouched
+    expect(dealer.placement).toMatchObject({ x: 99, y: 88 });   // token untouched
     expect(room.gameState.tokensEnabled).toBe(true);             // toggle untouched
   });
 

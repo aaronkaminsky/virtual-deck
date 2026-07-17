@@ -34,10 +34,10 @@ describe("SET_TOKENS_MODE", () => {
 
   it("toggling off preserves token positions; re-enable restores them", async () => {
     room.gameState.tokensEnabled = true;
-    room.gameState.tokens[0].pos = { x: 100, y: 50, z: 5 };
+    room.gameState.tokens[0].placement = { kind: "canvas", x: 100, y: 50, z: 5 };
     await send({ type: "SET_TOKENS_MODE", enabled: false });
-    expect(room.gameState.tokens[0].pos).toEqual({ x: 100, y: 50, z: 5 });
+    expect(room.gameState.tokens[0].placement).toEqual({ kind: "canvas", x: 100, y: 50, z: 5 });
     await send({ type: "SET_TOKENS_MODE", enabled: true });
-    expect(room.gameState.tokens[0].pos).toEqual({ x: 100, y: 50, z: 5 });
+    expect(room.gameState.tokens[0].placement).toEqual({ kind: "canvas", x: 100, y: 50, z: 5 });
   });
 });

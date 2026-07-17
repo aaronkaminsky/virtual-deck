@@ -58,7 +58,7 @@ export function shuffle<T>(arr: T[]): T[] {
 }
 
 export function defaultTokens(): Token[] {
-  return TOKEN_IDS.map(id => ({ id, pos: null }));
+  return TOKEN_IDS.map(id => ({ id, placement: { kind: "tray" as const } }));
 }
 
 export function defaultGameState(roomId: string): GameState {
@@ -94,7 +94,7 @@ export function takeSnapshot(state: GameState): void {
 export function maxCanvasZ(state: GameState): number {
   const cardMax = state.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
   const pileMax = state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
-  return state.tokens.reduce((m, t) => Math.max(m, t.pos?.z ?? 0), pileMax);
+  return state.tokens.reduce((m, t) => Math.max(m, t.placement.kind === "canvas" ? t.placement.z : 0), pileMax);
 }
 
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
@@ -230,6 +230,12 @@ export default class GameRoom implements Party.Server {
     }
     if (!('tokensEnabled' in this.gameState)) {
       (this.gameState as unknown as GameState).tokensEnabled = false;
+    }
+    // Migrate state: 1035 revision replaces Token.pos with Token.placement — reset to
+    // tray if any persisted token still has the old shape (covers the dev-only window
+    // where PR #85 shipped the pos-shaped version before this revision landed).
+    if (this.gameState.tokens.some(t => !("placement" in t))) {
+      this.gameState.tokens = defaultTokens();
     }
     this.attractIdleMsOverride =
       (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;
@@ -732,7 +738,7 @@ export default class GameRoom implements Party.Server {
         this.gatherAllCardsToDraw();
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
-        for (const token of this.gameState.tokens) token.pos = null;
+        for (const token of this.gameState.tokens) token.placement = { kind: "tray" };
         break;
       }
       case "PLACE_ON_CANVAS": {
@@ -1065,30 +1071,34 @@ export default class GameRoom implements Party.Server {
           } satisfies ServerEvent));
           break;
         }
-        if (!Number.isFinite(action.x) || !Number.isFinite(action.y)) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "INVALID_COORDINATES",
-            message: "x and y must be finite numbers",
-          } satisfies ServerEvent));
-          break;
+        const to = action.to;
+        // Intentionally no takeSnapshot() in any branch — token moves are not undoable (design 1035)
+        if (to.kind === "tray") {
+          moveTokenTarget.placement = { kind: "tray" };
+        } else if (to.kind === "canvas") {
+          if (!Number.isFinite(to.x) || !Number.isFinite(to.y)) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "INVALID_COORDINATES",
+              message: "x and y must be finite numbers",
+            } satisfies ServerEvent));
+            break;
+          }
+          moveTokenTarget.placement = { kind: "canvas", x: to.x, y: to.y, z: maxCanvasZ(this.gameState) + 1 };
+        } else {
+          // to.kind === "player" — any player may anchor a token to any other player (design 1035);
+          // deliberately no check that senderToken === to.playerId.
+          const targetPlayer = this.gameState.players.find(p => p.id === to.playerId);
+          if (!targetPlayer) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "PLAYER_NOT_FOUND",
+              message: `No player found with id: ${to.playerId}`,
+            } satisfies ServerEvent));
+            break;
+          }
+          moveTokenTarget.placement = { kind: "player", playerId: to.playerId };
         }
-        // Intentionally no takeSnapshot() — token moves are not undoable (design 1035)
-        moveTokenTarget.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
-        break;
-      }
-      case "RETURN_TOKEN": {
-        if (!this.gameState.tokensEnabled) break;
-        const returnTokenTarget = this.gameState.tokens.find(t => t.id === action.tokenId);
-        if (!returnTokenTarget) {
-          sender.send(JSON.stringify({
-            type: "ERROR",
-            code: "TOKEN_NOT_FOUND",
-            message: `No token found with id: ${action.tokenId}`,
-          } satisfies ServerEvent));
-          break;
-        }
-        returnTokenTarget.pos = null;
         break;
       }
       case "UNDO_MOVE": {

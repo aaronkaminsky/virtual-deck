@@ -31,10 +31,10 @@ function makeTestState(): GameState {
     pot: 0,
     chipsInitialized: false,
     tokens: [
-      { id: "dealer", pos: null },
-      { id: "red", pos: null },
-      { id: "blue", pos: null },
-      { id: "green", pos: null },
+      { id: "dealer", placement: { kind: "tray" } },
+      { id: "red", placement: { kind: "tray" } },
+      { id: "blue", placement: { kind: "tray" } },
+      { id: "green", placement: { kind: "tray" } },
     ],
     tokensEnabled: false,
   };
