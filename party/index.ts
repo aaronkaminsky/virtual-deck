@@ -1270,6 +1270,13 @@ export default class GameRoom implements Party.Server {
         // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with RESET_TABLE/SET_HAND_REVEALED)
         break;
       }
+      case "SET_TOKENS_MODE": {
+        // V5 Input Validation: strict boolean equality (SET_CHIPS_MODE precedent)
+        this.gameState.tokensEnabled = action.enabled === true;
+        // Token positions are untouched — toggling off is a pure display gate (design 1035).
+        // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with SET_CHIPS_MODE)
+        break;
+      }
       case "TRANSFER_CHIPS": {
         const { from, to, playerId, amount } = action;
         if (!this.gameState.chipsEnabled || from === to || !Number.isInteger(amount) || amount <= 0) {
