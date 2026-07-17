@@ -732,6 +732,7 @@ export default class GameRoom implements Party.Server {
         this.gatherAllCardsToDraw();
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
+        for (const token of this.gameState.tokens) token.pos = null;
         break;
       }
       case "PLACE_ON_CANVAS": {
@@ -1096,6 +1097,10 @@ export default class GameRoom implements Party.Server {
         if (!snap) {
           break;
         }
+        // 1035: tokens are not undoable — carry live token state across the restore
+        // (same pattern as undoSnapshots). Also migrates legacy snapshots that predate tokens.
+        snap.tokens = this.gameState.tokens;
+        snap.tokensEnabled = this.gameState.tokensEnabled;
         this.gameState = snap;
         this.gameState.undoSnapshots = remainingSnapshots;
         clearLastMove = true;
