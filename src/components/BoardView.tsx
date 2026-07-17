@@ -11,6 +11,7 @@ import { ConnectionBanner } from './ConnectionBanner';
 import { CanvasZone } from './CanvasZone';
 import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { PotZone } from './PotZone';
+import { TokenTray } from './TokenTray';
 
 interface BoardViewProps {
   gameState: ClientGameState;
@@ -138,6 +139,9 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
             ))}
             {gameState.chipsEnabled && (
               <PotZone pot={gameState.pot} myPlayerId={gameState.myPlayerId} sendAction={sendAction} />
+            )}
+            {gameState.tokensEnabled && (
+              <TokenTray tokens={gameState.tokens} />
             )}
           </div>
           <div className="flex-1 min-w-0 self-stretch flex">
