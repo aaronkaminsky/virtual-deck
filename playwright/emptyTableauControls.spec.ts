@@ -9,6 +9,10 @@ test.describe('face toggle on empty tableau (1039)', () => {
     const toggle = p1.getByRole('button', { name: 'Cards land face-up' });
     await expect(toggle).toBeVisible();
 
+    // The empty zone's controls float above the strip and are
+    // pointer-events-gated while hidden; hover the strip to reveal them,
+    // as a real user would.
+    await p1.getByText('Tableau').hover();
     await toggle.click();
     await expect(p1.getByRole('button', { name: 'Cards land face-down' })).toBeVisible();
   });

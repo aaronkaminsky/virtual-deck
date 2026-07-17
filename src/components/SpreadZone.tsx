@@ -207,7 +207,7 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
   const showTableauLabel = isReallyEmpty && interactive !== false;
 
   return (
-    <div className="flex flex-col gap-1 zone-hover">
+    <div className="relative flex flex-col gap-1 zone-hover">
       {selectedIds !== undefined && selectedIds.size >= 2 && selectionSource?.zoneId === pile.id && (
         <span className="text-xs bg-primary text-primary-foreground rounded-full px-1.5">
           {selectedIds.size} selected
@@ -298,8 +298,8 @@ export function SpreadZone({ pile, sendAction, draggingCardId, className, intera
       </div>
       {interactive !== false && (
         <div
-          className="flex gap-1 zone-controls"
-          style={chipPopoverOpen ? { opacity: 1 } : undefined}
+          className={cn('flex gap-1', isReallyEmpty ? 'zone-controls-floating absolute bottom-full left-0 pb-1' : 'zone-controls')}
+          style={chipPopoverOpen ? { opacity: 1, pointerEvents: 'auto' } : undefined}
         >
           {chipsEnabled && (
             <>
