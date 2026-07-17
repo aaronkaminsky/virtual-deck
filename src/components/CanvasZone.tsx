@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { ClientCanvasCard, ClientPile, ClientAction, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { ClientCanvasCard, ClientPile, ClientAction, LastMoveHighlight, SelectionSource, Token } from '@/shared/types';
 import { CanvasControls } from './CanvasControls';
 import { CanvasDraggableCard } from './CanvasDraggableCard';
 import { CanvasPileZone } from './CanvasPileZone';
+import { CanvasToken } from './CanvasToken';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { cn } from '@/lib/utils';
 import { coversMajority, getCardDimensions, clampScroll, touchActionForOverflow, nudgeDelta, PAN_TAP_THRESHOLD_PX, type PanDir } from '@/lib/canvas-utils';
+import { TOKEN_SIZE } from '@/lib/tokenDrag';
 
 const PAN_STEP = 8; // px per interval tick — spike-tuned value (Spike003)
 const PAN_INTERVAL = 16; // ms (~60fps) — spike-tuned value (Spike003)
@@ -115,6 +117,7 @@ interface CanvasZoneProps {
   shortcutKey?: string;
   onCursorChange?: (cardId: string) => void;
   canvasPiles: ClientPile[];
+  canvasTokens: Token[];
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   shufflingPileIds: Map<string, 'normal' | 'flourish'>;
@@ -123,7 +126,7 @@ interface CanvasZoneProps {
   flapDragActive: boolean;
 }
 
-export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll, flapDragActive }: CanvasZoneProps) {
+export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSource, groupIds, activeCardId, dragDelta, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, highlightedMove, cursorCardId, shortcutKey, onCursorChange, canvasPiles, canvasTokens, sendAction, draggingCardId, shufflingPileIds, onToggleSelect, onSelectAll, flapDragActive }: CanvasZoneProps) {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas' });
 
   // Dual-ref: attach both dnd-kit's setNodeRef and the forwarded canvasRef so
@@ -181,10 +184,12 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
     const xs = [
       ...canvasCards.map(c => c.x + cardW),
       ...canvasPiles.map(p => (p.pos?.x ?? 0) + PILE_FRAME_W),
+      ...canvasTokens.map(t => (t.pos?.x ?? 0) + TOKEN_SIZE),
     ];
     const ys = [
       ...canvasCards.map(c => c.y + cardH),
       ...canvasPiles.map(p => (p.pos?.y ?? 0) + PILE_FRAME_H),
+      ...canvasTokens.map(t => (t.pos?.y ?? 0) + TOKEN_SIZE),
     ];
     if (xs.length === 0) {
       return { innerW: viewportSize.w, innerH: viewportSize.h, contentMaxX: 0, contentMaxY: 0 };
@@ -197,7 +202,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
       contentMaxX: maxX,
       contentMaxY: maxY,
     };
-  }, [canvasCards, canvasPiles, viewportSize.w, viewportSize.h]);
+  }, [canvasCards, canvasPiles, canvasTokens, viewportSize.w, viewportSize.h]);
 
   // Overflow detection — which edges have content beyond the current viewport? (D-06)
   const hasOverflow = {
@@ -270,7 +275,7 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
   // Drag-to-pan: only when the press lands on empty felt (not a card or a control).
   // Edge arrows stopPropagation on pointerdown, so they never reach here.
   const onViewportPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('[data-card-id], [data-canvas-pile], button')) return;
+    if ((e.target as HTMLElement).closest('[data-card-id], [data-canvas-pile], [data-token], button')) return;
     dragPanRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
@@ -396,6 +401,9 @@ export function CanvasZone({ canvasCards, canvasRef, selectedIds, selectionSourc
             highlightedMove={highlightedMove}
             flapDragActive={flapDragActive}
           />
+        ))}
+        {canvasTokens.map(t => (
+          <CanvasToken key={t.id} token={t} />
         ))}
         {passengerGhosts.map(cc => (
           <div
