@@ -93,7 +93,8 @@ export function takeSnapshot(state: GameState): void {
 
 export function maxCanvasZ(state: GameState): number {
   const cardMax = state.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
-  return state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+  const pileMax = state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+  return state.tokens.reduce((m, t) => Math.max(m, t.pos?.z ?? 0), pileMax);
 }
 
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
@@ -1049,6 +1050,44 @@ export default class GameRoom implements Party.Server {
         }
         takeSnapshot(this.gameState);
         movePile.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
+        break;
+      }
+      case "MOVE_TOKEN": {
+        // Chips precedent (TRANSFER_CHIPS): silent no-op while the feature is off
+        if (!this.gameState.tokensEnabled) break;
+        const moveTokenTarget = this.gameState.tokens.find(t => t.id === action.tokenId);
+        if (!moveTokenTarget) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "TOKEN_NOT_FOUND",
+            message: `No token found with id: ${action.tokenId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        if (!Number.isFinite(action.x) || !Number.isFinite(action.y)) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INVALID_COORDINATES",
+            message: "x and y must be finite numbers",
+          } satisfies ServerEvent));
+          break;
+        }
+        // Intentionally no takeSnapshot() — token moves are not undoable (design 1035)
+        moveTokenTarget.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
+        break;
+      }
+      case "RETURN_TOKEN": {
+        if (!this.gameState.tokensEnabled) break;
+        const returnTokenTarget = this.gameState.tokens.find(t => t.id === action.tokenId);
+        if (!returnTokenTarget) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "TOKEN_NOT_FOUND",
+            message: `No token found with id: ${action.tokenId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        returnTokenTarget.pos = null;
         break;
       }
       case "UNDO_MOVE": {
