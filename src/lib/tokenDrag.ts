@@ -5,24 +5,33 @@ export const TOKEN_SIZE = 32;
 
 export type TokenDropResolution =
   | { kind: 'place'; x: number; y: number }
+  | { kind: 'anchor'; playerId: string }
   | { kind: 'return' }
   | { kind: 'none' };
 
 // Routes a token drop. Mirrors resolvePileDrop's clamp math (canvasPileDrag.ts).
 // `base` is the unclamped candidate top-left in inner-canvas coordinates —
-// the caller derives it from stored pos + delta (canvas source) or from the
-// pointer position (tray source).
+// the caller derives it from stored placement + delta (canvas source) or from
+// the pointer position (tray/player source).
+// `overToId` is the target droppable's `data.current.toId` (only meaningful
+// for 'hand'/'opponent-hand-*' targets) — read from droppable data rather
+// than parsed out of the id string, since player tokens (nanoid) can contain
+// dashes and would make suffix-parsing unreliable.
 export function resolveTokenDrop(args: {
   overId: string | null;
+  overToId: string | null;
   fromTray: boolean;
   base: { x: number; y: number };
   canvasW: number;
   canvasH: number;
   tokenSize: number;
 }): TokenDropResolution {
-  const { overId, fromTray, base, canvasW, canvasH, tokenSize } = args;
+  const { overId, overToId, fromTray, base, canvasW, canvasH, tokenSize } = args;
   if (overId === null) return { kind: 'none' };
   if (overId === 'token-tray') return fromTray ? { kind: 'none' } : { kind: 'return' };
+  if (overId === 'hand' || overId.startsWith('opponent-hand-')) {
+    return overToId ? { kind: 'anchor', playerId: overToId } : { kind: 'none' };
+  }
   if (overId === 'canvas') {
     return {
       kind: 'place',

@@ -31,9 +31,14 @@ export interface PilePos {
 export type TokenId = "dealer" | "red" | "blue" | "green";
 export const TOKEN_IDS: readonly TokenId[] = ["dealer", "red", "blue", "green"];
 
+export type TokenPlacement =
+  | { kind: "tray" }
+  | { kind: "canvas"; x: number; y: number; z: number }
+  | { kind: "player"; playerId: string };
+
 export interface Token {
   id: TokenId;
-  pos: PilePos | null;   // null = in tray; z shares the loose canvas z-space
+  placement: TokenPlacement;
 }
 
 export interface Pile {
@@ -129,8 +134,7 @@ export type ClientAction =
   | { type: "UNSTACK_CANVAS_PILE"; pileId: string }
   | { type: "MOVE_CANVAS_PILE"; pileId: string; x: number; y: number }
   | { type: "SET_TOKENS_MODE"; enabled: boolean }
-  | { type: "MOVE_TOKEN"; tokenId: TokenId; x: number; y: number }
-  | { type: "RETURN_TOKEN"; tokenId: TokenId };
+  | { type: "MOVE_TOKEN"; tokenId: TokenId; to: { kind: "tray" } | { kind: "canvas"; x: number; y: number } | { kind: "player"; playerId: string } };
 
 export type SelectionSource =
   | { zone: 'hand' | 'pile'; zoneId: string; hasMaskedCards?: boolean }
