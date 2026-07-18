@@ -3,13 +3,14 @@ import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Eye, EyeOff, ArrowUpDown, MoreVertical } from 'lucide-react';
-import type { Card, ClientAction, Suit, Rank, SelectionSource, LastMoveHighlight } from '@/shared/types';
+import type { Card, ClientAction, Suit, Rank, SelectionSource, LastMoveHighlight, TokenId } from '@/shared/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { ChipBadge } from './ChipBadge';
+import { AnchoredTokenDisc } from './AnchoredTokenDisc';
 import { cn } from '@/lib/utils';
 
 // --- Sort mode types and constants ---
@@ -157,10 +158,11 @@ interface HandZoneProps {
   onCursorChange?: (index: number) => void;
   chipsEnabled: boolean;
   chipsInHand: number;
+  anchoredTokenIds: TokenId[];
   konamiActive: boolean;
 }
 
-export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange, chipsEnabled, chipsInHand, konamiActive }: HandZoneProps) {
+export function HandZone({ cards, playerId, displayName, connected, sendAction, draggingCardId, selectedIds, onToggleSelect, selectionSource, isRevealed, onToggleReveal, highlightedMove, cursorCardId, shortcutKey, sortMode, setSortMode, onCursorChange, chipsEnabled, chipsInHand, anchoredTokenIds, konamiActive }: HandZoneProps) {
   const sentinelId = '__sentinel-hand__';
   const { setNodeRef } = useDroppable({
     id: 'hand',
@@ -270,6 +272,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
             </kbd>
           )}
         </span>
+        {anchoredTokenIds.map(id => <AnchoredTokenDisc key={id} tokenId={id} />)}
         {selectedIds.size >= 2 && selectionSource?.zone === 'hand' && selectionSource.zoneId === playerId && (
           <span className="ml-2 text-xs bg-primary text-primary-foreground rounded-full px-1.5">
             {selectedIds.size} selected

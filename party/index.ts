@@ -1,6 +1,6 @@
 import type * as Party from "partykit/server";
-import type { AttractAntic, CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank } from "../src/shared/types";
-import { ATTRACT_ANTICS } from "../src/shared/types";
+import type { AttractAntic, CanvasCard, Card, ClientAction, ClientGameState, ClientPile, EffectKind, GameState, MaskedCard, ServerEvent, Suit, Rank, Token } from "../src/shared/types";
+import { ATTRACT_ANTICS, TOKEN_IDS } from "../src/shared/types";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -57,6 +57,10 @@ export function shuffle<T>(arr: T[]): T[] {
   return result;
 }
 
+export function defaultTokens(): Token[] {
+  return TOKEN_IDS.map(id => ({ id, placement: { kind: "tray" as const } }));
+}
+
 export function defaultGameState(roomId: string): GameState {
   return {
     roomId,
@@ -73,6 +77,8 @@ export function defaultGameState(roomId: string): GameState {
     startingChips: 1000,
     pot: 0,
     chipsInitialized: false,
+    tokens: defaultTokens(),
+    tokensEnabled: false,
   };
 }
 
@@ -87,7 +93,8 @@ export function takeSnapshot(state: GameState): void {
 
 export function maxCanvasZ(state: GameState): number {
   const cardMax = state.canvasCards.reduce((m, c) => Math.max(m, c.z), 0);
-  return state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+  const pileMax = state.piles.reduce((m, p) => Math.max(m, p.pos?.z ?? 0), cardMax);
+  return state.tokens.reduce((m, t) => Math.max(m, t.placement.kind === "canvas" ? t.placement.z : 0), pileMax);
 }
 
 export function viewFor(state: GameState, playerToken: string): ClientGameState {
@@ -129,6 +136,8 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     startingChips: state.startingChips,
     myPlayZoneId: `spread-${playerToken}`,
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
+    tokens: state.tokens,
+    tokensEnabled: state.tokensEnabled,
   };
 }
 
@@ -214,6 +223,19 @@ export default class GameRoom implements Party.Server {
     }
     if (!('chipsInitialized' in this.gameState)) {
       (this.gameState as unknown as GameState).chipsInitialized = false;
+    }
+    // Migrate state: 1035 adds tokens and tokensEnabled to GameState
+    if (!Array.isArray((this.gameState as unknown as GameState).tokens)) {
+      (this.gameState as unknown as GameState).tokens = defaultTokens();
+    }
+    if (!('tokensEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).tokensEnabled = false;
+    }
+    // Migrate state: 1035 revision replaces Token.pos with Token.placement — reset to
+    // tray if any persisted token still has the old shape (covers the dev-only window
+    // where PR #85 shipped the pos-shaped version before this revision landed).
+    if (this.gameState.tokens.some(t => !("placement" in t))) {
+      this.gameState.tokens = defaultTokens();
     }
     this.attractIdleMsOverride =
       (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;
@@ -716,6 +738,7 @@ export default class GameRoom implements Party.Server {
         this.gatherAllCardsToDraw();
         this.gameState.phase = "setup";
         this.gameState.undoSnapshots = [];
+        for (const token of this.gameState.tokens) token.placement = { kind: "tray" };
         break;
       }
       case "PLACE_ON_CANVAS": {
@@ -1036,12 +1059,58 @@ export default class GameRoom implements Party.Server {
         movePile.pos = { x: action.x, y: action.y, z: maxCanvasZ(this.gameState) + 1 };
         break;
       }
+      case "MOVE_TOKEN": {
+        // Chips precedent (TRANSFER_CHIPS): silent no-op while the feature is off
+        if (!this.gameState.tokensEnabled) break;
+        const moveTokenTarget = this.gameState.tokens.find(t => t.id === action.tokenId);
+        if (!moveTokenTarget) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "TOKEN_NOT_FOUND",
+            message: `No token found with id: ${action.tokenId}`,
+          } satisfies ServerEvent));
+          break;
+        }
+        const to = action.to;
+        // Intentionally no takeSnapshot() in any branch — token moves are not undoable (design 1035)
+        if (to.kind === "tray") {
+          moveTokenTarget.placement = { kind: "tray" };
+        } else if (to.kind === "canvas") {
+          if (!Number.isFinite(to.x) || !Number.isFinite(to.y)) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "INVALID_COORDINATES",
+              message: "x and y must be finite numbers",
+            } satisfies ServerEvent));
+            break;
+          }
+          moveTokenTarget.placement = { kind: "canvas", x: to.x, y: to.y, z: maxCanvasZ(this.gameState) + 1 };
+        } else {
+          // to.kind === "player" — any player may anchor a token to any other player (design 1035);
+          // deliberately no check that senderToken === to.playerId.
+          const targetPlayer = this.gameState.players.find(p => p.id === to.playerId);
+          if (!targetPlayer) {
+            sender.send(JSON.stringify({
+              type: "ERROR",
+              code: "PLAYER_NOT_FOUND",
+              message: `No player found with id: ${to.playerId}`,
+            } satisfies ServerEvent));
+            break;
+          }
+          moveTokenTarget.placement = { kind: "player", playerId: to.playerId };
+        }
+        break;
+      }
       case "UNDO_MOVE": {
         const remainingSnapshots = [...this.gameState.undoSnapshots];
         const snap = remainingSnapshots.pop();
         if (!snap) {
           break;
         }
+        // 1035: tokens are not undoable — carry live token state across the restore
+        // (same pattern as undoSnapshots). Also migrates legacy snapshots that predate tokens.
+        snap.tokens = this.gameState.tokens;
+        snap.tokensEnabled = this.gameState.tokensEnabled;
         this.gameState = snap;
         this.gameState.undoSnapshots = remainingSnapshots;
         clearLastMove = true;
@@ -1253,6 +1322,13 @@ export default class GameRoom implements Party.Server {
           this.gameState.chipsInitialized = true;
         }
         // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with RESET_TABLE/SET_HAND_REVEALED)
+        break;
+      }
+      case "SET_TOKENS_MODE": {
+        // V5 Input Validation: strict boolean equality (SET_CHIPS_MODE precedent)
+        this.gameState.tokensEnabled = action.enabled === true;
+        // Token positions are untouched — toggling off is a pure display gate (design 1035).
+        // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with SET_CHIPS_MODE)
         break;
       }
       case "TRANSFER_CHIPS": {

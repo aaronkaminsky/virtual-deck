@@ -162,6 +162,20 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
 
           <Separator />
 
+          {/* Tokens (1035): independent of chips mode */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => sendAction({ type: 'SET_TOKENS_MODE', enabled: !gameState.tokensEnabled })}
+            aria-pressed={gameState.tokensEnabled}
+            aria-label={gameState.tokensEnabled ? 'Disable tokens' : 'Enable tokens'}
+          >
+            Tokens {gameState.tokensEnabled ? 'on' : 'off'}
+          </Button>
+
+          <Separator />
+
           {/* Deal section */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold">Cards per player</label>
