@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource } from '@/shared/types';
+import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource, TokenId } from '@/shared/types';
 import type { CursorPos } from '@/lib/keyboardUtils';
 
 import { OpponentHand } from './OpponentHand';
@@ -56,6 +56,10 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const canvasPiles = gameState.piles.filter(p => p.region === 'canvas');
   const canvasTokens = gameState.tokensEnabled ? gameState.tokens.filter(t => t.placement.kind === 'canvas') : [];
+  const anchoredTokenIds = (playerId: string): TokenId[] =>
+    gameState.tokensEnabled
+      ? gameState.tokens.filter(t => t.placement.kind === 'player' && t.placement.playerId === playerId).map(t => t.id)
+      : [];
   const mySpreadZone = spreadPiles.find(p => p.id === gameState.myPlayZoneId);
   const myPlayer = gameState.players.find(p => p.id === gameState.myPlayerId);
   const allOpponentIds = Array.from(new Set([
@@ -95,6 +99,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
                   shortcutKey={altHeld ? zoneLetterMap.get(`opponent-hand-${id}`) : undefined}
                   chipsEnabled={gameState.chipsEnabled}
                   chipsInHand={player?.chipsInHand ?? 0}
+                  anchoredTokenIds={anchoredTokenIds(id)}
                   konamiActive={konamiActive}
                 />
               </div>
@@ -193,6 +198,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
               onCursorChange={(index) => setCursorPos({ zoneId: 'hand', index })}
               chipsEnabled={gameState.chipsEnabled}
               chipsInHand={myPlayer?.chipsInHand ?? 0}
+              anchoredTokenIds={anchoredTokenIds(gameState.myPlayerId)}
               konamiActive={konamiActive}
             />
           );
