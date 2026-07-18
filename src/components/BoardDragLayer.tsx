@@ -27,6 +27,11 @@ const customCollision: CollisionDetection = (args) => {
     const trayContainers = args.droppableContainers.filter(c => String(c.id) === 'token-tray');
     const trayCollisions = pointerWithin({ ...args, droppableContainers: trayContainers });
     if (trayCollisions.length > 0) return trayCollisions;
+    const handContainers = args.droppableContainers.filter(
+      c => String(c.id) === 'hand' || String(c.id).startsWith('opponent-hand-')
+    );
+    const handCollisions = pointerWithin({ ...args, droppableContainers: handContainers });
+    if (handCollisions.length > 0) return handCollisions;
     const tokenCanvasContainers = args.droppableContainers.filter(c => String(c.id) === 'canvas');
     return pointerWithin({ ...args, droppableContainers: tokenCanvasContainers });
   }
@@ -395,7 +400,7 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
     setDragCoversSomeCard(false);
     activeDragOriginRef.current = null;
 
-    // TOKEN DRAG BRANCH (1035): place on canvas, move on canvas, or return to tray.
+    // TOKEN DRAG BRANCH (1035): place on canvas, anchor to a player, or return to tray.
     if (activeTokenIdRef.current !== null) {
       const tokenId = activeTokenIdRef.current;
       activeTokenIdRef.current = null;
@@ -406,29 +411,34 @@ export function BoardDragLayer({ gameState, playerId, roomId, connected, sendAct
       if (!token) return;
       const canvasBounds = canvasRef.current?.getBoundingClientRect();
       let base: { x: number; y: number };
-      if (token.pos) {
+      if (token.placement.kind === 'canvas') {
         // canvas → canvas: stored position + delta (MOVE_CANVAS_PILE pattern)
-        base = { x: token.pos.x + event.delta.x, y: token.pos.y + event.delta.y };
+        base = { x: token.placement.x + event.delta.x, y: token.placement.y + event.delta.y };
       } else {
-        // tray → canvas: pointer position relative to the inner canvas (PLACE_ON_CANVAS pattern)
+        // tray or player source: only used if the drop resolves to canvas;
+        // computed from pointer position relative to the inner canvas (PLACE_ON_CANVAS pattern).
         const activator = event.activatorEvent as PointerEvent;
         base = {
           x: activator.clientX + event.delta.x - (canvasBounds?.left ?? 0) - TOKEN_SIZE / 2,
           y: activator.clientY + event.delta.y - (canvasBounds?.top ?? 0) - TOKEN_SIZE / 2,
         };
       }
+      const overData = event.over?.data.current as { toId?: string } | undefined;
       const resolution = resolveTokenDrop({
         overId: event.over ? String(event.over.id) : null,
-        fromTray: token.pos === null,
+        overToId: overData?.toId ?? null,
+        fromTray: token.placement.kind === 'tray',
         base,
         canvasW: canvasBounds?.width ?? 0,
         canvasH: canvasBounds?.height ?? 0,
         tokenSize: TOKEN_SIZE,
       });
       if (resolution.kind === 'place') {
-        sendAction({ type: 'MOVE_TOKEN', tokenId, x: resolution.x, y: resolution.y });
+        sendAction({ type: 'MOVE_TOKEN', tokenId, to: { kind: 'canvas', x: resolution.x, y: resolution.y } });
+      } else if (resolution.kind === 'anchor') {
+        sendAction({ type: 'MOVE_TOKEN', tokenId, to: { kind: 'player', playerId: resolution.playerId } });
       } else if (resolution.kind === 'return') {
-        sendAction({ type: 'RETURN_TOKEN', tokenId });
+        sendAction({ type: 'MOVE_TOKEN', tokenId, to: { kind: 'tray' } });
       }
       return;
     }
