@@ -33,6 +33,7 @@
 - ✅ **v1.28 Pile Drop Placement Flaps** — Removed the Top/Bottom/Random pile-drop dialog: plain drops insert at top instantly; drag-over Bottom/Random flaps beside the pile place cards directly (single cards and multi-card sets via `PLAY_CARD_SET.insertPosition`), never revealing the card on top. Design: docs/superpowers/specs/2026-07-09-pile-drop-flaps-design.md — 1039 (shipped 2026-07-09)
 - ✅ **v1.29 Quick Wins** — LAST_MOVE card-id masking for hand destinations, zone controls on empty tableau, 30s rickroll timer. Design: docs/superpowers/specs/2026-07-16-quick-wins-1036-1039-1040-design.md — 1036, 1039, 1040 (shipped 2026-07-16)
 - ✅ **v1.30 Dealer Button & Movable Tokens** — Toggle-able token tray (dealer puck + red/blue/green discs) with drag-to-canvas placement, shared z-space, undo-immune positioning, and toggle-off display gating. Design: docs/superpowers/specs/2026-07-16-dealer-button-tokens-design.md — 1035 (shipped 2026-07-17)
+- ✅ **v1.31 Optional Jokers** — Config-panel toggle adds two jokers (red + black) to the deck; toggling rebuilds the deck and resets the table, with a mid-game confirm. Joker art extracted from the same CC0 jumbo-index deck; jokers sort last in both hand sort modes. Design: docs/superpowers/specs/2026-08-17-jokers-design.md — 1039 (shipped 2026-08-17)
 
 ## Phases
 
