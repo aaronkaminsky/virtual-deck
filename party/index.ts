@@ -86,6 +86,7 @@ export function defaultGameState(roomId: string): GameState {
     chipsInitialized: false,
     tokens: defaultTokens(),
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 
@@ -145,6 +146,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
     tokens: state.tokens,
     tokensEnabled: state.tokensEnabled,
+    jokersEnabled: state.jokersEnabled,
   };
 }
 
@@ -243,6 +245,10 @@ export default class GameRoom implements Party.Server {
     // where PR #85 shipped the pos-shaped version before this revision landed).
     if (this.gameState.tokens.some(t => !("placement" in t))) {
       this.gameState.tokens = defaultTokens();
+    }
+    // Migrate state: 1039 adds jokersEnabled to GameState
+    if (!('jokersEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).jokersEnabled = false;
     }
     this.attractIdleMsOverride =
       (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;

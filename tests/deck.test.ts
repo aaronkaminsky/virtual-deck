@@ -105,4 +105,10 @@ describe("defaultGameState", () => {
     const state = defaultGameState("test-room");
     expect(state.undoSnapshots).toEqual([]);
   });
+
+  it("starts with jokers disabled and a 52-card draw pile", () => {
+    const state = defaultGameState("test-room");
+    expect(state.jokersEnabled).toBe(false);
+    expect(state.piles.find(p => p.id === "draw")!.cards).toHaveLength(52);
+  });
 });

@@ -93,6 +93,7 @@ export interface GameState {
   chipsInitialized: boolean;
   tokens: Token[];
   tokensEnabled: boolean;
+  jokersEnabled: boolean;
 }
 
 export interface ClientGameState {
@@ -113,6 +114,7 @@ export interface ClientGameState {
   startingChips: number;
   tokens: Token[];
   tokensEnabled: boolean;
+  jokersEnabled: boolean;
 }
 
 export type ClientAction =
