@@ -61,14 +61,12 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
   }
 
   function handleToggleJokers() {
-    // Mid-game the toggle throws away the current hand, so confirm first. The
-    // dialog lives outside the popover, so close the popover on the way.
-    if (gameState.phase === 'playing') {
-      setOpen(false);
-      setJokersConfirmOpen(true);
-      return;
-    }
-    sendJokersToggle();
+    // Always confirm: the toggle resets the table, and "setup" phase is not safe
+    // to skip on — a table can hold a canvas/spread arrangement without ever
+    // having been dealt. The dialog lives outside the popover, so close the
+    // popover on the way.
+    setOpen(false);
+    setJokersConfirmOpen(true);
   }
 
   function confirmToggleJokers() {
@@ -208,20 +206,18 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
 
             <Separator />
 
-            {/* Jokers (1039): toggling rebuilds the deck and resets the table */}
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={handleToggleJokers}
-                aria-pressed={gameState.jokersEnabled}
-                aria-label={gameState.jokersEnabled ? 'Disable jokers' : 'Enable jokers'}
-              >
-                Jokers {gameState.jokersEnabled ? 'on' : 'off'}
-              </Button>
-              <p className="text-xs text-muted-foreground">Changing this reshuffles and returns all cards.</p>
-            </div>
+            {/* Jokers (1039): toggling rebuilds the deck and resets the table.
+                The confirm dialog carries the warning, so no helper text here. */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleToggleJokers}
+              aria-pressed={gameState.jokersEnabled}
+              aria-label={gameState.jokersEnabled ? 'Disable jokers' : 'Enable jokers'}
+            >
+              Jokers {gameState.jokersEnabled ? 'on' : 'off'}
+            </Button>
 
             <Separator />
 

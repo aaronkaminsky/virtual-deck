@@ -104,11 +104,20 @@ A `Jokers on/off` button in the config popover, placed directly after the Tokens
 button (`ControlsBar.tsx:166-175`), using the same `variant="outline"`
 `size="sm"` `w-full` styling and `aria-pressed={gameState.jokersEnabled}`.
 
-Below it, muted helper text: *"Changing this reshuffles and returns all cards."*
+The click always opens an `AlertDialog` confirm before dispatching: *"This
+returns every card to the draw pile and clears undo history."*
 
-When `gameState.phase === 'playing'`, the click opens an `AlertDialog` confirm
-before dispatching: *"This returns every card to the draw pile and clears undo
-history."* In `setup` phase it dispatches immediately — there is nothing to lose.
+**Revised after use (2026-08-18).** The original design confirmed only when
+`gameState.phase === 'playing'`, on the reasoning that `setup` had nothing to
+lose. That reasoning was wrong: `phase` only becomes `playing` after a *deal*, so
+a table where players have dragged cards onto the canvas or into spread zones is
+still `setup` — and the toggle wiped that arrangement with no warning. The
+confirm now fires in every phase.
+
+Confirming unconditionally also removes the need for the muted helper text under
+the button (*"Changing this reshuffles and returns all cards."*), which cost real
+vertical space in the popover for a warning the dialog now delivers at the moment
+it matters.
 
 Note: `src/components/ui/alert-dialog.tsx` exists but is currently unused in app
 code, and `RESET_TABLE` has no client UI at all today. This is therefore the
