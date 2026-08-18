@@ -40,7 +40,7 @@ test.describe('jokers (1039)', () => {
     await p1.getByRole('button', { name: 'Disable jokers' }).click();
 
     // Base UI's FloatingFocusManager attaches interaction wiring one frame after
-    // focus commits (backlog 1037) — wait for the confirm button to hold focus,
+    // focus commits (backlog 1037) — wait for the confirm button to be visible,
     // then let two frames pass before clicking.
     const confirm = p1.getByRole('button', { name: 'Reshuffle' });
     await expect(confirm).toBeVisible();

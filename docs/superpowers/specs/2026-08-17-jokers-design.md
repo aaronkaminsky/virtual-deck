@@ -115,7 +115,7 @@ code, and `RESET_TABLE` has no client UI at all today. This is therefore the
 first `AlertDialog` in the app. Backlog 1037 documents a Base UI
 `FloatingFocusManager` race where clicks land one frame before interaction wiring
 attaches; the e2e test for this dialog must use the focus-wait + double-rAF
-pattern from `playwright/runtimePiles.spec.ts`.
+pattern from `playwright/jokers.spec.ts`.
 
 ## 4. Art
 

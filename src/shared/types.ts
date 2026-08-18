@@ -15,8 +15,15 @@ export interface Card {
   faceUp: boolean;
 }
 
-export function isJoker(card: Card): boolean {
+export function isJoker(card: Card): card is Card & { suit: JokerSuit } {
   return card.suit === "joker-red" || card.suit === "joker-black";
+}
+
+export function cardLabel(card: Card): string {
+  if (isJoker(card)) {
+    return card.suit === "joker-red" ? "Red joker" : "Black joker";
+  }
+  return `${card.rank} of ${card.suit}`;
 }
 
 export interface Player {

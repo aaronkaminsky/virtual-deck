@@ -1,5 +1,5 @@
 import { CARD_FACE_URL } from '@/card-art';
-import { isJoker } from '@/shared/types';
+import { cardLabel } from '@/shared/types';
 import type { Card, Suit } from '@/shared/types';
 import { cn } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ export function CardFace({ card, className }: CardFaceProps) {
     return (
       <img
         src={imageUrl}
-        alt={isJoker(card) ? (card.suit === 'joker-red' ? 'Red joker' : 'Black joker') : `${card.rank} of ${card.suit}`}
+        alt={cardLabel(card)}
         className={cn('w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] select-none object-contain', className)}
         draggable={false}
       />
