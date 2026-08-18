@@ -6,6 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { getMuted, setMuted } from '@/lib/sound';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +32,7 @@ interface ControlsBarProps {
 export function ControlsBar({ gameState, sendAction, roomId, menuFocused, triggerRef, dealCount, onDealCountChange }: ControlsBarProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [jokersConfirmOpen, setJokersConfirmOpen] = useState(false);
 
   const [muted, setMutedState] = useState(getMuted());
   const [startingChipsInput, setStartingChipsInput] = useState(String(gameState.startingChips));
@@ -43,6 +54,26 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
     if (Number.isFinite(parsed) && parsed >= 0) {
       sendAction({ type: 'SET_CHIPS_MODE', enabled: gameState.chipsEnabled, startingChips: parsed });
     }
+  }
+
+  function sendJokersToggle() {
+    sendAction({ type: 'SET_JOKERS_MODE', enabled: !gameState.jokersEnabled });
+  }
+
+  function handleToggleJokers() {
+    // Mid-game the toggle throws away the current hand, so confirm first. The
+    // dialog lives outside the popover, so close the popover on the way.
+    if (gameState.phase === 'playing') {
+      setOpen(false);
+      setJokersConfirmOpen(true);
+      return;
+    }
+    sendJokersToggle();
+  }
+
+  function confirmToggleJokers() {
+    sendJokersToggle();
+    setJokersConfirmOpen(false);
   }
 
   const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
@@ -91,135 +122,171 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <div className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1 rounded-lg')}>
-        <PopoverTrigger render={
-          <Button
-            ref={triggerRef}
-            variant="ghost"
-            size="icon-sm"
-            aria-label={open ? 'Close controls' : 'Open controls'}
-          >
-            <Menu className="size-4" />
-          </Button>
-        } />
-      </div>
-      <PopoverContent side="bottom" align="end" className="w-56 p-4 elev-2">
-        <div className="flex flex-col gap-3">
-          {/* Copy link */}
-          <Button variant="outline" size="sm" className="w-full" onClick={handleCopy} aria-label="Copy room link">
-            {copied ? (
-              <><Check className="mr-2 size-4" /> Copied!</>
-            ) : (
-              <><Copy className="mr-2 size-4" /> Copy link</>
-            )}
-          </Button>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <div className={cn(menuFocused && 'outline outline-2 outline-white outline-offset-1 rounded-lg')}>
+          <PopoverTrigger render={
+            <Button
+              ref={triggerRef}
+              variant="ghost"
+              size="icon-sm"
+              aria-label={open ? 'Close controls' : 'Open controls'}
+            >
+              <Menu className="size-4" />
+            </Button>
+          } />
+        </div>
+        <PopoverContent side="bottom" align="end" className="w-56 p-4 elev-2">
+          <div className="flex flex-col gap-3">
+            {/* Copy link */}
+            <Button variant="outline" size="sm" className="w-full" onClick={handleCopy} aria-label="Copy room link">
+              {copied ? (
+                <><Check className="mr-2 size-4" /> Copied!</>
+              ) : (
+                <><Copy className="mr-2 size-4" /> Copy link</>
+              )}
+            </Button>
 
-          <Separator />
+            <Separator />
 
-          {/* Sound toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={handleToggleMute}
-            aria-pressed={muted}
-            aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
-          >
-            {muted ? (
-              <><VolumeX className="mr-2 size-4" /> Sound off</>
-            ) : (
-              <><Volume2 className="mr-2 size-4" /> Sound on</>
-            )}
-          </Button>
-
-          <Separator />
-
-          {/* Poker chips */}
-          <div className="flex flex-col gap-2">
+            {/* Sound toggle */}
             <Button
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={handleToggleChips}
-              aria-pressed={gameState.chipsEnabled}
-              aria-label={gameState.chipsEnabled ? 'Disable poker chips' : 'Enable poker chips'}
+              onClick={handleToggleMute}
+              aria-pressed={muted}
+              aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
             >
-              Poker Chips {gameState.chipsEnabled ? 'on' : 'off'}
+              {muted ? (
+                <><VolumeX className="mr-2 size-4" /> Sound off</>
+              ) : (
+                <><Volume2 className="mr-2 size-4" /> Sound on</>
+              )}
             </Button>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-muted-foreground flex-1">Starting amount</label>
-              <Input
-                type="number"
-                min={0}
-                value={startingChipsInput}
-                onChange={e => setStartingChipsInput(e.target.value)}
-                onBlur={handleStartingChipsBlur}
-                className="w-24"
-              />
-            </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          {/* Tokens (1035): independent of chips mode */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => sendAction({ type: 'SET_TOKENS_MODE', enabled: !gameState.tokensEnabled })}
-            aria-pressed={gameState.tokensEnabled}
-            aria-label={gameState.tokensEnabled ? 'Disable tokens' : 'Enable tokens'}
-          >
-            Tokens {gameState.tokensEnabled ? 'on' : 'off'}
-          </Button>
-
-          <Separator />
-
-          {/* Deal section */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold">Cards per player</label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={1}
-                max={maxCards}
-                value={dealCount}
-                onChange={e => onDealCountChange(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleDeal();
-                  }
-                }}
-                className="flex-1"
-              />
+            {/* Poker chips */}
+            <div className="flex flex-col gap-2">
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
-                onClick={handleDeal}
+                className="w-full"
+                onClick={handleToggleChips}
+                aria-pressed={gameState.chipsEnabled}
+                aria-label={gameState.chipsEnabled ? 'Disable poker chips' : 'Enable poker chips'}
               >
-                {gameState.phase === 'playing' ? 'Deal next hand' : 'Deal'}
+                Poker Chips {gameState.chipsEnabled ? 'on' : 'off'}
               </Button>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-muted-foreground flex-1">Starting amount</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={startingChipsInput}
+                  onChange={e => setStartingChipsInput(e.target.value)}
+                  onBlur={handleStartingChipsBlur}
+                  className="w-24"
+                />
+              </div>
             </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          {/* Undo */}
-          <div className="flex items-center gap-2">
+            {/* Tokens (1035): independent of chips mode */}
             <Button
               variant="outline"
               size="sm"
-              disabled={undoDisabled}
-              onClick={handleUndo}
-              className="flex-1"
+              className="w-full"
+              onClick={() => sendAction({ type: 'SET_TOKENS_MODE', enabled: !gameState.tokensEnabled })}
+              aria-pressed={gameState.tokensEnabled}
+              aria-label={gameState.tokensEnabled ? 'Disable tokens' : 'Enable tokens'}
             >
-              <Undo2 className="mr-1 size-4" /> Undo
+              Tokens {gameState.tokensEnabled ? 'on' : 'off'}
             </Button>
+
+            <Separator />
+
+            {/* Jokers (1039): toggling rebuilds the deck and resets the table */}
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleToggleJokers}
+                aria-pressed={gameState.jokersEnabled}
+                aria-label={gameState.jokersEnabled ? 'Disable jokers' : 'Enable jokers'}
+              >
+                Jokers {gameState.jokersEnabled ? 'on' : 'off'}
+              </Button>
+              <p className="text-xs text-muted-foreground">Changing this reshuffles and returns all cards.</p>
+            </div>
+
+            <Separator />
+
+            {/* Deal section */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold">Cards per player</label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={maxCards}
+                  value={dealCount}
+                  onChange={e => onDealCountChange(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleDeal();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleDeal}
+                >
+                  {gameState.phase === 'playing' ? 'Deal next hand' : 'Deal'}
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Undo */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={undoDisabled}
+                onClick={handleUndo}
+                className="flex-1"
+              >
+                <Undo2 className="mr-1 size-4" /> Undo
+              </Button>
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+
+      <AlertDialog open={jokersConfirmOpen} onOpenChange={setJokersConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {gameState.jokersEnabled ? 'Turn jokers off?' : 'Turn jokers on?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This returns every card to the draw pile and clears undo history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleJokers}>Reshuffle</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
