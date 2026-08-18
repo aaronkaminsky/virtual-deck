@@ -19,6 +19,23 @@ import {
 import { getMuted, setMuted } from '@/lib/sound';
 import { cn } from '@/lib/utils';
 
+// True when a table reset would destroy something a player can see: any card
+// outside the draw pile (dealt to a hand, dropped on the canvas, moved to
+// another pile), or any token placed out of the tray while tokens are shown.
+// Exported for tests — a fresh table returns false, so the jokers toggle can
+// apply without stopping to ask.
+export function tableHasContent(gameState: ClientGameState): boolean {
+  const drawPileCount = gameState.piles.find(p => p.id === 'draw')?.cards.length ?? 0;
+  const totalCards =
+    gameState.myHand.length +
+    Object.values(gameState.opponentHandCounts).reduce((a, b) => a + b, 0) +
+    Object.values(gameState.opponentRevealedHands).reduce((acc, cards) => acc + cards.length, 0) +
+    gameState.piles.reduce((acc, p) => acc + p.cards.length, 0) +
+    gameState.canvasCards.length;
+  if (totalCards - drawPileCount > 0) return true;
+  return gameState.tokensEnabled && gameState.tokens.some(t => t.placement.kind !== 'tray');
+}
+
 interface ControlsBarProps {
   gameState: ClientGameState;
   sendAction: (action: ClientAction) => void;
@@ -61,10 +78,14 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
   }
 
   function handleToggleJokers() {
-    // Always confirm: the toggle resets the table, and "setup" phase is not safe
-    // to skip on — a table can hold a canvas/spread arrangement without ever
-    // having been dealt. The dialog lives outside the popover, so close the
-    // popover on the way.
+    // Confirm only when the reset would actually destroy something. Gating on
+    // phase was wrong: phase only becomes "playing" after a deal, so a table
+    // holding a dragged-out arrangement was wiped without warning. The dialog
+    // lives outside the popover, so close the popover on the way.
+    if (!tableHasContent(gameState)) {
+      sendJokersToggle();
+      return;
+    }
     setOpen(false);
     setJokersConfirmOpen(true);
   }

@@ -104,20 +104,29 @@ A `Jokers on/off` button in the config popover, placed directly after the Tokens
 button (`ControlsBar.tsx:166-175`), using the same `variant="outline"`
 `size="sm"` `w-full` styling and `aria-pressed={gameState.jokersEnabled}`.
 
-The click always opens an `AlertDialog` confirm before dispatching: *"This
-returns every card to the draw pile and clears undo history."*
+The click opens an `AlertDialog` confirm before dispatching — *"This returns
+every card to the draw pile and clears undo history."* — whenever the reset would
+destroy something visible. On a table with nothing to lose it applies straight
+through.
+
+"Something to lose" is `tableHasContent(gameState)`, exported from
+`ControlsBar.tsx` and unit-tested in `tests/tableHasContent.test.ts`: any card
+outside the draw pile (in a hand, on the canvas, in another pile), or any token
+placed out of the tray while tokens are shown.
 
 **Revised after use (2026-08-18).** The original design confirmed only when
 `gameState.phase === 'playing'`, on the reasoning that `setup` had nothing to
-lose. That reasoning was wrong: `phase` only becomes `playing` after a *deal*, so
-a table where players have dragged cards onto the canvas or into spread zones is
-still `setup` — and the toggle wiped that arrangement with no warning. The
-confirm now fires in every phase.
+lose. That was wrong twice over. `phase` only becomes `playing` after a *deal*,
+so a table where players had dragged cards onto the canvas or into spread zones
+was still `setup` — and the toggle wiped that arrangement with no warning. The
+first fix confirmed unconditionally, which then nagged on genuinely fresh tables.
+Gating on actual table content is what the phase check was standing in for all
+along, and it measures the thing directly.
 
-Confirming unconditionally also removes the need for the muted helper text under
-the button (*"Changing this reshuffles and returns all cards."*), which cost real
-vertical space in the popover for a warning the dialog now delivers at the moment
-it matters.
+The confirm also removes the need for the muted helper text under the button
+(*"Changing this reshuffles and returns all cards."*), which cost real vertical
+space in the popover for a warning the dialog now delivers at the moment it
+matters.
 
 Note: `src/components/ui/alert-dialog.tsx` exists but is currently unused in app
 code, and `RESET_TABLE` has no client UI at all today. This is therefore the

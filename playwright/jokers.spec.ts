@@ -21,51 +21,46 @@ async function clickDialogButton(page: Page, name: 'Reshuffle' | 'Cancel') {
   await button.click();
 }
 
-// The toggle confirms in every phase, not just mid-game: a table can hold a
-// canvas or spread arrangement without ever having been dealt, so "setup" is
-// not safe to skip the warning on.
-async function toggleJokers(page: Page, name: 'Enable jokers' | 'Disable jokers') {
+// On a table with nothing to lose the toggle applies straight through; the
+// confirm only appears once cards are out of the draw pile or tokens are placed.
+// `tableHasContent` (tests/tableHasContent.test.ts) pins that predicate's edge
+// cases, including the undealt-but-arranged table.
+async function toggleJokersOnFreshTable(page: Page, name: 'Enable jokers' | 'Disable jokers') {
   await openControls(page);
   await page.getByRole('button', { name }).click();
-  await clickDialogButton(page, 'Reshuffle');
+  await page.keyboard.press('Escape');
 }
 
 test.describe('jokers (1039)', () => {
-  test('enabling jokers in setup adds two cards to the draw pile for both players', async ({ twoPlayerRoom }) => {
+  test('enabling jokers on a fresh table applies with no confirm, for both players', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
     await expect(p1.getByTestId('pile-draw')).toContainText('52');
 
-    await toggleJokers(p1, 'Enable jokers');
+    await openControls(p1);
+    await p1.getByRole('button', { name: 'Enable jokers' }).click();
+
+    // Nothing is out of the draw pile, so there is nothing to warn about.
+    await expect(p1.getByText('Turn jokers on?')).toHaveCount(0);
+    await p1.keyboard.press('Escape');
 
     await expect(p1.getByTestId('pile-draw')).toContainText('54');
     await expect(p2.getByTestId('pile-draw')).toContainText('54');
   });
 
-  test('the toggle asks for confirmation before resetting an undealt table', async ({ twoPlayerRoom }) => {
-    const { p1 } = twoPlayerRoom;
-
-    await openControls(p1);
-    await p1.getByRole('button', { name: 'Enable jokers' }).click();
-
-    // Nothing has been dealt, yet the confirm still appears.
-    await expect(p1.getByText('Turn jokers on?')).toBeVisible();
-
-    await clickDialogButton(p1, 'Cancel');
-
-    await expect(p1.getByTestId('pile-draw')).toContainText('52');
-  });
-
   test('toggling mid-game asks for confirmation and returns every card to the draw pile', async ({ twoPlayerRoom }) => {
     const { p1, p2 } = twoPlayerRoom;
 
-    await toggleJokers(p1, 'Enable jokers');
+    await toggleJokersOnFreshTable(p1, 'Enable jokers');
     await expect(p1.getByTestId('pile-draw')).toContainText('54');
 
     await dealCards(p1, 5);
     await expect(p1.getByTestId('pile-draw')).toContainText('44');
 
-    await toggleJokers(p1, 'Disable jokers');
+    await openControls(p1);
+    await p1.getByRole('button', { name: 'Disable jokers' }).click();
+    await expect(p1.getByText('Turn jokers off?')).toBeVisible();
+    await clickDialogButton(p1, 'Reshuffle');
 
     await expect(p1.getByTestId('pile-draw')).toContainText('52');
     await expect(p2.getByTestId('pile-draw')).toContainText('52');
