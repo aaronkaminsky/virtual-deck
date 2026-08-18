@@ -119,18 +119,22 @@ pattern from `playwright/runtimePiles.spec.ts`.
 
 ## 4. Art
 
-Extract the two jokers from the Saul Spatz jumbo-index **Vertical2** sprite — the
+Extract the two jokers from the Saul Spatz jumbo-index **Vertical2** deck — the
 same CC0 source the existing 52 PNGs came from — and rasterize them at the same
 dimensions to:
 
-- `public/cards/jumbo/jokerRed.png`
-- `public/cards/jumbo/jokerBlack.png`
+- `public/cards/jumbo/redJoker.png`
+- `public/cards/jumbo/blackJoker.png`
 
-If the source set's two jokers are not already red/black-distinct, recolor one
-during rasterization so the pair is visually distinguishable on the table.
+The archive ships those two as already-distinct red and black faces, so no
+recolor is needed. Its PNGs are only 75×113, but its SVGs carry a `viewBox` of
+exactly 210×315 — the committed art's dimensions — so the SVGs are the source to
+rasterize.
 
-`CARD_FACE_URL` (`src/card-art.ts:24`) gets a joker branch returning these paths
-directly, rather than composing them from `SUIT_MAP` + `RANK_MAP`.
+Rather than a special case in `CARD_FACE_URL` (`src/card-art.ts:24`), the joker
+file names fall out of the existing `${SUIT_MAP[suit]}${RANK_MAP[rank]}` template
+by mapping the joker suits to `redJoker` / `blackJoker` and `RANK_MAP.JOKER` to
+the empty string.
 
 ## 5. Display touchpoints
 
