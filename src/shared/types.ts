@@ -1,5 +1,6 @@
-export type Suit = "spades" | "hearts" | "diamonds" | "clubs";
-export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K";
+export type JokerSuit = "joker-red" | "joker-black";
+export type Suit = "spades" | "hearts" | "diamonds" | "clubs" | JokerSuit;
+export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "JOKER";
 
 export type EffectKind = "deal" | "celebrate" | "chip-bet" | "chip-collect" | "rickroll" | "tableflip" | "jeer" | "konami" | "attract";
 
@@ -7,10 +8,15 @@ export type AttractAntic = "peekaboo" | "nap" | "houseOfCards";
 export const ATTRACT_ANTICS: readonly AttractAntic[] = ["peekaboo", "nap", "houseOfCards"];
 
 export interface Card {
-  id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"
+  id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"; jokers are the
+                   // exception and use fixed ids "JOKER-r" / "JOKER-b"
   suit: Suit;
   rank: Rank;
   faceUp: boolean;
+}
+
+export function isJoker(card: Card): boolean {
+  return card.suit === "joker-red" || card.suit === "joker-black";
 }
 
 export interface Player {

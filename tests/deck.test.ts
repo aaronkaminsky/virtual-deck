@@ -40,6 +40,30 @@ describe("buildDeck", () => {
     const deck = buildDeck();
     expect(deck.every((c: Card) => c.faceUp === false)).toBe(true);
   });
+
+  it("returns 54 cards when jokers are included", () => {
+    const deck = buildDeck(true);
+    expect(deck).toHaveLength(54);
+  });
+
+  it("includes exactly one red and one black joker when included", () => {
+    const deck = buildDeck(true);
+    const jokers = deck.filter((c: Card) => c.rank === "JOKER");
+    expect(jokers.map(c => c.id).sort()).toEqual(["JOKER-b", "JOKER-r"]);
+    expect(jokers.find(c => c.id === "JOKER-r")!.suit).toBe("joker-red");
+    expect(jokers.find(c => c.id === "JOKER-b")!.suit).toBe("joker-black");
+    expect(jokers.every(c => c.faceUp === false)).toBe(true);
+  });
+
+  it("has no duplicate card IDs with jokers included", () => {
+    const deck = buildDeck(true);
+    expect(new Set(deck.map((c: Card) => c.id)).size).toBe(54);
+  });
+
+  it("still returns 52 cards with no jokers by default", () => {
+    expect(buildDeck().some((c: Card) => c.rank === "JOKER")).toBe(false);
+    expect(buildDeck(false)).toHaveLength(52);
+  });
 });
 
 describe("defaultGameState", () => {

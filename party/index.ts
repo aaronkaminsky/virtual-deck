@@ -24,8 +24,8 @@ export function occupancyBody(connectionCount: number): { occupied: boolean; pla
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
-export function buildDeck(): Card[] {
-  return SUITS.flatMap(suit =>
+export function buildDeck(includeJokers = false): Card[] {
+  const deck: Card[] = SUITS.flatMap(suit =>
     RANKS.map(rank => ({
       id: `${rank}-${suit[0]}`,
       suit,
@@ -33,6 +33,13 @@ export function buildDeck(): Card[] {
       faceUp: false,
     }))
   );
+  if (includeJokers) {
+    deck.push(
+      { id: "JOKER-r", suit: "joker-red", rank: "JOKER", faceUp: false },
+      { id: "JOKER-b", suit: "joker-black", rank: "JOKER", faceUp: false },
+    );
+  }
+  return deck;
 }
 
 function unbiasedRandom(max: number): number {

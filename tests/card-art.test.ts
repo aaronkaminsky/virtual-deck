@@ -44,4 +44,14 @@ describe('card-art (DECK-03)', () => {
     const card: Card = { id: 'K-h', suit: 'hearts', rank: 'K', faceUp: false };
     expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/heartKing.png');
   });
+
+  it('maps the red joker', () => {
+    const card: Card = { id: 'JOKER-r', suit: 'joker-red', rank: 'JOKER', faceUp: false };
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/redJoker.png');
+  });
+
+  it('maps the black joker', () => {
+    const card: Card = { id: 'JOKER-b', suit: 'joker-black', rank: 'JOKER', faceUp: false };
+    expect(CARD_FACE_URL(card)).toBe('/cards/jumbo/blackJoker.png');
+  });
 });
