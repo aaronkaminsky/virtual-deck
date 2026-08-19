@@ -52,10 +52,22 @@ That is "the number of cards in the deck" expressed as a live quantity, so it
 stays correct when jokers change the deck size — which a hardcoded number never
 would.
 
-**Client unchanged.** `maxCards` in `ControlsBar.tsx` already computes
+**`maxCards` is already correct.** `ControlsBar.tsx` computes
 `floor(drawPileCount / connectedPlayerCount)` in setup and
 `floor(totalCardsInGame / connectedPlayerCount)` in play. Once the server cap is
-gone, client and server agree.
+gone, client and server agree on the limit.
+
+**But `handleDeal` must stop swallowing over-max counts.** It currently returns
+early on `parsed > maxCards`, doing nothing and saying nothing — the same silent
+failure this work exists to remove, just moved one layer out. Drop that clause
+and let the request go to the server, which answers with `INSUFFICIENT_CARDS`
+and now renders it (§3). The local guards on `NaN` and `< 1` stay, since those
+are malformed input rather than a refused request, and `max={maxCards}` stays on
+the input as a hint.
+
+This also makes the banner reachable from the UI at all: with the clamp in
+place, every server deal error is unreachable by construction and therefore
+untestable end-to-end.
 
 ## 2. The adaptive fan
 
@@ -162,11 +174,17 @@ Unit (Vitest):
 
 E2E (Playwright):
 
-- Deal 20 in a one-player room and see 20 cards in the hand.
-- At that size, assert the hand row's `scrollWidth` fits its `clientWidth` — the
-  fan actually prevented overflow rather than merely scrolling.
-- Trigger a rejected deal and assert the banner appears carrying the server's
-  message.
+- Deal 20 per player in a two-player room — above the old cap of 13, so this
+  test fails against today's server.
+- In a solo room, deal 40 and assert the hand row's `scrollWidth` fits its
+  `clientWidth`. 40 cards cannot fit at the comfortable advance, so this passes
+  only if the fan actually tightened rather than scrolled.
+- In a two-player room, deal 27 (over the 52-card supply) and assert the banner
+  appears carrying the server's `INSUFFICIENT_CARDS` message.
+
+Note that the second and third cases need a solo room and an over-supply
+request; both are unreachable through the UI until `handleDeal` stops clamping
+(§1).
 
 ## Out of scope
 
