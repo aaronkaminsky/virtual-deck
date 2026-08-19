@@ -34,6 +34,7 @@
 - ✅ **v1.29 Quick Wins** — LAST_MOVE card-id masking for hand destinations, zone controls on empty tableau, 30s rickroll timer. Design: docs/superpowers/specs/2026-07-16-quick-wins-1036-1039-1040-design.md — 1036, 1039, 1040 (shipped 2026-07-16)
 - ✅ **v1.30 Dealer Button & Movable Tokens** — Toggle-able token tray (dealer puck + red/blue/green discs) with drag-to-canvas placement, shared z-space, undo-immune positioning, and toggle-off display gating. Design: docs/superpowers/specs/2026-07-16-dealer-button-tokens-design.md — 1035 (shipped 2026-07-17)
 - ✅ **v1.31 Optional Jokers** — Config-panel toggle adds two jokers (red + black) to the deck; toggling rebuilds the deck and resets the table, always behind a confirm dialog. Joker art extracted from the same CC0 jumbo-index deck; jokers sort last in both hand sort modes. Design: docs/superpowers/specs/2026-08-17-jokers-design.md — 1039 (shipped 2026-08-17)
+- ✅ **v1.32 Deal Limit & Visible Errors** — Deals are bounded by the cards actually available instead of a hardcoded 13; hands fan adaptively so a full-deck hand stays readable; server errors surface in a board banner instead of vanishing. Design: docs/superpowers/specs/2026-08-18-deal-limit-and-errors-design.md — 1041, 1042 (shipped 2026-08-18)
 
 ## Phases
 
