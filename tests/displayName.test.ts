@@ -25,6 +25,7 @@ function makeTestState(): GameState {
     chipsInitialized: false,
     tokens: [],
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 

@@ -25,8 +25,20 @@ const RANK_ORDER: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', '
 
 // --- Pure sort helpers (exported for tests) ---
 
+// Jokers have no place in SUIT_ORDER/RANK_ORDER (indexOf would return -1 and float
+// them to the front), so they get an explicit rank: after every standard card,
+// red before black.
+function jokerOrder(card: Card): number {
+  if (card.suit === 'joker-red') return 1;
+  if (card.suit === 'joker-black') return 2;
+  return 0;
+}
+
 export function sortCards(cards: Card[], mode: 'bySuit' | 'byRank'): Card[] {
   return [...cards].sort((a, b) => {
+    const aJoker = jokerOrder(a);
+    const bJoker = jokerOrder(b);
+    if (aJoker || bJoker) return aJoker - bJoker;
     if (mode === 'bySuit') {
       const suitDiff = SUIT_ORDER.indexOf(a.suit) - SUIT_ORDER.indexOf(b.suit);
       if (suitDiff !== 0) return suitDiff;

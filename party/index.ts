@@ -24,8 +24,8 @@ export function occupancyBody(connectionCount: number): { occupied: boolean; pla
 const SUITS: Suit[] = ["spades", "hearts", "diamonds", "clubs"];
 const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
-export function buildDeck(): Card[] {
-  return SUITS.flatMap(suit =>
+export function buildDeck(includeJokers = false): Card[] {
+  const deck: Card[] = SUITS.flatMap(suit =>
     RANKS.map(rank => ({
       id: `${rank}-${suit[0]}`,
       suit,
@@ -33,6 +33,13 @@ export function buildDeck(): Card[] {
       faceUp: false,
     }))
   );
+  if (includeJokers) {
+    deck.push(
+      { id: "JOKER-r", suit: "joker-red", rank: "JOKER", faceUp: false },
+      { id: "JOKER-b", suit: "joker-black", rank: "JOKER", faceUp: false },
+    );
+  }
+  return deck;
 }
 
 function unbiasedRandom(max: number): number {
@@ -79,6 +86,7 @@ export function defaultGameState(roomId: string): GameState {
     chipsInitialized: false,
     tokens: defaultTokens(),
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 
@@ -138,6 +146,7 @@ export function viewFor(state: GameState, playerToken: string): ClientGameState 
     canvasCards: state.canvasCards.map(cc => ({ card: cc.card, x: cc.x, y: cc.y, z: cc.z })),
     tokens: state.tokens,
     tokensEnabled: state.tokensEnabled,
+    jokersEnabled: state.jokersEnabled,
   };
 }
 
@@ -236,6 +245,10 @@ export default class GameRoom implements Party.Server {
     // where PR #85 shipped the pos-shaped version before this revision landed).
     if (this.gameState.tokens.some(t => !("placement" in t))) {
       this.gameState.tokens = defaultTokens();
+    }
+    // Migrate state: 1039 adds jokersEnabled to GameState
+    if (!('jokersEnabled' in this.gameState)) {
+      (this.gameState as unknown as GameState).jokersEnabled = false;
     }
     this.attractIdleMsOverride =
       (await this.room.storage.get<number>("attractIdleMsOverride")) ?? null;
@@ -733,12 +746,7 @@ export default class GameRoom implements Party.Server {
         // INTENTIONAL: No takeSnapshot before reset — a reset is a commitment and cannot be undone.
         // Undo history is cleared so no pre-reset state can be restored.
         // INTENTIONAL: No authorization check — any connected player can reset the table.
-        const resetDrawPile = this.gameState.piles.find(p => p.id === "draw");
-        if (!resetDrawPile) break;
-        this.gatherAllCardsToDraw();
-        this.gameState.phase = "setup";
-        this.gameState.undoSnapshots = [];
-        for (const token of this.gameState.tokens) token.placement = { kind: "tray" };
+        this.resetTable();
         break;
       }
       case "PLACE_ON_CANVAS": {
@@ -1331,6 +1339,21 @@ export default class GameRoom implements Party.Server {
         // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with SET_CHIPS_MODE)
         break;
       }
+      case "SET_JOKERS_MODE": {
+        // V5 Input Validation: strict boolean equality (SET_CHIPS_MODE precedent)
+        const jokersEnabled = action.enabled === true;
+        // A redundant toggle must not wipe the table.
+        if (jokersEnabled === this.gameState.jokersEnabled) break;
+        this.gameState.jokersEnabled = jokersEnabled;
+        // Changing deck composition requires every card back in one place, so the
+        // toggle performs the reset itself (design 1039). The draw pile is rebuilt
+        // from scratch rather than reconciled card-by-card.
+        this.resetTable();
+        const jokersDrawPile = this.gameState.piles.find(p => p.id === "draw");
+        if (jokersDrawPile) jokersDrawPile.cards = shuffle(buildDeck(jokersEnabled));
+        // Intentionally no takeSnapshot() — mode toggle is not undoable (consistent with SET_TOKENS_MODE)
+        break;
+      }
       case "TRANSFER_CHIPS": {
         const { from, to, playerId, amount } = action;
         if (!this.gameState.chipsEnabled || from === to || !Number.isInteger(amount) || amount <= 0) {
@@ -1445,6 +1468,15 @@ export default class GameRoom implements Party.Server {
     for (const player of this.gameState.players) {
       player.handRevealed = false;
     }
+  }
+
+  private resetTable(): void {
+    const drawPile = this.gameState.piles.find(p => p.id === "draw");
+    if (!drawPile) return;
+    this.gatherAllCardsToDraw();
+    this.gameState.phase = "setup";
+    this.gameState.undoSnapshots = [];
+    for (const token of this.gameState.tokens) token.placement = { kind: "tray" };
   }
 
   private broadcastShuffleEvent(pileId: string, animationType: "normal" | "flourish" = "normal") {

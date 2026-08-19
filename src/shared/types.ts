@@ -1,5 +1,6 @@
-export type Suit = "spades" | "hearts" | "diamonds" | "clubs";
-export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K";
+export type JokerSuit = "joker-red" | "joker-black";
+export type Suit = "spades" | "hearts" | "diamonds" | "clubs" | JokerSuit;
+export type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "JOKER";
 
 export type EffectKind = "deal" | "celebrate" | "chip-bet" | "chip-collect" | "rickroll" | "tableflip" | "jeer" | "konami" | "attract";
 
@@ -7,10 +8,22 @@ export type AttractAntic = "peekaboo" | "nap" | "houseOfCards";
 export const ATTRACT_ANTICS: readonly AttractAntic[] = ["peekaboo", "nap", "houseOfCards"];
 
 export interface Card {
-  id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"
+  id: string;      // format: "${rank}-${suit[0]}" e.g. "A-s", "10-h", "K-d"; jokers are the
+                   // exception and use fixed ids "JOKER-r" / "JOKER-b"
   suit: Suit;
   rank: Rank;
   faceUp: boolean;
+}
+
+export function isJoker(card: Card): card is Card & { suit: JokerSuit } {
+  return card.suit === "joker-red" || card.suit === "joker-black";
+}
+
+export function cardLabel(card: Card): string {
+  if (isJoker(card)) {
+    return card.suit === "joker-red" ? "Red joker" : "Black joker";
+  }
+  return `${card.rank} of ${card.suit}`;
 }
 
 export interface Player {
@@ -87,6 +100,7 @@ export interface GameState {
   chipsInitialized: boolean;
   tokens: Token[];
   tokensEnabled: boolean;
+  jokersEnabled: boolean;
 }
 
 export interface ClientGameState {
@@ -107,6 +121,7 @@ export interface ClientGameState {
   startingChips: number;
   tokens: Token[];
   tokensEnabled: boolean;
+  jokersEnabled: boolean;
 }
 
 export type ClientAction =
@@ -134,6 +149,7 @@ export type ClientAction =
   | { type: "UNSTACK_CANVAS_PILE"; pileId: string }
   | { type: "MOVE_CANVAS_PILE"; pileId: string; x: number; y: number }
   | { type: "SET_TOKENS_MODE"; enabled: boolean }
+  | { type: "SET_JOKERS_MODE"; enabled: boolean }
   | { type: "MOVE_TOKEN"; tokenId: TokenId; to: { kind: "tray" } | { kind: "canvas"; x: number; y: number } | { kind: "player"; playerId: string } };
 
 export type SelectionSource =

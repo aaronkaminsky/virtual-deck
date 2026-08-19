@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import type { ClientCanvasCard } from '@/shared/types';
+import { cardLabel, type ClientCanvasCard } from '@/shared/types';
 import { CardFace } from './CardFace';
 import { CardBack } from './CardBack';
 import { STACK_SHADOW } from '@/lib/canvas-utils';
@@ -77,7 +77,7 @@ export function CanvasDraggableCard({ canvasCard, coversAnother, isSelected = fa
       {...listeners}
       {...attributes}
       aria-roledescription="Draggable card"
-      aria-label={`${canvasCard.card.rank} of ${canvasCard.card.suit}`}
+      aria-label={cardLabel(canvasCard.card)}
       aria-pressed={isSelected}
     >
       {isHighlighted && (

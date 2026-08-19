@@ -12,6 +12,9 @@ const RANK_MAP: Record<Rank, string> = {
   '2': '2', '3': '3', '4': '4', '5': '5', '6': '6',
   '7': '7', '8': '8', '9': '9', '10': '10',
   J: 'Jack', Q: 'Queen', K: 'King',
+  // Jokers carry their color in the suit half of the file name (redJoker.png),
+  // so the rank half is empty.
+  JOKER: '',
 };
 
 const SUIT_MAP: Record<Suit, string> = {
@@ -19,6 +22,8 @@ const SUIT_MAP: Record<Suit, string> = {
   hearts: 'heart',
   diamonds: 'diamond',
   clubs: 'club',
+  'joker-red': 'redJoker',
+  'joker-black': 'blackJoker',
 };
 
 export function CARD_FACE_URL(card: Card): string {

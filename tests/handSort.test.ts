@@ -60,4 +60,30 @@ describe("sortCards pure function", () => {
 
     expect(input.map(c => c.id)).toEqual(originalIds);
   });
+
+  it("By Suit (1039): jokers sort after every standard card, red before black", () => {
+    const input: Card[] = [
+      mkCard("JOKER-b", "joker-black", "JOKER"),
+      mkCard("A-h", "hearts", "A"),
+      mkCard("JOKER-r", "joker-red", "JOKER"),
+      mkCard("2-s", "spades", "2"),
+    ];
+
+    const result = sortCards(input, "bySuit");
+
+    expect(result.map(c => c.id)).toEqual(["2-s", "A-h", "JOKER-r", "JOKER-b"]);
+  });
+
+  it("By Rank (1039): jokers sort after every standard card, red before black", () => {
+    const input: Card[] = [
+      mkCard("JOKER-b", "joker-black", "JOKER"),
+      mkCard("A-s", "spades", "A"),
+      mkCard("JOKER-r", "joker-red", "JOKER"),
+      mkCard("2-h", "hearts", "2"),
+    ];
+
+    const result = sortCards(input, "byRank");
+
+    expect(result.map(c => c.id)).toEqual(["2-h", "A-s", "JOKER-r", "JOKER-b"]);
+  });
 });

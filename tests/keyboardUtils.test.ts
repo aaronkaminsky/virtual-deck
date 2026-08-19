@@ -35,6 +35,7 @@ function makeState(overrides: Partial<ClientGameState> = {}): ClientGameState {
     startingChips: 1000,
     tokens: [],
     tokensEnabled: false,
+    jokersEnabled: false,
     ...overrides,
   };
 }

@@ -1,4 +1,5 @@
 import { CARD_FACE_URL } from '@/card-art';
+import { cardLabel } from '@/shared/types';
 import type { Card, Suit } from '@/shared/types';
 import { cn } from '@/lib/utils';
 
@@ -7,9 +8,11 @@ const SUIT_SYMBOL: Record<Suit, string> = {
   hearts: '\u2665',
   diamonds: '\u2666',
   clubs: '\u2663',
+  'joker-red': '\u2605',
+  'joker-black': '\u2605',
 };
 
-const isRed = (suit: Suit) => suit === 'hearts' || suit === 'diamonds';
+const isRed = (suit: Suit) => suit === 'hearts' || suit === 'diamonds' || suit === 'joker-red';
 
 interface CardFaceProps {
   card: Card;
@@ -23,7 +26,7 @@ export function CardFace({ card, className }: CardFaceProps) {
     return (
       <img
         src={imageUrl}
-        alt={`${card.rank} of ${card.suit}`}
+        alt={cardLabel(card)}
         className={cn('w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] select-none object-contain', className)}
         draggable={false}
       />

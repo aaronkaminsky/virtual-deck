@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { viewFor } from "../party/index";
+import { viewFor, defaultGameState } from "../party/index";
 import type { GameState, Card } from "../src/shared/types";
 
 function makeCard(id: string): Card {
@@ -37,6 +37,7 @@ function makeTestState(): GameState {
       { id: "green", placement: { kind: "tray" } },
     ],
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 
@@ -154,5 +155,14 @@ describe("viewFor", () => {
     const view = viewFor(state, "player-1");
     const drawAfter = view.piles.find(p => p.id === "draw")!.cards.length;
     expect(drawAfter).toBe(drawBefore);
+  });
+});
+
+describe("viewFor jokersEnabled (1039)", () => {
+  it("passes jokersEnabled through to the client view", () => {
+    const state = defaultGameState("test-room");
+    expect(viewFor(state, "player-1").jokersEnabled).toBe(false);
+    state.jokersEnabled = true;
+    expect(viewFor(state, "player-1").jokersEnabled).toBe(true);
   });
 });

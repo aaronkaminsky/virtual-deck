@@ -38,6 +38,7 @@ function makeOldShapeState(): GameState {
     chipsInitialized: false,
     tokens: [],
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 
@@ -59,6 +60,7 @@ function makeTestState(): GameState {
     chipsInitialized: false,
     tokens: [],
     tokensEnabled: false,
+    jokersEnabled: false,
   };
 }
 
