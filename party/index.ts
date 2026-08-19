@@ -620,13 +620,12 @@ export default class GameRoom implements Party.Server {
       case "DEAL_CARDS": {
         if (
           !Number.isInteger(action.cardsPerPlayer) ||
-          action.cardsPerPlayer < 1 ||
-          action.cardsPerPlayer > 13
+          action.cardsPerPlayer < 1
         ) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "INVALID_CARDS_PER_PLAYER",
-            message: "cardsPerPlayer must be an integer between 1 and 13",
+            message: "cardsPerPlayer must be a positive integer",
           } satisfies ServerEvent));
           break;
         }
@@ -669,13 +668,12 @@ export default class GameRoom implements Party.Server {
       case "DEAL_NEXT_HAND": {
         if (
           !Number.isInteger(action.cardsPerPlayer) ||
-          action.cardsPerPlayer < 1 ||
-          action.cardsPerPlayer > 13
+          action.cardsPerPlayer < 1
         ) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "INVALID_CARDS_PER_PLAYER",
-            message: "cardsPerPlayer must be an integer between 1 and 13",
+            message: "cardsPerPlayer must be a positive integer",
           } satisfies ServerEvent));
           break;
         }
