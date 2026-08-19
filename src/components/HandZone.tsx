@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -202,6 +202,18 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
     return () => obs.disconnect();
   }, []);
 
+  // Keep the keyboard cursor in view when the hand overflows and scrolls.
+  useEffect(() => {
+    if (!cursorCardId) return;
+    const el = rowRef.current?.querySelector(`[data-card-id="${cursorCardId}"]`);
+    el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [cursorCardId]);
+
+  const setRowRef = useCallback((node: HTMLDivElement | null) => {
+    setNodeRef(node);
+    rowRef.current = node;
+  }, [setNodeRef]);
+
   function handleBet() {
     if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'spread', playerId, amount: betAmount });
   }
@@ -369,7 +381,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         </span>
       </div>
       <div
-        ref={(node) => { setNodeRef(node); rowRef.current = node; }}
+        ref={setRowRef}
         data-testid="hand-zone"
         data-attract-anchor={displayedCards.length > 0 ? '' : undefined}
         className={cn(
