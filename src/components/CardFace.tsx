@@ -17,9 +17,10 @@ const isRed = (suit: Suit) => suit === 'hearts' || suit === 'diamonds' || suit =
 interface CardFaceProps {
   card: Card;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function CardFace({ card, className }: CardFaceProps) {
+export function CardFace({ card, className, style }: CardFaceProps) {
   const imageUrl = CARD_FACE_URL(card);
 
   if (imageUrl) {
@@ -28,6 +29,7 @@ export function CardFace({ card, className }: CardFaceProps) {
         src={imageUrl}
         alt={cardLabel(card)}
         className={cn('w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] select-none object-contain', className)}
+        style={style}
         draggable={false}
       />
     );
@@ -42,6 +44,7 @@ export function CardFace({ card, className }: CardFaceProps) {
         'w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] relative bg-white rounded-md border border-gray-300 select-none',
         className
       )}
+      style={style}
     >
       <span className={cn('absolute top-1 left-1.5 text-xs font-semibold leading-none', color)}>
         {card.rank}

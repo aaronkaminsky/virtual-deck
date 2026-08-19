@@ -1,9 +1,11 @@
+import { useEffect, useRef, useState } from 'react';
 import { useDroppable, useDndContext } from '@dnd-kit/core';
 import { CardBack } from './CardBack';
 import { CardFace } from './CardFace';
 import { ChipBadge } from './ChipBadge';
 import { AnchoredTokenDisc } from './AnchoredTokenDisc';
 import { cn } from '@/lib/utils';
+import { fanAdvance, fanMarginLeft, OPPONENT_FAN_METRICS } from '@/lib/handFan';
 import type { Card, ClientAction, LastMoveHighlight, TokenId } from '@/shared/types';
 
 const MAX_VISIBLE_OPPONENT_CARDS = 5;
@@ -34,6 +36,30 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
   const isZoneHighlighted =
     highlightedMove?.toZoneType === "hand" && highlightedMove.toZoneId === playerId;
 
+  const revealedRowRef = useRef<HTMLDivElement | null>(null);
+  const [revealedRowWidth, setRevealedRowWidth] = useState<number | null>(null);
+
+  // ResizeObserver: mirrors HandZone and CanvasZone.
+  useEffect(() => {
+    const el = revealedRowRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setRevealedRowWidth(el.clientWidth));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const revealedCount = revealedCards?.length ?? 0;
+  const revealedAdvance = revealedRowWidth === null
+    ? OPPONENT_FAN_METRICS.comfortableAdvance
+    : fanAdvance({
+        containerWidth: revealedRowWidth,
+        cardWidth: OPPONENT_FAN_METRICS.cardWidth,
+        count: revealedCount,
+        comfortableAdvance: OPPONENT_FAN_METRICS.comfortableAdvance,
+        minAdvance: OPPONENT_FAN_METRICS.minAdvance,
+      });
+  const revealedOverlapPx = fanMarginLeft(revealedAdvance, OPPONENT_FAN_METRICS.cardWidth);
+
   return (
     <div
       ref={setNodeRef}
@@ -60,13 +86,14 @@ export function OpponentHand({ playerId, cardCount, displayName, connected, send
         {chipsEnabled && <ChipBadge amount={chipsInHand} />}
       </div>
       <div className="flex items-center gap-1">
-        <div className="flex items-center overflow-x-auto">
+        <div ref={revealedRowRef} className="flex items-center overflow-x-auto">
           {revealedCards && revealedCards.length > 0
             ? revealedCards.map((card, i) => (
                 <CardFace
                   key={card.id}
                   card={konamiActive ? { ...card, rank: 'A' } : card}
-                  className={cn('w-[40px] h-[60px]', i > 0 ? '-ml-3' : undefined)}
+                  className="w-[40px] h-[60px]"
+                  style={i > 0 ? { marginLeft: revealedOverlapPx } : undefined}
                 />
               ))
             : Array.from({ length: Math.min(cardCount, MAX_VISIBLE_OPPONENT_CARDS) }).map((_, i) => (
