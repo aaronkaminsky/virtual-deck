@@ -200,4 +200,106 @@ describe("DEAL_CARDS handler", () => {
     expect(shuffleEvents2).toHaveLength(1);
     expect((shuffleEvents2[0] as { type: "PILE_SHUFFLED"; pileId: string }).pileId).toBe("draw");
   });
+
+  it("deals more than 13 cards per player when the draw pile allows it", async () => {
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 20 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(20);
+    expect(room.gameState.hands["player-2"]).toHaveLength(20);
+    expect(room.gameState.piles.find(p => p.id === "draw")!.cards).toHaveLength(12);
+  });
+
+  it("deals the entire deck to a single player", async () => {
+    room.gameState.players = room.gameState.players.filter(p => p.id === "player-1");
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 52 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(52);
+    expect(room.gameState.piles.find(p => p.id === "draw")!.cards).toHaveLength(0);
+  });
+
+  it("still refuses more cards than the draw pile holds", async () => {
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 27 }), sender);
+
+    const sent = sender.send.mock.calls.map(c => JSON.parse(c[0] as string) as ServerEvent);
+    expect(sent.some(e => e.type === "ERROR" && e.code === "INSUFFICIENT_CARDS")).toBe(true);
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+  });
+
+  it("still refuses zero, negative, and non-integer counts", async () => {
+    for (const bad of [0, -3, 2.5]) {
+      sender.send.mockClear();
+      await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: bad }), sender);
+      const sent = sender.send.mock.calls.map(c => JSON.parse(c[0] as string) as ServerEvent);
+      expect(sent.some(e => e.type === "ERROR" && e.code === "INVALID_CARDS_PER_PLAYER")).toBe(true);
+    }
+    expect(room.gameState.hands["player-1"]).toHaveLength(0);
+  });
+
+  it("deals the entire 54-card joker deck to a single player", async () => {
+    await room.onMessage(JSON.stringify({ type: "SET_JOKERS_MODE", enabled: true }), sender);
+    room.gameState.players = room.gameState.players.filter(p => p.id === "player-1");
+
+    await room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 54 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(54);
+    expect(room.gameState.piles.find(p => p.id === "draw")!.cards).toHaveLength(0);
+  });
+
+  // I-1: a bare setTimeout await does not hold the Durable Object's input gate, so a
+  // second DEAL_CARDS delivered inside the 650ms shuffle-animation window used to pass
+  // its own availability check against the not-yet-decremented pile, then crash the
+  // handler mid-mutation when pop() returned undefined. Both onMessage calls are started
+  // here without awaiting the first to completion, to reproduce the overlap.
+  it("rejects a second concurrent deal that races the first inside the shuffle-animation window", async () => {
+    vi.useFakeTimers();
+    try {
+      const drawPile = room.gameState.piles.find(p => p.id === "draw")!;
+      const initialCount = drawPile.cards.length; // 52, standard deck
+
+      const first = room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 20 }), sender);
+      const second = room.onMessage(JSON.stringify({ type: "DEAL_CARDS", cardsPerPlayer: 20 }), sender);
+
+      await vi.runAllTimersAsync();
+      await expect(Promise.all([first, second])).resolves.toBeDefined();
+
+      // First deal wins the race and completes normally.
+      expect(room.gameState.hands["player-1"]).toHaveLength(20);
+      expect(room.gameState.hands["player-2"]).toHaveLength(20);
+      expect(drawPile.cards).toHaveLength(initialCount - 40);
+
+      // Second deal is rejected, not silently corrupted or thrown.
+      const sent = sender.send.mock.calls.map(c => JSON.parse(c[0] as string) as ServerEvent);
+      const insufficientErrors = sent.filter(e => e.type === "ERROR" && e.code === "INSUFFICIENT_CARDS");
+      expect(insufficientErrors).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("DEAL_NEXT_HAND handler (1041)", () => {
+  let room: GameRoom;
+  let sender: Party.Connection & { send: ReturnType<typeof vi.fn> };
+
+  beforeEach(() => {
+    room = new GameRoom(makeMockRoom());
+    sender = makeMockConnection("player-1");
+    room.gameState.players.push({ id: "player-1", connected: true, displayName: "", handRevealed: false, chipsInHand: 0, chipsInSpread: 0 });
+    room.gameState.hands["player-1"] = [];
+    room.gameState.phase = "playing";
+  });
+
+  it("deals more than 13 cards per player when the deck allows it", async () => {
+    await room.onMessage(JSON.stringify({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 30 }), sender);
+
+    expect(room.gameState.hands["player-1"]).toHaveLength(30);
+  });
+
+  it("still refuses more cards than exist in the game", async () => {
+    await room.onMessage(JSON.stringify({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 53 }), sender);
+
+    const sent = sender.send.mock.calls.map(c => JSON.parse(c[0] as string) as ServerEvent);
+    expect(sent.some(e => e.type === "ERROR" && e.code === "INSUFFICIENT_CARDS")).toBe(true);
+  });
 });

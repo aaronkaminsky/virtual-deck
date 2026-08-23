@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ClientAction, ClientGameState, LastMoveHighlight, SelectionSource, TokenId } from '@/shared/types';
 import type { CursorPos } from '@/lib/keyboardUtils';
+import type { SocketError } from '@/hooks/usePartySocket';
 
 import { OpponentHand } from './OpponentHand';
 import { PileZone } from './PileZone';
@@ -8,6 +9,7 @@ import { SpreadZone } from './SpreadZone';
 import { HandZone, getHandOrderSyncAction, type SortMode } from './HandZone';
 import { ControlsBar } from './ControlsBar';
 import { ConnectionBanner } from './ConnectionBanner';
+import { ErrorBanner } from './ErrorBanner';
 import { CanvasZone } from './CanvasZone';
 import { ShortcutsOverlay } from './ShortcutsOverlay';
 import { PotZone } from './PotZone';
@@ -18,6 +20,7 @@ interface BoardViewProps {
   playerId: string;
   roomId: string;
   connected: boolean;
+  error: SocketError | null;
   sendAction: (action: ClientAction) => void;
   draggingCardId: string | null;
   shufflingPileIds: Map<string, "normal" | "flourish">;
@@ -51,7 +54,7 @@ interface BoardViewProps {
   flapDragActive: boolean;
 }
 
-export function BoardView({ gameState, playerId, roomId, connected, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive, flapDragActive }: BoardViewProps) {
+export function BoardView({ gameState, playerId, roomId, connected, error, sendAction, draggingCardId, shufflingPileIds, selectedIds, onToggleSelect, onSelectAll, selectionSource, canvasRef, onToggleSelectCanvas, onSelectAllCanvas, onDiscardAllCanvas, onStackSelected, onDeselectAll, groupIds, activeCardId, dragDelta, highlightedMove, cursorCardId, altHeld, zoneLetterMap, menuFocused, menuTriggerRef, showShortcuts, onCloseShortcuts, sortMode, setSortMode, lastDealCount, onDealCountChange, setCursorPos, konamiActive, flapDragActive }: BoardViewProps) {
   const pilePiles = gameState.piles.filter(p => (p.region ?? 'pile') === 'pile');
   const spreadPiles = gameState.piles.filter(p => p.region === 'spread');
   const canvasPiles = gameState.piles.filter(p => p.region === 'canvas');
@@ -80,6 +83,7 @@ export function BoardView({ gameState, playerId, roomId, connected, sendAction, 
   return (
     <div className="h-dvh w-dvw min-w-[320px] min-h-[560px] flex flex-col bg-background">
       <ConnectionBanner connected={connected} />
+      <ErrorBanner error={error} />
       <div className="flex items-start justify-between px-4 py-2 gap-4 bg-card border-b border-border">
         <div className="flex items-start gap-4 flex-1 overflow-hidden">
           {allOpponentIds.map((id) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDroppable, useDndMonitor, useDndContext } from '@dnd-kit/core';
 import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -12,6 +12,7 @@ import { CardBack } from './CardBack';
 import { ChipBadge } from './ChipBadge';
 import { AnchoredTokenDisc } from './AnchoredTokenDisc';
 import { cn } from '@/lib/utils';
+import { fanAdvance, fanMarginLeft, getHandFanMetrics, HAND_PADDING_X, SENTINEL_RESERVE } from '@/lib/handFan';
 
 // --- Sort mode types and constants ---
 
@@ -93,9 +94,10 @@ interface SortableHandCardProps {
   highlightNonce?: number;
   hasCursor?: boolean;
   konamiActive: boolean;
+  overlapPx: number;
 }
 
-function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, onCursorChange, isHighlighted, highlightNonce, hasCursor, konamiActive }: SortableHandCardProps) {
+function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, onToggleSelect, onCursorChange, isHighlighted, highlightNonce, hasCursor, konamiActive, overlapPx }: SortableHandCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { card, fromZone: 'hand' as const, fromId: playerId, toZone: 'hand' as const, toId: playerId },
@@ -116,7 +118,8 @@ function SortableHandCard({ card, playerId, isDraggingThis, index, isSelected, o
 
   return (
     <div
-      className={cn('relative w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] flex-shrink-0', index > 0 ? '-ml-3 sm:-ml-5' : '')}
+      className={cn('relative w-[40px] h-[60px] sm:w-[60px] sm:h-[90px] flex-shrink-0')}
+      style={index > 0 ? { marginLeft: overlapPx } : undefined}
       onClick={() => { onCursorChange?.(index); onToggleSelect(card.id, 'hand', playerId); }}
       onPointerDown={(e) => e.stopPropagation()}
     >
@@ -184,6 +187,33 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
   const [betAmount, setBetAmount] = useState(10);
   const [chipPopoverOpen, setChipPopoverOpen] = useState(false);
 
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  // null until measured — until then, render at the comfortable advance so the
+  // hand does not flash tightly-packed on first paint.
+  const [rowWidth, setRowWidth] = useState<number | null>(null);
+
+  // ResizeObserver: track the row's width so the fan re-tightens on resize.
+  // Mirrors the pattern in CanvasZone.tsx.
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setRowWidth(el.clientWidth));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Keep the keyboard cursor in view when the hand overflows and scrolls.
+  useEffect(() => {
+    if (!cursorCardId) return;
+    const el = rowRef.current?.querySelector(`[data-card-id="${cursorCardId}"]`);
+    el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [cursorCardId]);
+
+  const setRowRef = useCallback((node: HTMLDivElement | null) => {
+    setNodeRef(node);
+    rowRef.current = node;
+  }, [setNodeRef]);
+
   function handleBet() {
     if (betAmount > 0) sendAction({ type: 'TRANSFER_CHIPS', from: 'hand', to: 'spread', playerId, amount: betAmount });
   }
@@ -203,6 +233,18 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
   // Render-time visual sort: applied every render when a non-original mode is active.
   // This keeps the hand sorted visually without re-dispatching on every server update.
   const displayedCards = sortMode === 'original' ? cards : sortCards(cards, sortMode);
+
+  const fanMetrics = getHandFanMetrics();
+  const cardAdvance = rowWidth === null
+    ? fanMetrics.comfortableAdvance
+    : fanAdvance({
+        containerWidth: rowWidth - HAND_PADDING_X - SENTINEL_RESERVE,
+        cardWidth: fanMetrics.cardWidth,
+        count: displayedCards.length,
+        comfortableAdvance: fanMetrics.comfortableAdvance,
+        minAdvance: fanMetrics.minAdvance,
+      });
+  const cardOverlapPx = fanMarginLeft(cardAdvance, fanMetrics.cardWidth);
 
   function handleSort() {
     const nextMode = SORT_CYCLE[(SORT_CYCLE.indexOf(sortMode) + 1) % SORT_CYCLE.length];
@@ -339,7 +381,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
         </span>
       </div>
       <div
-        ref={setNodeRef}
+        ref={setRowRef}
         data-testid="hand-zone"
         data-attract-anchor={displayedCards.length > 0 ? '' : undefined}
         className={cn(
@@ -367,6 +409,7 @@ export function HandZone({ cards, playerId, displayName, connected, sendAction, 
               highlightNonce={highlightedMove?.nonce}
               hasCursor={cursorCardId === card.id}
               konamiActive={konamiActive}
+              overlapPx={cardOverlapPx}
             />
           ))}
           <SortableSentinel id={sentinelId} />

@@ -151,13 +151,15 @@ describe("DEAL_NEXT_HAND handler", () => {
     expect(room.gameState.hands["player-1"]).toHaveLength(2); // unchanged
   });
 
-  it("rejects cardsPerPlayer > 13 with INVALID_CARDS_PER_PLAYER error", async () => {
+  it("allows cardsPerPlayer > 13 if total cards available (limited by INSUFFICIENT_CARDS, not hardcoded cap)", async () => {
+    // Total = 8 cards, request 14 each for 2 players = 28 needed
+    // Should fail with INSUFFICIENT_CARDS, not INVALID_CARDS_PER_PLAYER
     await room.onMessage(JSON.stringify({ type: "DEAL_NEXT_HAND", cardsPerPlayer: 14 }), sender);
 
     const errors = sender.send.mock.calls
       .map((c: unknown[]) => JSON.parse(c[0] as string) as ServerEvent)
       .filter(e => e.type === "ERROR");
-    expect((errors[0] as { type: "ERROR"; code: string }).code).toBe("INVALID_CARDS_PER_PLAYER");
+    expect((errors[0] as { type: "ERROR"; code: string }).code).toBe("INSUFFICIENT_CARDS");
   });
 
   it("rejects when total cards across game < cardsPerPlayer * players, with INSUFFICIENT_CARDS error", async () => {

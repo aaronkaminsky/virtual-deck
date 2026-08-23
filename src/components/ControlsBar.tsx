@@ -126,7 +126,10 @@ export function ControlsBar({ gameState, sendAction, roomId, menuFocused, trigge
 
   function handleDeal() {
     const parsed = parseInt(dealCount, 10);
-    if (Number.isNaN(parsed) || parsed < 1 || parsed > maxCards) return;
+    // Malformed input is still dropped here, but a count the table cannot
+    // satisfy now goes to the server so it can answer with a visible error
+    // rather than the click doing nothing (1041/1042).
+    if (Number.isNaN(parsed) || parsed < 1) return;
     if (gameState.phase === 'playing') {
       sendAction({ type: 'DEAL_NEXT_HAND', cardsPerPlayer: parsed });
     } else {

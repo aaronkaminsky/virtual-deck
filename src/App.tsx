@@ -133,6 +133,7 @@ function RoomView({ roomId }: { roomId: string }) {
             playerId={joinState.playerId}
             roomId={roomId}
             connected={connected}
+            error={error}
             sendAction={sendAction}
             setDragging={setDragging}
             shufflingPileIds={shufflingPileIds}
@@ -154,7 +155,7 @@ function RoomView({ roomId }: { roomId: string }) {
       roomId={roomId}
       onJoin={handleJoin}
       connected={joinState !== null && connected}
-      error={error}
+      error={error?.message ?? null}
       joining={joinState !== null}
     />
   );

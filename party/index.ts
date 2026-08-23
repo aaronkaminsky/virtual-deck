@@ -620,13 +620,12 @@ export default class GameRoom implements Party.Server {
       case "DEAL_CARDS": {
         if (
           !Number.isInteger(action.cardsPerPlayer) ||
-          action.cardsPerPlayer < 1 ||
-          action.cardsPerPlayer > 13
+          action.cardsPerPlayer < 1
         ) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "INVALID_CARDS_PER_PLAYER",
-            message: "cardsPerPlayer must be an integer between 1 and 13",
+            message: "cardsPerPlayer must be a positive integer",
           } satisfies ServerEvent));
           break;
         }
@@ -655,6 +654,16 @@ export default class GameRoom implements Party.Server {
         // before any eviction. If the worker is evicted mid-await the timer is lost and the
         // deal may hang; treat the animation delay as best-effort under hibernation mode.
         await new Promise(resolve => setTimeout(resolve, 650));
+        // Re-check after the animation await: a concurrent deal delivered during the
+        // 650ms window can have already popped cards from this same pile.
+        if (dealDrawPile.cards.length < needed) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CARDS",
+            message: "Not enough cards in draw pile to deal",
+          } satisfies ServerEvent));
+          break;
+        }
         for (let i = 0; i < action.cardsPerPlayer; i++) {
           for (const player of connectedPlayers) {
             const dealt = dealDrawPile.cards.pop()!;
@@ -669,13 +678,12 @@ export default class GameRoom implements Party.Server {
       case "DEAL_NEXT_HAND": {
         if (
           !Number.isInteger(action.cardsPerPlayer) ||
-          action.cardsPerPlayer < 1 ||
-          action.cardsPerPlayer > 13
+          action.cardsPerPlayer < 1
         ) {
           sender.send(JSON.stringify({
             type: "ERROR",
             code: "INVALID_CARDS_PER_PLAYER",
-            message: "cardsPerPlayer must be an integer between 1 and 13",
+            message: "cardsPerPlayer must be a positive integer",
           } satisfies ServerEvent));
           break;
         }
@@ -698,6 +706,16 @@ export default class GameRoom implements Party.Server {
         this.broadcastShuffleEvent("draw");
         await new Promise(resolve => setTimeout(resolve, 650));
         const nextHandDrawPile = this.gameState.piles.find(p => p.id === "draw")!;
+        // Re-check after the animation await: a concurrent deal delivered during the
+        // 650ms window can have already popped cards from this same pile.
+        if (nextHandDrawPile.cards.length < nextHandNeeded) {
+          sender.send(JSON.stringify({
+            type: "ERROR",
+            code: "INSUFFICIENT_CARDS",
+            message: "Not enough cards to deal",
+          } satisfies ServerEvent));
+          break;
+        }
         for (const player of nextHandPlayers) {
           if (!this.gameState.hands[player.id]) {
             this.gameState.hands[player.id] = [];

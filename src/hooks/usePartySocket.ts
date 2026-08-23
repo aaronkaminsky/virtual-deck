@@ -5,11 +5,13 @@ import { playSound } from '../lib/sound';
 import { PARTYKIT_HOST } from '../lib/partyHost';
 
 export type AttractState = { antic: AttractAntic; nonce: number; leaving: boolean };
+export type SocketError = { message: string; nonce: number };
 
 export function usePartySocket(roomId: string, playerId: string, displayName: string, options?: { enabled?: boolean }) {
   const [gameState, setGameState] = useState<ClientGameState | null>(null);
   const [connected, setConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<SocketError | null>(null);
+  const errorNonceRef = useRef(0);
   const [shufflingPileIds, setShufflingPileIds] = useState<Map<string, "normal" | "flourish">>(new Map());
   const [celebrationNonce, setCelebrationNonce] = useState(0);
   const [rickrollNonce, setRickrollNonce] = useState(0);
@@ -36,6 +38,11 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
 
   const enabled = options?.enabled ?? true;
 
+  const raiseError = useCallback((message: string) => {
+    errorNonceRef.current += 1;
+    setError({ message, nonce: errorNonceRef.current });
+  }, []);
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -50,7 +57,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
 
     const connectTimeoutId = setTimeout(() => {
       if (!ws.OPEN) {
-        setError(
+        raiseError(
           import.meta.env.DEV
             ? "Can't reach the game server — restart `npm run dev`"
             : "Can't reach the game server — try refreshing the page"
@@ -81,7 +88,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
           setGameState(event.state);
         }
       } else if (event.type === 'ERROR') {
-        setError(event.message);
+        raiseError(event.message);
       } else if (event.type === 'PILE_SHUFFLED') {
         // Fires for both explicit shuffles and deal-shuffles; deal sound follows via EFFECT.
         const { pileId, animationType } = event;
@@ -155,7 +162,7 @@ export function usePartySocket(roomId: string, playerId: string, displayName: st
       if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
       if (konamiTimerRef.current) clearTimeout(konamiTimerRef.current);
     };
-  }, [roomId, playerId, enabled]);
+  }, [roomId, playerId, enabled, raiseError]);
 
   const sendAction = useCallback((action: ClientAction) => {
     wsRef.current?.send(JSON.stringify(action));
